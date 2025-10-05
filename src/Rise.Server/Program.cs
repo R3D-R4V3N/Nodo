@@ -26,18 +26,7 @@ try
             .Destructure.UsingAttributes()) // Sensitive data logging
         .AddIdentity<IdentityUser, IdentityRole>() 
         .AddEntityFrameworkStores<ApplicationDbContext>()
-        .Services.AddDbContext<ApplicationDbContext>(o =>
-        {
-            var connectionString = builder.Configuration.GetConnectionString("DatabaseConnection") ??
-                                   throw new InvalidOperationException("Connection string 'DatabaseConnection' not found.");
-            o.UseSqlite(connectionString); // Swap Sqlite for your database provider (e.g. Sql Server, MySQL, PostgreSQL, etc.).
-            o.EnableDetailedErrors();
-            if (builder.Environment.IsDevelopment())
-            {
-                o.EnableSensitiveDataLogging(); // only enabled in development.
-            }
-            o.UseTriggers(options => options.AddTrigger<EntityBeforeSaveTrigger>()); // Handles all UpdatedAt, CreatedAt stuff.
-        })
+        .Services.AddPersistence(builder.Configuration, builder.Environment)
         .AddHttpContextAccessor()
         .AddScoped<ISessionContextProvider, HttpContextSessionProvider>() // Provides the current user from the HttpContext to the session provider.
         .AddApplicationServices() // You'll need to add your own services in this function call.
