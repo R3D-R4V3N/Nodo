@@ -1,0 +1,44 @@
+#vs
+
+.vs/
+
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+**/.DS_Store
+
+
+src/Rise.Server/Data/
+
+src/Rise.Server/Logs/
+
+Rise.sln.DotSettings.user
+
+src/Rise.Server/Rise.db
+
+src/Rise.Server/Rise.db-shm
+
+src/Rise.Server/Rise.db-wal
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Blazor / .NET
+bin/
+obj/
+
+# VS / Rider
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build outputs
+dist/
+wwwroot/css/app.css
