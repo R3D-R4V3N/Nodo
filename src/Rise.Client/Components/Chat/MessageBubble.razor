@@ -33,8 +33,16 @@ else
         var seq = 0;
         if (!string.IsNullOrWhiteSpace(AudioUrl))
         {
+            var audioWrapperClasses = IsOutgoing
+                ? "flex flex-col gap-2 text-white"
+                : "flex flex-col gap-2";
+            var durationLabelClasses = IsOutgoing
+                ? "text-[10px] uppercase tracking-wide text-white/70"
+                : "text-[10px] uppercase tracking-wide text-neutral-500";
+            var audioTextClasses = IsOutgoing ? "text-sm text-white" : "text-sm";
+
             builder.OpenElement(seq++, "div");
-            builder.AddAttribute(seq++, "class", "flex flex-col gap-2");
+            builder.AddAttribute(seq++, "class", audioWrapperClasses);
 
             builder.OpenElement(seq++, "audio");
             builder.AddAttribute(seq++, "class", "w-52 max-w-full");
@@ -46,7 +54,7 @@ else
             if (DurationLabel is not null)
             {
                 builder.OpenElement(seq++, "span");
-                builder.AddAttribute(seq++, "class", "text-[10px] uppercase tracking-wide text-neutral-500");
+                builder.AddAttribute(seq++, "class", durationLabelClasses);
                 builder.AddContent(seq++, DurationLabel);
                 builder.CloseElement();
             }
@@ -54,7 +62,7 @@ else
             if (!string.IsNullOrWhiteSpace(Text))
             {
                 builder.OpenElement(seq++, "p");
-                builder.AddAttribute(seq++, "class", "text-sm");
+                builder.AddAttribute(seq++, "class", audioTextClasses);
                 builder.AddContent(seq++, Text);
                 builder.CloseElement();
             }
@@ -72,7 +80,7 @@ else
         : "bg-white rounded-2xl rounded-tl-none px-4 py-2 shadow-sm text-sm max-w-[80%]";
 
     private string OutgoingBubbleClasses => !string.IsNullOrWhiteSpace(AudioUrl)
-        ? "bg-white rounded-2xl rounded-tr-none px-4 py-3 shadow-sm text-sm max-w-[80%]"
+        ? "bg-[#127646] text-white rounded-2xl rounded-tr-none px-4 py-3 shadow-sm text-sm max-w-[80%]"
         : "bg-[#127646] text-white rounded-2xl rounded-tr-none px-4 py-2 text-sm shadow-sm max-w-[80%]";
 
     private string? DurationLabel => AudioDuration is { TotalSeconds: > 0 } duration
