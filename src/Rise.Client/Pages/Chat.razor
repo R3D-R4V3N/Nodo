@@ -13,7 +13,7 @@
 
 <SuggestionChips Suggestions="@_suggestions" OnPick="InsertSuggestion" />
 
-<ChatInput @bind-Value="_draft" OnSend="SendAsync" />
+<ChatInput @bind-Value="_draft" OnSend="SendAsync" OnSendVoice="SendVoiceAsync" />
 
 @code {
     private readonly List<Message> _messages =
@@ -62,10 +62,21 @@
 
     private Task SendAsync(string text)
     {
- 
+
         var censored = Filter.Censor(text);
 
         _messages.Add(new Message(Guid.NewGuid().ToString(), censored, true, null, DateTimeOffset.Now));
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task SendVoiceAsync(RecordedAudio audio)
+    {
+        TimeSpan? duration = double.IsFinite(audio.DurationSeconds) && audio.DurationSeconds > 0
+            ? TimeSpan.FromSeconds(audio.DurationSeconds)
+            : null;
+
+        _messages.Add(new Message(Guid.NewGuid().ToString(), string.Empty, true, null, DateTimeOffset.Now, audio.DataUrl, duration));
         StateHasChanged();
         return Task.CompletedTask;
     }
