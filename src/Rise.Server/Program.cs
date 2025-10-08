@@ -2,6 +2,7 @@ using Destructurama;
 using FastEndpoints.Swagger;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Rise.Persistence;
 using Rise.Persistence.Triggers;
 using Rise.Server.Identity;
@@ -33,8 +34,12 @@ try
             var cs = Environment.GetEnvironmentVariable("DB_CONNECTION");
             cs ??= builder.Configuration.GetConnectionString("DatabaseConnection")
                      ?? throw new InvalidOperationException("Connection string 'DatabaseConnection' not found.");
-            // Laat Pomelo zelf de serverversie detecteren.
-            o.UseMySql(cs, ServerVersion.AutoDetect(cs));
+            var configuredVersion = Environment.GetEnvironmentVariable("DB_SERVER_VERSION")
+                                   ?? builder.Configuration["Database:ServerVersion"];
+
+            var serverVersion = MySqlServerVersionResolver.Resolve(cs, configuredVersion);
+
+            o.UseMySql(cs, serverVersion);
             o.EnableDetailedErrors();
             if (builder.Environment.IsDevelopment())
                 o.EnableSensitiveDataLogging();
@@ -75,9 +80,16 @@ try
         var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
 
         //db.Database.EnsureDeleted(); // Delete the database if it exists to clean it up if needed.
-        
-        db.Database.Migrate();
-        await seeder.SeedAsync();
+
+        try
+        {
+            db.Database.Migrate();
+            await seeder.SeedAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Skipping database migration and seed because the connection could not be established.");
+        }
     }
 
     app.UseHttpsRedirection()
