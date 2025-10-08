@@ -34,12 +34,12 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("varchar(200)");
 
                 b.Property<string>("Name")
-                    .HasMaxLength(256)
-                    .HasColumnType("varchar(256)");
+                    .HasMaxLength(200)
+                    .HasColumnType("varchar(200)");
 
                 b.Property<string>("NormalizedName")
-                    .HasMaxLength(256)
-                    .HasColumnType("varchar(256)");
+                    .HasMaxLength(200)
+                    .HasColumnType("varchar(200)");
 
                 b.HasKey("Id");
 
@@ -93,8 +93,8 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("varchar(200)");
 
                 b.Property<string>("Email")
-                    .HasMaxLength(256)
-                    .HasColumnType("varchar(256)");
+                    .HasMaxLength(200)
+                    .HasColumnType("varchar(200)");
 
                 b.Property<bool>("EmailConfirmed")
                     .HasColumnType("tinyint(1)");
@@ -106,12 +106,12 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("datetime(6)");
 
                 b.Property<string>("NormalizedEmail")
-                    .HasMaxLength(256)
-                    .HasColumnType("varchar(256)");
+                    .HasMaxLength(200)
+                    .HasColumnType("varchar(200)");
 
                 b.Property<string>("NormalizedUserName")
-                    .HasMaxLength(256)
-                    .HasColumnType("varchar(256)");
+                    .HasMaxLength(200)
+                    .HasColumnType("varchar(200)");
 
                 b.Property<string>("PasswordHash")
                     .HasMaxLength(200)
@@ -132,8 +132,8 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("tinyint(1)");
 
                 b.Property<string>("UserName")
-                    .HasMaxLength(256)
-                    .HasColumnType("varchar(256)");
+                    .HasMaxLength(200)
+                    .HasColumnType("varchar(200)");
 
                 b.HasKey("Id");
 

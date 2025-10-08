@@ -25,10 +25,22 @@ internal class IdentityConfiguration :
     // The default below will work on any provider.
     
     public void Configure(EntityTypeBuilder<IdentityUser> builder)
-        => builder.ToTable("Users");
+    {
+        builder.ToTable("Users");
+
+        builder.Property(x => x.UserName).HasMaxLength(200);
+        builder.Property(x => x.NormalizedUserName).HasMaxLength(200);
+        builder.Property(x => x.Email).HasMaxLength(200);
+        builder.Property(x => x.NormalizedEmail).HasMaxLength(200);
+    }
 
     public void Configure(EntityTypeBuilder<IdentityRole> builder)
-        => builder.ToTable("Roles");
+    {
+        builder.ToTable("Roles");
+
+        builder.Property(x => x.Name).HasMaxLength(200);
+        builder.Property(x => x.NormalizedName).HasMaxLength(200);
+    }
 
     public void Configure(EntityTypeBuilder<IdentityUserRole<string>> builder)
         => builder.ToTable("UserRoles");
