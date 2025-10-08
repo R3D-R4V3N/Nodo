@@ -1,0 +1,42 @@
+@* Input met 2 knoppen *@
+<form class="bg-white border-t border-neutral-200 px-3 py-2" @onsubmit="HandleSubmit">
+    <div class="flex items-center gap-2">
+        <input id="chat-input"
+               type="text"
+               placeholder="Typ je bericht…"
+               class="flex-1 rounded-full bg-neutral-100 px-4 py-4 text-sm placeholder-neutral-500 outline-none focus:ring-2 focus:ring-blue-600"
+               @bind="Value"
+               @bind:event="oninput" />
+
+        <button type="button" class="grid place-items-center h-12 w-12 rounded-xl bg-blue-700 hover:bg-blue-800 text-white" title="Bel">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="#ffffff" viewBox="0 0 256 256">
+                <path d="M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176ZM96,64a32,32,0,0,1,64,0v64a32,32,0,0,1-64,0Zm40,143.6V240a8,8,0,0,1-16,0V207.6A80.11,80.11,0,0,1,48,128a8,8,0,0,1,16,0,64,64,0,0,0,128,0,8,8,0,0,1,16,0A80.11,80.11,0,0,1,136,207.6Z"></path>
+            </svg>
+            <span class="sr-only">Bel</span>
+        </button>
+
+        <button type="submit" class="grid place-items-center h-12 w-12 rounded-xl bg-[#127646] hover:bg-green-800 text-white" title="Verzenden">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="#ffffff" viewBox="0 0 256 256">
+                <path d="M231.87,114l-168-95.89A16,16,0,0,0,40.92,37.34L71.55,128,40.92,218.67A16,16,0,0,0,56,240a16.15,16.15,0,0,0,7.93-2.1l167.92-96.05a16,16,0,0,0,.05-27.89ZM56,224a.56.56,0,0,0,0-.12L85.74,136H144a8,8,0,0,0,0-16H85.74L56.06,32.16A.46.46,0,0,0,56,32l168,95.83Z"></path>
+            </svg>
+            <span class="sr-only">Verzenden</span>
+        </button>
+    </div>
+</form>
+
+@code {
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public EventCallback<string> OnSend { get; set; }
+
+    private async Task HandleSubmit()
+    {
+        var text = Value?.Trim();
+        if (!string.IsNullOrEmpty(text))
+        {
+            await OnSend.InvokeAsync(text);
+            Value = string.Empty;
+            await ValueChanged.InvokeAsync(Value);
+        }
+    }
+}

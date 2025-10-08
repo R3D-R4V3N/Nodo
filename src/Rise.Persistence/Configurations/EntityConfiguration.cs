@@ -17,11 +17,13 @@ internal class EntityConfiguration<TEntity> : IEntityTypeConfiguration<TEntity> 
 
         // CreatedAt should be filled in by the database when using raw SQL.
         builder.Property(e => e.CreatedAt)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP"); // SQLite specific, so change this when moving to another database provider.
+            .HasColumnType("datetime")
+            .HasDefaultValueSql("current_timestamp()"); // MYSQL specific, so change this when moving to another database provider.
 
         // UpdatedAt should be filled in by the database when using raw SQL.
         builder.Property(e => e.UpdatedAt)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP"); // SQLite specific, so change this when moving to another database provider.
+            .HasColumnType("datetime")
+            .HasDefaultValueSql("current_timestamp()"); // MYSQL specific, so change this when moving to another database provider.
         
         // IsDeleted should be false by default, used for softdelete.
         builder.Property(e => e.IsDeleted)

@@ -6,6 +6,7 @@ using Rise.Client.Identity;
 using Rise.Client.Products;
 using Rise.Shared.Products;
 
+
 try
 {
     var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -31,6 +32,8 @@ try
     builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthenticationStateProvider>();
 // register the account management interface
     builder.Services.AddScoped(sp => (IAccountManager)sp.GetRequiredService<AuthenticationStateProvider>());
+//  Woordfilter hier  
+    builder.Services.AddSingleton<Rise.Services.WoordFilter>();
 
 // configure client for auth interactions
     builder.Services.AddHttpClient("SecureApi",opt => opt.BaseAddress = new Uri(builder.Configuration["BackendUrl"] ?? "https://localhost:5001"))

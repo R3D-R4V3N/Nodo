@@ -1,0 +1,36 @@
+@page "/censor"
+@using Rise.Services
+@inject WoordFilter Filter
+
+<h3>Woordfilter test</h3>
+
+<p>Typ tekst en druk op "Censureer". De filter vervangt slechte woorden door hekjes (#).</p>
+
+<textarea @bind="InputText" rows="6" cols="60"></textarea>
+<br />
+<button class="btn" @onclick="DoCensor">Censureer</button>
+<button class="btn" @onclick="Clear">Wis</button>
+
+@if (Result is not null)
+{
+    <h4>Resultaat</h4>
+    <div style="white-space:pre-wrap; border:1px solid #ddd; padding:8px; background:#fafafa;">
+        @Result
+    </div>
+}
+
+@code {
+    private string? InputText;
+    private string? Result;
+
+    private void DoCensor()
+    {
+        Result = Filter.Censor(InputText ?? string.Empty);
+    }
+
+    private void Clear()
+    {
+        InputText = string.Empty;
+        Result = null;
+    }
+}

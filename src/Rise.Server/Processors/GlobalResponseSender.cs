@@ -14,44 +14,23 @@ sealed class GlobalResponseSender : IGlobalPostProcessor
         {
             if (ctx.Response is IResult result)
             {
-                switch (result.Status)
+                var statusCode = result.Status switch
                 {
-                    case ResultStatus.Ok:
-                        await ctx.HttpContext.Response.SendAsync(result, StatusCodes.Status200OK, cancellation: ct);
-                        break;
-                    case ResultStatus.Created:
-                        await ctx.HttpContext.Response.SendAsync(result, StatusCodes.Status201Created, cancellation: ct);
-                        break;
-                    case ResultStatus.Forbidden:
-                        await ctx.HttpContext.Response.SendAsync(result, StatusCodes.Status403Forbidden, cancellation: ct);
-                        break;
-                    case ResultStatus.Unauthorized:
-                        await ctx.HttpContext.Response.SendAsync(result, StatusCodes.Status401Unauthorized, cancellation: ct);
-                        break;
-                    case ResultStatus.Invalid:
-                        await ctx.HttpContext.Response.SendAsync(result, StatusCodes.Status400BadRequest, cancellation: ct);
-                        break;
-                    case ResultStatus.NotFound:
-                        await ctx.HttpContext.Response.SendAsync(result, StatusCodes.Status404NotFound, cancellation: ct);
-                        break;
-                    case ResultStatus.NoContent:
-                        await ctx.HttpContext.Response.SendAsync(result, StatusCodes.Status204NoContent, cancellation: ct);
-                        break;
-                    case ResultStatus.Conflict:
-                        await ctx.HttpContext.Response.SendAsync(result, StatusCodes.Status409Conflict, cancellation: ct);
-                        break;
-                    case ResultStatus.CriticalError:
-                        await ctx.HttpContext.Response.SendAsync(result, StatusCodes.Status500InternalServerError, cancellation: ct);
-                        break;
-                    case ResultStatus.Error:
-                        await ctx.HttpContext.Response.SendAsync(result, StatusCodes.Status422UnprocessableEntity, cancellation: ct);
-                        break;
-                    case ResultStatus.Unavailable:
-                        await ctx.HttpContext.Response.SendAsync(result, StatusCodes.Status503ServiceUnavailable, cancellation: ct);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException("Result status is not supported.");
-                }
+                    ResultStatus.Ok => StatusCodes.Status200OK,
+                    ResultStatus.Created => StatusCodes.Status201Created,
+                    ResultStatus.Forbidden => StatusCodes.Status403Forbidden,
+                    ResultStatus.Unauthorized => StatusCodes.Status401Unauthorized,
+                    ResultStatus.Invalid => StatusCodes.Status400BadRequest,
+                    ResultStatus.NotFound => StatusCodes.Status404NotFound,
+                    ResultStatus.NoContent => StatusCodes.Status204NoContent,
+                    ResultStatus.Conflict => StatusCodes.Status409Conflict,
+                    ResultStatus.CriticalError => StatusCodes.Status500InternalServerError,
+                    ResultStatus.Error => StatusCodes.Status422UnprocessableEntity,
+                    ResultStatus.Unavailable => StatusCodes.Status503ServiceUnavailable,
+                    _ => throw new ArgumentOutOfRangeException("Result status is not supported.")
+                };
+
+                await ctx.HttpContext.Response.SendAsync(result, statusCode, cancellation: ct);
             }
             else
             {

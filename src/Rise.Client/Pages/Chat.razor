@@ -1,0 +1,72 @@
+@page "/chat"
+@using Rise.Client.Shared
+@using Rise.Services          
+@inject WoordFilter Filter
+@layout ChatLayout
+<ChatHeader DisplayName="Helena"
+            AvatarUrl="https://i.pravatar.cc/64?img=12"
+            StatusText="Online 11 minuten geleden"
+            OnBack="GoBack"
+            OnAlert="TriggerAlert" />
+
+<MessageList Messages="@_messages" TimestampText="Nov 30, 2023, 9:41 AM" />
+
+<SuggestionChips Suggestions="@_suggestions" OnPick="InsertSuggestion" />
+
+<ChatInput @bind-Value="_draft" OnSend="SendAsync" />
+
+@code {
+    private readonly List<Message> _messages =
+    [
+        new("m1", "Oh?", false, "https://i.pravatar.cc/64?img=12"),
+        new("m2", "Cool", false, "https://i.pravatar.cc/64?img=12"),
+        new("m3", "How does it work?", false, "https://i.pravatar.cc/64?img=12"),
+        new("m4", "You just edit any text to type in the conversation you want to show, and delete any bubbles you don’t want to use", true),
+        new("m5", "Boom!", true),
+        new("m6", "Hmmm", false, "https://i.pravatar.cc/64?img=12"),
+        new("m7", "I think I get it", false, "https://i.pravatar.cc/64?img=12"),
+        new("m8", "Will head to the Help Center if I have more questions tho", false, "https://i.pravatar.cc/64?img=12")
+    ];
+
+    private readonly string[] _suggestions =
+    [
+        "Hey! Hoe gaat het vandaag?",
+        "Wat heb je gedaan vandaag?",
+        "Zullen we later bellen?",
+        "Heb je plannen voor dit weekend?",
+        "Ik ben trots op je! 💪",
+        "Wil je samen een spelletje spelen?"
+    ];
+
+    private string _draft = string.Empty;
+
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+
+    private Task GoBack()
+    {
+        Nav.NavigateTo("/");
+        return Task.CompletedTask;
+    }
+
+    private Task TriggerAlert()
+    {
+        Console.WriteLine("Alert clicked");
+        return Task.CompletedTask;
+    }
+
+    private void InsertSuggestion(string text)
+    {
+        _draft = text;
+        StateHasChanged();
+    }
+
+    private Task SendAsync(string text)
+    {
+ 
+        var censored = Filter.Censor(text);
+
+        _messages.Add(new Message(Guid.NewGuid().ToString(), censored, true, null, DateTimeOffset.Now));
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+}

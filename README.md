@@ -1,8 +1,13 @@
-# Rise - [GROUPNAME]
+# Rise - Group 12
 
 ## Team Members
 
-- [MEMBER1_NAME] - [MEMBER1_EMAIL] - [MEMBER1_GITHUB_USERNAME]
+| Name | Email | GitHub |
+|------|-------|---------|
+| Thibo Verbeke | thibo.verbeke2@student.hogent.be | [@Thibo Verbeke](https://github.com/ThiboVerbeke) |
+| Jasper Van Zeir | jasper.vanzeir@student.hogent.be | [@Japer Van Zeir](https://github.com/R3D-R4V3N) |
+| Björn Galle | bjorn.galle@student.hogent.be | [@Gwilom](https://github.com/NotADucc) |
+| Kyandro Voet | kyandro.voet@student.hogent.be | [@Kyandro-Voet](https://github.com/Kyandro-Voet) |
 
 ## Technologies & Packages Used
 

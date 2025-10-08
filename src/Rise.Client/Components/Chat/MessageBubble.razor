@@ -1,0 +1,27 @@
+@* Eén chatbubbel, inkomend of uitgaand *@
+@if (IsOutgoing)
+{
+    <div class="flex justify-end">
+        <div class="bg-[#127646] text-white rounded-2xl rounded-tr-none px-4 py-2 text-sm shadow-sm max-w-[80%]">
+            @Text
+        </div>
+    </div>
+}
+else
+{
+    <div class="flex items-end gap-2">
+        @if (!string.IsNullOrWhiteSpace(AvatarUrl))
+        {
+            <img src="@AvatarUrl" alt="" class="h-7 w-7 rounded-full" />
+        }
+        <div class="bg-white rounded-2xl rounded-tl-none px-4 py-2 shadow-sm text-sm max-w-[80%]">
+            @Text
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Text { get; set; } = "";
+    [Parameter] public bool IsOutgoing { get; set; }
+    [Parameter] public string? AvatarUrl { get; set; }
+}
