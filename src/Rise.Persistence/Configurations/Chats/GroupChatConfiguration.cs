@@ -1,12 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rise.Domain.Chats;
-using Rise.Domain.Products;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rise.Persistence.Configurations.Chats
 {
@@ -16,14 +10,8 @@ namespace Rise.Persistence.Configurations.Chats
         {
             base.Configure(builder);
             builder.Property(x => x.GroupName).HasMaxLength(100);
-
-
-            builder.HasMany(x => x.Users)
-                   .WithMany();
-
-            builder.HasMany(x => x.Messages)
-               .WithOne()
-               .OnDelete(DeleteBehavior.Cascade);
+            builder.Ignore(x => x.Users);
+            builder.Ignore(x => x.Messages);
         }
     }
 }

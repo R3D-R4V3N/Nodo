@@ -1,12 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Rise.Domain.Events;
 using Rise.Domain.Message;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rise.Persistence.Configurations.Messages
 {
@@ -19,6 +14,9 @@ namespace Rise.Persistence.Configurations.Messages
             builder.Property(x => x.Blob).IsRequired();
             builder.Property(x => x.Encoding).IsRequired();
             builder.Property(x => x.Length).IsRequired();
+
+            builder.Ignore(x => x.Chat);
+            builder.Ignore(x => x.SendBy);
         }
     }
 }

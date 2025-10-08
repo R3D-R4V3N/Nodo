@@ -1,11 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Rise.Domain.Message;
 using Rise.Domain.Supervisors;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rise.Persistence.Configurations.Supervisors
 {
@@ -21,9 +15,7 @@ namespace Rise.Persistence.Configurations.Supervisors
             builder.Property(x => x.AccountId).IsRequired().HasMaxLength(36);
             builder.HasIndex(x => x.AccountId).IsUnique();
 
-            builder
-                .HasMany(x => x.Chats)
-                .WithMany();
+            builder.Ignore(x => x.Chats);
         }
     }
 }
