@@ -1,0 +1,143 @@
+@page "/videocall"
+@implements IAsyncDisposable
+@inject IJSRuntime JsRuntime
+
+<h1 class="title">Videobellen (lokaal prototype)</h1>
+<p class="subtitle">
+    Test hier de lokale videobelervaring. We gebruiken enkel je eigen camera en microfoon en sturen nog geen media naar andere deelnemers.
+</p>
+
+@if (!_hasDeviceSupport)
+{
+    <div class="notification is-danger" role="alert">
+        Je browser ondersteunt geen videobellen via WebRTC. Probeer een recente versie van Chrome, Edge of Firefox.
+    </div>
+}
+else
+{
+    <div class="video-call-container">
+        <section>
+            <h2 class="title is-5">Lokale preview</h2>
+            <p class="content">
+                Start de preview om je camera en microfoon lokaal te testen. De stream verlaat je browser niet.
+            </p>
+            <div class="video-preview-wrapper">
+                <video @ref="_localVideo" class="video-preview" autoplay muted></video>
+            </div>
+        </section>
+
+        <section class="video-controls">
+            <button class="button is-primary" @onclick="StartPreviewAsync" disabled="@(!_hasDeviceSupport || _isBusy || _isPreviewActive)">
+                Start preview
+            </button>
+            <button class="button is-light" @onclick="StopPreviewAsync" disabled="@(!_hasDeviceSupport || _isBusy || !_isPreviewActive)">
+                Stop
+            </button>
+        </section>
+
+        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <div class="notification is-warning" role="alert">@_errorMessage</div>
+        }
+
+        <section>
+            <h2 class="title is-5">Volgende stappen</h2>
+            <p class="content">
+                Later kan je deze pagina uitbreiden met SignalR voor het opzetten van peer-to-peer verbindingen en het delen van streams tussen gebruikers.
+                Het domeinmodel kan hiervoor sessies, deelnemers en hun toestandsmachines bevatten. Momenteel beperken we ons tot het lokaal tonen van de media stream.
+            </p>
+        </section>
+    </div>
+}
+
+@code {
+    private ElementReference _localVideo;
+    private IJSObjectReference? _module;
+    private bool _hasDeviceSupport = true;
+    private bool _isPreviewActive;
+    private bool _isBusy;
+    private string? _errorMessage;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/videoCall.js");
+        _hasDeviceSupport = await _module.InvokeAsync<bool>("hasDeviceSupport");
+        StateHasChanged();
+    }
+
+    private async Task StartPreviewAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        _errorMessage = null;
+        _isBusy = true;
+
+        try
+        {
+            await _module.InvokeVoidAsync("startLocalPreview", _localVideo);
+            _isPreviewActive = true;
+        }
+        catch (JSException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task StopPreviewAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        _errorMessage = null;
+        _isBusy = true;
+
+        try
+        {
+            await _module.InvokeVoidAsync("stopLocalPreview", _localVideo);
+        }
+        catch (JSException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+            _isPreviewActive = false;
+            StateHasChanged();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _module.InvokeVoidAsync("stopLocalPreview", _localVideo);
+        }
+        catch (JSException)
+        {
+            // In dit stadium negeren we fouten bij het opruimen van de lokale stream.
+        }
+
+        await _module.DisposeAsync();
+    }
+}

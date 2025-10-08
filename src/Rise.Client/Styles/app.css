@@ -5,3 +5,46 @@
    @import "tailwindcss" source("./"); */
 
 /* Jouw extra CSS hieronder */
+
+.video-call-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin: 2rem auto;
+    max-width: 960px;
+}
+
+.video-preview-wrapper {
+    position: relative;
+    background-color: #111;
+    border-radius: 1rem;
+    overflow: hidden;
+    min-height: 240px;
+}
+
+.video-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-color: #000;
+}
+
+.video-controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.video-controls .button {
+    min-width: 160px;
+}
+
+@media (max-width: 600px) {
+    .video-call-container {
+        margin: 1rem;
+    }
+
+    .video-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
