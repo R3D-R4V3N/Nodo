@@ -4,7 +4,7 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace Rise.Persistence;
 
-internal static class MySqlServerVersionResolver
+public static class MySqlServerVersionResolver
 {
     private static readonly ServerVersion DefaultServerVersion = new MySqlServerVersion(new Version(8, 0, 36));
 
