@@ -11,7 +11,9 @@
     {
         <MessageBubble Text="@m.Text"
                        IsOutgoing="@m.IsOutgoing"
-                       AvatarUrl="@(m.IsOutgoing ? null : m.AvatarUrl)" />
+                       AvatarUrl="@(m.IsOutgoing ? null : m.AvatarUrl)"
+                       AudioUrl="@m.AudioUrl"
+                       AudioDuration="@m.AudioDuration" />
     }
 </section>
 
