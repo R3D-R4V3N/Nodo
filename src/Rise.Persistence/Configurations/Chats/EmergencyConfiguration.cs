@@ -25,6 +25,7 @@ namespace Rise.Persistence.Configurations.Chats
                    .WithMany();
 
             builder.Ignore(x => x.SnapshotStartTime);
+            builder.Ignore(x => x.HappenedIn);
         }
     }
 }
