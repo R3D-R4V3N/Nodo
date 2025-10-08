@@ -26,15 +26,6 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
-    <script>
-        window.scrollToBottom = (el) => {
-            if (!el) return;
-            const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
-            if (atBottom) el.scrollTop = el.scrollHeight;
-        };
-
-    </script>
-
 </body>
 
 </html>

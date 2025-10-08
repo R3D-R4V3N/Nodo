@@ -8,7 +8,6 @@ using Rise.Server.Identity;
 using Rise.Server.Processors;
 using Rise.Services;
 using Rise.Services.Identity;
-using Serilog;
 using Serilog.Events;
 
 Log.Logger = new LoggerConfiguration()

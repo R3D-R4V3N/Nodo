@@ -2,8 +2,6 @@
 using Xunit.Abstractions;
 using Shouldly;
 using NSubstitute;
-using System.Threading.Tasks;
-using System.Linq;
 using Ardalis.Result;
 using Rise.Shared.Common;
 
