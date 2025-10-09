@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rise.Persistence;
 
@@ -11,9 +12,11 @@ using Rise.Persistence;
 namespace Rise.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251009094741_UserWithMoreInfoAndFriendsMigration")]
+    partial class UserWithMoreInfoAndFriendsMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -417,21 +420,6 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("ApplicationUser", (string)null);
                 });
 
-            modelBuilder.Entity("UserFriendRequests", b =>
-                {
-                    b.Property<int>("AccountId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("FriendRequestId")
-                        .HasColumnType("int");
-
-                    b.HasKey("AccountId", "FriendRequestId");
-
-                    b.HasIndex("FriendRequestId");
-
-                    b.ToTable("UserFriendRequests");
-                });
-
             modelBuilder.Entity("UserFriends", b =>
                 {
                     b.Property<int>("AccountId")
@@ -547,21 +535,6 @@ namespace Rise.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Technician");
-                });
-
-            modelBuilder.Entity("UserFriendRequests", b =>
-                {
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
-
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("FriendRequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("UserFriends", b =>

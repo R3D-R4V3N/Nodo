@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Products;
 using Rise.Domain.Projects;
+using Rise.Domain.Users;
 
 namespace Rise.Persistence;
 
@@ -20,6 +21,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> opts) :
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<Technician> Technicians => Set<Technician>();
+    public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
   
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {

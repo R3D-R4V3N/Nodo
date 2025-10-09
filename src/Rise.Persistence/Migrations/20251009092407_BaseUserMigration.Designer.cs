@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rise.Persistence;
 
@@ -11,9 +12,11 @@ using Rise.Persistence;
 namespace Rise.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251009092407_BaseUserMigration")]
+    partial class BaseUserMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -376,11 +379,6 @@ namespace Rise.Persistence.Migrations
                         .HasMaxLength(36)
                         .HasColumnType("varchar(36)");
 
-                    b.Property<string>("Biography")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
@@ -388,8 +386,8 @@ namespace Rise.Persistence.Migrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -398,16 +396,13 @@ namespace Rise.Persistence.Migrations
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<int>("UserType")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -415,36 +410,6 @@ namespace Rise.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("ApplicationUser", (string)null);
-                });
-
-            modelBuilder.Entity("UserFriendRequests", b =>
-                {
-                    b.Property<int>("AccountId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("FriendRequestId")
-                        .HasColumnType("int");
-
-                    b.HasKey("AccountId", "FriendRequestId");
-
-                    b.HasIndex("FriendRequestId");
-
-                    b.ToTable("UserFriendRequests");
-                });
-
-            modelBuilder.Entity("UserFriends", b =>
-                {
-                    b.Property<int>("AccountId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("FriendId")
-                        .HasColumnType("int");
-
-                    b.HasKey("AccountId", "FriendId");
-
-                    b.HasIndex("FriendId");
-
-                    b.ToTable("UserFriends");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -547,36 +512,6 @@ namespace Rise.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Technician");
-                });
-
-            modelBuilder.Entity("UserFriendRequests", b =>
-                {
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
-
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("FriendRequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("UserFriends", b =>
-                {
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
-
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("FriendId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Rise.Domain.Projects.Technician", b =>
