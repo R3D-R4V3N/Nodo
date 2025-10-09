@@ -13,10 +13,14 @@ using Rise.Shared.Identity;
 
 namespace Rise.Services.Chats;
 
-public class ChatService(ApplicationDbContext dbContext, ISessionContextProvider sessionContextProvider) : IChatService
+public class ChatService(
+    ApplicationDbContext dbContext,
+    ISessionContextProvider sessionContextProvider,
+    IChatMessageDispatcher? messageDispatcher = null) : IChatService
 {
     private readonly ApplicationDbContext _dbContext = dbContext;
     private readonly ISessionContextProvider _sessionContextProvider = sessionContextProvider;
+    private readonly IChatMessageDispatcher? _messageDispatcher = messageDispatcher;
 
     public async Task<Result<ChatResponse.Index>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -98,7 +102,22 @@ public class ChatService(ApplicationDbContext dbContext, ISessionContextProvider
         _dbContext.Messages.Add(message);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(MapToDto(message, sender));
+        message.Sender = sender;
+        var dto = MapToDto(message, sender);
+
+        if (_messageDispatcher is not null)
+        {
+            try
+            {
+                await _messageDispatcher.NotifyMessageCreatedAsync(chat.Id, dto, cancellationToken);
+            }
+            catch
+            {
+                // Realtime notificaties mogen een mislukte call niet blokkeren.
+            }
+        }
+
+        return Result.Success(dto);
     }
 
     private static MessageDto MapToDto(Message message)
@@ -111,6 +130,7 @@ public class ChatService(ApplicationDbContext dbContext, ISessionContextProvider
     {
         return new MessageDto
         {
+            ChatId = message.ChatId,
             Id = message.Id,
             Content = message.Inhoud,
             Timestamp = message.CreatedAt,

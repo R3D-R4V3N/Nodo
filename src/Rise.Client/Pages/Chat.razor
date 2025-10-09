@@ -3,11 +3,14 @@
 @using System.Globalization
 @using System.Linq
 @using System.Security.Claims
+@using System.Threading
+@using Microsoft.AspNetCore.SignalR.Client
 @using Rise.Client.Chats
 @using Rise.Client.Components.Chat
 @using Rise.Shared.Chat
 @using Rise.Shared.Chats
 @layout ChatLayout
+@implements IAsyncDisposable
 @inject IChatService ChatService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
@@ -41,6 +44,13 @@ else if (_chat is null)
 }
 else
 {
+    @if (!string.IsNullOrWhiteSpace(_connectionError))
+    {
+        <div class="px-6 py-2 text-xs text-amber-700 bg-amber-50 border-b border-amber-200">
+            @_connectionError
+        </div>
+    }
+
     <MessageList Messages="_messages"
                  TimestampText="@GetConversationDateLabel()" />
 
@@ -60,10 +70,15 @@ else
 
     private ChatDto.Index? _chat;
     private readonly List<Message> _messages = new();
+    private readonly HashSet<int> _messageIds = new();
+    private readonly SemaphoreSlim _hubConnectionLock = new(1, 1);
+    private HubConnection? _hubConnection;
+    private int? _joinedChatId;
     private string? _currentAccountId;
     private string? _currentUserName;
     private string? _draft = string.Empty;
     private string? _errorMessage;
+    private string? _connectionError;
     private string? _loadError;
     private bool _isLoading = true;
     private bool _isSending;
@@ -96,15 +111,24 @@ else
             _messages.AddRange(_chat.messages
                 .OrderBy(m => m.Timestamp)
                 .Select(MapToMessage));
+
+            _messageIds.Clear();
+            foreach (var message in _chat.messages)
+            {
+                _messageIds.Add(message.Id);
+            }
         }
         else
         {
             _chat = null;
             _messages.Clear();
+            _messageIds.Clear();
             _loadError = result.Errors.FirstOrDefault() ?? "Het gesprek kon niet geladen worden.";
         }
 
         _isLoading = false;
+
+        await EnsureHubConnectionAsync();
     }
 
     private async Task SendMessageAsync(string text)
@@ -133,9 +157,7 @@ else
                 return;
             }
 
-            _chat.messages.Add(result.Value);
-            var mapped = MapToMessage(result.Value);
-            _messages.Add(mapped);
+            TryAddMessage(result.Value);
         }
         finally
         {
@@ -149,6 +171,154 @@ else
         _errorMessage = "Spraakberichten worden nog niet ondersteund.";
         StateHasChanged();
         return Task.CompletedTask;
+    }
+
+    private async Task EnsureHubConnectionAsync()
+    {
+        await _hubConnectionLock.WaitAsync();
+        try
+        {
+            if (_hubConnection is null)
+            {
+                _hubConnection = new HubConnectionBuilder()
+                    .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+                    .WithAutomaticReconnect()
+                    .Build();
+
+                _hubConnection.On<MessageDto>("MessageCreated", dto =>
+                    InvokeAsync(() => ProcessIncomingMessage(dto)));
+
+                _hubConnection.Reconnecting += error => InvokeAsync(() =>
+                {
+                    _connectionError = "Realtime verbinding wordt hersteld…";
+                    StateHasChanged();
+                });
+
+                _hubConnection.Reconnected += _ => InvokeAsync(async () =>
+                {
+                    _connectionError = null;
+                    await JoinCurrentChatAfterReconnectAsync();
+                    StateHasChanged();
+                });
+
+                _hubConnection.Closed += error => InvokeAsync(() =>
+                {
+                    _joinedChatId = null;
+                    _connectionError = "Realtime verbinding werd verbroken. Vernieuw de pagina om opnieuw te verbinden.";
+                    StateHasChanged();
+                });
+            }
+
+            if (_hubConnection.State == HubConnectionState.Disconnected)
+            {
+                await _hubConnection.StartAsync();
+            }
+
+            if (_hubConnection.State != HubConnectionState.Connected)
+            {
+                return;
+            }
+
+            await JoinCurrentChatCoreAsync();
+        }
+        catch (Exception ex)
+        {
+            _connectionError = $"Realtime verbinding mislukt: {ex.Message}";
+        }
+        finally
+        {
+            _hubConnectionLock.Release();
+        }
+    }
+
+    private void ProcessIncomingMessage(MessageDto dto)
+    {
+        if (_chat is null || dto.ChatId != _chat.chatId)
+        {
+            return;
+        }
+
+        if (TryAddMessage(dto))
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task JoinCurrentChatAfterReconnectAsync()
+    {
+        await _hubConnectionLock.WaitAsync();
+        try
+        {
+            if (_hubConnection?.State == HubConnectionState.Connected)
+            {
+                await JoinCurrentChatCoreAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            _connectionError = $"Realtime verbinding mislukt: {ex.Message}";
+        }
+        finally
+        {
+            _hubConnectionLock.Release();
+        }
+    }
+
+    private async Task JoinCurrentChatCoreAsync()
+    {
+        if (_hubConnection is null)
+        {
+            return;
+        }
+
+        if (_chat is null)
+        {
+            if (_joinedChatId is int previousId)
+            {
+                await _hubConnection.SendAsync("LeaveChat", previousId);
+                _joinedChatId = null;
+            }
+
+            return;
+        }
+
+        if (_joinedChatId == _chat.chatId)
+        {
+            return;
+        }
+
+        if (_joinedChatId is int oldChatId)
+        {
+            await _hubConnection.SendAsync("LeaveChat", oldChatId);
+        }
+
+        await _hubConnection.SendAsync("JoinChat", _chat.chatId);
+        _joinedChatId = _chat.chatId;
+        _connectionError = null;
+    }
+
+    private bool TryAddMessage(MessageDto dto)
+    {
+        if (_chat is null)
+        {
+            return false;
+        }
+
+        if (!_messageIds.Add(dto.Id))
+        {
+            return false;
+        }
+
+        _chat.messages.Add(dto);
+        _chat.messages = _chat.messages
+            .OrderBy(m => m.Timestamp)
+            .ToList();
+
+        var mapped = MapToMessage(dto);
+        _messages.Add(mapped);
+        _messages.Sort((a, b) => Nullable.Compare(a.Timestamp, b.Timestamp));
+
+        return true;
     }
 
     private Message MapToMessage(MessageDto dto)
@@ -233,5 +403,15 @@ else
     {
         // TODO: Hook up with actual alert functionality.
         return Task.CompletedTask;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
+
+        _hubConnectionLock.Dispose();
     }
 }
