@@ -1,3 +1,5 @@
+using Rise.Domain.Users;
+
 namespace Rise.Domain.Chats;
 
 public class Message : Entity
@@ -10,8 +12,9 @@ public class Message : Entity
         set => _inhoud = Guard.Against.NullOrWhiteSpace(value);
     }
 
-    public int ChatId { get; set; }        // Foreign key
+    public int ChatId { get; set; }
     public Chat Chat { get; set; } = null!;
-    
 
+    public int SenderId { get; set; }
+    public ApplicationUser Sender { get; set; } = null!;
 }

@@ -44,7 +44,11 @@
                     <ul>
                         @foreach (var message in chat.messages)
                         {
-                            <li>@message.Content (@message.Timestamp.ToLocalTime().ToString("HH:mm"))</li>
+                            <li>
+                                <span class="font-semibold">@message.SenderName:</span>
+                                @message.Content
+                                <span class="text-sm text-gray-500">(@message.Timestamp.ToLocalTime().ToString("HH:mm"))</span>
+                            </li>
                         }
                     </ul>
                 </div>

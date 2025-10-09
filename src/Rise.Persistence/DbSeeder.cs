@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
 using Rise.Domain.Products;
 using Rise.Domain.Projects;
+using Rise.Domain.Users;
 
 namespace Rise.Persistence;
 /// <summary>
@@ -89,7 +90,16 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         dbContext.Technicians.AddRange(
             new Technician("Tech 1", "Awesome", technicianAccount1.Id),
             new Technician("Tech 2", "Less Awesome", technicianAccount2.Id));
-        
+
+        var applicationUsers = new List<ApplicationUser>
+        {
+            new(technicianAccount1.Id, "Max", "Van Dijk", "Ervaren technieker gespecialiseerd in hardware.", UserType.Supervisor),
+            new(technicianAccount2.Id, "Sofie", "Peeters", "Technieker met focus op netwerkoplossingen.", UserType.Supervisor),
+            new(user.Id, "Amber", "Janssens", "Medewerker die ondersteuning zoekt voor haar apparatuur.", UserType.Regular)
+        };
+
+        dbContext.ApplicationUsers.AddRange(applicationUsers);
+
         await dbContext.SaveChangesAsync();
     }
     
@@ -155,13 +165,20 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         if (dbContext.Chats.Any())
             return;
 
-        // voorbeeld: haal bestaande gebruikers op
-        var users = await dbContext.Users.ToListAsync();
-        var technicians = await dbContext.Technicians.ToListAsync();
+        var supervisors = await dbContext.ApplicationUsers
+            .Where(u => u.UserType == UserType.Supervisor)
+            .ToListAsync();
 
-        // beveiliging: enkel uitvoeren als er minstens één technieker is
-        if (!technicians.Any())
+        var regularUsers = await dbContext.ApplicationUsers
+            .Where(u => u.UserType == UserType.Regular)
+            .ToListAsync();
+
+        if (!supervisors.Any() || !regularUsers.Any())
             return;
+
+        var customer = regularUsers.First();
+        var primaryTechnician = supervisors.First();
+        var secondaryTechnician = supervisors.Skip(1).FirstOrDefault() ?? primaryTechnician;
 
         var chat1 = new Chat();
         var chat2 = new Chat();
@@ -172,10 +189,10 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         // voeg berichten toe
         var messages = new List<Message>
         {
-            new Message { Inhoud = "Hallo, ik heb een probleem met mijn laptop.", ChatId = chat1.Id },
-            new Message { Inhoud = "Ik kijk er meteen naar!", ChatId = chat1.Id },
-            new Message { Inhoud = "De printer werkt weer, bedankt!", ChatId = chat2.Id },
-            new Message { Inhoud = "Graag gedaan!", ChatId = chat2.Id },
+            new Message { Inhoud = "Hallo, ik heb een probleem met mijn laptop.", ChatId = chat1.Id, SenderId = customer.Id },
+            new Message { Inhoud = "Ik kijk er meteen naar!", ChatId = chat1.Id, SenderId = primaryTechnician.Id },
+            new Message { Inhoud = "De printer werkt weer, bedankt!", ChatId = chat2.Id, SenderId = customer.Id },
+            new Message { Inhoud = "Graag gedaan!", ChatId = chat2.Id, SenderId = secondaryTechnician.Id },
         };
 
         dbContext.Messages.AddRange(messages);
@@ -192,14 +209,27 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         if (!chats.Any())
             return;
 
+        var supervisors = await dbContext.ApplicationUsers
+            .Where(u => u.UserType == UserType.Supervisor)
+            .ToListAsync();
+
+        var customer = await dbContext.ApplicationUsers
+            .FirstOrDefaultAsync(u => u.UserType == UserType.Regular);
+
+        if (!supervisors.Any() || customer is null)
+            return;
+
+        var primaryTechnician = supervisors.First();
+        var secondaryTechnician = supervisors.Skip(1).FirstOrDefault() ?? primaryTechnician;
+
         // voorbeeldberichten per chat
         var messages = new List<Message>
         {
-            new Message { Inhoud = "Hoi, hoe gaat het met het project?", ChatId = chats[0].Id },
-            new Message { Inhoud = "Prima, ik heb net de laatste bug opgelost!", ChatId = chats[0].Id },
+            new Message { Inhoud = "Hoi, hoe gaat het met het project?", ChatId = chats[0].Id, SenderId = customer.Id },
+            new Message { Inhoud = "Prima, ik heb net de laatste bug opgelost!", ChatId = chats[0].Id, SenderId = primaryTechnician.Id },
 
-            new Message { Inhoud = "De server lijkt traag te reageren vandaag.", ChatId = chats[^1].Id },
-            new Message { Inhoud = "Ik zal even de logs checken, geef me 5 minuten.", ChatId = chats[^1].Id }
+            new Message { Inhoud = "De server lijkt traag te reageren vandaag.", ChatId = chats[^1].Id, SenderId = customer.Id },
+            new Message { Inhoud = "Ik zal even de logs checken, geef me 5 minuten.", ChatId = chats[^1].Id, SenderId = secondaryTechnician.Id }
         };
 
         dbContext.Messages.AddRange(messages);
