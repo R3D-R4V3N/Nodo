@@ -299,8 +299,10 @@ https://hogent-web.github.io/csharp/
 Once the backend is running (for example by executing `dotnet run --project src/Rise.Server/Rise.Server.csproj`), you can exercise the friendship endpoints with either cURL or the built-in HTTP file under `src/Rise.Server/Rise.Server.http`.
 
 1. Authenticate with one of the seeded users listed above (for instance `user@example.com` / `A1b2C3!`). This establishes the authentication cookie required by the endpoints.
-2. Send a `POST` request to `/api/friends/{friendId}` to add a friend.
-3. Send a `DELETE` request to `/api/friends/{friendId}` to remove the friendship.
+2. Retrieve the current friends, incoming requests, and suggestions with a `GET` request to `/api/friends`.
+3. Send a `POST` request to `/api/friends/{friendId}` to add a friend.
+4. Call `GET /api/friends` again to verify the change.
+5. Send a `DELETE` request to `/api/friends/{friendId}` to remove the friendship.
 
 When using Visual Studio, Rider, or VS Code, open the `Rise.Server.http` file and execute the requests in order—cookies are persisted automatically between requests. From a terminal, the same flow can be triggered with cURL:
 
@@ -311,11 +313,21 @@ curl -i -c cookies.txt -X POST \
   -d '{"email":"user@example.com","password":"A1b2C3!"}' \
   http://localhost:5109/api/identity/accounts/login
 
-# 2. Add a friend (replace 2 with the actual user id you want to befriend)
-curl -b cookies.txt -X POST http://localhost:5109/api/friends/2
+# 2. Fetch the current friends, requests, and suggestions
+curl -b cookies.txt http://localhost:5109/api/friends
 
-# 3. Remove the friend again
-curl -b cookies.txt -X DELETE http://localhost:5109/api/friends/2
+# 3. Add a friend (replace 2 with the actual user id you want to befriend)
+curl -b cookies.txt -X POST http://localhost:5109/api/friends/2 \
+  -H "Content-Type: application/json" \
+  -d '{"friendId":2}'
+
+# 4. Confirm the new friend shows up
+curl -b cookies.txt http://localhost:5109/api/friends
+
+# 5. Remove the friend again
+curl -b cookies.txt -X DELETE http://localhost:5109/api/friends/2 \
+  -H "Content-Type: application/json" \
+  -d '{"friendId":2}'
 ```
 
 The responses use the shared `Result` contract, so a `200` status with an empty body represents success while `409` and `404` indicate conflicts or missing users respectively.

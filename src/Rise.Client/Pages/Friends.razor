@@ -5,90 +5,185 @@
 
 <section class="bg-neutral-100 px-4 pt-4 pb-2">
     <FriendsTabs Selected="@_selected" OnChange="ChangeTab" />
-    <FriendSearch @bind-Value="_query" />
+    <FriendSearch @bind-Value="Query" />
 </section>
 
-<FriendList Items="@_filtered"
-            OnAccept="AcceptRequest"
-            OnReject="RejectRequest"
-            OnAdd="AddFriend"
-            OnOpenChat="OpenChat"
-            OnRemove="RemoveFriend" />
+@if (_isLoading)
+{
+    <div class="px-4 py-6 text-sm text-neutral-500">Vrienden laden...</div>
+}
+else if (!string.IsNullOrWhiteSpace(_error))
+{
+    <div class="mx-4 my-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">@_error</div>
+}
+else if (_filtered.Count == 0)
+{
+    <div class="px-4 py-6 text-sm text-neutral-500">Geen resultaten voor deze selectie.</div>
+}
+else
+{
+    <FriendList Items="@_filtered"
+                OnAccept="AcceptRequest"
+                OnReject="RejectRequest"
+                OnAdd="AddFriend"
+                OnOpenChat="OpenChat"
+                OnRemove="RemoveFriend" />
+}
 
 @code {
     private FriendState _selected = FriendState.All;
     private string? _query;
-
-    private readonly List<FriendDto> _all =
-    [
-        new() { Name = "Emma De Vries", Age = 20, AvatarUrl = "https://i.pravatar.cc/64?img=12", State = FriendState.Requests },
-        new() { Name = "Liam Janssens", Age = 21, AvatarUrl = "https://i.pravatar.cc/64?img=3",  State = FriendState.All },
-        new() { Name = "Noor Peeters", Age = 19, AvatarUrl = "https://i.pravatar.cc/64?img=5",  State = FriendState.Add },
-    ];
-
+    private readonly List<FriendDto> _all = [];
     private List<FriendDto> _filtered = [];
+    private bool _isLoading = true;
+    private string? _error;
 
-    protected override void OnInitialized()
-        => ApplyFilter();
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _isLoading = true;
+        _error = null;
+        StateHasChanged();
+
+        var result = await FriendApi.GetAsync();
+        if (result.IsSuccess && result.Value is not null)
+        {
+            _all.Clear();
+
+            foreach (var request in result.Value.Requests)
+            {
+                request.State = FriendState.Requests;
+                _all.Add(request);
+            }
+
+            foreach (var friend in result.Value.Friends)
+            {
+                friend.State = FriendState.All;
+                _all.Add(friend);
+            }
+
+            foreach (var suggestion in result.Value.Suggestions)
+            {
+                suggestion.State = FriendState.Add;
+                _all.Add(suggestion);
+            }
+
+            _error = null;
+        }
+        else
+        {
+            _all.Clear();
+            _error = result.Errors.Any()
+                ? string.Join(" ", result.Errors)
+                : result.Status == ResultStatus.Unauthorized
+                    ? "Meld je aan om je vriendenlijst te bekijken."
+                    : "Kon vrienden niet laden.";
+        }
+
+        _isLoading = false;
+        ApplyFilter();
+        StateHasChanged();
+    }
 
     private void ChangeTab(FriendState tab)
     {
         _selected = tab;
         ApplyFilter();
+        StateHasChanged();
     }
 
     private void ApplyFilter()
     {
-        IEnumerable<FriendDto> q = _all;
+        IEnumerable<FriendDto> query = _all;
 
         if (_selected != FriendState.All)
-            q = q.Where(f => f.State == _selected);
+            query = query.Where(f => f.State == _selected);
 
         if (!string.IsNullOrWhiteSpace(_query))
-            q = q.Where(f => f.Name.Contains(_query, StringComparison.OrdinalIgnoreCase));
+            query = query.Where(f => f.Name.Contains(_query, StringComparison.OrdinalIgnoreCase));
 
-        _filtered = q.ToList();
-        StateHasChanged();
+        _filtered = query.ToList();
     }
 
-    private void AcceptRequest(FriendDto f)
+    private async Task AcceptRequest(FriendDto friend)
     {
-        f.State = FriendState.All;
-        ApplyFilter();
+        var result = await FriendApi.AddAsync(friend.Id);
+        if (result.IsSuccess)
+        {
+            await LoadAsync();
+        }
+        else
+        {
+            _error = result.Errors.Any() ? string.Join(" ", result.Errors) : "Kon vriendverzoek niet accepteren.";
+            StateHasChanged();
+        }
     }
 
-    private void RejectRequest(FriendDto f)
+    private async Task RejectRequest(FriendDto friend)
     {
-        _all.Remove(f);
-        ApplyFilter();
+        var result = await FriendApi.RemoveAsync(friend.Id);
+        if (result.IsSuccess)
+        {
+            await LoadAsync();
+        }
+        else
+        {
+            _error = result.Errors.Any() ? string.Join(" ", result.Errors) : "Kon vriendverzoek niet weigeren.";
+            StateHasChanged();
+        }
     }
 
-    private void AddFriend(FriendDto f)
+    private async Task AddFriend(FriendDto friend)
     {
-        f.State = FriendState.All;
-        ApplyFilter();
+        var result = await FriendApi.AddAsync(friend.Id);
+        if (result.IsSuccess)
+        {
+            await LoadAsync();
+        }
+        else
+        {
+            _error = result.Errors.Any() ? string.Join(" ", result.Errors) : "Kon vriend niet toevoegen.";
+            StateHasChanged();
+        }
     }
 
-    private void OpenChat(FriendDto f)
-        => Nav.NavigateTo("/chat"); // later: naar conversatie-id
+    private void OpenChat(FriendDto friend)
+        => Nav.NavigateTo("/chat");
 
-    private void RemoveFriend(FriendDto f)
+    private async Task RemoveFriend(FriendDto friend)
     {
-        _all.Remove(f);
-        ApplyFilter();
+        var result = await FriendApi.RemoveAsync(friend.Id);
+        if (result.IsSuccess)
+        {
+            await LoadAsync();
+        }
+        else
+        {
+            _error = result.Errors.Any() ? string.Join(" ", result.Errors) : "Kon vriend niet verwijderen.";
+            StateHasChanged();
+        }
     }
 
     private void GoBack()
     {
-        Nav.NavigateTo("/"); // terug naar startpagina of waar je wil
+        Nav.NavigateTo("/");
     }
-
-    [Inject] private NavigationManager Nav { get; set; } = default!;
 
     private string? Query
     {
         get => _query;
-        set { _query = value; ApplyFilter(); }
+        set
+        {
+            _query = value;
+            ApplyFilter();
+            StateHasChanged();
+        }
     }
 
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+    [Inject] private IFriendApi FriendApi { get; set; } = default!;
 }

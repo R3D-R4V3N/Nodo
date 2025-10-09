@@ -9,12 +9,21 @@ Content-Type: application/json
   "password": "A1b2C3!"
 }
 
-### Send a friend request to user with ID 2
+### Retrieve the authenticated user's friends, requests and suggestions
+GET {{Rise.Server_HostAddress}}/api/friends
+
+### Add user with ID 2 as a friend
 POST {{Rise.Server_HostAddress}}/api/friends/2
 Content-Type: application/json
 
-{}
+{
+  "friendId": 2
+}
 
 ### Remove an existing friend with ID 2
 DELETE {{Rise.Server_HostAddress}}/api/friends/2
+Content-Type: application/json
 
+{
+  "friendId": 2
+}

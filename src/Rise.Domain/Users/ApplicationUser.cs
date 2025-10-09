@@ -56,14 +56,19 @@ namespace Rise.Domain.Users
 
         public Result RemoveFriend(ApplicationUser friend)
         {
-            bool isRemoved = friends.Remove(friend);
-            if (!isRemoved)
+            var removedFriend = friends.Remove(friend);
+            var removedOutgoingRequest = friendRequests.Remove(friend);
+            var removedIncomingRequest = friend.friendRequests.Remove(this);
+
+            if (!removedFriend)
+            {
+                if (removedOutgoingRequest || removedIncomingRequest)
+                    return Result.Success();
+
                 return Result.Conflict($"User wasn't friends with {friend}");
+            }
 
             friend.friends.Remove(this);
-
-            friendRequests.Remove(friend);
-            friend.friendRequests.Remove(this);
 
             return Result.Success();
         }

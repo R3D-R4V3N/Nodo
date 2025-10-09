@@ -2,9 +2,16 @@
     <img src="@Friend.AvatarUrl" alt="@Friend.Name" class="h-10 w-10 rounded-full ring-2 ring-white/60" />
     <div class="flex-1 min-w-0">
         <p class="text-sm font-medium truncate">@Friend.Name</p>
-        <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-md bg-[#e7f5ec] text-[#127646] border border-[#cfead9]">
-            @Friend.Age jaar
-        </span>
+        @if (!string.IsNullOrWhiteSpace(Friend.Biography))
+        {
+            <p class="mt-1 text-[11px] text-neutral-500 truncate">@Friend.Biography</p>
+        }
+        else if (Friend.Age is { } age)
+        {
+            <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-md bg-[#e7f5ec] text-[#127646] border border-[#cfead9]">
+                @age jaar
+            </span>
+        }
     </div>
 
     <div class="flex space-x-2">
