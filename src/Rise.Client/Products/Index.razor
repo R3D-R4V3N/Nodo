@@ -29,13 +29,13 @@ else
     </thead>
     <tbody>
         @foreach (var product in products)
-        {
-            <tr @key="product.Id">
+            {
+                <tr @key="product.Id">
                     <td>@product.Id</td>
                     <td>@product.Name</td>
                     <td>@product.Description</td>
                 </tr>
-        }
+            }
         </tbody>
     </table>
 }

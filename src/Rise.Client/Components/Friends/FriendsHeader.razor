@@ -1,0 +1,12 @@
+<div class="relative flex items-center justify-center bg-[#127646] rounded-b-3xl text-white px-4 py-8">
+    <button class="absolute left-4 p-2 rounded-full hover:bg-white/10" aria-label="Terug" @onclick="OnBack">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+    </button>
+    <h1 class="text-base font-semibold leading-5 truncate text-center">Vrienden</h1>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnBack { get; set; }
+}

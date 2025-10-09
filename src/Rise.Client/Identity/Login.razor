@@ -11,10 +11,10 @@
                     <div class="cel"><strong>Type</strong></div>
                     <div class="cel"><strong>Value</strong></div>
                     @foreach (var claim in authContext.User.Claims)
-                {
-                    <div class="cel">@claim.Type</div>
-                    <div class="cel">@claim.Value</div>
-                }
+                    {
+                        <div class="cel">@claim.Type</div>
+                        <div class="cel">@claim.Value</div>
+                    }
                 </div>
             </div>
         </div>
@@ -22,9 +22,9 @@
     <NotAuthorized>
         <div class="container">
             @foreach (var error in _result.Errors)
-        {
-            <div class="notification is-danger">@error</div>
-        }
+            {
+                <div class="notification is-danger">@error</div>
+            }
         <div class="columns is-centered">
             <section class="column is-one-third">
                 <EditForm Model="Model" OnValidSubmit="LoginUser" Context="formContext">

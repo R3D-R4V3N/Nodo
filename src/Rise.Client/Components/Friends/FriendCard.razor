@@ -1,0 +1,56 @@
+<article class="friend-card flex items-center gap-3 bg-white rounded-2xl px-3 py-3 shadow-sm">
+    <img src="@Friend.AvatarUrl" alt="@Friend.Name" class="h-10 w-10 rounded-full ring-2 ring-white/60" />
+    <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium truncate">@Friend.Name</p>
+        <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-md bg-[#e7f5ec] text-[#127646] border border-[#cfead9]">
+            @Friend.Age jaar
+        </span>
+    </div>
+
+    <div class="flex space-x-2">
+        @if (Friend.State == FriendState.Requests)
+        {
+            <button class="h-12 w-12 grid place-items-center rounded-xl bg-[#D64541] hover:bg-[#c53e3a]" aria-label="Verwijderen"
+                    @onclick="(() => OnReject.InvokeAsync(Friend))">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="#ffffff" viewBox="0 0 256 256"><path d="M200,56V208a8,8,0,0,1-8,8H64a8,8,0,0,1-8-8V56Z" opacity="0.2"></path><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"></path></svg>
+            </button>
+            <button class="h-12 w-12 grid place-items-center rounded-xl bg-[#127646] hover:bg-[#0f613a]" aria-label="Accepteren"
+                    @onclick="(() => OnAccept.InvokeAsync(Friend))">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="#ffffff">
+                    <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+            </button>
+        }
+        else if (Friend.State == FriendState.Add)
+        {
+            <button class="h-12 w-12 grid place-items-center rounded-xl bg-[#127646] hover:bg-[#0f613a]" aria-label="Toevoegen"
+                    @onclick="(() => OnAdd.InvokeAsync(Friend))">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="#ffffff">
+                    <path d="M19 11H13V5h-2v6H5v2h6v6h2v-6h6z"/>
+                </svg>
+            </button>
+        }
+        else
+        {
+            <button class="h-12 w-12 grid place-items-center rounded-xl bg-[#127646] hover:bg-[#0f613a]" aria-label="Open chat"
+                    @onclick="(() => OnOpenChat.InvokeAsync(Friend))">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="#ffffff">
+                    <path d="M4 4h16v12H5.17L4 17.17V4zm2 2v8h12V6H6z"/>
+                </svg>
+            </button>
+            <button class="h-12 w-12 grid place-items-center rounded-xl bg-[#D64541] hover:bg-[#c53e3a]" aria-label="Verwijderen"
+                    @onclick="(() => OnRemove.InvokeAsync(Friend))">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="#ffffff" viewBox="0 0 256 256"><path d="M200,56V208a8,8,0,0,1-8,8H64a8,8,0,0,1-8-8V56Z" opacity="0.2"></path><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16Z"></path></svg>
+            </button>
+        }
+    </div>
+</article>
+
+@code {
+    [Parameter] public FriendDto Friend { get; set; } = default!;
+    [Parameter] public EventCallback<FriendDto> OnAccept { get; set; }
+    [Parameter] public EventCallback<FriendDto> OnReject { get; set; }
+    [Parameter] public EventCallback<FriendDto> OnAdd { get; set; }
+    [Parameter] public EventCallback<FriendDto> OnOpenChat { get; set; }
+    [Parameter] public EventCallback<FriendDto> OnRemove { get; set; }
+}
