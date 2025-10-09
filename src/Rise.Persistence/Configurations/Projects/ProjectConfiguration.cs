@@ -1,12 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Rise.Domain.Products;
 using Rise.Domain.Projects;
 
 namespace Rise.Persistence.Configurations.Projects;
 
 /// <summary>
-/// Specific configuration for <see cref="Product"/>.
+/// Specific configuration for <see cref="Project"/>.
 /// </summary>
 internal class ProjectConfiguration : EntityConfiguration<Project>
 {
@@ -15,7 +14,7 @@ internal class ProjectConfiguration : EntityConfiguration<Project>
         base.Configure(builder);
         builder.Property(x => x.Name).IsRequired().HasMaxLength(250);
         
-        // 1 to Many relationship with a cascade restrict behavio
+        // 1 to Many relationship with a cascade restrict behavior
         builder.HasOne(x => x.Technician)
             .WithMany(x => x.Projects)
             .OnDelete(DeleteBehavior.Restrict);
