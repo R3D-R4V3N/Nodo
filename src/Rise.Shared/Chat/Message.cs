@@ -7,5 +7,6 @@ public sealed record Message(
     string? AvatarUrl = null,
     DateTimeOffset? Timestamp = null,
     string? AudioUrl = null,
-    TimeSpan? AudioDuration = null
+    TimeSpan? AudioDuration = null,
+    string SenderName = ""
 );

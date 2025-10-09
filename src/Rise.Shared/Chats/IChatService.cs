@@ -1,10 +1,11 @@
-using Rise.Shared.Common;
-
+using System.Threading;
+using System.Threading.Tasks;
+using Ardalis.Result;
 
 namespace Rise.Shared.Chats;
 
 public interface IChatService
 {
-    Task<ChatResponse.Index?> GetAllAsync();
-
+    Task<Result<ChatResponse.Index>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<Result<MessageDto>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default);
 }

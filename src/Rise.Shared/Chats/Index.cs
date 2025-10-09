@@ -1,3 +1,5 @@
+using System;
+
 namespace Rise.Shared.Chats;
 
 public static partial class ChatResponse
@@ -8,6 +10,6 @@ public static partial class ChatResponse
 
     public class Index
     {
-        public IEnumerable<ChatDto.Index> Chats { get; set; }
+        public IEnumerable<ChatDto.Index> Chats { get; set; } = Array.Empty<ChatDto.Index>();
     }
 }

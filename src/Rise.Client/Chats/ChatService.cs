@@ -1,19 +1,24 @@
 using System.Net.Http.Json;
-using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Ardalis.Result;
 using Rise.Shared.Chats;
-using Rise.Shared.Common;
 
 namespace Rise.Client.Chats;
 
-
 public class ChatService(HttpClient httpClient) : IChatService
 {
-    public async Task<ChatResponse.Index?> GetAllAsync()
+    public async Task<Result<ChatResponse.Index>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        // Deserialiseer eerst naar Result<ChatResponse.Index>
-        var result = await httpClient.GetFromJsonAsync<Result<ChatResponse.Index>>("api/chats");
+        var result = await httpClient.GetFromJsonAsync<Result<ChatResponse.Index>>("api/chats", cancellationToken);
+        return result ?? Result.Error("Kon de chats niet laden.");
+    }
 
-        // Return de Value (de echte chats)
-        return result?.Value;
+    public async Task<Result<MessageDto>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
+    {
+        var response = await httpClient.PostAsJsonAsync($"api/chats/{request.ChatId}/messages", request, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<Result<MessageDto>>(cancellationToken: cancellationToken);
+
+        return result ?? Result.Error("Kon het serverantwoord niet verwerken.");
     }
 }

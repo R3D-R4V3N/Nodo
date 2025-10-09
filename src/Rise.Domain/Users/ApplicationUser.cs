@@ -34,6 +34,15 @@ namespace Rise.Domain.Users
         {
         }
 
+        public ApplicationUser(string accountId, string firstName, string lastName, string biography, UserType userType)
+        {
+            AccountId = Guard.Against.NullOrWhiteSpace(accountId);
+            FirstName = Guard.Against.NullOrWhiteSpace(firstName);
+            LastName = Guard.Against.NullOrWhiteSpace(lastName);
+            Biography = Guard.Against.NullOrWhiteSpace(biography);
+            UserType = userType;
+        }
+
         public Result AddFriend(ApplicationUser friend)
         {
             if (!friendRequests.Contains(friend))

@@ -1,92 +1,313 @@
 @page "/homepage"
+@attribute [Authorize]
+@using System.Globalization
+@using System.Linq
+@using System.Security.Claims
 @using Rise.Client.Chats
 @using Rise.Shared.Chats
-@using Rise.Shared.Common
 @layout MainLayout
 @inject IChatService ChatService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
 
-
-<!-- Header -->
-<div class="min-h-screen">
-    <div class="bg-[#127646] text-white px-6 py-8 pt-5 h-[20vh] rounded-b-3xl">
+<div class="min-h-screen bg-neutral-100">
+    <div class="bg-[#127646] text-white px-6 py-8 pt-5 rounded-b-3xl shadow">
         <div>
-            <h1 class="text-4xl font-normal text-center">Goeiemorgen Amber</h1>
+            <h1 class="text-4xl font-normal text-center">Goeiemorgen @_greetingName</h1>
         </div>
-        <!-- Search -->
-        <div class="mt-[4%] bg-white rounded-full flex items-center px-4 py-4 h-[50%]">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#000000" viewBox="0 0 256 256">
+        <div class="mt-6 bg-white rounded-full flex items-center px-4 py-3 text-neutral-700 shadow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
                 <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
             </svg>
-            <input type="text" placeholder="Zoek chat" class="ml-2 flex-1 outline-none text-gray-700">
+            <input type="text"
+                   placeholder="Zoek chat"
+                   class="ml-3 flex-1 outline-none text-sm placeholder-neutral-400"
+                   @bind="_searchTerm"
+                   @bind:event="oninput">
         </div>
     </div>
-    <!-- Chats -->
-    <div class="mt-[6%] h-[80vh] overflow-y-auto">
-        @* <ChatItem Name="Max Van Dijk" Message="test" Time="30m"/> *@
-        @* <ChatItem Name="Max Van Dijk" Message="test" Time="30m"/> *@
-        @* <ChatItem Name="Max Van Dijk" Message="test" Time="30m"/> *@
-        @* <ChatItem Name="Max Van Dijk" Message="test" Time="30m"/> *@
-        @* <ChatItem Name="Max Van Dijk" Message="test" Time="30m"/> *@
-        @* <ChatItem Name="Max Van Dijk" Message="test" Time="30m"/> *@
-        @* <ChatItem Name="Max Van Dijk" Message="test" Time="30m"/> *@
-        @* <ChatItem Name="Max Van Dijk" Message="test" Time="30m"/> *@
-        
-        @if (Chats == null)
-        {
-            <p>Laden...</p>
-        }
-        else
-        {
-            @foreach (var chat in Chats)
-            {
-                <div class="chat-block border p-2 mb-2">
-                    <strong>Chat @chat.chatId</strong>
-                    <ul>
-                        @foreach (var message in chat.messages)
+
+    <div class="mx-auto mt-6 flex flex-col gap-6 px-4 pb-10 lg:px-12">
+        <div class="grid gap-6 lg:grid-cols-[320px,1fr]">
+            <aside class="bg-white rounded-3xl shadow p-4 flex flex-col h-[70vh]">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-semibold text-neutral-700">Chats</h2>
+                    @if (!_isLoading && Chats.Count > 0)
+                    {
+                        <span class="text-xs text-neutral-400">@Chats.Count gesprekken</span>
+                    }
+                </div>
+
+                @if (_isLoading)
+                {
+                    <p class="text-sm text-neutral-500">Chats laden...</p>
+                }
+                else if (!string.IsNullOrWhiteSpace(_loadError))
+                {
+                    <p class="text-sm text-red-600">@_loadError</p>
+                }
+                else if (FilteredChats.Count == 0)
+                {
+                    <p class="text-sm text-neutral-500">Er zijn nog geen chats.</p>
+                }
+                else
+                {
+                    <ul class="space-y-2 overflow-y-auto pr-1">
+                        @foreach (var chat in FilteredChats)
                         {
-                            <li>@message.Content (@message.Timestamp.ToLocalTime().ToString("HH:mm"))</li>
+                            var isActive = SelectedChat?.chatId == chat.chatId;
+                            <li>
+                                <button type="button"
+                                        class="@GetChatItemClasses(isActive)"
+                                        @onclick="() => SelectChat(chat)">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <span class="font-semibold truncate">@GetChatTitle(chat)</span>
+                                        <span class="text-[11px] text-neutral-400">@GetLastActivity(chat)</span>
+                                    </div>
+                                    <p class="mt-1 text-xs truncate @GetPreviewTextColor(isActive)">@GetLastMessagePreview(chat)</p>
+                                </button>
+                            </li>
                         }
                     </ul>
-                </div>
-            }
-        }
-        
+                }
+            </aside>
+
+            <section class="bg-white rounded-3xl shadow flex flex-col h-[70vh] overflow-hidden">
+                @if (SelectedChat is null)
+                {
+                    <div class="m-auto text-center text-neutral-500 px-8">
+                        <p class="text-sm">Selecteer een chat om het gesprek te bekijken.</p>
+                    </div>
+                }
+                else
+                {
+                    <header class="border-b border-neutral-200 px-6 py-4">
+                        <h2 class="text-lg font-semibold text-neutral-800">@GetChatTitle(SelectedChat)</h2>
+                        <p class="text-xs text-neutral-500">Laatste activiteit @GetLastActivity(SelectedChat)</p>
+                    </header>
+
+                    <MessageList Messages="SelectedMessages" TimestampText="@GetConversationDateLabel(SelectedChat)" />
+
+                    <div class="border-t border-neutral-200">
+                        <ChatInput @bind-Value="_draft"
+                                   OnSend="SendMessageAsync" />
+                        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+                        {
+                            <p class="px-6 pb-3 text-xs text-red-600">@_errorMessage</p>
+                        }
+                    </div>
+                }
+            </section>
+        </div>
     </div>
-    <!-- NavBar -->   
-@* <div class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#127646] rounded-full flex items-center justify-between px-4 py-2 w-72 shadow-lg"> *@
-@*     <!-- Chat icoon --> *@
-@*     <div class="bg-[#ffffff] rounded-full p-3"> *@
-@*         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#729788" viewBox="0 0 256 256"> *@
-@*             <path d="M128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Z"></path> *@
-@*         </svg> *@
-@*     </div> *@
-@* *@
-@*     <!-- Kalender icoon --> *@
-@*     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#729788" viewBox="0 0 256 256"> *@
-@*         <path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Zm-68-76a12,12,0,1,1-12-12A12,12,0,0,1,140,132Zm44,0a12,12,0,1,1-12-12A12,12,0,0,1,184,132ZM96,172a12,12,0,1,1-12-12A12,12,0,0,1,96,172Zm44,0a12,12,0,1,1-12-12A12,12,0,0,1,140,172Zm44,0a12,12,0,1,1-12-12A12,12,0,0,1,184,172Z"></path> *@
-@*     </svg> *@
-@* *@
-@*     <!-- Instellingen icoon --> *@
-@*     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#729788" viewBox="0 0 256 256"> *@
-@*         <path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm109.94-52.79a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A112.1,112.1,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.62a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21Zm-15,34.91-28.57,16.25a8,8,0,0,0-3,3c-.58,1-1.19,2.06-1.81,3.06a7.94,7.94,0,0,0-1.22,4.21l-.15,32.25a95.89,95.89,0,0,1-25.37,14.3L134,199.13a8,8,0,0,0-3.91-1h-.19c-1.21,0-2.43,0-3.64,0a8.08,8.08,0,0,0-4.1,1l-28.84,16.1A96,96,0,0,1,67.88,201l-.11-32.2a8,8,0,0,0-1.22-4.22c-.62-1-1.23-2-1.8-3.06a8.09,8.09,0,0,0-3-3.06l-28.6-16.29a90.49,90.49,0,0,1,0-28.26L61.67,97.63a8,8,0,0,0,3-3c.58-1,1.19-2.06,1.81-3.06a7.94,7.94,0,0,0,1.22-4.21l.15-32.25a95.89,95.89,0,0,1,25.37-14.3L122,56.87a8,8,0,0,0,4.1,1c1.21,0,2.43,0,3.64,0a8.08,8.08,0,0,0,4.1-1l28.84-16.1A96,96,0,0,1,188.12,55l.11,32.2a8,8,0,0,0,1.22,4.22c.62,1,1.23,2,1.8,3.06a8.09,8.09,0,0,0,3,3.06l28.6,16.29A90.49,90.49,0,0,1,222.9,142.12Z"></path> *@
-@*     </svg> *@
-@* *@
-@*     <!-- Profielfoto --> *@
-@*     <img src="https://images.unsplash.com/photo-1502685104226-ee32379fefbe?w=100"  *@
-@*          alt="Profile"  *@
-@*          class="w-10 h-10 rounded-full object-cover border-2 border-white ml-2"> *@
-@* </div> *@
 </div>
 
-
 @code {
-    private List<ChatDto.Index>? Chats;
-    private bool IsLoading = true;
+    private readonly List<ChatDto.Index> Chats = new();
+    private ChatDto.Index? SelectedChat;
+    private List<Message> SelectedMessages = new();
+    private List<ChatDto.Index> FilteredChats => string.IsNullOrWhiteSpace(_searchTerm)
+        ? Chats
+        : Chats
+            .Where(c => GetChatTitle(c).Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)
+                        || c.messages.Any(m => m.Content.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+
+    private string? _currentAccountId;
+    private string? _currentUserName;
+    private string _greetingName = "gebruiker";
+    private bool _isLoading = true;
+    private string? _loadError;
+    private string? _errorMessage;
+    private string? _draft = string.Empty;
+    private string? _searchTerm;
+    private bool _isSending;
 
     protected override async Task OnInitializedAsync()
     {
-        var data = await ChatService.GetAllAsync();
-        Chats = data?.Chats?.ToList();
-       
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user?.Identity?.IsAuthenticated != true)
+        {
+            NavigationManager.NavigateTo("/login", true);
+            return;
+        }
+
+        _currentAccountId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _currentUserName = user.Identity?.Name;
+        _greetingName = DetermineGreetingNameFromIdentity();
+
+        var result = await ChatService.GetAllAsync();
+
+        if (result.IsSuccess && result.Value is not null)
+        {
+            Chats.Clear();
+            Chats.AddRange(result.Value.Chats ?? Array.Empty<ChatDto.Index>());
+            UpdateGreetingNameFromChats();
+
+            if (Chats.Count > 0)
+            {
+                SelectChat(Chats[0]);
+            }
+        }
+        else
+        {
+            _loadError = result.Errors.FirstOrDefault() ?? "De chats konden niet geladen worden.";
+        }
+
+        _isLoading = false;
+    }
+
+    private void SelectChat(ChatDto.Index chat)
+    {
+        SelectedChat = chat;
+        SelectedMessages = chat.messages
+            .OrderBy(m => m.Timestamp)
+            .Select(MapToMessage)
+            .ToList();
+        _errorMessage = null;
+        _draft = string.Empty;
+    }
+
+    private async Task SendMessageAsync(string text)
+    {
+        if (SelectedChat is null || _isSending || string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        _isSending = true;
+        _errorMessage = null;
+
+        try
+        {
+            var request = new ChatRequest.CreateMessage
+            {
+                ChatId = SelectedChat.chatId,
+                Content = text
+            };
+
+            var result = await ChatService.CreateMessageAsync(request);
+
+            if (!result.IsSuccess || result.Value is null)
+            {
+                _errorMessage = result.Errors.FirstOrDefault() ?? "Het bericht kon niet verzonden worden.";
+                return;
+            }
+
+            SelectedChat.messages.Add(result.Value);
+            var mapped = MapToMessage(result.Value);
+            SelectedMessages.Add(mapped);
+        }
+        finally
+        {
+            _isSending = false;
+            StateHasChanged();
+        }
+    }
+
+    private Message MapToMessage(MessageDto dto)
+    {
+        var isOutgoing = !string.IsNullOrWhiteSpace(_currentAccountId)
+            && string.Equals(dto.SenderAccountId, _currentAccountId, StringComparison.Ordinal);
+
+        return new Message(
+            dto.Id.ToString(CultureInfo.InvariantCulture),
+            dto.Content,
+            isOutgoing,
+            AvatarUrl: null,
+            Timestamp: dto.Timestamp,
+            AudioUrl: null,
+            AudioDuration: null,
+            SenderName: dto.SenderName);
+    }
+
+    private string GetChatTitle(ChatDto.Index chat)
+    {
+        var participantNames = chat.messages
+            .Where(m => !string.IsNullOrWhiteSpace(m.SenderName)
+                        && !string.Equals(m.SenderAccountId, _currentAccountId, StringComparison.Ordinal))
+            .Select(m => m.SenderName)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (participantNames.Count == 0)
+        {
+            return SelectedChat == chat && !string.IsNullOrWhiteSpace(_greetingName)
+                ? _greetingName
+                : $"Chat {chat.chatId}";
+        }
+
+        return participantNames.Count == 1
+            ? participantNames[0]
+            : string.Join(", ", participantNames);
+    }
+
+    private static string GetLastMessagePreview(ChatDto.Index chat)
+    {
+        var last = chat.messages
+            .OrderBy(m => m.Timestamp)
+            .LastOrDefault();
+
+        if (last is null || string.IsNullOrWhiteSpace(last.Content))
+        {
+            return "Nog geen berichten";
+        }
+
+        var preview = last.Content.Trim();
+        return preview.Length <= 80 ? preview : string.Concat(preview.AsSpan(0, 80), "…");
+    }
+
+    private static string GetLastActivity(ChatDto.Index chat)
+    {
+        var last = chat.messages
+            .OrderBy(m => m.Timestamp)
+            .LastOrDefault();
+
+        return last?.Timestamp.ToLocalTime().ToString("HH:mm") ?? "-";
+    }
+
+    private static string GetConversationDateLabel(ChatDto.Index chat)
+    {
+        var first = chat.messages
+            .OrderBy(m => m.Timestamp)
+            .FirstOrDefault();
+
+        return first?.Timestamp.ToLocalTime().ToString("d MMM yyyy", CultureInfo.GetCultureInfo("nl-BE")) ?? string.Empty;
+    }
+
+    private static string GetChatItemClasses(bool isActive) => isActive
+        ? "w-full text-left rounded-2xl bg-[#127646] text-white px-4 py-3 shadow transition"
+        : "w-full text-left rounded-2xl bg-neutral-100 hover:bg-neutral-200 px-4 py-3 text-neutral-700 transition";
+
+    private static string GetPreviewTextColor(bool isActive) => isActive ? "text-white/80" : "text-neutral-500";
+
+    private string DetermineGreetingNameFromIdentity()
+    {
+        if (!string.IsNullOrWhiteSpace(_currentUserName))
+        {
+            var atIndex = _currentUserName.IndexOf('@');
+            return atIndex > 0 ? _currentUserName[..atIndex] : _currentUserName;
+        }
+
+        return "gebruiker";
+    }
+
+    private void UpdateGreetingNameFromChats()
+    {
+        if (string.IsNullOrWhiteSpace(_currentAccountId))
+        {
+            return;
+        }
+
+        var ownMessage = Chats
+            .SelectMany(c => c.messages)
+            .FirstOrDefault(m => string.Equals(m.SenderAccountId, _currentAccountId, StringComparison.Ordinal));
+
+        if (ownMessage is not null && !string.IsNullOrWhiteSpace(ownMessage.SenderName))
+        {
+            _greetingName = ownMessage.SenderName.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? _greetingName;
+        }
     }
 }

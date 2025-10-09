@@ -9,11 +9,18 @@
 
     @foreach (var m in Messages)
     {
-        <MessageBubble Text="@m.Text"
-                       IsOutgoing="@m.IsOutgoing"
-                       AvatarUrl="@(m.IsOutgoing ? null : m.AvatarUrl)"
-                       AudioUrl="@m.AudioUrl"
-                       AudioDuration="@m.AudioDuration" />
+        <div class="space-y-1">
+            @if (!string.IsNullOrWhiteSpace(m.SenderName))
+            {
+                <p class="text-[10px] uppercase tracking-wide text-neutral-500 @(m.IsOutgoing ? "text-right" : string.Empty)">@m.SenderName</p>
+            }
+
+            <MessageBubble Text="@m.Text"
+                           IsOutgoing="@m.IsOutgoing"
+                           AvatarUrl="@(m.IsOutgoing ? null : m.AvatarUrl)"
+                           AudioUrl="@m.AudioUrl"
+                           AudioDuration="@m.AudioDuration" />
+        </div>
     }
 </section>
 
