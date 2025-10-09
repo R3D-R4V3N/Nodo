@@ -36,14 +36,19 @@ namespace Rise.Domain.Users
 
         public Result AddFriend(ApplicationUser friend)
         {
-            if (!friendRequests.Contains(friend))
-                return Result.Conflict($"Can't add {friend} without a request first");
+            if (friend is null)
+                return Result.Invalid("Friend is required");
+
+            if (ReferenceEquals(this, friend))
+                return Result.Invalid("A user cannot add themselves as a friend.");
 
             bool isAdded = friends.Add(friend);
             if (!isAdded)
                 return Result.Conflict($"User is already friends with {friend}");
 
             friendRequests.Remove(friend);
+            friend.friendRequests.Remove(this);
+
             friend.friends.Add(this);
 
             return Result.Success();
@@ -56,6 +61,9 @@ namespace Rise.Domain.Users
                 return Result.Conflict($"User wasn't friends with {friend}");
 
             friend.friends.Remove(this);
+
+            friendRequests.Remove(friend);
+            friend.friendRequests.Remove(this);
 
             return Result.Success();
         }
