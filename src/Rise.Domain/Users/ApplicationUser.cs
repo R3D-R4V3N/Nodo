@@ -1,6 +1,7 @@
 ﻿using Ardalis.Result;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,6 +35,7 @@ namespace Rise.Domain.Users
         {
         }
 
+        [SetsRequiredMembers]
         public ApplicationUser(string accountId, string firstName, string lastName, string biography, UserType userType)
         {
             AccountId = Guard.Against.NullOrWhiteSpace(accountId);
