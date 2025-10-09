@@ -1,6 +1,20 @@
 @Rise.Server_HostAddress = http://localhost:5109
 
-GET {{Rise.Server_HostAddress}}/weatherforecast/
-Accept: application/json
+### Authenticate with a test user (stores auth cookie in the HTTP client)
+POST {{Rise.Server_HostAddress}}/api/identity/accounts/login
+Content-Type: application/json
 
-###
+{
+  "email": "user@example.com",
+  "password": "A1b2C3!"
+}
+
+### Send a friend request to user with ID 2
+POST {{Rise.Server_HostAddress}}/api/friends/2
+Content-Type: application/json
+
+{}
+
+### Remove an existing friend with ID 2
+DELETE {{Rise.Server_HostAddress}}/api/friends/2
+
