@@ -32,7 +32,7 @@
             .Build();
 
         // Ontvangen berichten
-        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        hubConnection.On<string, string, string>("ReceiveMessage", (_, user, message) =>
         {
             messages.Add($"{user}: {message}");
             InvokeAsync(StateHasChanged);
@@ -46,7 +46,7 @@
     {
         if (hubConnection is not null && !string.IsNullOrWhiteSpace(draft))
         {
-            await hubConnection.SendAsync("SendMessage", "TestUser", draft);
+            await hubConnection.SendAsync("SendMessage", Guid.NewGuid().ToString("N"), "TestUser", draft);
             draft = string.Empty;
         }
     }

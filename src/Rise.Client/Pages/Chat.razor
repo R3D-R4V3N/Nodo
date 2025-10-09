@@ -20,6 +20,9 @@
 
 @code {
     private readonly List<Message> _messages = new();
+    private readonly object _messageSync = new();
+    private readonly object _messageIdSync = new();
+    private readonly HashSet<string> _processedMessageIds = new();
 
     private readonly string[] _suggestions =
     [
@@ -50,29 +53,45 @@
             .WithAutomaticReconnect()
             .Build();
 
-        _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        _hubConnection.On<string, string, string>("ReceiveMessage", (messageId, user, message) =>
         {
+            if (!TryRegisterMessage(messageId))
+            {
+                return;
+            }
+
             var isOutgoing = string.Equals(user, CurrentUser, StringComparison.OrdinalIgnoreCase);
 
-            _messages.Add(new Message(Guid.NewGuid().ToString(), message, isOutgoing,
-                isOutgoing ? null : RemoteAvatarUrl,
-                DateTimeOffset.Now));
+            lock (_messageSync)
+            {
+                _messages.Add(new Message(messageId, message, isOutgoing,
+                    isOutgoing ? null : RemoteAvatarUrl,
+                    DateTimeOffset.Now));
+            }
 
             InvokeAsync(StateHasChanged);
         });
 
-        _hubConnection.On<string, string, double>("ReceiveVoiceMessage", (user, dataUrl, durationSeconds) =>
+        _hubConnection.On<string, string, string, double>("ReceiveVoiceMessage", (messageId, user, dataUrl, durationSeconds) =>
         {
+            if (!TryRegisterMessage(messageId))
+            {
+                return;
+            }
+
             var isOutgoing = string.Equals(user, CurrentUser, StringComparison.OrdinalIgnoreCase);
             TimeSpan? duration = double.IsFinite(durationSeconds) && durationSeconds > 0
                 ? TimeSpan.FromSeconds(durationSeconds)
                 : null;
 
-            _messages.Add(new Message(Guid.NewGuid().ToString(), string.Empty, isOutgoing,
-                isOutgoing ? null : RemoteAvatarUrl,
-                DateTimeOffset.Now,
-                dataUrl,
-                duration));
+            lock (_messageSync)
+            {
+                _messages.Add(new Message(messageId, string.Empty, isOutgoing,
+                    isOutgoing ? null : RemoteAvatarUrl,
+                    DateTimeOffset.Now,
+                    dataUrl,
+                    duration));
+            }
 
             InvokeAsync(StateHasChanged);
         });
@@ -106,9 +125,27 @@
         }
 
         var censored = Filter.Censor(text);
+        var messageId = Guid.NewGuid().ToString("N");
 
-        await _hubConnection.SendAsync("SendMessage", CurrentUser, censored);
-        _draft = string.Empty;
+        RegisterLocalMessage(new Message(
+            messageId,
+            censored,
+            true,
+            null,
+            DateTimeOffset.Now));
+
+        try
+        {
+            await _hubConnection.SendAsync("SendMessage", messageId, CurrentUser, censored);
+            _draft = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Failed to send text message: {ex}");
+            RemoveLocalMessage(messageId);
+            _draft = censored;
+            StateHasChanged();
+        }
     }
 
     private async Task SendVoiceAsync(RecordedAudio audio)
@@ -118,13 +155,90 @@
             return;
         }
 
+        var messageId = Guid.NewGuid().ToString("N");
+        var duration = double.IsFinite(audio.DurationSeconds) && audio.DurationSeconds > 0
+            ? TimeSpan.FromSeconds(audio.DurationSeconds)
+            : null;
+
+        RegisterLocalMessage(new Message(
+            messageId,
+            string.Empty,
+            true,
+            null,
+            DateTimeOffset.Now,
+            audio.DataUrl,
+            duration));
+
         try
         {
-            await _hubConnection.SendAsync("SendVoiceMessage", CurrentUser, audio.DataUrl, audio.DurationSeconds);
+            await _hubConnection.SendAsync("SendVoiceMessage", messageId, CurrentUser, audio.DataUrl, audio.DurationSeconds);
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Failed to send voice message: {ex}");
+            RemoveLocalMessage(messageId);
+        }
+    }
+
+    private void RegisterLocalMessage(Message message)
+    {
+        if (!TryRegisterMessage(message.Id))
+        {
+            return;
+        }
+
+        lock (_messageSync)
+        {
+            _messages.Add(message);
+        }
+        StateHasChanged();
+    }
+
+    private void RemoveLocalMessage(string messageId)
+    {
+        if (string.IsNullOrWhiteSpace(messageId))
+        {
+            return;
+        }
+
+        bool messageIdRemoved;
+        lock (_messageIdSync)
+        {
+            messageIdRemoved = _processedMessageIds.Remove(messageId);
+        }
+
+        if (!messageIdRemoved)
+        {
+            return;
+        }
+
+        bool removed = false;
+        lock (_messageSync)
+        {
+            var index = _messages.FindIndex(m => string.Equals(m.Id, messageId, StringComparison.Ordinal));
+            if (index >= 0)
+            {
+                _messages.RemoveAt(index);
+                removed = true;
+            }
+        }
+
+        if (removed)
+        {
+            StateHasChanged();
+        }
+    }
+
+    private bool TryRegisterMessage(string messageId)
+    {
+        if (string.IsNullOrWhiteSpace(messageId))
+        {
+            return false;
+        }
+
+        lock (_messageIdSync)
+        {
+            return _processedMessageIds.Add(messageId);
         }
     }
 
