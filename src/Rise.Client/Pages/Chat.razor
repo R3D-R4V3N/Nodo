@@ -54,6 +54,8 @@ else
     <MessageList Messages="_messages"
                  TimestampText="@GetConversationDateLabel()" />
 
+    <SuggestionChips Suggestions="_suggestions" OnPick="ApplySuggestion" />
+
     <div class="border-t border-neutral-200">
         <ChatInput @bind-Value="_draft"
                    OnSend="SendMessageAsync"
@@ -71,6 +73,16 @@ else
     private ChatDto.Index? _chat;
     private readonly List<Message> _messages = new();
     private readonly HashSet<int> _messageIds = new();
+    private readonly string[] _suggestions =
+    {
+        "Hey! Hoe gaat het vandaag?",
+        "Wat heb je gedaan vandaag?",
+        "Zullen we later bellen?",
+        "Heb je plannen voor dit weekend?",
+        "Ik ben trots op je! 💪",
+        "Wil je samen een spelletje spelen?"
+    };
+
     private readonly SemaphoreSlim _hubConnectionLock = new(1, 1);
     private HubConnection? _hubConnection;
     private int? _joinedChatId;
@@ -164,6 +176,13 @@ else
             _isSending = false;
             StateHasChanged();
         }
+    }
+
+    private Task ApplySuggestion(string text)
+    {
+        _draft = text;
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private Task HandleVoiceMessageAsync(RecordedAudio audio)
