@@ -11,4 +11,9 @@ public class Chathub : Hub
         // Stuur het bericht naar alle verbonden clients
         await Clients.All.SendAsync("ReceiveMessage", user, message);
     }
+
+    public async Task SendVoiceMessage(string user, string dataUrl, double durationSeconds)
+    {
+        await Clients.All.SendAsync("ReceiveVoiceMessage", user, dataUrl, durationSeconds);
+    }
 }
