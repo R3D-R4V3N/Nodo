@@ -14,6 +14,12 @@ public class ChatService(HttpClient httpClient) : IChatService
         return result ?? Result.Error("Kon de chats niet laden.");
     }
 
+    public async Task<Result<ChatDto.Index>> GetByIdAsync(int chatId, CancellationToken cancellationToken = default)
+    {
+        var result = await httpClient.GetFromJsonAsync<Result<ChatDto.Index>>($"api/chats/{chatId}", cancellationToken);
+        return result ?? Result.Error("Kon het gesprek niet laden.");
+    }
+
     public async Task<Result<MessageDto>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
     {
         var response = await httpClient.PostAsJsonAsync($"api/chats/{request.ChatId}/messages", request, cancellationToken);

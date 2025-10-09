@@ -40,6 +40,30 @@ public class ChatService(ApplicationDbContext dbContext, ISessionContextProvider
         });
     }
 
+    public async Task<Result<ChatDto.Index>> GetByIdAsync(int chatId, CancellationToken cancellationToken = default)
+    {
+        var chat = await _dbContext.Chats
+            .Include(c => c.Messages)
+                .ThenInclude(m => m.Sender)
+            .SingleOrDefaultAsync(c => c.Id == chatId, cancellationToken);
+
+        if (chat is null)
+        {
+            return Result.NotFound($"Chat met id '{chatId}' werd niet gevonden.");
+        }
+
+        var dto = new ChatDto.Index
+        {
+            chatId = chat.Id,
+            messages = chat.Messages
+                .OrderBy(m => m.CreatedAt)
+                .Select(MapToDto)
+                .ToList()
+        };
+
+        return Result.Success(dto);
+    }
+
     public async Task<Result<MessageDto>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
     {
         var accountId = _sessionContextProvider.User?.GetUserId();

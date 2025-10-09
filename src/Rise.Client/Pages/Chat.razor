@@ -1,126 +1,237 @@
-@page "/chat"
-@using Microsoft.AspNetCore.SignalR.Client
-@using Rise.Client.Shared
-@using Rise.Services
-@inject WoordFilter Filter
-@inject NavigationManager Nav
+@page "/chat/{ChatId:int}"
+@attribute [Authorize]
+@using System.Globalization
+@using System.Linq
+@using System.Security.Claims
+@using Rise.Client.Chats
+@using Rise.Client.Components.Chat
+@using Rise.Shared.Chat
+@using Rise.Shared.Chats
 @layout ChatLayout
-@implements IAsyncDisposable
-<ChatHeader DisplayName="Helena"
-            AvatarUrl="https://i.pravatar.cc/64?img=12"
-            StatusText="Online 11 minuten geleden"
-            OnBack="GoBack"
+@inject IChatService ChatService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+<ChatHeader DisplayName="@GetChatTitle()"
+            AvatarUrl="@GetAvatarUrl()"
+            StatusText="@GetStatusText()"
+            OnBack="NavigateBack"
             OnAlert="TriggerAlert" />
 
-<MessageList Messages="@_messages" TimestampText="Nov 30, 2023, 9:41 AM" />
+@if (_isLoading)
+{
+    <div class="flex-1 grid place-items-center bg-neutral-100">
+        <p class="text-sm text-neutral-500">Gesprek wordt geladen…</p>
+    </div>
+}
+else if (!string.IsNullOrWhiteSpace(_loadError))
+{
+    <div class="flex-1 grid place-items-center bg-neutral-100 px-6 text-center">
+        <div class="space-y-2">
+            <p class="text-sm text-red-600">@_loadError</p>
+            <button class="text-xs text-[#127646] underline" @onclick="NavigateBack">Ga terug naar overzicht</button>
+        </div>
+    </div>
+}
+else if (_chat is null)
+{
+    <div class="flex-1 grid place-items-center bg-neutral-100">
+        <p class="text-sm text-neutral-500">Dit gesprek kon niet gevonden worden.</p>
+    </div>
+}
+else
+{
+    <MessageList Messages="_messages"
+                 TimestampText="@GetConversationDateLabel()" />
 
-<SuggestionChips Suggestions="@_suggestions" OnPick="InsertSuggestion" />
-
-<ChatInput @bind-Value="_draft" OnSend="SendAsync" OnSendVoice="SendVoiceAsync" />
+    <div class="border-t border-neutral-200">
+        <ChatInput @bind-Value="_draft"
+                   OnSend="SendMessageAsync"
+                   OnSendVoice="HandleVoiceMessageAsync" />
+        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <p class="px-6 pb-3 text-xs text-red-600">@_errorMessage</p>
+        }
+    </div>
+}
 
 @code {
+    [Parameter] public int ChatId { get; set; }
+
+    private ChatDto.Index? _chat;
     private readonly List<Message> _messages = new();
+    private string? _currentAccountId;
+    private string? _currentUserName;
+    private string? _draft = string.Empty;
+    private string? _errorMessage;
+    private string? _loadError;
+    private bool _isLoading = true;
+    private bool _isSending;
 
-    private readonly string[] _suggestions =
-    [
-        "Hey! Hoe gaat het vandaag?",
-        "Wat heb je gedaan vandaag?",
-        "Zullen we later bellen?",
-        "Heb je plannen voor dit weekend?",
-        "Ik ben trots op je! 💪",
-        "Wil je samen een spelletje spelen?"
-    ];
-
-    private HubConnection? _hubConnection;
-    private const string CurrentUser = "Helena";
-    private const string RemoteAvatarUrl = "https://i.pravatar.cc/64?img=12";
-    private string _draft = string.Empty;
-
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        var hubUrl = new Uri(new Uri(Nav.BaseUri), "chathub");
+        _loadError = null;
+        _errorMessage = null;
 
-        _hubConnection = new HubConnectionBuilder()
-            .WithUrl(hubUrl)
-            .WithAutomaticReconnect()
-            .Build();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
 
-        _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        if (user?.Identity?.IsAuthenticated != true)
         {
-            var isOutgoing = string.Equals(user, CurrentUser, StringComparison.OrdinalIgnoreCase);
+            NavigationManager.NavigateTo("/login", true);
+            _isLoading = false;
+            return;
+        }
 
-            _messages.Add(new Message(Guid.NewGuid().ToString(), message, isOutgoing,
-                isOutgoing ? null : RemoteAvatarUrl,
-                DateTimeOffset.Now));
+        _currentAccountId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _currentUserName = user.Identity?.Name;
 
-            InvokeAsync(StateHasChanged);
-        });
+        _isLoading = true;
+        var result = await ChatService.GetByIdAsync(ChatId);
 
-        _hubConnection.On<string, string, double>("ReceiveVoiceMessage", (user, dataUrl, durationSeconds) =>
+        if (result.IsSuccess && result.Value is not null)
         {
-            var isOutgoing = string.Equals(user, CurrentUser, StringComparison.OrdinalIgnoreCase);
-            TimeSpan? duration = double.IsFinite(durationSeconds) && durationSeconds > 0
-                ? TimeSpan.FromSeconds(durationSeconds)
-                : null;
+            _chat = result.Value;
+            _messages.Clear();
+            _messages.AddRange(_chat.messages
+                .OrderBy(m => m.Timestamp)
+                .Select(MapToMessage));
+        }
+        else
+        {
+            _chat = null;
+            _messages.Clear();
+            _loadError = result.Errors.FirstOrDefault() ?? "Het gesprek kon niet geladen worden.";
+        }
 
-            _messages.Add(new Message(Guid.NewGuid().ToString(), string.Empty, isOutgoing,
-                isOutgoing ? null : RemoteAvatarUrl,
-                DateTimeOffset.Now,
-                dataUrl,
-                duration));
-
-            InvokeAsync(StateHasChanged);
-        });
-
-        await _hubConnection.StartAsync();
+        _isLoading = false;
     }
 
-    private Task GoBack()
+    private async Task SendMessageAsync(string text)
     {
-        Nav.NavigateTo("/");
+        if (_chat is null || _isSending || string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        _isSending = true;
+        _errorMessage = null;
+
+        try
+        {
+            var request = new ChatRequest.CreateMessage
+            {
+                ChatId = _chat.chatId,
+                Content = text
+            };
+
+            var result = await ChatService.CreateMessageAsync(request);
+
+            if (!result.IsSuccess || result.Value is null)
+            {
+                _errorMessage = result.Errors.FirstOrDefault() ?? "Het bericht kon niet verzonden worden.";
+                return;
+            }
+
+            _chat.messages.Add(result.Value);
+            var mapped = MapToMessage(result.Value);
+            _messages.Add(mapped);
+        }
+        finally
+        {
+            _isSending = false;
+            StateHasChanged();
+        }
+    }
+
+    private Task HandleVoiceMessageAsync(RecordedAudio audio)
+    {
+        _errorMessage = "Spraakberichten worden nog niet ondersteund.";
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Message MapToMessage(MessageDto dto)
+    {
+        var isOutgoing = !string.IsNullOrWhiteSpace(_currentAccountId)
+            && string.Equals(dto.SenderAccountId, _currentAccountId, StringComparison.Ordinal);
+
+        return new Message(
+            dto.Id.ToString(CultureInfo.InvariantCulture),
+            dto.Content,
+            isOutgoing,
+            AvatarUrl: null,
+            Timestamp: dto.Timestamp,
+            AudioUrl: null,
+            AudioDuration: null,
+            SenderName: dto.SenderName);
+    }
+
+    private string GetChatTitle()
+    {
+        if (_chat is null)
+        {
+            return _currentUserName ?? "Chat";
+        }
+
+        var participantNames = _chat.messages
+            .Where(m => !string.IsNullOrWhiteSpace(m.SenderName)
+                        && !string.Equals(m.SenderAccountId, _currentAccountId, StringComparison.Ordinal))
+            .Select(m => m.SenderName)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (participantNames.Count == 0)
+        {
+            return !string.IsNullOrWhiteSpace(_currentUserName)
+                ? _currentUserName!
+                : $"Chat {_chat.chatId}";
+        }
+
+        return participantNames.Count == 1
+            ? participantNames[0]
+            : string.Join(", ", participantNames);
+    }
+
+    private string GetAvatarUrl()
+    {
+        return "https://i.pravatar.cc/64";
+    }
+
+    private string GetStatusText()
+    {
+        var lastMessage = _messages.LastOrDefault();
+        if (lastMessage?.Timestamp is DateTimeOffset timestamp)
+        {
+            return $"Laatste bericht {timestamp.ToLocalTime():HH:mm}";
+        }
+
+        return "Online";
+    }
+
+    private string GetConversationDateLabel()
+    {
+        if (_chat is null)
+        {
+            return string.Empty;
+        }
+
+        var first = _chat.messages
+            .OrderBy(m => m.Timestamp)
+            .FirstOrDefault();
+
+        return first?.Timestamp.ToLocalTime().ToString("d MMM yyyy", CultureInfo.GetCultureInfo("nl-BE")) ?? string.Empty;
+    }
+
+    private Task NavigateBack()
+    {
+        NavigationManager.NavigateTo("/homepage");
         return Task.CompletedTask;
     }
 
     private Task TriggerAlert()
     {
-        Console.WriteLine("Alert clicked");
+        // TODO: Hook up with actual alert functionality.
         return Task.CompletedTask;
-    }
-
-    private void InsertSuggestion(string text)
-    {
-        _draft = text;
-        StateHasChanged();
-    }
-
-    private async Task SendAsync(string text)
-    {
-        if (_hubConnection is null || string.IsNullOrWhiteSpace(text))
-        {
-            return;
-        }
-
-        var censored = Filter.Censor(text);
-
-        await _hubConnection.SendAsync("SendMessage", CurrentUser, censored);
-        _draft = string.Empty;
-    }
-
-    private async Task SendVoiceAsync(RecordedAudio audio)
-    {
-        if (_hubConnection is null || string.IsNullOrWhiteSpace(audio.DataUrl))
-        {
-            return;
-        }
-
-        await _hubConnection.SendAsync("SendVoiceMessage", CurrentUser, audio.DataUrl, audio.DurationSeconds);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_hubConnection is not null)
-        {
-            await _hubConnection.DisposeAsync();
-        }
     }
 }
