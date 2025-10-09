@@ -10,6 +10,10 @@ using Rise.Services;
 using Rise.Services.Identity;
 using Serilog;
 using Serilog.Events;
+using Rise.Services.Chats;
+using Rise.Shared.Chats;
+using Rise.Server;
+using Rise.Server.Hubs;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -63,10 +67,33 @@ try
         {
             o.DocumentSettings = s => { s.Title = "RISE API"; };
         });
+    
+    //signalr
+    builder.Services.AddSignalR();
 
     // Seeder registreren (als je een DbSeeder hebt)
     builder.Services.AddScoped<DbSeeder>();
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowRiseClient", policy =>
+            policy.WithOrigins("https://localhost:5002") // poort van je Blazor client
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials());
+    });
 
+    builder.Services
+        .AddHttpContextAccessor()
+        .AddScoped<ISessionContextProvider, HttpContextSessionProvider>()
+        .AddApplicationServices()
+        .AddAuthorization()
+        .AddFastEndpoints(opt =>
+        {
+            opt.IncludeAbstractValidators = true;
+            opt.Assemblies = [typeof(Rise.Shared.Products.ProductRequest).Assembly];
+        });
+    builder.Services.AddScoped<IChatService, ChatService>();
+    
     var app = builder.Build();
 
     if (app.Environment.IsDevelopment())
@@ -98,6 +125,9 @@ try
            };
        })
        .UseSwaggerGen();
+    app.UseCors("AllowRiseClient"); // ✅ activeer CORS
+
+    app.MapHub<Chathub>("/chathub"); // ✅ route voor realtime chat
 
     app.MapFallbackToFile("index.html");
 
