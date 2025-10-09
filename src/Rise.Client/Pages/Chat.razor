@@ -32,6 +32,7 @@
     ];
 
     private HubConnection? _hubConnection;
+    private const int MaxSignalRPayloadBytes = 10 * 1024 * 1024;
     private const string CurrentUser = "Helena";
     private const string RemoteAvatarUrl = "https://i.pravatar.cc/64?img=12";
     private string _draft = string.Empty;
@@ -41,6 +42,10 @@
         var hubUrl = new Uri(new Uri(Nav.BaseUri), "chathub");
 
         _hubConnection = new HubConnectionBuilder()
+            .AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.DefaultBufferSize = MaxSignalRPayloadBytes; // allow sizeable voice clips
+            })
             .WithUrl(hubUrl)
             .WithAutomaticReconnect()
             .Build();
@@ -113,7 +118,14 @@
             return;
         }
 
-        await _hubConnection.SendAsync("SendVoiceMessage", CurrentUser, audio.DataUrl, audio.DurationSeconds);
+        try
+        {
+            await _hubConnection.SendAsync("SendVoiceMessage", CurrentUser, audio.DataUrl, audio.DurationSeconds);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Failed to send voice message: {ex}");
+        }
     }
 
     public async ValueTask DisposeAsync()

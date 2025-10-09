@@ -69,7 +69,12 @@ try
         });
     
     //signalr
-    builder.Services.AddSignalR();
+    const long maxSignalRMessageSize = 10 * 1024 * 1024; // 10 MB
+    builder.Services.AddSignalR(options =>
+    {
+        options.EnableDetailedErrors = true;
+        options.MaximumReceiveMessageSize = maxSignalRMessageSize; // allow larger payloads for voice messages
+    });
 
     // Seeder registreren (als je een DbSeeder hebt)
     builder.Services.AddScoped<DbSeeder>();
