@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Rise.Domain.Chats;
 using Rise.Domain.Products;
 using Rise.Domain.Projects;
 
@@ -19,6 +20,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         await UsersAsync();
         await ProductsAsync();
         await ProjectsAsync();
+        await ChatsAsync();
+        await MessagesAsync();
     }
 
     private async Task RolesAsync()
@@ -146,4 +149,61 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         dbContext.Projects.AddRange(projects);
         await dbContext.SaveChangesAsync();
     }
+    
+    private async Task ChatsAsync()
+    {
+        if (dbContext.Chats.Any())
+            return;
+
+        // voorbeeld: haal bestaande gebruikers op
+        var users = await dbContext.Users.ToListAsync();
+        var technicians = await dbContext.Technicians.ToListAsync();
+
+        // beveiliging: enkel uitvoeren als er minstens één technieker is
+        if (!technicians.Any())
+            return;
+
+        var chat1 = new Chat();
+        var chat2 = new Chat();
+
+        dbContext.Chats.AddRange(chat1, chat2);
+        await dbContext.SaveChangesAsync();
+
+        // voeg berichten toe
+        var messages = new List<Message>
+        {
+            new Message { Inhoud = "Hallo, ik heb een probleem met mijn laptop.", ChatId = chat1.Id },
+            new Message { Inhoud = "Ik kijk er meteen naar!", ChatId = chat1.Id },
+            new Message { Inhoud = "De printer werkt weer, bedankt!", ChatId = chat2.Id },
+            new Message { Inhoud = "Graag gedaan!", ChatId = chat2.Id },
+        };
+
+        dbContext.Messages.AddRange(messages);
+        await dbContext.SaveChangesAsync();
+    }
+    
+    private async Task MessagesAsync()
+    {
+        if (dbContext.Messages.Any())
+            return;
+
+        var chats = await dbContext.Chats.ToListAsync();
+
+        if (!chats.Any())
+            return;
+
+        // voorbeeldberichten per chat
+        var messages = new List<Message>
+        {
+            new Message { Inhoud = "Hoi, hoe gaat het met het project?", ChatId = chats[0].Id },
+            new Message { Inhoud = "Prima, ik heb net de laatste bug opgelost!", ChatId = chats[0].Id },
+
+            new Message { Inhoud = "De server lijkt traag te reageren vandaag.", ChatId = chats[^1].Id },
+            new Message { Inhoud = "Ik zal even de logs checken, geef me 5 minuten.", ChatId = chats[^1].Id }
+        };
+
+        dbContext.Messages.AddRange(messages);
+        await dbContext.SaveChangesAsync();
+    }
+    
 }
