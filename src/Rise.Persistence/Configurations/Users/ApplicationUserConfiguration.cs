@@ -59,7 +59,7 @@ namespace Rise.Persistence.Configurations.Users
 
             builder
                 .HasMany(x => x.Chats)
-                .WithMany();
+                .WithMany(x => x.Users);
 
             builder.Property(x => x.Supervisor)
                 .IsRequired();

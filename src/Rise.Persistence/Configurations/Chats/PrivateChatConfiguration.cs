@@ -17,10 +17,10 @@ namespace Rise.Persistence.Configurations.Chats
             base.Configure(builder);
 
             builder.HasMany(x => x.Users)
-                .WithMany();
+                .WithMany(x => x.Chats);
 
             builder.HasMany(x => x.Messages)
-               .WithOne()
+               .WithOne(x => x.Chat)
                .OnDelete(DeleteBehavior.Cascade);
         }
     }

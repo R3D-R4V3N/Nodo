@@ -23,7 +23,7 @@ namespace Rise.Persistence.Configurations.Supervisors
 
             builder
                 .HasMany(x => x.Chats)
-                .WithMany();
+                .WithMany(x => x.Users);
         }
     }
 }
