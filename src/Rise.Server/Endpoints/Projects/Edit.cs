@@ -13,7 +13,7 @@ public class Edit(IProjectService projectService) : Endpoint<ProjectRequest.Edit
     public override void Configure()
     {
         Put("/api/projects");
-        Roles(AppRoles.Technician, AppRoles.Administrator);
+        Roles(AppRoles.Supervisor, AppRoles.Administrator);
     }
 
     public override Task<Result> ExecuteAsync(ProjectRequest.Edit req, CancellationToken ctx)
