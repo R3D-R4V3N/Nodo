@@ -2,6 +2,8 @@ using Ardalis.GuardClauses;
 using Ardalis.Result;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using Rise.Domain.Chats;
 using Rise.Domain.Common;
 
 namespace Rise.Domain.Users;
@@ -23,6 +25,15 @@ public class ApplicationUser : Entity
 
     private readonly HashSet<ApplicationUser> friendRequests = [];
     public IReadOnlyCollection<ApplicationUser> FriendRequests => friendRequests;
+
+    private readonly HashSet<UserSupervisor> supervisorLinks = [];
+    public ICollection<UserSupervisor> SupervisorLinks => supervisorLinks;
+
+    private readonly HashSet<UserSupervisor> supervisedUsers = [];
+    public ICollection<UserSupervisor> SupervisedUsers => supervisedUsers;
+
+    private readonly HashSet<ChatParticipant> chatParticipations = [];
+    public ICollection<ChatParticipant> ChatParticipations => chatParticipations;
 
     public ApplicationUser()
     {
@@ -66,5 +77,33 @@ public class ApplicationUser : Entity
         friend.friends.Remove(this);
 
         return Result.Success();
+    }
+
+    public void AssignSupervisor(ApplicationUser supervisor)
+    {
+        Guard.Against.Null(supervisor);
+
+        if (supervisorLinks.Any(link => link.SupervisorId == supervisor.Id))
+        {
+            return;
+        }
+
+        var assignment = new UserSupervisor(this, supervisor);
+        supervisorLinks.Add(assignment);
+        supervisor.supervisedUsers.Add(assignment);
+    }
+
+    public void RemoveSupervisor(ApplicationUser supervisor)
+    {
+        Guard.Against.Null(supervisor);
+
+        var link = supervisorLinks.FirstOrDefault(l => l.SupervisorId == supervisor.Id);
+        if (link is null)
+        {
+            return;
+        }
+
+        supervisorLinks.Remove(link);
+        supervisor.supervisedUsers.Remove(link);
     }
 }

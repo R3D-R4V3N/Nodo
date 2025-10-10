@@ -114,6 +114,39 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         dbContext.ApplicationUsers.AddRange(applicationUsers);
 
         await dbContext.SaveChangesAsync();
+
+        var supervisors = applicationUsers
+            .Where(u => u.UserType == UserType.Supervisor)
+            .ToList();
+
+        var chatUsers = applicationUsers
+            .Where(u => u.UserType == UserType.ChatUser)
+            .ToList();
+
+        if (supervisors.Count != 0 && chatUsers.Count != 0)
+        {
+            var assignments = new List<UserSupervisor>();
+
+            for (var i = 0; i < chatUsers.Count; i++)
+            {
+                var chatter = chatUsers[i];
+                var primary = supervisors[i % supervisors.Count];
+
+                assignments.Add(new UserSupervisor(chatter, primary));
+
+                if (supervisors.Count > 1)
+                {
+                    var secondary = supervisors[(i + 1) % supervisors.Count];
+                    if (secondary.Id != primary.Id)
+                    {
+                        assignments.Add(new UserSupervisor(chatter, secondary));
+                    }
+                }
+            }
+
+            dbContext.UserSupervisors.AddRange(assignments);
+            await dbContext.SaveChangesAsync();
+        }
     }
 
     private async Task ChatsAsync()
@@ -145,6 +178,17 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         var chat2 = new Chat();
 
         dbContext.Chats.AddRange(chat1, chat2);
+        await dbContext.SaveChangesAsync();
+
+        var participants = new List<ChatParticipant>
+        {
+            new(chat1, firstChatter),
+            new(chat1, primarySupervisor),
+            new(chat2, secondChatter),
+            new(chat2, backupSupervisor)
+        };
+
+        dbContext.ChatParticipants.AddRange(participants);
         await dbContext.SaveChangesAsync();
 
         var messages = new List<Message>

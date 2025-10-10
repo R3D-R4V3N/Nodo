@@ -6,6 +6,8 @@ public static class ChatDto
     {
         public int chatId { get; set; }
         public List<MessageDto> messages { get; set; } = [];
+        public List<ChatParticipantDto> participants { get; set; } = [];
+        public ChatEmergencyStatusDto? emergency { get; set; }
 
     }
 }

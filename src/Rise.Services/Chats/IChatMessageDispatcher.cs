@@ -7,4 +7,5 @@ using Rise.Shared.Chats;
 public interface IChatMessageDispatcher
 {
     Task NotifyMessageCreatedAsync(int chatId, MessageDto message, CancellationToken cancellationToken = default);
+    Task NotifyEmergencyStatusChangedAsync(int chatId, ChatEmergencyStatusDto status, CancellationToken cancellationToken = default);
 }
