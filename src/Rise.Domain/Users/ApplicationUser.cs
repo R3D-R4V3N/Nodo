@@ -1,6 +1,7 @@
 ﻿using Ardalis.Result;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,6 +33,16 @@ namespace Rise.Domain.Users
 
         public ApplicationUser()
         {
+        }
+
+        [SetsRequiredMembers]
+        public ApplicationUser(string accountId, string firstName, string lastName, string biography, UserType userType)
+        {
+            AccountId = Guard.Against.NullOrWhiteSpace(accountId);
+            FirstName = Guard.Against.NullOrWhiteSpace(firstName);
+            LastName = Guard.Against.NullOrWhiteSpace(lastName);
+            Biography = Guard.Against.NullOrWhiteSpace(biography);
+            UserType = userType;
         }
 
         public Result AddFriend(ApplicationUser friend)
