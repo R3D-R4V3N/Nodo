@@ -9,4 +9,5 @@ public interface IChatService
     Task<Result<ChatResponse.Index>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<Result<ChatDto.Index>> GetByIdAsync(int chatId, CancellationToken cancellationToken = default);
     Task<Result<MessageDto>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default);
+    Task<Result<SupervisorAlertNotificationDto>> SetSupervisorAlertAsync(ChatRequest.SetSupervisorAlert request, CancellationToken cancellationToken = default);
 }

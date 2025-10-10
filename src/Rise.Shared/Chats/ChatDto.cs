@@ -6,6 +6,7 @@ public static class ChatDto
     {
         public int chatId { get; set; }
         public List<MessageDto> messages { get; set; } = [];
+        public bool isSupervisorAlertActive { get; set; }
 
     }
 }

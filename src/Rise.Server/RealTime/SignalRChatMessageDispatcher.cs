@@ -18,4 +18,12 @@ public class SignalRChatMessageDispatcher(IHubContext<Chathub> hubContext) : ICh
             .Group(Chathub.GetGroupName(chatId))
             .SendAsync("MessageCreated", message, cancellationToken);
     }
+
+    public Task NotifySupervisorAlertChangedAsync(int chatId, SupervisorAlertNotificationDto alert, CancellationToken cancellationToken = default)
+    {
+        return _hubContext
+            .Clients
+            .Group(Chathub.GetGroupName(chatId))
+            .SendAsync("SupervisorAlertChanged", alert, cancellationToken);
+    }
 }

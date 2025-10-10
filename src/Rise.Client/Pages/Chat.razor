@@ -21,11 +21,15 @@
     <ChatHeader DisplayName="@GetChatTitle()"
                 AvatarUrl="@GetAvatarUrl()"
                 StatusText="@GetStatusText()"
+                IsSupervisorActive="_isSupervised"
                 OnBack="NavigateBack"
                 OnAlert="TriggerAlert" />
 
     <!-- Supervisor banner (rood) -->
-    <SupervisorBanner OnSupervisorEnabled="HandleSupervisorEnabled" />
+    <SupervisorBanner @ref="_supervisorBanner"
+                      IsActive="_isSupervised"
+                      OnConfirm="ConfirmSupervisorAsync"
+                      OnDismiss="DismissSupervisorPrompt" />
 
     @if (_isLoading)
     {
@@ -60,8 +64,17 @@
         }
 
         <!-- Scrollable messages -->
+        @if (!string.IsNullOrWhiteSpace(_supervisorAlertError))
+        {
+            <div class="mx-4 mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                @_supervisorAlertError
+            </div>
+        }
+
         <div class="flex-1 overflow-y-auto px-3 pb-24 no-scrollbar" id="messages-scroll">
-            <MessageList Messages="_messages" TimestampText="@GetConversationDateLabel()" />
+            <MessageList Messages="_messages"
+                         TimestampText="@GetConversationDateLabel()"
+                         PinnedNotice="_supervisorNotice" />
         </div>
 
         <!-- Fixed input bar -->
@@ -119,15 +132,13 @@
     private string? _errorMessage;
     private string? _connectionError;
     private string? _loadError;
+    private string? _supervisorAlertError;
     private bool _isLoading = true;
     private bool _isSending;
-    private bool _isSupervised = false; // ✅ nieuw
-
-    private void HandleSupervisorEnabled() // ✅ callback van banner
-    {
-        _isSupervised = true;
-        StateHasChanged();
-    }
+    private bool _isSupervised;
+    private bool _isSupervisorActionInProgress;
+    private SupervisorBanner? _supervisorBanner;
+    private SupervisorNotice? _supervisorNotice;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -163,6 +174,12 @@
             {
                 _messageIds.Add(message.Id);
             }
+
+            _isSupervised = _chat.isSupervisorAlertActive;
+            _supervisorNotice = _isSupervised
+                ? BuildSupervisorNotice(string.Empty, DateTimeOffset.UtcNow)
+                : null;
+            _supervisorAlertError = null;
         }
         else
         {
@@ -170,6 +187,9 @@
             _messages.Clear();
             _messageIds.Clear();
             _loadError = result.Errors.FirstOrDefault() ?? "Het gesprek kon niet geladen worden.";
+            _isSupervised = false;
+            _supervisorNotice = null;
+            _supervisorAlertError = null;
         }
 
         _isLoading = false;
@@ -229,6 +249,94 @@
         return Task.CompletedTask;
     }
 
+    private async Task ConfirmSupervisorAsync()
+    {
+        await SetSupervisorAlertAsync(true);
+    }
+
+    private Task DismissSupervisorPrompt()
+    {
+        if (_supervisorBanner is not null)
+        {
+            return _supervisorBanner.HideAsync();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task SetSupervisorAlertAsync(bool enable)
+    {
+        if (_chat is null || _isSupervisorActionInProgress)
+        {
+            return;
+        }
+
+        _isSupervisorActionInProgress = true;
+        _supervisorAlertError = null;
+
+        try
+        {
+            var request = new ChatRequest.SetSupervisorAlert
+            {
+                ChatId = _chat.chatId,
+                Enable = enable
+            };
+
+            var result = await ChatService.SetSupervisorAlertAsync(request);
+
+            if (!result.IsSuccess || result.Value is null)
+            {
+                _supervisorAlertError = result.Errors.FirstOrDefault() ?? "De supervisormelding kon niet worden bijgewerkt.";
+                if (enable && _supervisorBanner is not null)
+                {
+                    await _supervisorBanner.ShowRequestAsync();
+                }
+                StateHasChanged();
+                return;
+            }
+
+            ApplySupervisorNotification(result.Value);
+        }
+        finally
+        {
+            _isSupervisorActionInProgress = false;
+        }
+    }
+
+    private void ApplySupervisorNotification(SupervisorAlertNotificationDto dto)
+    {
+        if (_chat is null || dto.ChatId != _chat.chatId)
+        {
+            return;
+        }
+
+        _ = _supervisorBanner?.HideAsync();
+
+        _isSupervised = dto.IsActive;
+        _supervisorAlertError = null;
+
+        if (dto.IsActive)
+        {
+            _supervisorNotice = BuildSupervisorNotice(dto.TriggeredByName, dto.Timestamp);
+        }
+        else
+        {
+            _supervisorNotice = null;
+        }
+
+        StateHasChanged();
+    }
+
+    private SupervisorNotice BuildSupervisorNotice(string triggeredByName, DateTimeOffset timestamp)
+    {
+        var localTimestamp = timestamp.ToLocalTime();
+        var prefix = string.IsNullOrWhiteSpace(triggeredByName)
+            ? "Er is een supervisormelding verstuurd."
+            : $"{triggeredByName} heeft een supervisormelding verstuurd.";
+        var message = $"{prefix} Een supervisor kan nu meelezen.";
+        return new SupervisorNotice(message, localTimestamp, triggeredByName);
+    }
+
     private async Task EnsureHubConnectionAsync()
     {
         await _hubConnectionLock.WaitAsync();
@@ -246,6 +354,13 @@
                     {
                         ProcessIncomingMessage(dto);
                         await ScrollToBottomAsync();
+                    }));
+
+                _hubConnection.On<SupervisorAlertNotificationDto>("SupervisorAlertChanged", dto =>
+                    InvokeAsync(() =>
+                    {
+                        ApplySupervisorNotification(dto);
+                        return Task.CompletedTask;
                     }));
 
                 _hubConnection.Reconnecting += error => InvokeAsync(() =>
@@ -458,10 +573,30 @@
         return Task.CompletedTask;
     }
 
-    private Task TriggerAlert()
+    private async Task TriggerAlert()
     {
-        // TODO: Hook up with actual alert functionality.
-        return Task.CompletedTask;
+        if (_chat is null)
+        {
+            return;
+        }
+
+        if (_isSupervisorActionInProgress)
+        {
+            return;
+        }
+
+        if (_isSupervised)
+        {
+            await SetSupervisorAlertAsync(false);
+            return;
+        }
+
+        _supervisorAlertError = null;
+
+        if (_supervisorBanner is not null)
+        {
+            await _supervisorBanner.ShowRequestAsync();
+        }
     }
 
     private async Task ScrollToBottomAsync()

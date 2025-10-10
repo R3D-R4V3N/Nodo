@@ -9,4 +9,6 @@ public class Chat : Entity
         get => _messages;
         set => _messages = value ?? throw new ArgumentNullException(nameof(value));
     }
+
+    public bool IsSupervisorAlertActive { get; set; }
 }

@@ -1,19 +1,56 @@
 @code {
-    [Parameter] public EventCallback OnSupervisorEnabled { get; set; }  // ✅ nieuw
+    [Parameter] public bool IsActive { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnDismiss { get; set; }
 
     private enum BannerState { Request, Active, Hidden }
-    private BannerState _state = BannerState.Request;
+    private BannerState _state = BannerState.Hidden;
 
-    private async Task ConfirmSupervisor()   // ✅ async gemaakt
+    protected override void OnParametersSet()
     {
-        _state = BannerState.Active;
-        if (OnSupervisorEnabled.HasDelegate)
-            await OnSupervisorEnabled.InvokeAsync();   // ✅ parent verwittigen
+        if (IsActive)
+        {
+            _state = BannerState.Active;
+        }
+        else if (_state == BannerState.Active)
+        {
+            _state = BannerState.Hidden;
+        }
     }
 
-    private void DismissBanner() => _state = BannerState.Hidden;
-    private void CloseBanner() => _state = BannerState.Hidden;
-    private void CollapseActive() => _state = BannerState.Hidden;
+    public Task ShowRequestAsync()
+    {
+        _state = BannerState.Request;
+        return InvokeAsync(StateHasChanged);
+    }
+
+    public Task HideAsync()
+    {
+        _state = BannerState.Hidden;
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ConfirmSupervisor()
+    {
+        _state = BannerState.Hidden;
+        if (OnConfirm.HasDelegate)
+        {
+            await OnConfirm.InvokeAsync();
+        }
+    }
+
+    private async Task DismissBanner()
+    {
+        _state = BannerState.Hidden;
+        if (OnDismiss.HasDelegate)
+        {
+            await OnDismiss.InvokeAsync();
+        }
+    }
+
+    private Task CloseBanner() => DismissBanner();
+
+    private Task CollapseActive() => DismissBanner();
 
     private string GetWrapperClasses()
     {

@@ -27,4 +27,12 @@ public class ChatService(HttpClient httpClient) : IChatService
 
         return result ?? Result.Error("Kon het serverantwoord niet verwerken.");
     }
+
+    public async Task<Result<SupervisorAlertNotificationDto>> SetSupervisorAlertAsync(ChatRequest.SetSupervisorAlert request, CancellationToken cancellationToken = default)
+    {
+        var response = await httpClient.PostAsJsonAsync($"api/chats/{request.ChatId}/supervisor-alert", request, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<Result<SupervisorAlertNotificationDto>>(cancellationToken: cancellationToken);
+
+        return result ?? Result.Error("Kon het serverantwoord niet verwerken.");
+    }
 }

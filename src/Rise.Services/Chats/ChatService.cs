@@ -35,7 +35,8 @@ public class ChatService(
             messages = c.Messages
                 .OrderBy(m => m.CreatedAt)
                 .Select(MapToDto)
-                .ToList()
+                .ToList(),
+            isSupervisorAlertActive = c.IsSupervisorAlertActive
         }).ToList();
 
         return Result.Success(new ChatResponse.Index
@@ -62,10 +63,64 @@ public class ChatService(
             messages = chat.Messages
                 .OrderBy(m => m.CreatedAt)
                 .Select(MapToDto)
-                .ToList()
+                .ToList(),
+            isSupervisorAlertActive = chat.IsSupervisorAlertActive
         };
 
         return Result.Success(dto);
+    }
+
+    public async Task<Result<SupervisorAlertNotificationDto>> SetSupervisorAlertAsync(ChatRequest.SetSupervisorAlert request, CancellationToken cancellationToken = default)
+    {
+        var accountId = _sessionContextProvider.User?.GetUserId();
+        if (string.IsNullOrWhiteSpace(accountId))
+        {
+            return Result.Unauthorized();
+        }
+
+        var sender = await _dbContext.ApplicationUsers
+            .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+
+        if (sender is null)
+        {
+            return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
+        }
+
+        var chat = await _dbContext.Chats
+            .SingleOrDefaultAsync(c => c.Id == request.ChatId, cancellationToken);
+
+        if (chat is null)
+        {
+            return Result.NotFound($"Chat met id '{request.ChatId}' werd niet gevonden.");
+        }
+
+        chat.IsSupervisorAlertActive = request.Enable;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        var name = string.Join(" ", new[] { sender.FirstName, sender.LastName }
+            .Where(part => !string.IsNullOrWhiteSpace(part)));
+
+        var notification = new SupervisorAlertNotificationDto
+        {
+            ChatId = chat.Id,
+            IsActive = chat.IsSupervisorAlertActive,
+            TriggeredByName = string.IsNullOrWhiteSpace(name) ? "Onbekende gebruiker" : name,
+            Timestamp = DateTimeOffset.UtcNow
+        };
+
+        if (_messageDispatcher is not null)
+        {
+            try
+            {
+                await _messageDispatcher.NotifySupervisorAlertChangedAsync(chat.Id, notification, cancellationToken);
+            }
+            catch
+            {
+                // Realtime notificaties mogen een mislukte call niet blokkeren.
+            }
+        }
+
+        return Result.Success(notification);
     }
 
     public async Task<Result<MessageDto>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)

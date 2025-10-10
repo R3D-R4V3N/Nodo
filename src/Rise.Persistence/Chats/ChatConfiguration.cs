@@ -16,5 +16,8 @@ internal class ChatConfiguration : EntityConfiguration<Chat>
             .WithOne(m => m.Chat)              // elke Message hoort bij exact 1 Chat
             .HasForeignKey(m => m.ChatId)      // FK in Message
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Property(c => c.IsSupervisorAlertActive)
+            .HasDefaultValue(false);
     }
 }
