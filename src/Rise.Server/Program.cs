@@ -10,6 +10,11 @@ using Rise.Services;
 using Rise.Services.Identity;
 using Serilog;
 using Serilog.Events;
+using Rise.Services.Chats;
+using Rise.Shared.Chats;
+using Rise.Server;
+using Rise.Server.Hubs;
+using Rise.Server.RealTime;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -27,16 +32,17 @@ try
         .ReadFrom.Configuration(ctx.Configuration)
         .Destructure.UsingAttributes());
 
-    // DbContext + Identity
+// DbContext + Identity
     builder.Services
         .AddDbContext<ApplicationDbContext>(o =>
         {
-            var cs = Environment.GetEnvironmentVariable("DB_CONNECTION");
-            cs ??= builder.Configuration.GetConnectionString("DatabaseConnection")
-                     ?? throw new InvalidOperationException("Connection string 'DatabaseConnection' not found.");
+            // ⚠️ Hardcoded connection string (not recommended for production)
+            var cs = "Server=65.109.132.74;Port=3308;Database=nododb;User=chatuser;Password=chatuserpassword123;SslMode=None;";
+
             // Laat Pomelo zelf de serverversie detecteren.
             o.UseMySql(cs, ServerVersion.AutoDetect(cs));
             o.EnableDetailedErrors();
+
             if (builder.Environment.IsDevelopment())
                 o.EnableSensitiveDataLogging();
 
@@ -63,10 +69,34 @@ try
         {
             o.DocumentSettings = s => { s.Title = "RISE API"; };
         });
+    
+    //signalr
+    builder.Services.AddSignalR();
 
     // Seeder registreren (als je een DbSeeder hebt)
     builder.Services.AddScoped<DbSeeder>();
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowRiseClient", policy =>
+            policy.WithOrigins("https://localhost:5002") // poort van je Blazor client
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials());
+    });
 
+    builder.Services
+        .AddHttpContextAccessor()
+        .AddScoped<ISessionContextProvider, HttpContextSessionProvider>()
+        .AddApplicationServices()
+        .AddAuthorization()
+        .AddFastEndpoints(opt =>
+        {
+            opt.IncludeAbstractValidators = true;
+            opt.Assemblies = [typeof(Rise.Shared.Products.ProductRequest).Assembly];
+        });
+    builder.Services.AddScoped<IChatService, ChatService>();
+    builder.Services.AddSingleton<IChatMessageDispatcher, SignalRChatMessageDispatcher>();
+    
     var app = builder.Build();
 
     if (app.Environment.IsDevelopment())
@@ -75,7 +105,7 @@ try
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
 
-        //db.Database.EnsureDeleted(); // Delete the database if it exists to clean it up if needed.
+        db.Database.EnsureDeleted(); // Delete the database if it exists to clean it up if needed.
         
         db.Database.Migrate();
         await seeder.SeedAsync();
@@ -98,6 +128,9 @@ try
            };
        })
        .UseSwaggerGen();
+    app.UseCors("AllowRiseClient"); // ✅ activeer CORS
+
+    app.MapHub<Chathub>("/chathub"); // ✅ route voor realtime chat
 
     app.MapFallbackToFile("index.html");
 

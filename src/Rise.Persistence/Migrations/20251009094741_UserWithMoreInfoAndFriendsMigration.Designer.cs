@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rise.Persistence;
 
@@ -11,9 +12,11 @@ using Rise.Persistence;
 namespace Rise.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251009094741_UserWithMoreInfoAndFriendsMigration")]
+    partial class UserWithMoreInfoAndFriendsMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -241,77 +244,6 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("UserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Rise.Domain.Chats.Chat", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Chat", (string)null);
-                });
-
-            modelBuilder.Entity("Rise.Domain.Chats.Message", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ChatId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SenderId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<string>("Inhoud")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChatId");
-
-                    b.HasIndex("SenderId");
-
-                    b.ToTable("Message", (string)null);
-                });
-
             modelBuilder.Entity("Rise.Domain.Products.Product", b =>
                 {
                     b.Property<int>("Id")
@@ -488,21 +420,6 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("ApplicationUser", (string)null);
                 });
 
-            modelBuilder.Entity("UserFriendRequests", b =>
-                {
-                    b.Property<int>("AccountId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("FriendRequestId")
-                        .HasColumnType("int");
-
-                    b.HasKey("AccountId", "FriendRequestId");
-
-                    b.HasIndex("FriendRequestId");
-
-                    b.ToTable("UserFriendRequests");
-                });
-
             modelBuilder.Entity("UserFriends", b =>
                 {
                     b.Property<int>("AccountId")
@@ -569,24 +486,6 @@ namespace Rise.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Rise.Domain.Chats.Message", b =>
-                {
-                    b.HasOne("Rise.Domain.Chats.Chat", "Chat")
-                        .WithMany("Messages")
-                        .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", "Sender")
-                        .WithMany()
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Chat");
-                    b.Navigation("Sender");
-                });
-
             modelBuilder.Entity("Rise.Domain.Projects.Project", b =>
                 {
                     b.HasOne("Rise.Domain.Projects.Technician", "Technician")
@@ -638,21 +537,6 @@ namespace Rise.Persistence.Migrations
                     b.Navigation("Technician");
                 });
 
-            modelBuilder.Entity("UserFriendRequests", b =>
-                {
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
-
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("FriendRequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("UserFriends", b =>
                 {
                     b.HasOne("Rise.Domain.Users.ApplicationUser", null)
@@ -666,11 +550,6 @@ namespace Rise.Persistence.Migrations
                         .HasForeignKey("FriendId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Rise.Domain.Chats.Chat", b =>
-                {
-                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("Rise.Domain.Projects.Technician", b =>

@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Rise.Domain.Chats;
 using Rise.Domain.Products;
 using Rise.Domain.Projects;
+using Rise.Domain.Users;
 
 namespace Rise.Persistence;
 
@@ -17,9 +19,13 @@ namespace Rise.Persistence;
 /// <param name="opts"></param>
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> opts) : IdentityDbContext<IdentityUser>(opts)
 {
+    public DbSet<Chat> Chats => Set<Chat>();
+    public DbSet<Message> Messages => Set<Message>();
+    
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<Technician> Technicians => Set<Technician>();
+    public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
   
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
