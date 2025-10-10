@@ -6,15 +6,13 @@ using Rise.Persistence;
 using Rise.Persistence.Triggers;
 using Rise.Server.Identity;
 using Rise.Server.Processors;
+using Rise.Server.RealTime;
 using Rise.Services;
+using Rise.Services.Chats;
 using Rise.Services.Identity;
+using Rise.Shared.Chats;
 using Serilog;
 using Serilog.Events;
-using Rise.Services.Chats;
-using Rise.Shared.Chats;
-using Rise.Server;
-using Rise.Server.Hubs;
-using Rise.Server.RealTime;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -62,18 +60,15 @@ try
         .AddFastEndpoints(opt =>
         {
             opt.IncludeAbstractValidators = true;
-            opt.Assemblies = [typeof(Rise.Shared.Products.ProductRequest).Assembly];
+            opt.Assemblies = [typeof(ChatRequest.CreateMessage).Assembly];
         })
         .SwaggerDocument(o =>
         {
             o.DocumentSettings = s => { s.Title = "RISE API"; };
         });
-    
-    //signalr
+
     builder.Services.AddSignalR();
 
-    // Seeder registreren (als je een DbSeeder hebt)
-    builder.Services.AddScoped<DbSeeder>();
     builder.Services.AddCors(options =>
     {
         options.AddPolicy("AllowRiseClient", policy =>
@@ -83,19 +78,8 @@ try
                 .AllowCredentials());
     });
 
-    builder.Services
-        .AddHttpContextAccessor()
-        .AddScoped<ISessionContextProvider, HttpContextSessionProvider>()
-        .AddApplicationServices()
-        .AddAuthorization()
-        .AddFastEndpoints(opt =>
-        {
-            opt.IncludeAbstractValidators = true;
-            opt.Assemblies = [typeof(Rise.Shared.Products.ProductRequest).Assembly];
-        });
-    builder.Services.AddScoped<IChatService, ChatService>();
     builder.Services.AddSingleton<IChatMessageDispatcher, SignalRChatMessageDispatcher>();
-    
+
     var app = builder.Build();
 
     if (app.Environment.IsDevelopment())
@@ -105,7 +89,7 @@ try
         var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
 
         db.Database.EnsureDeleted(); // Delete the database if it exists to clean it up if needed.
-        
+
         db.Database.Migrate();
         await seeder.SeedAsync();
     }

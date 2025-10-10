@@ -1,8 +1,7 @@
-﻿namespace Rise.Domain.Users
+namespace Rise.Domain.Users;
+
+public enum UserType
 {
-    public enum UserType 
-    { 
-        Regular,
-        Supervisor
-    }
+    ChatUser,
+    Supervisor
 }
