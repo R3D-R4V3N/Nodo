@@ -25,7 +25,7 @@
                 OnAlert="TriggerAlert" />
 
     <!-- Supervisor banner (rood) -->
-    <SupervisorBanner OnSupervisorEnabled="HandleSupervisorEnabled" />
+    <SupervisorBanner @ref="_supervisorBanner" OnSupervisorEnabled="HandleSupervisorEnabled" />
 
     @if (_isLoading)
     {
@@ -122,6 +122,7 @@
     private bool _isLoading = true;
     private bool _isSending;
     private bool _isSupervised = false; // ✅ nieuw
+    private SupervisorBanner? _supervisorBanner;
 
     private void HandleSupervisorEnabled() // ✅ callback van banner
     {
@@ -458,10 +459,17 @@
         return Task.CompletedTask;
     }
 
-    private Task TriggerAlert()
+    private async Task TriggerAlert()
     {
-        // TODO: Hook up with actual alert functionality.
-        return Task.CompletedTask;
+        if (_isSupervised)
+        {
+            return;
+        }
+
+        if (_supervisorBanner is not null)
+        {
+            await _supervisorBanner.ShowRequestAsync();
+        }
     }
 
     private async Task ScrollToBottomAsync()

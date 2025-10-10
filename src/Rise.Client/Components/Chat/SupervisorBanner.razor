@@ -2,7 +2,18 @@
     [Parameter] public EventCallback OnSupervisorEnabled { get; set; }  // ✅ nieuw
 
     private enum BannerState { Request, Active, Hidden }
-    private BannerState _state = BannerState.Request;
+    private BannerState _state = BannerState.Hidden;
+
+    public Task ShowRequestAsync()
+    {
+        if (_state == BannerState.Active)
+        {
+            return Task.CompletedTask;
+        }
+
+        _state = BannerState.Request;
+        return InvokeAsync(StateHasChanged);
+    }
 
     private async Task ConfirmSupervisor()   // ✅ async gemaakt
     {
