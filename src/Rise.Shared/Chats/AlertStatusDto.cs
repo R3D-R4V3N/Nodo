@@ -6,4 +6,5 @@ public class AlertStatusDto
     public bool IsActive { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+    public string? InitiatorAccountId { get; set; }
 }
