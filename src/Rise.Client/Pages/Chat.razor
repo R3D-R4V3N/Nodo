@@ -24,9 +24,6 @@
                 OnBack="NavigateBack"
                 OnAlert="TriggerAlert" />
 
-    <!-- Supervisor banner (rood) -->
-    <SupervisorBanner OnSupervisorEnabled="HandleSupervisorEnabled" />
-
     @if (_isLoading)
     {
         <div class="flex-1 grid place-items-center">
@@ -60,7 +57,7 @@
         }
 
         <!-- Scrollable messages -->
-        <div class="flex-1 overflow-y-auto px-3 pb-24 no-scrollbar" id="messages-scroll">
+        <div class="flex-1 overflow-y-auto px-3 pb-24 no-scrollbar">
             <MessageList Messages="_messages" TimestampText="@GetConversationDateLabel()" />
         </div>
 
@@ -121,13 +118,6 @@
     private string? _loadError;
     private bool _isLoading = true;
     private bool _isSending;
-    private bool _isSupervised = false; // ✅ nieuw
-
-    private void HandleSupervisorEnabled() // ✅ callback van banner
-    {
-        _isSupervised = true;
-        StateHasChanged();
-    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -203,10 +193,7 @@
                 return;
             }
 
-            if (TryAddMessage(result.Value))
-            {
-                await ScrollToBottomAsync();
-            }
+            TryAddMessage(result.Value);
         }
         finally
         {
@@ -242,11 +229,7 @@
                     .Build();
 
                 _hubConnection.On<MessageDto>("MessageCreated", dto =>
-                    InvokeAsync(async () =>
-                    {
-                        ProcessIncomingMessage(dto);
-                        await ScrollToBottomAsync();
-                    }));
+                    InvokeAsync(() => ProcessIncomingMessage(dto)));
 
                 _hubConnection.Reconnecting += error => InvokeAsync(() =>
                 {
@@ -431,11 +414,12 @@
     private string GetStatusText()
     {
         var lastMessage = _messages.LastOrDefault();
-        var baseText = (lastMessage?.Timestamp is DateTimeOffset ts)
-            ? $"Laatste bericht {ts.ToLocalTime():HH:mm}"
-            : "Online";
+        if (lastMessage?.Timestamp is DateTimeOffset timestamp)
+        {
+            return $"Laatste bericht {timestamp.ToLocalTime():HH:mm}";
+        }
 
-        return _isSupervised ? $"Onder toezicht • {baseText}" : baseText; // ✅ toont status bij toezicht
+        return "Online";
     }
 
     private string GetConversationDateLabel()
@@ -463,16 +447,6 @@
         // TODO: Hook up with actual alert functionality.
         return Task.CompletedTask;
     }
-
-    private async Task ScrollToBottomAsync()
-    {
-        // Kleine trick: laat Blazor eerst renderen, dan naar beneden scrollen
-        await Task.Yield();
-        var elem = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/scrollHelpers.js");
-        await elem.InvokeVoidAsync("scrollToEnd", "#messages-scroll");
-    }
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
 
     public async ValueTask DisposeAsync()
     {
