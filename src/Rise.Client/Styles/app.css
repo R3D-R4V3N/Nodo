@@ -1,7 +1,0 @@
-/* Tailwind v4 basis */
-@import "tailwindcss";
-
-/* (optioneel) Als je scanbasis wil forceren (bijv. monorepo):
-   @import "tailwindcss" source("./"); */
-
-/* Jouw extra CSS hieronder */
