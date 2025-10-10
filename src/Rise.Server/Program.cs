@@ -13,6 +13,7 @@ using Rise.Services.Identity;
 using Rise.Shared.Chats;
 using Serilog;
 using Serilog.Events;
+using Rise.Server.Hubs;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
