@@ -1,0 +1,205 @@
+@page "/homepage"
+@attribute [Authorize]
+@using System.Globalization
+@using System.Linq
+@using System.Security.Claims
+@using Rise.Client.Chats
+@using Rise.Shared.Chats
+@layout MainLayout
+@inject IChatService ChatService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+<div class="min-h-screen bg-neutral-100">
+    <div class="bg-[#127646] text-white px-6 py-8 pt-5 rounded-b-3xl shadow">
+        <div>
+            <h1 class="text-4xl font-normal text-center">Goeiemorgen @_greetingName</h1>
+        </div>
+        <div class="mt-6 bg-white rounded-full flex items-center px-4 py-3 text-neutral-700 shadow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
+                <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+            </svg>
+            <input type="text"
+                   placeholder="Zoek chat"
+                   class="ml-3 flex-1 outline-none text-sm placeholder-neutral-400"
+                   @bind="_searchTerm"
+                   @bind:event="oninput">
+        </div>
+    </div>
+
+    <div class="mx-auto mt-6 flex flex-col gap-6 px-4 pb-10 lg:px-12">
+        <div class="grid gap-6">
+            <aside class="bg-white rounded-3xl shadow p-4 flex flex-col">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-semibold text-neutral-700">Chats</h2>
+                    @if (!_isLoading && Chats.Count > 0)
+                    {
+                        <span class="text-xs text-neutral-400">@Chats.Count gesprekken</span>
+                    }
+                </div>
+
+                @if (_isLoading)
+                {
+                    <p class="text-sm text-neutral-500">Chats laden...</p>
+                }
+                else if (!string.IsNullOrWhiteSpace(_loadError))
+                {
+                    <p class="text-sm text-red-600">@_loadError</p>
+                }
+                else if (FilteredChats.Count == 0)
+                {
+                    <p class="text-sm text-neutral-500">Er zijn nog geen chats.</p>
+                }
+                else
+                {
+                    <ul class="space-y-2 overflow-y-auto pr-1">
+                        @foreach (var chat in FilteredChats)
+                        {
+                            <li>
+                                <button type="button"
+                                        class="@GetChatItemClasses(false)"
+                                        @onclick="() => NavigateToChat(chat)">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <span class="font-semibold truncate">@GetChatTitle(chat)</span>
+                                        <span class="text-[11px] text-neutral-400">@GetLastActivity(chat)</span>
+                                    </div>
+                                    <p class="mt-1 text-xs truncate text-neutral-500">@GetLastMessagePreview(chat)</p>
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+            </aside>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly List<ChatDto.Index> Chats = new();
+    private List<ChatDto.Index> FilteredChats => string.IsNullOrWhiteSpace(_searchTerm)
+        ? Chats
+        : Chats
+            .Where(c => GetChatTitle(c).Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)
+                        || c.messages.Any(m => m.Content.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+
+    private string? _currentAccountId;
+    private string? _currentUserName;
+    private string _greetingName = "gebruiker";
+    private bool _isLoading = true;
+    private string? _loadError;
+    private string? _searchTerm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user?.Identity?.IsAuthenticated != true)
+        {
+            NavigationManager.NavigateTo("/login", true);
+            return;
+        }
+
+        _currentAccountId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _currentUserName = user.Identity?.Name;
+        _greetingName = DetermineGreetingNameFromIdentity();
+
+        var result = await ChatService.GetAllAsync();
+
+        if (result.IsSuccess && result.Value is not null)
+        {
+            Chats.Clear();
+            Chats.AddRange(result.Value.Chats ?? Array.Empty<ChatDto.Index>());
+            UpdateGreetingNameFromChats();
+        }
+        else
+        {
+            _loadError = result.Errors.FirstOrDefault() ?? "De chats konden niet geladen worden.";
+        }
+
+        _isLoading = false;
+    }
+
+    private void NavigateToChat(ChatDto.Index chat)
+    {
+        NavigationManager.NavigateTo($"/chat/{chat.chatId}");
+    }
+
+    private string GetChatTitle(ChatDto.Index chat)
+    {
+        var participantNames = chat.messages
+            .Where(m => !string.IsNullOrWhiteSpace(m.SenderName)
+                        && !string.Equals(m.SenderAccountId, _currentAccountId, StringComparison.Ordinal))
+            .Select(m => m.SenderName)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (participantNames.Count == 0)
+        {
+            return !string.IsNullOrWhiteSpace(_greetingName)
+                ? _greetingName
+                : $"Chat {chat.chatId}";
+        }
+
+        return participantNames.Count == 1
+            ? participantNames[0]
+            : string.Join(", ", participantNames);
+    }
+
+    private static string GetLastMessagePreview(ChatDto.Index chat)
+    {
+        var last = chat.messages
+            .OrderBy(m => m.Timestamp)
+            .LastOrDefault();
+
+        if (last is null || string.IsNullOrWhiteSpace(last.Content))
+        {
+            return "Nog geen berichten";
+        }
+
+        var preview = last.Content.Trim();
+        return preview.Length <= 80 ? preview : string.Concat(preview.AsSpan(0, 80), "…");
+    }
+
+    private static string GetLastActivity(ChatDto.Index chat)
+    {
+        var last = chat.messages
+            .OrderBy(m => m.Timestamp)
+            .LastOrDefault();
+
+        return last?.Timestamp.ToLocalTime().ToString("HH:mm") ?? "-";
+    }
+
+    private static string GetChatItemClasses(bool isActive) => isActive
+        ? "w-full text-left rounded-2xl bg-[#127646] text-white px-4 py-3 shadow transition"
+        : "w-full text-left rounded-2xl bg-neutral-100 hover:bg-neutral-200 px-4 py-3 text-neutral-700 transition";
+
+    private string DetermineGreetingNameFromIdentity()
+    {
+        if (!string.IsNullOrWhiteSpace(_currentUserName))
+        {
+            var atIndex = _currentUserName.IndexOf('@');
+            return atIndex > 0 ? _currentUserName[..atIndex] : _currentUserName;
+        }
+
+        return "gebruiker";
+    }
+
+    private void UpdateGreetingNameFromChats()
+    {
+        if (string.IsNullOrWhiteSpace(_currentAccountId))
+        {
+            return;
+        }
+
+        var ownMessage = Chats
+            .SelectMany(c => c.messages)
+            .FirstOrDefault(m => string.Equals(m.SenderAccountId, _currentAccountId, StringComparison.Ordinal));
+
+        if (ownMessage is not null && !string.IsNullOrWhiteSpace(ownMessage.SenderName))
+        {
+            _greetingName = ownMessage.SenderName.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? _greetingName;
+        }
+    }
+}

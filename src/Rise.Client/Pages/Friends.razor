@@ -1,0 +1,94 @@
+@page "/friends"
+@using Rise.Client.Shared
+@layout ChatLayout
+<FriendsHeader OnBack="GoBack" />
+
+<section class="bg-neutral-100 px-4 pt-4 pb-2">
+    <FriendsTabs Selected="@_selected" OnChange="ChangeTab" />
+    <FriendSearch @bind-Value="_query" />
+</section>
+
+<FriendList Items="@_filtered"
+            OnAccept="AcceptRequest"
+            OnReject="RejectRequest"
+            OnAdd="AddFriend"
+            OnOpenChat="OpenChat"
+            OnRemove="RemoveFriend" />
+
+@code {
+    private FriendState _selected = FriendState.All;
+    private string? _query;
+
+    private readonly List<FriendDto> _all =
+    [
+        new() { Name = "Emma De Vries", Age = 20, AvatarUrl = "https://i.pravatar.cc/64?img=12", State = FriendState.Requests },
+        new() { Name = "Liam Janssens", Age = 21, AvatarUrl = "https://i.pravatar.cc/64?img=3",  State = FriendState.All },
+        new() { Name = "Noor Peeters", Age = 19, AvatarUrl = "https://i.pravatar.cc/64?img=5",  State = FriendState.Add },
+    ];
+
+    private List<FriendDto> _filtered = [];
+
+    protected override void OnInitialized()
+        => ApplyFilter();
+
+    private void ChangeTab(FriendState tab)
+    {
+        _selected = tab;
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        IEnumerable<FriendDto> q = _all;
+
+        if (_selected != FriendState.All)
+            q = q.Where(f => f.State == _selected);
+
+        if (!string.IsNullOrWhiteSpace(_query))
+            q = q.Where(f => f.Name.Contains(_query, StringComparison.OrdinalIgnoreCase));
+
+        _filtered = q.ToList();
+        StateHasChanged();
+    }
+
+    private void AcceptRequest(FriendDto f)
+    {
+        f.State = FriendState.All;
+        ApplyFilter();
+    }
+
+    private void RejectRequest(FriendDto f)
+    {
+        _all.Remove(f);
+        ApplyFilter();
+    }
+
+    private void AddFriend(FriendDto f)
+    {
+        f.State = FriendState.All;
+        ApplyFilter();
+    }
+
+    private void OpenChat(FriendDto f)
+        => Nav.NavigateTo("/chat"); // later: naar conversatie-id
+
+    private void RemoveFriend(FriendDto f)
+    {
+        _all.Remove(f);
+        ApplyFilter();
+    }
+
+    private void GoBack()
+    {
+        Nav.NavigateTo("/"); // terug naar startpagina of waar je wil
+    }
+
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+
+    private string? Query
+    {
+        get => _query;
+        set { _query = value; ApplyFilter(); }
+    }
+
+}

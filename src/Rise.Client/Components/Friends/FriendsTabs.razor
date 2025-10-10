@@ -1,0 +1,27 @@
+<div role="tablist" class="flex items-center gap-2 px-1.5 py-2 rounded-full bg-white">
+    @foreach (var tab in _tabs)
+    {
+        var active = tab == Selected;
+        <button role="tab"
+                aria-selected="@active"
+                class=@($"tab-btn flex-1 rounded-full px-3 {(active ? "py-3 bg-[#127646] text-white shadow" : "py-2 text-slate-600")}")
+                                @onclick="(() => OnChange.InvokeAsync(tab))">
+            @Label(tab)
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter] public FriendState Selected { get; set; }
+    [Parameter] public EventCallback<FriendState> OnChange { get; set; }
+
+    private readonly FriendState[] _tabs = new[] { FriendState.All, FriendState.Requests, FriendState.Add };
+
+    private static string Label(FriendState s) => s switch
+    {
+        FriendState.All => "Alle",
+        FriendState.Requests => "Verzoeken",
+        FriendState.Add => "Voeg toe",
+        _ => s.ToString()
+    };
+}

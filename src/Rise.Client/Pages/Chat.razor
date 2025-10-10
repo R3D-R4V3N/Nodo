@@ -1,0 +1,486 @@
+@page "/chat/{ChatId:int}"
+@attribute [Authorize]
+@using System.Globalization
+@using System.Linq
+@using System.Security.Claims
+@using System.Threading
+@using Microsoft.AspNetCore.SignalR.Client
+@using Rise.Client.Chats
+@using Rise.Client.Components.Chat
+@using Rise.Shared.Chat
+@using Rise.Shared.Chats
+@layout EmptyLayout
+@implements IAsyncDisposable
+@inject IChatService ChatService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+<div class="flex flex-col h-screen max-h-screen overflow-hidden bg-neutral-100 text-neutral-900">
+
+    <!-- Header -->
+    <ChatHeader DisplayName="@GetChatTitle()"
+                AvatarUrl="@GetAvatarUrl()"
+                StatusText="@GetStatusText()"
+                OnBack="NavigateBack"
+                OnAlert="TriggerAlert" />
+
+    <!-- Supervisor banner (rood) -->
+    <SupervisorBanner OnSupervisorEnabled="HandleSupervisorEnabled" />
+
+    @if (_isLoading)
+    {
+        <div class="flex-1 grid place-items-center">
+            <p class="text-sm text-neutral-500">Gesprek wordt geladen…</p>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_loadError))
+    {
+        <div class="flex-1 grid place-items-center px-6 text-center">
+            <div class="space-y-2">
+                <p class="text-sm text-red-600">@_loadError</p>
+                <button class="text-xs text-[#127646] underline" @onclick="NavigateBack">
+                    Ga terug naar overzicht
+                </button>
+            </div>
+        </div>
+    }
+    else if (_chat is null)
+    {
+        <div class="flex-1 grid place-items-center">
+            <p class="text-sm text-neutral-500">Dit gesprek kon niet gevonden worden.</p>
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrWhiteSpace(_connectionError))
+        {
+            <div class="px-6 py-2 text-xs text-amber-700 bg-amber-50 border-b border-amber-200">
+                @_connectionError
+            </div>
+        }
+
+        <!-- Scrollable messages -->
+        <div class="flex-1 overflow-y-auto px-3 pb-24 no-scrollbar" id="messages-scroll">
+            <MessageList Messages="_messages" TimestampText="@GetConversationDateLabel()" />
+        </div>
+
+        <!-- Fixed input bar -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white">
+            <div class="mx-auto px-3">
+                <SuggestionChips Suggestions="_suggestions" OnPick="ApplySuggestion" />
+                <ChatInput @bind-Value="_draft"
+                           OnSend="SendMessageAsync"
+                           OnSendVoice="HandleVoiceMessageAsync" />
+                @if (!string.IsNullOrWhiteSpace(_errorMessage))
+                {
+                    <p class="px-2 pb-3 text-xs text-red-600">@_errorMessage</p>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+  html, body {
+      height: 100%;
+      overflow-x: hidden;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+      display: none;
+  }
+  .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+  }
+</style>
+
+@code {
+    [Parameter] public int ChatId { get; set; }
+
+    private ChatDto.Index? _chat;
+    private readonly List<Message> _messages = new();
+    private readonly HashSet<int> _messageIds = new();
+    private readonly string[] _suggestions =
+    {
+        "Hey! Hoe gaat het vandaag?",
+        "Wat heb je gedaan vandaag?",
+        "Zullen we later bellen?",
+        "Heb je plannen voor dit weekend?",
+        "Ik ben trots op je! 💪",
+        "Wil je samen een spelletje spelen?"
+    };
+
+    private readonly SemaphoreSlim _hubConnectionLock = new(1, 1);
+    private HubConnection? _hubConnection;
+    private int? _joinedChatId;
+    private string? _currentAccountId;
+    private string? _currentUserName;
+    private string? _draft = string.Empty;
+    private string? _errorMessage;
+    private string? _connectionError;
+    private string? _loadError;
+    private bool _isLoading = true;
+    private bool _isSending;
+    private bool _isSupervised = false; // ✅ nieuw
+
+    private void HandleSupervisorEnabled() // ✅ callback van banner
+    {
+        _isSupervised = true;
+        StateHasChanged();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loadError = null;
+        _errorMessage = null;
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user?.Identity?.IsAuthenticated != true)
+        {
+            NavigationManager.NavigateTo("/login", true);
+            _isLoading = false;
+            return;
+        }
+
+        _currentAccountId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _currentUserName = user.Identity?.Name;
+
+        _isLoading = true;
+        var result = await ChatService.GetByIdAsync(ChatId);
+
+        if (result.IsSuccess && result.Value is not null)
+        {
+            _chat = result.Value;
+            _messages.Clear();
+            _messages.AddRange(_chat.messages
+                .OrderBy(m => m.Timestamp)
+                .Select(MapToMessage));
+
+            _messageIds.Clear();
+            foreach (var message in _chat.messages)
+            {
+                _messageIds.Add(message.Id);
+            }
+        }
+        else
+        {
+            _chat = null;
+            _messages.Clear();
+            _messageIds.Clear();
+            _loadError = result.Errors.FirstOrDefault() ?? "Het gesprek kon niet geladen worden.";
+        }
+
+        _isLoading = false;
+
+        await EnsureHubConnectionAsync();
+    }
+
+    private async Task SendMessageAsync(string text)
+    {
+        if (_chat is null || _isSending || string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        _isSending = true;
+        _errorMessage = null;
+
+        try
+        {
+            var request = new ChatRequest.CreateMessage
+            {
+                ChatId = _chat.chatId,
+                Content = text
+            };
+
+            var result = await ChatService.CreateMessageAsync(request);
+
+            if (!result.IsSuccess || result.Value is null)
+            {
+                _errorMessage = result.Errors.FirstOrDefault() ?? "Het bericht kon niet verzonden worden.";
+                return;
+            }
+
+            if (TryAddMessage(result.Value))
+            {
+                await ScrollToBottomAsync();
+            }
+        }
+        finally
+        {
+            _isSending = false;
+            StateHasChanged();
+        }
+    }
+
+    private Task ApplySuggestion(string text)
+    {
+        _draft = text;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleVoiceMessageAsync(RecordedAudio audio)
+    {
+        _errorMessage = "Spraakberichten worden nog niet ondersteund.";
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task EnsureHubConnectionAsync()
+    {
+        await _hubConnectionLock.WaitAsync();
+        try
+        {
+            if (_hubConnection is null)
+            {
+                _hubConnection = new HubConnectionBuilder()
+                    .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+                    .WithAutomaticReconnect()
+                    .Build();
+
+                _hubConnection.On<MessageDto>("MessageCreated", dto =>
+                    InvokeAsync(async () =>
+                    {
+                        ProcessIncomingMessage(dto);
+                        await ScrollToBottomAsync();
+                    }));
+
+                _hubConnection.Reconnecting += error => InvokeAsync(() =>
+                {
+                    _connectionError = "Realtime verbinding wordt hersteld…";
+                    StateHasChanged();
+                });
+
+                _hubConnection.Reconnected += _ => InvokeAsync(async () =>
+                {
+                    _connectionError = null;
+                    await JoinCurrentChatAfterReconnectAsync();
+                    StateHasChanged();
+                });
+
+                _hubConnection.Closed += error => InvokeAsync(() =>
+                {
+                    _joinedChatId = null;
+                    _connectionError = "Realtime verbinding werd verbroken. Vernieuw de pagina om opnieuw te verbinden.";
+                    StateHasChanged();
+                });
+            }
+
+            if (_hubConnection.State == HubConnectionState.Disconnected)
+            {
+                await _hubConnection.StartAsync();
+            }
+
+            if (_hubConnection.State != HubConnectionState.Connected)
+            {
+                return;
+            }
+
+            await JoinCurrentChatCoreAsync();
+        }
+        catch (Exception ex)
+        {
+            _connectionError = $"Realtime verbinding mislukt: {ex.Message}";
+        }
+        finally
+        {
+            _hubConnectionLock.Release();
+        }
+    }
+
+    private void ProcessIncomingMessage(MessageDto dto)
+    {
+        if (_chat is null || dto.ChatId != _chat.chatId)
+        {
+            return;
+        }
+
+        if (TryAddMessage(dto))
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task JoinCurrentChatAfterReconnectAsync()
+    {
+        await _hubConnectionLock.WaitAsync();
+        try
+        {
+            if (_hubConnection?.State == HubConnectionState.Connected)
+            {
+                await JoinCurrentChatCoreAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            _connectionError = $"Realtime verbinding mislukt: {ex.Message}";
+        }
+        finally
+        {
+            _hubConnectionLock.Release();
+        }
+    }
+
+    private async Task JoinCurrentChatCoreAsync()
+    {
+        if (_hubConnection is null)
+        {
+            return;
+        }
+
+        if (_chat is null)
+        {
+            if (_joinedChatId is int previousId)
+            {
+                await _hubConnection.SendAsync("LeaveChat", previousId);
+                _joinedChatId = null;
+            }
+
+            return;
+        }
+
+        if (_joinedChatId == _chat.chatId)
+        {
+            return;
+        }
+
+        if (_joinedChatId is int oldChatId)
+        {
+            await _hubConnection.SendAsync("LeaveChat", oldChatId);
+        }
+
+        await _hubConnection.SendAsync("JoinChat", _chat.chatId);
+        _joinedChatId = _chat.chatId;
+        _connectionError = null;
+    }
+
+    private bool TryAddMessage(MessageDto dto)
+    {
+        if (_chat is null)
+        {
+            return false;
+        }
+
+        if (!_messageIds.Add(dto.Id))
+        {
+            return false;
+        }
+
+        _chat.messages.Add(dto);
+        _chat.messages = _chat.messages
+            .OrderBy(m => m.Timestamp)
+            .ToList();
+
+        var mapped = MapToMessage(dto);
+        _messages.Add(mapped);
+        _messages.Sort((a, b) => Nullable.Compare(a.Timestamp, b.Timestamp));
+
+        return true;
+    }
+
+    private Message MapToMessage(MessageDto dto)
+    {
+        var isOutgoing = !string.IsNullOrWhiteSpace(_currentAccountId)
+            && string.Equals(dto.SenderAccountId, _currentAccountId, StringComparison.Ordinal);
+
+        return new Message(
+            dto.Id.ToString(CultureInfo.InvariantCulture),
+            dto.Content,
+            isOutgoing,
+            AvatarUrl: null,
+            Timestamp: dto.Timestamp,
+            AudioUrl: null,
+            AudioDuration: null,
+            SenderName: dto.SenderName);
+    }
+
+    private string GetChatTitle()
+    {
+        if (_chat is null)
+        {
+            return _currentUserName ?? "Chat";
+        }
+
+        var participantNames = _chat.messages
+            .Where(m => !string.IsNullOrWhiteSpace(m.SenderName)
+                        && !string.Equals(m.SenderAccountId, _currentAccountId, StringComparison.Ordinal))
+            .Select(m => m.SenderName)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (participantNames.Count == 0)
+        {
+            return !string.IsNullOrWhiteSpace(_currentUserName)
+                ? _currentUserName!
+                : $"Chat {_chat.chatId}";
+        }
+
+        return participantNames.Count == 1
+            ? participantNames[0]
+            : string.Join(", ", participantNames);
+    }
+
+    private string GetAvatarUrl()
+    {
+        return "https://i.pravatar.cc/64";
+    }
+
+    private string GetStatusText()
+    {
+        var lastMessage = _messages.LastOrDefault();
+        var baseText = (lastMessage?.Timestamp is DateTimeOffset ts)
+            ? $"Laatste bericht {ts.ToLocalTime():HH:mm}"
+            : "Online";
+
+        return _isSupervised ? $"Onder toezicht • {baseText}" : baseText; // ✅ toont status bij toezicht
+    }
+
+    private string GetConversationDateLabel()
+    {
+        if (_chat is null)
+        {
+            return string.Empty;
+        }
+
+        var first = _chat.messages
+            .OrderBy(m => m.Timestamp)
+            .FirstOrDefault();
+
+        return first?.Timestamp.ToLocalTime().ToString("d MMM yyyy", CultureInfo.GetCultureInfo("nl-BE")) ?? string.Empty;
+    }
+
+    private Task NavigateBack()
+    {
+        NavigationManager.NavigateTo("/homepage");
+        return Task.CompletedTask;
+    }
+
+    private Task TriggerAlert()
+    {
+        // TODO: Hook up with actual alert functionality.
+        return Task.CompletedTask;
+    }
+
+    private async Task ScrollToBottomAsync()
+    {
+        // Kleine trick: laat Blazor eerst renderen, dan naar beneden scrollen
+        await Task.Yield();
+        var elem = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/scrollHelpers.js");
+        await elem.InvokeVoidAsync("scrollToEnd", "#messages-scroll");
+    }
+
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
+
+        _hubConnectionLock.Dispose();
+    }
+}
