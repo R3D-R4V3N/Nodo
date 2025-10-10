@@ -15,6 +15,7 @@ internal class MessageConfiguration : EntityConfiguration<Message>
         builder.HasOne(m => m.Chat)
             .WithMany(c => c.Messages)
             .HasForeignKey(m => m.ChatId)
+<<<<<<< HEAD
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
@@ -23,6 +24,10 @@ internal class MessageConfiguration : EntityConfiguration<Message>
             .HasForeignKey(m => m.SenderId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
+=======
+            .IsRequired()                       // verplicht: elke Message heeft een Chat
+            .OnDelete(DeleteBehavior.Cascade);   // verwijder messages als chat verwijderd wordt
+>>>>>>> origin/main
 
         // Extra properties configureren (optioneel)
         builder.Property(m => m.Inhoud)

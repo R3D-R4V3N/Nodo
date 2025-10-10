@@ -27,8 +27,13 @@
     --color-gray-200: oklch(92.8% 0.006 264.531);
     --color-gray-400: oklch(70.7% 0.022 261.325);
     --color-gray-500: oklch(55.1% 0.027 264.364);
+<<<<<<< HEAD
     --color-gray-900: oklch(21% 0.034 264.665);
     --color-neutral-50: oklch(98.5% 0 0);
+=======
+    --color-gray-700: oklch(37.3% 0.034 259.733);
+    --color-gray-900: oklch(21% 0.034 264.665);
+>>>>>>> origin/main
     --color-neutral-100: oklch(97% 0 0);
     --color-neutral-200: oklch(92.2% 0 0);
     --color-neutral-300: oklch(87% 0 0);
@@ -47,8 +52,11 @@
     --text-sm--line-height: calc(1.25 / 0.875);
     --text-base: 1rem;
     --text-base--line-height: calc(1.5 / 1);
+<<<<<<< HEAD
     --text-lg: 1.125rem;
     --text-lg--line-height: calc(1.75 / 1.125);
+=======
+>>>>>>> origin/main
     --text-4xl: 2.25rem;
     --text-4xl--line-height: calc(2.5 / 2.25);
     --font-weight-normal: 400;
@@ -250,6 +258,7 @@
   .inset-y-0 {
     inset-block: calc(var(--spacing) * 0);
   }
+<<<<<<< HEAD
   .top-0 {
     top: calc(var(--spacing) * 0);
   }
@@ -265,6 +274,11 @@
   .left-0 {
     left: calc(var(--spacing) * 0);
   }
+=======
+  .bottom-6 {
+    bottom: calc(var(--spacing) * 6);
+  }
+>>>>>>> origin/main
   .left-1\/2 {
     left: calc(1/2 * 100%);
   }
@@ -313,11 +327,22 @@
   .mt-3 {
     margin-top: calc(var(--spacing) * 3);
   }
+<<<<<<< HEAD
   .mt-6 {
     margin-top: calc(var(--spacing) * 6);
   }
   .mb-3 {
     margin-bottom: calc(var(--spacing) * 3);
+=======
+  .mt-\[4\%\] {
+    margin-top: 4%;
+  }
+  .mt-\[6\%\] {
+    margin-top: 6%;
+  }
+  .mb-2 {
+    margin-bottom: calc(var(--spacing) * 2);
+>>>>>>> origin/main
   }
   .mb-5 {
     margin-bottom: calc(var(--spacing) * 5);
@@ -328,9 +353,12 @@
   .ml-2 {
     margin-left: calc(var(--spacing) * 2);
   }
+<<<<<<< HEAD
   .ml-3 {
     margin-left: calc(var(--spacing) * 3);
   }
+=======
+>>>>>>> origin/main
   .ml-4 {
     margin-left: calc(var(--spacing) * 4);
   }
@@ -376,8 +404,19 @@
   .h-14 {
     height: calc(var(--spacing) * 14);
   }
+<<<<<<< HEAD
   .h-16 {
     height: calc(var(--spacing) * 16);
+=======
+  .h-\[20vh\] {
+    height: 20vh;
+  }
+  .h-\[50\%\] {
+    height: 50%;
+  }
+  .h-\[80vh\] {
+    height: 80vh;
+>>>>>>> origin/main
   }
   .h-full {
     height: 100%;
@@ -385,9 +424,12 @@
   .h-screen {
     height: 100vh;
   }
+<<<<<<< HEAD
   .max-h-screen {
     max-height: 100vh;
   }
+=======
+>>>>>>> origin/main
   .min-h-screen {
     min-height: 100vh;
   }
@@ -452,6 +494,7 @@
     --tw-translate-x: calc(calc(1/2 * 100%) * -1);
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
+<<<<<<< HEAD
   .-translate-y-full {
     --tw-translate-y: -100%;
     translate: var(--tw-translate-x) var(--tw-translate-y);
@@ -460,6 +503,8 @@
     --tw-translate-y: calc(var(--spacing) * 0);
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
+=======
+>>>>>>> origin/main
   .animate-pulse {
     animation: var(--animate-pulse);
   }
@@ -493,9 +538,12 @@
   .items-end {
     align-items: flex-end;
   }
+<<<<<<< HEAD
   .items-start {
     align-items: flex-start;
   }
+=======
+>>>>>>> origin/main
   .justify-between {
     justify-content: space-between;
   }
@@ -612,6 +660,7 @@
   .border-neutral-200 {
     border-color: var(--color-neutral-200);
   }
+<<<<<<< HEAD
   .border-red-400\/40 {
     border-color: color-mix(in srgb, oklch(70.4% 0.191 22.216) 40%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
@@ -624,6 +673,8 @@
       border-color: color-mix(in oklab, var(--color-red-500) 40%, transparent);
     }
   }
+=======
+>>>>>>> origin/main
   .border-white {
     border-color: var(--color-white);
   }
@@ -642,9 +693,12 @@
   .bg-\[\#ffffff\] {
     background-color: #ffffff;
   }
+<<<<<<< HEAD
   .bg-amber-50 {
     background-color: var(--color-amber-50);
   }
+=======
+>>>>>>> origin/main
   .bg-blue-500 {
     background-color: var(--color-blue-500);
   }
@@ -675,9 +729,12 @@
   .object-cover {
     object-fit: cover;
   }
+<<<<<<< HEAD
   .p-1\.5 {
     padding: calc(var(--spacing) * 1.5);
   }
+=======
+>>>>>>> origin/main
   .p-2 {
     padding: calc(var(--spacing) * 2);
   }
@@ -765,12 +822,15 @@
   .text-center {
     text-align: center;
   }
+<<<<<<< HEAD
   .text-left {
     text-align: left;
   }
   .text-right {
     text-align: right;
   }
+=======
+>>>>>>> origin/main
   .text-4xl {
     font-size: var(--text-4xl);
     line-height: var(--tw-leading, var(--text-4xl--line-height));
@@ -836,12 +896,21 @@
   .text-gray-500 {
     color: var(--color-gray-500);
   }
+<<<<<<< HEAD
   .text-gray-900 {
     color: var(--color-gray-900);
   }
   .text-neutral-400 {
     color: var(--color-neutral-400);
   }
+=======
+  .text-gray-700 {
+    color: var(--color-gray-700);
+  }
+  .text-gray-900 {
+    color: var(--color-gray-900);
+  }
+>>>>>>> origin/main
   .text-neutral-500 {
     color: var(--color-neutral-500);
   }
@@ -1180,6 +1249,21 @@
       }
     }
   }
+}
+@property --tw-translate-x {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+@property --tw-translate-y {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+@property --tw-translate-z {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
 }
 @property --tw-translate-x {
   syntax: "*";

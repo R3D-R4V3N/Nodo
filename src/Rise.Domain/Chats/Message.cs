@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 using Rise.Domain.Users;
 
+=======
+>>>>>>> origin/main
 namespace Rise.Domain.Chats;
 
 public class Message : Entity
@@ -12,9 +15,17 @@ public class Message : Entity
         set => _inhoud = Guard.Against.NullOrWhiteSpace(value);
     }
 
+<<<<<<< HEAD
     public int ChatId { get; set; }
     public Chat Chat { get; set; } = null!;
 
     public int SenderId { get; set; }
     public ApplicationUser Sender { get; set; } = null!;
 }
+=======
+    public int ChatId { get; set; }        // Foreign key
+    public Chat Chat { get; set; } = null!;
+    
+
+}
+>>>>>>> origin/main

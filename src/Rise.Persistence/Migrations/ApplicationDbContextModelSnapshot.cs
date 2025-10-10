@@ -280,9 +280,12 @@ namespace Rise.Persistence.Migrations
                     b.Property<int>("ChatId")
                         .HasColumnType("int");
 
+<<<<<<< HEAD
                     b.Property<int>("SenderId")
                         .HasColumnType("int");
 
+=======
+>>>>>>> origin/main
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
@@ -307,8 +310,11 @@ namespace Rise.Persistence.Migrations
 
                     b.HasIndex("ChatId");
 
+<<<<<<< HEAD
                     b.HasIndex("SenderId");
 
+=======
+>>>>>>> origin/main
                     b.ToTable("Message", (string)null);
                 });
 
@@ -577,6 +583,7 @@ namespace Rise.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+<<<<<<< HEAD
                     b.HasOne("Rise.Domain.Users.ApplicationUser", "Sender")
                         .WithMany()
                         .HasForeignKey("SenderId")
@@ -585,6 +592,9 @@ namespace Rise.Persistence.Migrations
 
                     b.Navigation("Chat");
                     b.Navigation("Sender");
+=======
+                    b.Navigation("Chat");
+>>>>>>> origin/main
                 });
 
             modelBuilder.Entity("Rise.Domain.Projects.Project", b =>

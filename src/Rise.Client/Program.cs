@@ -52,7 +52,11 @@ try
     builder.Services.AddHttpClient<IChatService, ChatService>(client =>
     {
         client.BaseAddress = new Uri(builder.Configuration["BackendUrl"] ?? "https://localhost:5001");
+<<<<<<< HEAD
     }).AddHttpMessageHandler<CookieHandler>();
+=======
+    });
+>>>>>>> origin/main
 
     await builder.Build().RunAsync();
 }           

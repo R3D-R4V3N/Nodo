@@ -14,7 +14,10 @@ using Rise.Services.Chats;
 using Rise.Shared.Chats;
 using Rise.Server;
 using Rise.Server.Hubs;
+<<<<<<< HEAD
 using Rise.Server.RealTime;
+=======
+>>>>>>> origin/main
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -95,7 +98,10 @@ try
             opt.Assemblies = [typeof(Rise.Shared.Products.ProductRequest).Assembly];
         });
     builder.Services.AddScoped<IChatService, ChatService>();
+<<<<<<< HEAD
     builder.Services.AddSingleton<IChatMessageDispatcher, SignalRChatMessageDispatcher>();
+=======
+>>>>>>> origin/main
     
     var app = builder.Build();
 

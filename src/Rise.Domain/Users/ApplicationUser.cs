@@ -1,7 +1,10 @@
 ﻿using Ardalis.Result;
 using System;
 using System.Collections.Generic;
+<<<<<<< HEAD
 using System.Diagnostics.CodeAnalysis;
+=======
+>>>>>>> origin/main
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,6 +38,7 @@ namespace Rise.Domain.Users
         {
         }
 
+<<<<<<< HEAD
         [SetsRequiredMembers]
         public ApplicationUser(string accountId, string firstName, string lastName, string biography, UserType userType)
         {
@@ -45,6 +49,8 @@ namespace Rise.Domain.Users
             UserType = userType;
         }
 
+=======
+>>>>>>> origin/main
         public Result AddFriend(ApplicationUser friend)
         {
             if (!friendRequests.Contains(friend))

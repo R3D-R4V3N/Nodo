@@ -37,7 +37,10 @@ namespace Rise.Persistence.Migrations
                     Inhoud = table.Column<string>(type: "varchar(2000)", maxLength: 2000, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     ChatId = table.Column<int>(type: "int", nullable: false),
+<<<<<<< HEAD
                     SenderId = table.Column<int>(type: "int", nullable: false),
+=======
+>>>>>>> origin/main
                     CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
                     IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: false)
@@ -51,12 +54,15 @@ namespace Rise.Persistence.Migrations
                         principalTable: "Chat",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+<<<<<<< HEAD
                     table.ForeignKey(
                         name: "FK_Message_ApplicationUser_SenderId",
                         column: x => x.SenderId,
                         principalTable: "ApplicationUser",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+=======
+>>>>>>> origin/main
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -64,11 +70,14 @@ namespace Rise.Persistence.Migrations
                 name: "IX_Message_ChatId",
                 table: "Message",
                 column: "ChatId");
+<<<<<<< HEAD
 
             migrationBuilder.CreateIndex(
                 name: "IX_Message_SenderId",
                 table: "Message",
                 column: "SenderId");
+=======
+>>>>>>> origin/main
         }
 
         /// <inheritdoc />

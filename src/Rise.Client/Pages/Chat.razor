@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 @page "/chat/{ChatId:int}"
 @attribute [Authorize]
 @using System.Globalization
@@ -14,6 +15,21 @@
 @inject IChatService ChatService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+=======
+@page "/chat"
+@using Microsoft.AspNetCore.SignalR.Client
+@using Rise.Client.Shared
+@using Rise.Services
+@inject WoordFilter Filter
+@inject NavigationManager Nav
+@layout ChatLayout
+@implements IAsyncDisposable
+<ChatHeader DisplayName="Helena"
+            AvatarUrl="https://i.pravatar.cc/64?img=12"
+            StatusText="Online 11 minuten geleden"
+            OnBack="GoBack"
+            OnAlert="TriggerAlert" />
+>>>>>>> origin/main
 
 <div class="flex flex-col h-screen max-h-screen overflow-hidden bg-neutral-100 text-neutral-900">
 
@@ -95,7 +111,11 @@
 </style>
 
 @code {
+<<<<<<< HEAD
     [Parameter] public int ChatId { get; set; }
+=======
+    private readonly List<Message> _messages = new();
+>>>>>>> origin/main
 
     private ChatDto.Index? _chat;
     private readonly List<Message> _messages = new();
@@ -110,6 +130,7 @@
         "Wil je samen een spelletje spelen?"
     };
 
+<<<<<<< HEAD
     private readonly SemaphoreSlim _hubConnectionLock = new(1, 1);
     private HubConnection? _hubConnection;
     private int? _joinedChatId;
@@ -124,6 +145,53 @@
     private bool _isSupervised = false; // ✅ nieuw
 
     private void HandleSupervisorEnabled() // ✅ callback van banner
+=======
+    private HubConnection? _hubConnection;
+    private const string CurrentUser = "Helena";
+    private const string RemoteAvatarUrl = "https://i.pravatar.cc/64?img=12";
+    private string _draft = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var hubUrl = new Uri(new Uri(Nav.BaseUri), "chathub");
+
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(hubUrl)
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        {
+            var isOutgoing = string.Equals(user, CurrentUser, StringComparison.OrdinalIgnoreCase);
+
+            _messages.Add(new Message(Guid.NewGuid().ToString(), message, isOutgoing,
+                isOutgoing ? null : RemoteAvatarUrl,
+                DateTimeOffset.Now));
+
+            InvokeAsync(StateHasChanged);
+        });
+
+        _hubConnection.On<string, string, double>("ReceiveVoiceMessage", (user, dataUrl, durationSeconds) =>
+        {
+            var isOutgoing = string.Equals(user, CurrentUser, StringComparison.OrdinalIgnoreCase);
+            TimeSpan? duration = double.IsFinite(durationSeconds) && durationSeconds > 0
+                ? TimeSpan.FromSeconds(durationSeconds)
+                : null;
+
+            _messages.Add(new Message(Guid.NewGuid().ToString(), string.Empty, isOutgoing,
+                isOutgoing ? null : RemoteAvatarUrl,
+                DateTimeOffset.Now,
+                dataUrl,
+                duration));
+
+            InvokeAsync(StateHasChanged);
+        });
+
+        await _hubConnection.StartAsync();
+    }
+
+    private Task GoBack()
+>>>>>>> origin/main
     {
         _isSupervised = true;
         StateHasChanged();
@@ -472,6 +540,7 @@
         await elem.InvokeVoidAsync("scrollToEnd", "#messages-scroll");
     }
 
+<<<<<<< HEAD
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     public async ValueTask DisposeAsync()
@@ -482,5 +551,36 @@
         }
 
         _hubConnectionLock.Dispose();
+=======
+    private async Task SendAsync(string text)
+    {
+        if (_hubConnection is null || string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        var censored = Filter.Censor(text);
+
+        await _hubConnection.SendAsync("SendMessage", CurrentUser, censored);
+        _draft = string.Empty;
+    }
+
+    private async Task SendVoiceAsync(RecordedAudio audio)
+    {
+        if (_hubConnection is null || string.IsNullOrWhiteSpace(audio.DataUrl))
+        {
+            return;
+        }
+
+        await _hubConnection.SendAsync("SendVoiceMessage", CurrentUser, audio.DataUrl, audio.DurationSeconds);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
+>>>>>>> origin/main
     }
 }
