@@ -1,26 +1,27 @@
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
-using Rise.Domain.Products;
-using Rise.Domain.Projects;
 using Rise.Domain.Users;
+using Rise.Shared.Identity;
 
 namespace Rise.Persistence;
+
 /// <summary>
-/// Seeds the database
+/// Seeds the database.
 /// </summary>
 /// <param name="dbContext"></param>
 /// <param name="roleManager"></param>
 /// <param name="userManager"></param>
 public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager)
 {
-    const string PasswordDefault = "A1b2C3!";
+    private const string PasswordDefault = "A1b2C3!";
+
     public async Task SeedAsync()
     {
         await RolesAsync();
         await UsersAsync();
-        await ProductsAsync();
-        await ProjectsAsync();
         await ChatsAsync();
         await MessagesAsync();
     }
@@ -28,157 +29,117 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
     private async Task RolesAsync()
     {
         if (dbContext.Roles.Any())
+        {
             return;
+        }
 
-        await roleManager.CreateAsync(new IdentityRole("Administrator"));
-        await roleManager.CreateAsync(new IdentityRole("Secretary"));
-        await roleManager.CreateAsync(new IdentityRole("Technician"));
+        await roleManager.CreateAsync(new IdentityRole(AppRoles.Administrator));
+        await roleManager.CreateAsync(new IdentityRole(AppRoles.Supervisor));
+        await roleManager.CreateAsync(new IdentityRole(AppRoles.ChatUser));
     }
-    
-    private async Task  UsersAsync()
+
+    private async Task UsersAsync()
     {
         if (dbContext.Users.Any())
+        {
             return;
-        
+        }
+
         await dbContext.Roles.ToListAsync();
 
         var admin = new IdentityUser
         {
-            UserName = "admin@example.com",
-            Email = "admin@example.com",
+            UserName = "admin@nodo.chat",
+            Email = "admin@nodo.chat",
             EmailConfirmed = true,
         };
         await userManager.CreateAsync(admin, PasswordDefault);
-        
-        var secretary = new IdentityUser
-        {
-            UserName = "secretary@example.com",
-            Email = "secretary@example.com",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(secretary, PasswordDefault);
-        
-        var technicianAccount1 = new IdentityUser
-        {
-            UserName = "technician1@example.com",
-            Email = "technician1@example.com",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(technicianAccount1, PasswordDefault);
-        
-        var technicianAccount2 = new IdentityUser
-        {
-            UserName = "technician2@example.com",
-            Email = "technician2@example.com",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(technicianAccount2, PasswordDefault);
-                
-        var user = new IdentityUser
-        {
-            UserName = "user@example.com",
-            Email = "user@example.com",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(user, PasswordDefault);
-        
-        await userManager.AddToRoleAsync(admin, "Administrator");
-        await userManager.AddToRoleAsync(secretary, "Secretary");
-        await userManager.AddToRoleAsync(technicianAccount1, "Technician");
-        await userManager.AddToRoleAsync(technicianAccount2, "Technician");
 
-        dbContext.Technicians.AddRange(
-            new Technician("Tech 1", "Awesome", technicianAccount1.Id),
-            new Technician("Tech 2", "Less Awesome", technicianAccount2.Id));
+        var supervisorEmma = new IdentityUser
+        {
+            UserName = "emma.supervisor@nodo.chat",
+            Email = "emma.supervisor@nodo.chat",
+            EmailConfirmed = true,
+        };
+        await userManager.CreateAsync(supervisorEmma, PasswordDefault);
+
+        var supervisorJonas = new IdentityUser
+        {
+            UserName = "jonas.supervisor@nodo.chat",
+            Email = "jonas.supervisor@nodo.chat",
+            EmailConfirmed = true,
+        };
+        await userManager.CreateAsync(supervisorJonas, PasswordDefault);
+
+        var chatterNoor = new IdentityUser
+        {
+            UserName = "noor@nodo.chat",
+            Email = "noor@nodo.chat",
+            EmailConfirmed = true,
+        };
+        await userManager.CreateAsync(chatterNoor, PasswordDefault);
+
+        var chatterMilan = new IdentityUser
+        {
+            UserName = "milan@nodo.chat",
+            Email = "milan@nodo.chat",
+            EmailConfirmed = true,
+        };
+        await userManager.CreateAsync(chatterMilan, PasswordDefault);
+
+        var chatterLina = new IdentityUser
+        {
+            UserName = "lina@nodo.chat",
+            Email = "lina@nodo.chat",
+            EmailConfirmed = true,
+        };
+        await userManager.CreateAsync(chatterLina, PasswordDefault);
+
+        await userManager.AddToRoleAsync(admin, AppRoles.Administrator);
+        await userManager.AddToRoleAsync(supervisorEmma, AppRoles.Supervisor);
+        await userManager.AddToRoleAsync(supervisorJonas, AppRoles.Supervisor);
+        await userManager.AddToRoleAsync(chatterNoor, AppRoles.ChatUser);
+        await userManager.AddToRoleAsync(chatterMilan, AppRoles.ChatUser);
+        await userManager.AddToRoleAsync(chatterLina, AppRoles.ChatUser);
 
         var applicationUsers = new List<ApplicationUser>
         {
-            new(technicianAccount1.Id, "Max", "Van Dijk", "Ervaren technieker gespecialiseerd in hardware.", UserType.Supervisor),
-            new(technicianAccount2.Id, "Sofie", "Peeters", "Technieker met focus op netwerkoplossingen.", UserType.Supervisor),
-            new(user.Id, "Amber", "Janssens", "Medewerker die ondersteuning zoekt voor haar apparatuur.", UserType.Regular)
+            new(supervisorEmma.Id, "Emma", "Begeleider", "Begeleider die jongeren ondersteunt tijdens het chatten.", UserType.Supervisor),
+            new(supervisorJonas.Id, "Jonas", "Coach", "Houdt gesprekken in de gaten en helpt wanneer het even moeilijk wordt.", UserType.Supervisor),
+            new(chatterNoor.Id, "Noor", "Vermeulen", "Praat graag over muziek en wil nieuwe vrienden maken.", UserType.ChatUser),
+            new(chatterMilan.Id, "Milan", "Peeters", "Zoekt iemand om samen over games te praten.", UserType.ChatUser),
+            new(chatterLina.Id, "Lina", "Jacobs", "Vindt het fijn om vragen te kunnen stellen in een veilige omgeving.", UserType.ChatUser)
         };
 
         dbContext.ApplicationUsers.AddRange(applicationUsers);
 
         await dbContext.SaveChangesAsync();
     }
-    
 
-    
-    private async Task  ProductsAsync()
-    {
-        if (dbContext.Products.Any())
-            return;
-        
-        dbContext.Products.AddRange(
-            new Product{ Name = "Laptop", Description = "15-inch display, 16GB RAM" },
-            new Product{ Name = "Smartphone", Description = "6.5-inch screen, 128GB storage" },
-            new Product{ Name = "Headphones", Description = "Wireless noise-cancelling" },
-            new Product{ Name = "Keyboard", Description = "Mechanical RGB backlit" },
-            new Product{ Name = "Mouse", Description = "Ergonomic wireless mouse" },
-            new Product{ Name = "Monitor", Description = "27-inch 4K UHD display" },
-            new Product{ Name = "Printer", Description = "All-in-one inkjet printer" },
-            new Product{ Name = "Camera", Description = "Mirrorless 24MP with 4K video" },
-            new Product{ Name = "Smartwatch", Description = "Heart rate monitor, GPS" },
-            new Product{ Name = "Speaker", Description = "Bluetooth portable speaker" }
-        );
-
-        await dbContext.SaveChangesAsync();
-    }
-    
-    private async Task  ProjectsAsync()
-    {
-        if (dbContext.Projects.Any())
-            return;
-        
-        var technicians = await dbContext.Technicians.ToListAsync();
-        
-        if (!technicians.Any())
-            return;
-        
-        var addresses = new List<Address>
-        {
-            new Address("Koningstraat 12", "Bus 3A", "Brussel", "1000"),
-            new Address("Meir 45", "", "Antwerpen", "2000"),
-            new Address("Veldstraat 78", "2e verdieping", "Gent", "9000"),
-            new Address("Rue de la Loi 175", "", "Bruxelles", "1040"),
-            new Address("Place Saint-Lambert 8", "Bureau 12", "Liège", "4000"),
-        };
-
-        var rnd = new Random(123); // Using a seed so the random is always the same.
-        
-        var projects = new List<Project>
-        {
-            new("Website Redesign", technicians[rnd.Next(technicians.Count)], addresses[0]),
-            new("Mobile App Development", technicians[rnd.Next(technicians.Count)], addresses[1]),
-            new("Database Migration", technicians[rnd.Next(technicians.Count)], addresses[2]),
-            new("E-commerce Platform", technicians[rnd.Next(technicians.Count)], addresses[3]),
-            new("CRM Integration", technicians[rnd.Next(technicians.Count)], addresses[4])
-        };
-
-        dbContext.Projects.AddRange(projects);
-        await dbContext.SaveChangesAsync();
-    }
-    
     private async Task ChatsAsync()
     {
         if (dbContext.Chats.Any())
+        {
             return;
+        }
 
         var supervisors = await dbContext.ApplicationUsers
             .Where(u => u.UserType == UserType.Supervisor)
             .ToListAsync();
 
-        var regularUsers = await dbContext.ApplicationUsers
-            .Where(u => u.UserType == UserType.Regular)
+        var chatUsers = await dbContext.ApplicationUsers
+            .Where(u => u.UserType == UserType.ChatUser)
             .ToListAsync();
 
-        if (!supervisors.Any() || !regularUsers.Any())
+        if (!supervisors.Any() || !chatUsers.Any())
+        {
             return;
+        }
 
-        var customer = regularUsers.First();
-        var primaryTechnician = supervisors.First();
-        var secondaryTechnician = supervisors.Skip(1).FirstOrDefault() ?? primaryTechnician;
+        var firstChatter = chatUsers.First();
+        var secondChatter = chatUsers.Skip(1).FirstOrDefault() ?? firstChatter;
+        var primarySupervisor = supervisors.First();
+        var backupSupervisor = supervisors.Skip(1).FirstOrDefault() ?? primarySupervisor;
 
         var chat1 = new Chat();
         var chat2 = new Chat();
@@ -186,54 +147,59 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         dbContext.Chats.AddRange(chat1, chat2);
         await dbContext.SaveChangesAsync();
 
-        // voeg berichten toe
         var messages = new List<Message>
         {
-            new Message { Inhoud = "Hallo, ik heb een probleem met mijn laptop.", ChatId = chat1.Id, SenderId = customer.Id },
-            new Message { Inhoud = "Ik kijk er meteen naar!", ChatId = chat1.Id, SenderId = primaryTechnician.Id },
-            new Message { Inhoud = "De printer werkt weer, bedankt!", ChatId = chat2.Id, SenderId = customer.Id },
-            new Message { Inhoud = "Graag gedaan!", ChatId = chat2.Id, SenderId = secondaryTechnician.Id },
+            new Message { Inhoud = "Hoi Emma, ik ben een beetje zenuwachtig voor morgen.", ChatId = chat1.Id, SenderId = firstChatter.Id },
+            new Message { Inhoud = "Dat begrijp ik Noor, we bekijken samen hoe je het rustig kunt aanpakken.", ChatId = chat1.Id, SenderId = primarySupervisor.Id },
+            new Message { Inhoud = "Ik heb vandaag een leuke foto van mijn hond gemaakt!", ChatId = chat2.Id, SenderId = secondChatter.Id },
+            new Message { Inhoud = "Wat leuk! Wil je hem straks in de groepschat delen?", ChatId = chat2.Id, SenderId = backupSupervisor.Id },
         };
 
         dbContext.Messages.AddRange(messages);
         await dbContext.SaveChangesAsync();
     }
-    
+
     private async Task MessagesAsync()
     {
         if (dbContext.Messages.Any())
+        {
             return;
+        }
 
         var chats = await dbContext.Chats.ToListAsync();
 
         if (!chats.Any())
+        {
             return;
+        }
 
         var supervisors = await dbContext.ApplicationUsers
             .Where(u => u.UserType == UserType.Supervisor)
             .ToListAsync();
 
-        var customer = await dbContext.ApplicationUsers
-            .FirstOrDefaultAsync(u => u.UserType == UserType.Regular);
+        var chatUsers = await dbContext.ApplicationUsers
+            .Where(u => u.UserType == UserType.ChatUser)
+            .ToListAsync();
 
-        if (!supervisors.Any() || customer is null)
+        if (!supervisors.Any() || !chatUsers.Any())
+        {
             return;
+        }
 
-        var primaryTechnician = supervisors.First();
-        var secondaryTechnician = supervisors.Skip(1).FirstOrDefault() ?? primaryTechnician;
+        var firstChatter = chatUsers.First();
+        var secondChatter = chatUsers.Skip(1).FirstOrDefault() ?? firstChatter;
+        var primarySupervisor = supervisors.First();
+        var backupSupervisor = supervisors.Skip(1).FirstOrDefault() ?? primarySupervisor;
 
-        // voorbeeldberichten per chat
         var messages = new List<Message>
         {
-            new Message { Inhoud = "Hoi, hoe gaat het met het project?", ChatId = chats[0].Id, SenderId = customer.Id },
-            new Message { Inhoud = "Prima, ik heb net de laatste bug opgelost!", ChatId = chats[0].Id, SenderId = primaryTechnician.Id },
-
-            new Message { Inhoud = "De server lijkt traag te reageren vandaag.", ChatId = chats[^1].Id, SenderId = customer.Id },
-            new Message { Inhoud = "Ik zal even de logs checken, geef me 5 minuten.", ChatId = chats[^1].Id, SenderId = secondaryTechnician.Id }
+            new Message { Inhoud = "Hoe voelde je je na het gesprek van gisteren?", ChatId = chats[0].Id, SenderId = primarySupervisor.Id },
+            new Message { Inhoud = "Veel beter, bedankt om te luisteren!", ChatId = chats[0].Id, SenderId = firstChatter.Id },
+            new Message { Inhoud = "Zullen we vrijdag samen online tekenen?", ChatId = chats[^1].Id, SenderId = secondChatter.Id },
+            new Message { Inhoud = "Leuk idee! Ik stuur straks een uitnodiging.", ChatId = chats[^1].Id, SenderId = backupSupervisor.Id }
         };
 
         dbContext.Messages.AddRange(messages);
         await dbContext.SaveChangesAsync();
     }
-    
 }
