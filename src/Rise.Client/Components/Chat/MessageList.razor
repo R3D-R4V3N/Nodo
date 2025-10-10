@@ -1,7 +1,13 @@
+@using Microsoft.AspNetCore.Components
 @inject IJSRuntime JS
 
 <section @ref="_scrollHost"
          class="flex-1 overflow-y-auto bg-neutral-100 px-4 py-5 space-y-2">
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+    }
+
     @if (!string.IsNullOrWhiteSpace(TimestampText))
     {
         <p class="text-center text-[10px] sm:text-xs text-neutral-500">@TimestampText</p>
@@ -27,6 +33,7 @@
 @code {
     [Parameter] public IReadOnlyList<Message> Messages { get; set; } = Array.Empty<Message>();
     [Parameter] public string? TimestampText { get; set; } = "Nov 30, 2023, 9:41 AM";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     private ElementReference _scrollHost;
 

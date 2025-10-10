@@ -56,9 +56,44 @@
             </div>
         }
 
+        @if (!string.IsNullOrWhiteSpace(_alertError))
+        {
+            <div class="px-6 py-2 text-xs text-red-700 bg-red-50 border-y border-red-200">
+                @_alertError
+            </div>
+        }
+
         <!-- Scrollable messages -->
         <div class="flex-1 overflow-y-auto px-3 pb-24 no-scrollbar">
-            <MessageList Messages="_messages" TimestampText="@GetConversationDateLabel()" />
+            <MessageList Messages="_messages" TimestampText="@GetConversationDateLabel()">
+                @if (_alertStatus?.IsActive == true)
+                {
+                    <div class="sticky top-3 z-20 space-y-2">
+                        <span class="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-red-700">
+                            <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path d="M9.401.598a1 1 0 0 1 1.198 0l8 6A1 1 0 0 1 19 8H1a1 1 0 0 1-.598-1.402l8-6Z" />
+                            </svg>
+                            Vastgezet bericht
+                        </span>
+                        <div class="flex items-start gap-3 p-4 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200 shadow-sm" role="alert">
+                            <svg class="shrink-0 inline w-5 h-5 mt-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                            </svg>
+                            <div>
+                                <p class="font-semibold">Supervisor kijkt live mee</p>
+                                <p class="mt-1 text-xs leading-relaxed text-red-700">
+                                    Een supervisor volgt dit gesprek in realtime. Deel alleen informatie die strikt noodzakelijk is.
+                                </p>
+                                @{ var alertMetaText = GetAlertMetaText(); }
+                                @if (!string.IsNullOrWhiteSpace(alertMetaText))
+                                {
+                                    <p class="mt-2 text-[11px] text-red-600">@alertMetaText</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </MessageList>
         </div>
 
         <!-- Fixed input bar -->
@@ -97,6 +132,7 @@
     private ChatDto.Index? _chat;
     private readonly List<Message> _messages = new();
     private readonly HashSet<int> _messageIds = new();
+    private AlertStatusDto? _alertStatus;
     private readonly string[] _suggestions =
     {
         "Hey! Hoe gaat het vandaag?",
@@ -115,14 +151,18 @@
     private string? _draft = string.Empty;
     private string? _errorMessage;
     private string? _connectionError;
+    private string? _alertError;
     private string? _loadError;
     private bool _isLoading = true;
     private bool _isSending;
+    private bool _isAlertRequestPending;
 
     protected override async Task OnParametersSetAsync()
     {
         _loadError = null;
         _errorMessage = null;
+        _alertError = null;
+        _alertStatus = null;
 
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
@@ -159,6 +199,7 @@
             _chat = null;
             _messages.Clear();
             _messageIds.Clear();
+            _alertStatus = null;
             _loadError = result.Errors.FirstOrDefault() ?? "Het gesprek kon niet geladen worden.";
         }
 
@@ -230,6 +271,9 @@
 
                 _hubConnection.On<MessageDto>("MessageCreated", dto =>
                     InvokeAsync(() => ProcessIncomingMessage(dto)));
+
+                _hubConnection.On<AlertStatusDto>("AlertStateChanged", dto =>
+                    InvokeAsync(() => HandleAlertStateChanged(dto)));
 
                 _hubConnection.Reconnecting += error => InvokeAsync(() =>
                 {
@@ -338,6 +382,18 @@
         await _hubConnection.SendAsync("JoinChat", _chat.chatId);
         _joinedChatId = _chat.chatId;
         _connectionError = null;
+
+        try
+        {
+            var status = await _hubConnection.InvokeAsync<AlertStatusDto>("GetAlertStatus", _chat.chatId);
+            _alertStatus = status;
+        }
+        catch
+        {
+            // Het opvragen van de huidige alertstatus is optioneel; fouten mogen de chat niet blokkeren.
+        }
+
+        StateHasChanged();
     }
 
     private bool TryAddMessage(MessageDto dto)
@@ -442,10 +498,77 @@
         return Task.CompletedTask;
     }
 
-    private Task TriggerAlert()
+    private async Task TriggerAlert()
     {
-        // TODO: Hook up with actual alert functionality.
-        return Task.CompletedTask;
+        if (_chat is null)
+        {
+            return;
+        }
+
+        if (_isAlertRequestPending)
+        {
+            return;
+        }
+
+        _alertError = null;
+
+        if (_hubConnection is null || _hubConnection.State != HubConnectionState.Connected)
+        {
+            await EnsureHubConnectionAsync();
+        }
+
+        if (_hubConnection is null || _hubConnection.State != HubConnectionState.Connected)
+        {
+            _alertError = "Alarm kon niet worden geactiveerd. Controleer de realtime verbinding en probeer opnieuw.";
+            StateHasChanged();
+            return;
+        }
+
+        var isActive = _alertStatus?.IsActive ?? false;
+
+        _isAlertRequestPending = true;
+        try
+        {
+            await _hubConnection.SendAsync("SetAlertState", _chat.chatId, !isActive);
+        }
+        catch (Exception ex)
+        {
+            _alertError = $"Alarm kon niet worden bijgewerkt: {ex.Message}";
+        }
+        finally
+        {
+            _isAlertRequestPending = false;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleAlertStateChanged(AlertStatusDto dto)
+    {
+        if (_chat is null || dto.ChatId != _chat.chatId)
+        {
+            return;
+        }
+
+        _alertStatus = dto;
+        _alertError = null;
+        StateHasChanged();
+    }
+
+    private string GetAlertMetaText()
+    {
+        if (_alertStatus is not { IsActive: true })
+        {
+            return string.Empty;
+        }
+
+        var updatedBy = string.IsNullOrWhiteSpace(_alertStatus.UpdatedBy)
+            ? "een supervisor"
+            : _alertStatus.UpdatedBy;
+
+        var formattedDate = _alertStatus.UpdatedAt.ToLocalTime()
+            .ToString("d MMM yyyy HH:mm", CultureInfo.GetCultureInfo("nl-BE"));
+
+        return $"Geactiveerd door {updatedBy} op {formattedDate}.";
     }
 
     public async ValueTask DisposeAsync()
