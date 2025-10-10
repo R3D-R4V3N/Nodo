@@ -32,17 +32,16 @@ try
         .ReadFrom.Configuration(ctx.Configuration)
         .Destructure.UsingAttributes());
 
-// DbContext + Identity
+    // DbContext + Identity
     builder.Services
         .AddDbContext<ApplicationDbContext>(o =>
         {
-            // ⚠️ Hardcoded connection string (not recommended for production)
-            var cs = "Server=65.109.132.74;Port=3308;Database=nododb;User=chatuser;Password=chatuserpassword123;SslMode=None;";
-
+            var cs = Environment.GetEnvironmentVariable("DB_CONNECTION");
+            cs ??= builder.Configuration.GetConnectionString("DatabaseConnection")
+                     ?? throw new InvalidOperationException("Connection string 'DatabaseConnection' not found.");
             // Laat Pomelo zelf de serverversie detecteren.
             o.UseMySql(cs, ServerVersion.AutoDetect(cs));
             o.EnableDetailedErrors();
-
             if (builder.Environment.IsDevelopment())
                 o.EnableSensitiveDataLogging();
 
