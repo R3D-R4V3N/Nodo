@@ -18,12 +18,4 @@ public class SignalRChatMessageDispatcher(IHubContext<Chathub> hubContext) : ICh
             .Group(Chathub.GetGroupName(chatId))
             .SendAsync("MessageCreated", message, cancellationToken);
     }
-
-    public Task NotifyEmergencyStatusChangedAsync(int chatId, ChatEmergencyStatusDto status, CancellationToken cancellationToken = default)
-    {
-        return _hubContext
-            .Clients
-            .Group(Chathub.GetGroupName(chatId))
-            .SendAsync("EmergencyStatusChanged", status, cancellationToken);
-    }
 }

@@ -1,7 +1,5 @@
 @page "/chat/{ChatId:int}"
 @attribute [Authorize]
-@using Ardalis.Result
-@using System.Collections.Generic
 @using System.Globalization
 @using System.Linq
 @using System.Security.Claims
@@ -23,8 +21,6 @@
     <ChatHeader DisplayName="@GetChatTitle()"
                 AvatarUrl="@GetAvatarUrl()"
                 StatusText="@GetStatusText()"
-                IsEmergencyActive="@(_emergencyStatus?.isActive == true)"
-                IsEmergencyBusy="@_isProcessingEmergency"
                 OnBack="NavigateBack"
                 OnAlert="TriggerAlert" />
 
@@ -57,47 +53,6 @@
         {
             <div class="px-6 py-2 text-xs text-amber-700 bg-amber-50 border-b border-amber-200">
                 @_connectionError
-            </div>
-        }
-
-        @if (_emergencyStatus?.isActive == true)
-        {
-            <div class="px-3 pt-3">
-                <div class="bg-[#2b1221] border border-[#4a1f35] text-[#f8d7da] px-6 py-4 rounded-md">
-                    <div class="flex items-start">
-                        <svg class="w-5 h-5 text-red-400 mt-1 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-9-4a1 1 0 112 0v4a1 1 0 11-2 0V6zm1 8a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd" />
-                        </svg>
-                        <div>
-                            <p class="font-medium text-pink-200">Noodmelding actief</p>
-                            <p class="mt-1 text-pink-300 text-sm">
-                                @GetEmergencySubtitle()
-                            </p>
-                            @if (HasSupervisorInformation())
-                            {
-                                <ul class="mt-3 list-disc list-inside text-pink-300 text-sm space-y-1">
-                                    @foreach (var entry in GetSupervisorsPerParticipant())
-                                    {
-                                        <li>
-                                            <span class="font-semibold text-pink-200">@entry.participant.displayName:</span>
-                                            <span>@string.Join(", ", entry.supervisors.Select(s => s.supervisorName))</span>
-                                        </li>
-                                    }
-                                </ul>
-                            }
-                            @if (!string.IsNullOrWhiteSpace(_alertError))
-                            {
-                                <p class="mt-2 text-sm text-red-300">@_alertError</p>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-        else if (!string.IsNullOrWhiteSpace(_alertError))
-        {
-            <div class="px-3 pt-3 text-sm text-red-600">
-                @_alertError
             </div>
         }
 
@@ -163,16 +118,11 @@
     private string? _loadError;
     private bool _isLoading = true;
     private bool _isSending;
-    private ChatEmergencyStatusDto? _emergencyStatus;
-    private bool _isProcessingEmergency;
-    private string? _alertError;
 
     protected override async Task OnParametersSetAsync()
     {
         _loadError = null;
         _errorMessage = null;
-        _alertError = null;
-        _emergencyStatus = null;
 
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
@@ -203,8 +153,6 @@
             {
                 _messageIds.Add(message.Id);
             }
-
-            _emergencyStatus = _chat.emergency;
         }
         else
         {
@@ -212,7 +160,6 @@
             _messages.Clear();
             _messageIds.Clear();
             _loadError = result.Errors.FirstOrDefault() ?? "Het gesprek kon niet geladen worden.";
-            _emergencyStatus = null;
         }
 
         _isLoading = false;
@@ -284,9 +231,6 @@
                 _hubConnection.On<MessageDto>("MessageCreated", dto =>
                     InvokeAsync(() => ProcessIncomingMessage(dto)));
 
-                _hubConnection.On<ChatEmergencyStatusDto>("EmergencyStatusChanged", dto =>
-                    InvokeAsync(() => HandleEmergencyStatus(dto)));
-
                 _hubConnection.Reconnecting += error => InvokeAsync(() =>
                 {
                     _connectionError = "Realtime verbinding wordt hersteld…";
@@ -341,18 +285,6 @@
         {
             StateHasChanged();
         }
-    }
-
-    private void HandleEmergencyStatus(ChatEmergencyStatusDto status)
-    {
-        if (_chat is null || status.chatId != _chat.chatId)
-        {
-            return;
-        }
-
-        _emergencyStatus = status;
-        _alertError = null;
-        StateHasChanged();
     }
 
     private async Task JoinCurrentChatAfterReconnectAsync()
@@ -448,56 +380,6 @@
             SenderName: dto.SenderName);
     }
 
-    private string GetEmergencySubtitle()
-    {
-        if (_emergencyStatus?.isActive == true)
-        {
-            var initiator = _emergencyStatus.initiatorName ?? "Een deelnemer";
-
-            if (_emergencyStatus.activatedAtUtc is DateTime utc)
-            {
-                var localTime = DateTime.SpecifyKind(utc, DateTimeKind.Utc).ToLocalTime();
-                return $"Geactiveerd door {initiator} om {localTime:HH:mm}.";
-            }
-
-            return $"Geactiveerd door {initiator}.";
-        }
-
-        return "Druk op de noodknop om supervisors mee te laten lezen in dit gesprek.";
-    }
-
-    private bool HasSupervisorInformation()
-    {
-        if (_emergencyStatus?.isActive != true || _emergencyStatus.supervisors is null || _chat?.participants is null)
-        {
-            return false;
-        }
-
-        return _chat.participants.Any(p => _emergencyStatus.supervisors.Any(s => s.chatUserId == p.userId));
-    }
-
-    private IEnumerable<(ChatParticipantDto participant, List<ChatSupervisorAccessDto> supervisors)> GetSupervisorsPerParticipant()
-    {
-        if (_chat?.participants is null || _emergencyStatus?.supervisors is null)
-        {
-            yield break;
-        }
-
-        var grouped = _emergencyStatus.supervisors
-            .GroupBy(s => s.chatUserId)
-            .ToDictionary(g => g.Key, g => g.ToList());
-
-        foreach (var participant in _chat.participants)
-        {
-            if (!grouped.TryGetValue(participant.userId, out var supervisors) || supervisors.Count == 0)
-            {
-                continue;
-            }
-
-            yield return (participant, supervisors);
-        }
-    }
-
     private string GetChatTitle()
     {
         if (_chat is null)
@@ -560,58 +442,10 @@
         return Task.CompletedTask;
     }
 
-    private async Task TriggerAlert()
+    private Task TriggerAlert()
     {
-        if (_chat is null || _isProcessingEmergency)
-        {
-            return;
-        }
-
-        _alertError = null;
-        _isProcessingEmergency = true;
-
-        try
-        {
-            Result<ChatEmergencyStatusDto> result;
-            var request = new ChatRequest.ToggleEmergency
-            {
-                ChatId = _chat.chatId
-            };
-
-            if (_emergencyStatus?.isActive == true)
-            {
-                if (!string.Equals(_emergencyStatus.initiatorAccountId, _currentAccountId, StringComparison.Ordinal))
-                {
-                    _alertError = "Enkel de melder kan de noodmelding intrekken.";
-                    return;
-                }
-
-                result = await ChatService.DeactivateEmergencyAsync(request);
-            }
-            else
-            {
-                result = await ChatService.ActivateEmergencyAsync(request);
-            }
-
-            if (result.IsSuccess && result.Value is not null)
-            {
-                _emergencyStatus = result.Value;
-                _alertError = null;
-            }
-            else
-            {
-                var fallback = _emergencyStatus?.isActive == true
-                    ? "Kon de noodmelding niet intrekken."
-                    : "Kon de noodmelding niet activeren.";
-
-                _alertError = result.Errors.FirstOrDefault() ?? fallback;
-            }
-        }
-        finally
-        {
-            _isProcessingEmergency = false;
-            StateHasChanged();
-        }
+        // TODO: Hook up with actual alert functionality.
+        return Task.CompletedTask;
     }
 
     public async ValueTask DisposeAsync()

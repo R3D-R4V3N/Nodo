@@ -254,18 +254,7 @@ namespace Rise.Persistence.Migrations
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("current_timestamp()");
 
-                    b.Property<DateTime?>("EmergencyActivatedAtUtc")
-                        .HasColumnType("datetime");
-
-                    b.Property<int?>("EmergencyInitiatorId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsEmergencyActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
@@ -278,47 +267,6 @@ namespace Rise.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Chat", (string)null);
-                });
-
-            modelBuilder.Entity("Rise.Domain.Chats.ChatParticipant", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ChatId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChatId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("ChatId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("ChatParticipant", (string)null);
                 });
 
             modelBuilder.Entity("Rise.Domain.Chats.Message", b =>
@@ -416,47 +364,6 @@ namespace Rise.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("ApplicationUser", (string)null);
-                });
-
-            modelBuilder.Entity("Rise.Domain.Users.UserSupervisor", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ChatUserId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<int>("SupervisorId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChatUserId");
-
-                    b.HasIndex("SupervisorId");
-
-                    b.HasIndex("ChatUserId", "SupervisorId")
-                        .IsUnique();
-
-                    b.ToTable("UserSupervisor", (string)null);
                 });
 
             modelBuilder.Entity("UserFriendRequests", b =>
@@ -559,25 +466,6 @@ namespace Rise.Persistence.Migrations
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("Rise.Domain.Chats.ChatParticipant", b =>
-                {
-                    b.HasOne("Rise.Domain.Chats.Chat", "Chat")
-                        .WithMany("Participants")
-                        .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", "User")
-                        .WithMany("ChatParticipations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Chat");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("UserFriendRequests", b =>
                 {
                     b.HasOne("Rise.Domain.Users.ApplicationUser", null)
@@ -611,36 +499,6 @@ namespace Rise.Persistence.Migrations
             modelBuilder.Entity("Rise.Domain.Chats.Chat", b =>
                 {
                     b.Navigation("Messages");
-
-                    b.Navigation("Participants");
-                });
-
-            modelBuilder.Entity("Rise.Domain.Users.ApplicationUser", b =>
-                {
-                    b.Navigation("ChatParticipations");
-
-                    b.Navigation("SupervisorLinks");
-
-                    b.Navigation("SupervisedUsers");
-                });
-
-            modelBuilder.Entity("Rise.Domain.Users.UserSupervisor", b =>
-                {
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", "ChatUser")
-                        .WithMany("SupervisorLinks")
-                        .HasForeignKey("ChatUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", "Supervisor")
-                        .WithMany("SupervisedUsers")
-                        .HasForeignKey("SupervisorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ChatUser");
-
-                    b.Navigation("Supervisor");
                 });
 #pragma warning restore 612, 618
         }

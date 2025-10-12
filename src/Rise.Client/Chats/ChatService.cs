@@ -27,20 +27,4 @@ public class ChatService(HttpClient httpClient) : IChatService
 
         return result ?? Result.Error("Kon het serverantwoord niet verwerken.");
     }
-
-    public async Task<Result<ChatEmergencyStatusDto>> ActivateEmergencyAsync(ChatRequest.ToggleEmergency request, CancellationToken cancellationToken = default)
-    {
-        var response = await httpClient.PostAsync($"api/chats/{request.ChatId}/emergency/activate", null, cancellationToken);
-        var result = await response.Content.ReadFromJsonAsync<Result<ChatEmergencyStatusDto>>(cancellationToken: cancellationToken);
-
-        return result ?? Result.Error("Kon de noodmelding niet activeren.");
-    }
-
-    public async Task<Result<ChatEmergencyStatusDto>> DeactivateEmergencyAsync(ChatRequest.ToggleEmergency request, CancellationToken cancellationToken = default)
-    {
-        var response = await httpClient.PostAsync($"api/chats/{request.ChatId}/emergency/deactivate", null, cancellationToken);
-        var result = await response.Content.ReadFromJsonAsync<Result<ChatEmergencyStatusDto>>(cancellationToken: cancellationToken);
-
-        return result ?? Result.Error("Kon de noodmelding niet intrekken.");
-    }
 }
