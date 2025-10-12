@@ -1,0 +1,75 @@
+<EditForm class="space-y-4" Model="Model" OnValidSubmit="OnSubmit">
+    <FluentValidationValidator />
+
+    <div>
+        <label for="register-name" class="block text-sm font-medium text-[#04320C]">Volledige naam</label>
+        <InputText id="register-name"
+                   @bind-Value="FullName"
+                   placeholder="Jouw naam"
+                   class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1" />
+    </div>
+
+    <div>
+        <label for="register-email" class="block text-sm font-medium text-[#04320C]">Email address</label>
+        <InputText id="register-email"
+                   @bind-Value="Model.Email"
+                   type="email"
+                   placeholder="jouw@email.com"
+                   class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1" />
+        <ValidationMessage For="() => Model.Email" class="mt-2 block text-sm font-medium text-red-600" />
+    </div>
+
+    <div>
+        <label for="register-password" class="block text-sm font-medium text-[#04320C]">Wachtwoord</label>
+        <InputText id="register-password"
+                   @bind-Value="Model.Password"
+                   type="password"
+                   placeholder="••••••••"
+                   autocomplete="new-password"
+                   class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1" />
+        <ValidationMessage For="() => Model.Password" class="mt-2 block text-sm font-medium text-red-600" />
+    </div>
+
+    <div>
+        <label for="register-confirm-password" class="block text-sm font-medium text-[#04320C]">Bevestig wachtwoord</label>
+        <InputText id="register-confirm-password"
+                   @bind-Value="Model.ConfirmPassword"
+                   type="password"
+                   placeholder="••••••••"
+                   autocomplete="new-password"
+                   class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1" />
+        <ValidationMessage For="() => Model.ConfirmPassword" class="mt-2 block text-sm font-medium text-red-600" />
+    </div>
+
+    <div>
+        <label for="register-organization" class="block text-sm font-medium text-[#04320C]">Organisatie</label>
+        <select id="register-organization"
+                @bind="SelectedOrganization"
+                class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1">
+            <option value="" disabled>Kies een organisatie</option>
+            <option value="org1">Organisatie 1</option>
+            <option value="org2">Organisatie 2</option>
+            <option value="org3">Organisatie 3</option>
+        </select>
+    </div>
+
+    <button type="submit" class="w-full rounded-full bg-[#0B6532] py-3 text-lg font-semibold text-white shadow-md transition hover:bg-[#0a572b]">
+        Registreer
+    </button>
+
+    <a href="/login" class="inline-flex w-full items-center justify-center rounded-full border-2 border-[#0B6532] py-3 text-lg font-semibold text-[#0B6532] bg-white transition hover:bg-[#e8f5ec]">
+        Terug naar Login
+    </a>
+</EditForm>
+
+@code {
+    [Parameter]
+    public required AccountRequest.Register Model { get; set; }
+
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    private string FullName { get; set; } = string.Empty;
+
+    private string SelectedOrganization { get; set; } = string.Empty;
+}
