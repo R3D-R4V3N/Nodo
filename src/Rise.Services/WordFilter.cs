@@ -2,16 +2,18 @@ using System.Text.RegularExpressions;
 
 namespace Rise.Services
 {
-    public class WoordFilter
+    public class WordFilter
     {
-        private readonly HashSet<string> _slechteWoorden = new(StringComparer.OrdinalIgnoreCase);
-        private readonly Regex _regex;
+        private readonly HashSet<string> _blacklistedWords = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Regex _blacklistRegex;
 
-        public WoordFilter()
+        public WordFilter()
         {
-            // hier kun je een vaste lijst gebruiken
-            _slechteWoorden = new HashSet<string>
-            {
+            // check if certain words can be removed
+            // also regex for l33tstyle writing
+            //  example: sh1t
+            _blacklistedWords =
+            [
                 "dom", "stom", "vloekwoord", "aardappels afgieten",
                 "achter het raam zitten", "afberen",
                 "aflebberen",
@@ -199,7 +201,7 @@ namespace Rise.Services
                 "zeiker",
                 "zuigen",
                 "zuiplap",
-                "abbo", "abo", "abortus", "misbruik", "verslaafde", "verslaafden", "volwassene", "afrika", "afrikaans",
+                "abbo", "abo", "abortus", "misbruik", "verslaafde", "verslaafden", "volwassene", "afrikaans",
                 "alla", "allah", "alligatorbait", "amateur", "Amerikaans", "anaal", "analannie", "analsex",
                 "angie", "boos", "anus", "arabisch", "arabiërs", "areola", "argie", "opgewonden", "kont", "kontgat",
                 "kont", "moordenaar", "moordenaar", "moord", "aanval", "kontbagger", "kontblazer",
@@ -209,8 +211,8 @@ namespace Rise.Services
                 "konthoer", "kontswipe", "atletenvoet", "aanval", "Australiër", "babe", "baby's", "achterdeur",
                 "backdoorman", "backseat", "badfuck", "balllicker", "balls", "ballsack", "banging", "baptist",
                 "barelylegal", "barf", "barface", "barfface", "bast", "bastard", "bazongas", "bazooms", "beaner",
-                "beest", "beestachtigheid", "beestachtig", "beestachtigheid", "beatoff", "beat-off", "beatyourmeat", "bever",
-                "beestachtig", "beestachtigheid", "bi", "biatch", "bijbel", 
+                "beestachtigheid", "beestachtig", "beestachtigheid", "beatoff", "beat-off", "beatyourmeat", "bever",
+                "beestachtig", "beestachtigheid", "bi", "biatch", 
                  "aambeienlikker", "aapmens", "aardappel", "aarstulp", "achterlader", "adder", "addergebroed",
                 "apenjong", "apenkont", "appelflap", "autist", "babi", "babok", "badgast", "baggerduiker",
                 "bal", "bandiet", "bangerd", "barslet", "bedrijfspoedel", "beheime", "belhamel", "bermslet",
@@ -226,7 +228,7 @@ namespace Rise.Services
                 "flikker", "foefkop", "fransoos", "galgenbrok", "gangster", "gannef", "geboefte", "geit",
                 "geitenbreier", "geitenneuker", "gemenerik", "gespuis", "geteisem", "gladakker", "gleuf",
                 "gluiper", "gluiperd", "gluipsnor", "gortenteller", "gratenbaal", "greppeldel", "grobbejanus",
-                "haai", "haaibaai", "halvezool", "hapsnurker", "harpij", "heaumeau", "heihaas", "heikneuter",
+                "haaibaai", "halvezool", "hapsnurker", "harpij", "heaumeau", "heihaas", "heikneuter",
                 "heks", "hersenlijer", "hielenlikker", "hockeytrut", "hockeytut", "hoer", "hoerenjager",
                 "hoerenjong", "hoerenkind", "hoerenzoon", "homo", "hond", "hondenlul", "hondenneuker",
                 "hork", "hufter", "huichelaar", "huppelkut", "huzarenhoop", "janhagel", "jeannette",
@@ -240,66 +242,64 @@ namespace Rise.Services
                 "kontkruiper", "kontlikker", "kontneuker", "kreng", "kriel", "krielkip", "krijslijster",
                 "kroeskop",
     
-                //engelse scheldwoorden
+                //english curse
                 
-            "abbo", "abo", "abortion", "abuse", "addict", "addicts", "adult", "africa", "african",
-            "alla", "allah", "alligatorbait", "amateur", "american", "anal", "analannie", "analsex",
-            "angie", "angry", "anus", "arab", "arabs", "areola", "argie", "aroused", "arse", "arsehole",
-            "asian", "ass", "assassin", "assassinate", "assassination", "assault", "assbagger", "assblaster",
-            "assclown", "asscowboy", "asses", "assfuck", "assfucker", "asshat", "asshole", "assholes", "asshore",
-            "assjockey", "asskiss", "asskisser", "assklown", "asslick", "asslicker", "asslover", "assman",
-            "assmonkey", "assmunch", "assmuncher", "asspacker", "asspirate", "asspuppies", "assranger",
-            "asswhore", "asswipe", "athletesfoot", "attack", "australian", "babe", "babies", "backdoor",
-            "backdoorman", "backseat", "badfuck", "balllicker", "balls", "ballsack", "banging", "baptist",
-            "barelylegal", "barf", "barface", "barfface", "bast", "bastard", "bazongas", "bazooms", "beaner",
-            "beast", "beastality", "beastial", "beastiality", "beatoff", "beat-off", "beatyourmeat", "beaver",
-            "bestial", "bestiality", "bi", "biatch", "bible", "bicurious", "bigass", "bigbastard", "bigbutt",
-            "bigger", "bisexual", "bi-sexual", "bitch", "bitcher", "bitches", "bitchez", "bitchin", "bitching",
-            "bitchslap", "bitchy", "biteme", "black", "blackman", "blackout", "blacks", "blind", "blow", "blowjob",
-            "bogan", "bohunk", "bollock", "bomb", "bombers", "bombing", "bombs", "bondage", "boner", "bong",
-            "boob", "boobies", "boobs", "booby", "booty", "bootycall", "bra", "breast", "brothel", "bugger",
-            "buggered", "bullshit", "bumfuck", "bunghole", "butt", "buttfuck", "butthead", "buttplug",
-            "byatch", "cameljockey", "carpetmuncher", "chink", "choad", "christ", "christian", "clit",
-            "clitoris", "cock", "cockhead", "cocklicker", "cocklover", "cockrider", "cocksmoker", "cocksucker",
-            "cocktail", "cocktease", "coon", "copulate", "cornhole", "crap", "crapper", "cum", "cumming",
-            "cumshot", "cunnilingus", "cunt", "cuntsucker", "cybersex", "damn", "demon", "devil", "dick",
-            "dickhead", "dildo", "dipshit", "doggystyle", "dong", "dope", "dragqueen", "drunk", "dumbass",
-            "dyke", "eatme", "ejaculate", "erection", "escort", "ethnic", "fag", "faggot", "fart", "fatass",
-            "felatio", "fetish", "fingerfuck", "fister", "fistfuck", "flange", "footfuck", "foreskin", "forni",
-            "fornicate", "foursome", "fuck", "fucker", "fucking", "fuckoff", "fudgepacker", "fuk", "gangbang",
-            "gay", "gaysex", "genital", "givehead", "glazeddonut", "god", "goddamn", "goldenshower", "gook",
-            "handjob", "hardon", "headfuck", "hell", "herpes", "hitler", "hiv", "hoes", "hole", "homo",
-            "homosexual", "honky", "hooker", "hooters", "horny", "hotpussy", "hump", "idiot", "incest",
-            "intercourse", "jackass", "jackoff", "jerkoff", "jesus", "jew", "jizz", "joint", "juggs", "jugs",
-            "kike", "kill", "killer", "killing", "kink", "kinky", "knob", "knobhead", "koon", "krap", "kum",
-            "kummer", "kumming", "kunilingus", "kunt", "labia", "lapdance", "lesbian", "lezbo", "lickme",
-            "limpdick", "lolita", "loser", "lust", "mafia", "marijuana", "masturbate", "meatbeatter",
-            "meth", "milf", "molest", "molester", "moneyshot", "motherfucker", "muff", "muffdive",
-            "muffdiver", "murder", "muslim", "naked", "nasty", "nazi", "negro", "nigga", "nigger",
-            "nipple", "nookie", "nude", "nudity", "oral", "orgasm", "orgy", "paki", "panties", "pecker",
-            "pee", "penis", "pimp", "piss", "pissoff", "playboy", "poontang", "porn", "porno", "pussy",
-            "queef", "queer", "quickie", "rape", "rapist", "rectum", "redneck", "rimjob", "rimming",
-            "sadist", "satan", "scat", "schlong", "screw", "scrotum", "scum", "semen", "sex", "sexual",
-            "sexy", "shag", "shit", "shitface", "shithead", "shithole", "shitter", "shitty", "skank",
-            "slut", "sluts", "slutty", "smack", "snatch", "sodomize", "spank", "sperm", "spic", "spunk",
-            "suck", "suckdick", "sucker", "suicide", "swallow", "tang", "tampon", "testicle", "threesome",
-            "tit", "tits", "titties", "titty", "tosser", "tramp", "tranny", "transsexual", "twat",
-            "upskirt", "urinate", "urine", "vagina", "vibrator", "virgin", "vulva", "wank", "wanker",
-            "whore", "whorehouse", "wtf", "xxx"
-    // vul aan met echte woorden
-    
-            };
+                "abbo", "abo", "abortion", "abuse", "addict", "addicts", "adult", "africa", "african",
+                "alla", "allah", "alligatorbait", "amateur", "american", "anal", "analannie", "analsex",
+                "angie", "angry", "anus", "arab", "arabs", "areola", "argie", "aroused", "arse", "arsehole",
+                "asian", "ass", "assassin", "assassinate", "assassination", "assault", "assbagger", "assblaster",
+                "assclown", "asscowboy", "asses", "assfuck", "assfucker", "asshat", "asshole", "assholes", "asshore",
+                "assjockey", "asskiss", "asskisser", "assklown", "asslick", "asslicker", "asslover", "assman",
+                "assmonkey", "assmunch", "assmuncher", "asspacker", "asspirate", "asspuppies", "assranger",
+                "asswhore", "asswipe", "athletesfoot", "attack", "australian", "babe", "babies", "backdoor",
+                "backdoorman", "backseat", "badfuck", "balllicker", "balls", "ballsack", "banging", "baptist",
+                "barelylegal", "barf", "barface", "barfface", "bast", "bastard", "bazongas", "bazooms", "beaner",
+                "beast", "beastality", "beastial", "beastiality", "beatoff", "beat-off", "beatyourmeat", "beaver",
+                "bestial", "bestiality", "bi", "biatch", "bible", "bicurious", "bigass", "bigbastard", "bigbutt",
+                "bigger", "bisexual", "bi-sexual", "bitch", "bitcher", "bitches", "bitchez", "bitchin", "bitching",
+                "bitchslap", "bitchy", "biteme", "black", "blackman", "blackout", "blacks", "blind", "blow", "blowjob",
+                "bogan", "bohunk", "bollock", "bomb", "bombers", "bombing", "bombs", "bondage", "boner", "bong",
+                "boob", "boobies", "boobs", "booby", "booty", "bootycall", "bra", "breast", "brothel", "bugger",
+                "buggered", "bullshit", "bumfuck", "bunghole", "butt", "buttfuck", "butthead", "buttplug",
+                "byatch", "cameljockey", "carpetmuncher", "chink", "choad", "christ", "christian", "clit",
+                "clitoris", "cock", "cockhead", "cocklicker", "cocklover", "cockrider", "cocksmoker", "cocksucker",
+                "cocktail", "cocktease", "coon", "copulate", "cornhole", "crap", "crapper", "cum", "cumming",
+                "cumshot", "cunnilingus", "cunt", "cuntsucker", "cybersex", "damn", "demon", "devil", "dick",
+                "dickhead", "dildo", "dipshit", "doggystyle", "dong", "dope", "dragqueen", "drunk", "dumbass",
+                "dyke", "eatme", "ejaculate", "erection", "escort", "ethnic", "fag", "faggot", "fart", "fatass",
+                "felatio", "fetish", "fingerfuck", "fister", "fistfuck", "flange", "footfuck", "foreskin", "forni",
+                "fornicate", "foursome", "fuck", "fucker", "fucking", "fuckoff", "fudgepacker", "fuk", "gangbang",
+                "gay", "gaysex", "genital", "givehead", "glazeddonut", "god", "goddamn", "goldenshower", "gook",
+                "handjob", "hardon", "headfuck", "hell", "herpes", "hitler", "hiv", "hoes", "hole", "homo",
+                "homosexual", "honky", "hooker", "hooters", "horny", "hotpussy", "hump", "idiot", "incest",
+                "intercourse", "jackass", "jackoff", "jerkoff", "jesus", "jew", "jizz", "joint", "juggs", "jugs",
+                "kike", "kill", "killer", "killing", "kink", "kinky", "knob", "knobhead", "koon", "krap", "kum",
+                "kummer", "kumming", "kunilingus", "kunt", "labia", "lapdance", "lesbian", "lezbo", "lickme",
+                "limpdick", "lolita", "loser", "lust", "mafia", "marijuana", "masturbate", "meatbeatter",
+                "meth", "milf", "molest", "molester", "moneyshot", "motherfucker", "muff", "muffdive",
+                "muffdiver", "murder", "muslim", "naked", "nasty", "nazi", "negro", "nigga", "nigger",
+                "nipple", "nookie", "nude", "nudity", "oral", "orgasm", "orgy", "paki", "panties", "pecker",
+                "pee", "penis", "pimp", "piss", "pissoff", "playboy", "poontang", "porn", "porno", "pussy",
+                "queef", "queer", "quickie", "rape", "rapist", "rectum", "redneck", "rimjob", "rimming",
+                "sadist", "satan", "scat", "schlong", "screw", "scrotum", "scum", "semen", "sex", "sexual",
+                "sexy", "shag", "shit", "shitface", "shithead", "shithole", "shitter", "shitty", "skank",
+                "slut", "sluts", "slutty", "smack", "snatch", "sodomize", "spank", "sperm", "spic", "spunk",
+                "suck", "suckdick", "sucker", "suicide", "swallow", "tang", "tampon", "testicle", "threesome",
+                "tit", "tits", "titties", "titty", "tosser", "tramp", "tranny", "transsexual", "twat",
+                "upskirt", "urinate", "urine", "vagina", "vibrator", "virgin", "vulva", "wank", "wanker",
+                "whore", "whorehouse", "wtf"
+            ];
 
-            var pattern = @"\b(" + string.Join("|", _slechteWoorden.Select(Regex.Escape)) + @")\b";
-            _regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            var pattern = @"\b(" + string.Join("|", _blacklistedWords.Select(Regex.Escape)) + @")\b";
+            _blacklistRegex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
         }
 
         public string Censor(string input)
         {
             if (string.IsNullOrWhiteSpace(input))
-                return input;
+                return string.Empty; //incase the user just spams alot of whitespaces
 
-            return _regex.Replace(input, m => new string('#', m.Value.Length));
+            return _blacklistRegex.Replace(input, m => new string('#', m.Value.Length));
         }
     }
 }

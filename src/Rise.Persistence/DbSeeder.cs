@@ -22,8 +22,11 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
     {
         await RolesAsync();
         await UsersAsync();
+        await ConnectionsAsync();
         await ChatsAsync();
         await MessagesAsync();
+        //await ProductsAsync();
+        //await ProjectsAsync();
     }
 
     private async Task RolesAsync()
@@ -33,11 +36,11 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             return;
         }
 
-        await roleManager.CreateAsync(new IdentityRole(AppRoles.Administrator));
-        await roleManager.CreateAsync(new IdentityRole(AppRoles.Supervisor));
-        await roleManager.CreateAsync(new IdentityRole(AppRoles.ChatUser));
+        await roleManager.CreateAsync(new IdentityRole("Administrator"));
+        await roleManager.CreateAsync(new IdentityRole("Supervisor"));
+        await roleManager.CreateAsync(new IdentityRole("User"));
     }
-
+    
     private async Task UsersAsync()
     {
         if (dbContext.Users.Any())
@@ -82,14 +85,78 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         };
         
         await userManager.CreateAsync(Thibo, PasswordDefault);
-
+        
         var admin = new IdentityUser
+        {
+            UserName = "admin@example.com",
+            Email = "admin@example.com",
+            EmailConfirmed = true,
+        };
+        await userManager.CreateAsync(admin, PasswordDefault);
+        
+        var supervisor = new IdentityUser
+        {
+            UserName = "supervisor@example.com",
+            Email = "supervisor@example.com",
+            EmailConfirmed = true,
+        };
+        await userManager.CreateAsync(supervisor, PasswordDefault);
+        
+        var userAccount1 = new IdentityUser
+        {
+            UserName = "user1@example.com",
+            Email = "user1@example.com",
+            EmailConfirmed = true,
+        };
+        await userManager.CreateAsync(userAccount1, PasswordDefault);
+        
+        var userAccount2 = new IdentityUser
+        {
+            UserName = "user2@example.com",
+            Email = "user2@example.com",
+            EmailConfirmed = true,
+        };
+        await userManager.CreateAsync(userAccount2, PasswordDefault);
+                
+        var user = new IdentityUser
         {
             UserName = "admin@nodo.chat",
             Email = "admin@nodo.chat",
             EmailConfirmed = true,
         };
-        await userManager.CreateAsync(admin, PasswordDefault);
+        await userManager.CreateAsync(user, PasswordDefault);
+        
+        await userManager.AddToRoleAsync(admin, "Administrator");
+        await userManager.AddToRoleAsync(supervisor, "Supervisor");
+        await userManager.AddToRoleAsync(userAccount1, "User");
+        await userManager.AddToRoleAsync(userAccount2, "User");
+
+        dbContext.ApplicationUsers.AddRange(
+            new ApplicationUser(userAccount1.Id)
+            {
+                FirstName = "John",
+                LastName = "Doe",
+                Biography = "I like cats, meow.",
+                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
+                UserType = UserType.Regular,
+            },
+            new ApplicationUser(userAccount2.Id)
+            {
+                FirstName = "Stacey",
+                LastName = "Willington",
+                Biography = "I like dogs, ruff.",
+                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
+                UserType = UserType.Regular,
+            },
+            new ApplicationUser(supervisor.Id)
+            {
+                FirstName = "Super",
+                LastName = "Visor",
+                Biography = "Here to help you.",
+                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-30)),
+                UserType = UserType.Supervisor,
+            }
+        );
 
         var supervisorEmma = new IdentityUser
         {
@@ -134,30 +201,94 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         await userManager.AddToRoleAsync(admin, AppRoles.Administrator);
         await userManager.AddToRoleAsync(supervisorEmma, AppRoles.Supervisor);
         await userManager.AddToRoleAsync(supervisorJonas, AppRoles.Supervisor);
-        await userManager.AddToRoleAsync(chatterNoor, AppRoles.ChatUser);
-        await userManager.AddToRoleAsync(chatterMilan, AppRoles.ChatUser);
-        await userManager.AddToRoleAsync(chatterLina, AppRoles.ChatUser);
-        await userManager.AddToRoleAsync(Kyandro, AppRoles.ChatUser);
-        await userManager.AddToRoleAsync(Jasper, AppRoles.ChatUser);
-        await userManager.AddToRoleAsync(Bjorn, AppRoles.ChatUser);
-        await userManager.AddToRoleAsync(Thibo, AppRoles.ChatUser);
+        await userManager.AddToRoleAsync(chatterNoor, AppRoles.User);
+        await userManager.AddToRoleAsync(chatterMilan, AppRoles.User);
+        await userManager.AddToRoleAsync(chatterLina, AppRoles.User);
+        await userManager.AddToRoleAsync(Kyandro, AppRoles.User);
+        await userManager.AddToRoleAsync(Jasper, AppRoles.User);
+        await userManager.AddToRoleAsync(Bjorn, AppRoles.User);
+        await userManager.AddToRoleAsync(Thibo, AppRoles.User);
 
 
 
         var applicationUsers = new List<ApplicationUser>
         {
-            new(supervisorEmma.Id, "Emma", "Begeleider", "Begeleider die jongeren ondersteunt tijdens het chatten.", UserType.Supervisor),
-            new(supervisorJonas.Id, "Jonas", "Coach", "Houdt gesprekken in de gaten en helpt wanneer het even moeilijk wordt.", UserType.Supervisor),
-            new(chatterNoor.Id, "Noor", "Vermeulen", "Praat graag over muziek en wil nieuwe vrienden maken.", UserType.ChatUser),
-            new(chatterMilan.Id, "Milan", "Peeters", "Zoekt iemand om samen over games te praten.", UserType.ChatUser),
-            new(chatterLina.Id, "Lina", "Jacobs", "Vindt het fijn om vragen te kunnen stellen in een veilige omgeving.", UserType.ChatUser),
-            new(Kyandro.Id, "Kyandro", "Voet", "Is geïnteresseerd in softwareontwikkeling en helpt vaak bij technische vragen.", UserType.ChatUser),
-            new(Jasper.Id, "Jasper", "Vermeersch", "Vindt het leuk om te discussiëren over technologie en innovatie.", UserType.ChatUser),
-            new(Bjorn.Id, "Bjorn", "Van Damme", "Praat graag over sport en houdt van teamwork.", UserType.ChatUser),
-            new(Thibo.Id, "Thibo", "De Smet", "Is nieuwsgierig en stelt vaak interessante vragen.", UserType.ChatUser)
+            new ApplicationUser(chatterNoor.Id)
+            {
+                FirstName = "Noor",
+                LastName = "Vermeulen",
+                Biography = "Praat graag over muziek en wil nieuwe vrienden maken.",
+                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
+                UserType = UserType.Regular,
+            },
+            new ApplicationUser(chatterMilan.Id)
+            {
+                FirstName = "Milan",
+                LastName = "Peeters",
+                Biography = "Zoekt iemand om samen over games te praten.",
+                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
+                UserType = UserType.Regular,
+            },
+            new ApplicationUser(chatterLina.Id)
+            {
+                FirstName = "Lina",
+                LastName = "Jacobs",
+                Biography = "Vindt het fijn om vragen te kunnen stellen in een veilige omgeving.",
+                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
+                UserType = UserType.Regular,
+            },
+            new ApplicationUser(Kyandro.Id)
+            {
+                FirstName = "Kyandro",
+                LastName = "Voet",
+                Biography = "Is geïnteresseerd in softwareontwikkeling en helpt vaak bij technische vragen.",
+                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
+                UserType = UserType.Regular,
+            },
+            new ApplicationUser(Jasper.Id)
+            {
+                FirstName = "Jasper",
+                LastName = "Vermeersch",
+                Biography = "Vindt het leuk om te discussiëren over technologie en innovatie.",
+                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
+                UserType = UserType.Regular,
+            },
+            new ApplicationUser(Bjorn.Id)
+            {
+                FirstName = "Bjorn",
+                LastName = "Van Damme",
+                Biography = "Praat graag over sport en houdt van teamwork.",
+                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
+                UserType = UserType.Regular,
+            },
+            new ApplicationUser(Thibo.Id)
+            {
+                FirstName = "Thibo",
+                LastName = "De Smet",
+                Biography = "Is nieuwsgierig en stelt vaak interessante vragen.",
+                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
+                UserType = UserType.Regular,
+            },
         };
 
         dbContext.ApplicationUsers.AddRange(applicationUsers);
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    private async Task ConnectionsAsync()
+    {
+        var users = await dbContext.ApplicationUsers.ToListAsync();
+
+        if (users.Count == 0)
+            return;
+
+        if (users[0].Connections.Count > 0)
+            return;
+
+        users[0].AddFriend(users[1]);
+        users[1].AddFriend(users[2]);
+        users[2].AddFriend(users[1]);
 
         await dbContext.SaveChangesAsync();
     }
@@ -174,10 +305,10 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             .ToListAsync();
 
         var chatUsers = await dbContext.ApplicationUsers
-            .Where(u => u.UserType == UserType.ChatUser)
+            .Where(u => u.UserType == UserType.Regular)
             .ToListAsync();
 
-        if (!supervisors.Any() || !chatUsers.Any())
+        if (supervisors.Count == 0 || chatUsers.Count == 0)
         {
             return;
         }
@@ -204,17 +335,10 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         dbContext.Messages.AddRange(messages);
         await dbContext.SaveChangesAsync();
     }
-
+    
     private async Task MessagesAsync()
     {
         if (dbContext.Messages.Any())
-        {
-            return;
-        }
-
-        var chats = await dbContext.Chats.ToListAsync();
-
-        if (!chats.Any())
         {
             return;
         }
@@ -224,7 +348,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             .ToListAsync();
 
         var chatUsers = await dbContext.ApplicationUsers
-            .Where(u => u.UserType == UserType.ChatUser)
+            .Where(u => u.UserType == UserType.Regular)
             .ToListAsync();
 
         if (!supervisors.Any() || !chatUsers.Any())
@@ -236,6 +360,15 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         var secondChatter = chatUsers.Skip(1).FirstOrDefault() ?? firstChatter;
         var primarySupervisor = supervisors.First();
         var backupSupervisor = supervisors.Skip(1).FirstOrDefault() ?? primarySupervisor;
+
+
+        var chats = await dbContext.Chats.ToListAsync();
+
+        if (chats.Count == 0)
+        {
+            return;
+        }
+
 
         var messages = new List<Message>
         {

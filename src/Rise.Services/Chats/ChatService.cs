@@ -1,14 +1,10 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Ardalis.Result;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
 using Rise.Domain.Users;
 using Rise.Persistence;
 using Rise.Services.Identity;
 using Rise.Shared.Chats;
+using Rise.Services.Chats.Mapper;
 using Rise.Shared.Identity;
 
 namespace Rise.Services.Chats;
@@ -35,7 +31,7 @@ public class ChatService(
             chatId = c.Id,
             messages = c.Messages
                 .OrderBy(m => m.CreatedAt)
-                .Select(MapToDto)
+                .Select(MessageMapper.MapToDto)
                 .ToList()
         }).ToList();
 
@@ -62,7 +58,7 @@ public class ChatService(
             chatId = chat.Id,
             messages = chat.Messages
                 .OrderBy(m => m.CreatedAt)
-                .Select(MapToDto)
+                .Select(MessageMapper.MapToDto)
                 .ToList()
         };
 
@@ -141,7 +137,7 @@ public class ChatService(
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         message.Sender = sender;
-        var dto = MapToDto(message, sender);
+        var dto = message.MapToDto();
 
         if (_messageDispatcher is not null)
         {
