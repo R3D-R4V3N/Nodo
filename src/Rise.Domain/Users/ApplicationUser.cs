@@ -3,7 +3,6 @@ using Ardalis.Result;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Rise.Domain.Common;
-using Rise.Domain.Organizations;
 
 namespace Rise.Domain.Users;
 
@@ -19,9 +18,6 @@ public class ApplicationUser : Entity
     public required string Biography { get; set; }
     public required UserType UserType { get; set; }
 
-    public int OrganizationId { get; private set; }
-    public Organization? Organization { get; private set; }
-
     private readonly HashSet<ApplicationUser> friends = [];
     public IReadOnlyCollection<ApplicationUser> Friends => friends;
 
@@ -34,20 +30,16 @@ public class ApplicationUser : Entity
         FirstName = string.Empty;
         LastName = string.Empty;
         Biography = string.Empty;
-        OrganizationId = 0;
     }
 
     [SetsRequiredMembers]
-    public ApplicationUser(string accountId, string firstName, string lastName, string biography, UserType userType, Organization organization)
+    public ApplicationUser(string accountId, string firstName, string lastName, string biography, UserType userType)
     {
         AccountId = Guard.Against.NullOrWhiteSpace(accountId);
         FirstName = Guard.Against.NullOrWhiteSpace(firstName);
         LastName = Guard.Against.NullOrWhiteSpace(lastName);
         Biography = Guard.Against.NullOrWhiteSpace(biography);
         UserType = userType;
-        Organization = Guard.Against.Null(organization);
-        OrganizationId = organization.Id;
-        organization.AddMember(this);
     }
 
     public Result AddFriend(ApplicationUser friend)

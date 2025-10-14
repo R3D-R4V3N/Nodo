@@ -1,18 +1,12 @@
-@using System
-@using System.Linq
-@using Rise.Shared.Organizations
-
-<EditForm class="space-y-4" Model="Model" OnValidSubmit="HandleValidSubmit">
+<EditForm class="space-y-4" Model="Model" OnValidSubmit="OnSubmit">
     <FluentValidationValidator />
 
     <div>
         <label for="register-name" class="block text-sm font-medium text-[#04320C]">Volledige naam</label>
         <InputText id="register-name"
                    @bind-Value="FullName"
-                   @bind-Value:event="oninput"
                    placeholder="Jouw naam"
                    class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1" />
-        <ValidationMessage For="() => Model.FirstName" class="mt-2 block text-sm font-medium text-red-600" />
     </div>
 
     <div>
@@ -25,43 +19,43 @@
         <ValidationMessage For="() => Model.Email" class="mt-2 block text-sm font-medium text-red-600" />
     </div>
 
-    <div>
-        <label for="register-password" class="block text-sm font-medium text-[#04320C]">Wachtwoord</label>
-        <InputText id="register-password"
-                   @bind-Value="Model.Password"
-                   type="password"
-                   placeholder="••••••••"
-                   autocomplete="new-password"
-                   class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1" />
-        <ValidationMessage For="() => Model.Password" class="mt-2 block text-sm font-medium text-red-600" />
-    </div>
+    <div class="flex space-x-3">
+        <div>
+            <label for="register-password" class="block text-sm font-medium text-[#04320C]">Wachtwoord</label>
+            <InputText id="register-password"
+                       @bind-Value="Model.Password"
+                       type="password"
+                       placeholder="••••••••"
+                       autocomplete="new-password"
+                       class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1" />
+            <ValidationMessage For="() => Model.Password" class="mt-2 block text-sm font-medium text-red-600" />
+        </div>
 
-    <div>
-        <label for="register-confirm-password" class="block text-sm font-medium text-[#04320C]">Bevestig wachtwoord</label>
-        <InputText id="register-confirm-password"
-                   @bind-Value="Model.ConfirmPassword"
-                   type="password"
-                   placeholder="••••••••"
-                   autocomplete="new-password"
-                   class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1" />
-        <ValidationMessage For="() => Model.ConfirmPassword" class="mt-2 block text-sm font-medium text-red-600" />
+        <div>
+            <label for="register-confirm-password" class="block text-sm font-medium text-[#04320C]">Bevestig wachtwoord</label>
+            <InputText id="register-confirm-password"
+                       @bind-Value="Model.ConfirmPassword"
+                       type="password"
+                       placeholder="••••••••"
+                       autocomplete="new-password"
+                       class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1" />
+            <ValidationMessage For="() => Model.ConfirmPassword" class="mt-2 block text-sm font-medium text-red-600" />
+        </div>
     </div>
 
     <div>
         <label for="register-organization" class="block text-sm font-medium text-[#04320C]">Organisatie</label>
-        <InputSelect id="register-organization"
-                     @bind-Value="Model.OrganizationId"
-                     class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1">
-            <option value="0" disabled>Maak een keuze</option>
-            @foreach (var organization in Organizations)
-            {
-                <option value="@organization.Id">@organization.Name</option>
-            }
-        </InputSelect>
-        <ValidationMessage For="() => Model.OrganizationId" class="mt-2 block text-sm font-medium text-red-600" />
+        <select id="register-organization"
+                @bind="SelectedOrganization"
+                class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1">
+            <option value="" disabled>Kies een organisatie</option>
+            <option value="org1">Organisatie 1</option>
+            <option value="org2">Organisatie 2</option>
+            <option value="org3">Organisatie 3</option>
+        </select>
     </div>
 
-    <button type="submit" class="w-full rounded-full bg-[#0B6532] py-3 text-lg font-semibold text-white shadow-md transition hover:bg-[#0a572b]" disabled="@(!Organizations.Any() || Model.OrganizationId == 0)">
+    <button type="submit" class="w-full rounded-full bg-[#0B6532] py-3 text-lg font-semibold text-white shadow-md transition hover:bg-[#0a572b]">
         Registreer
     </button>
 
@@ -77,40 +71,7 @@
     [Parameter]
     public EventCallback OnSubmit { get; set; }
 
-    [Parameter]
-    public IEnumerable<OrganizationDto.Index> Organizations { get; set; } = Array.Empty<OrganizationDto.Index>();
+    private string FullName { get; set; } = string.Empty;
 
-    private string fullName = string.Empty;
-
-    private string FullName
-    {
-        get => fullName;
-        set
-        {
-            fullName = value;
-            (Model.FirstName, Model.LastName) = SplitFullName(fullName);
-        }
-    }
-
-    private async Task HandleValidSubmit()
-    {
-        await OnSubmit.InvokeAsync();
-    }
-
-    private static (string FirstName, string LastName) SplitFullName(string fullName)
-    {
-        var cleaned = fullName?.Trim() ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(cleaned))
-        {
-            return (string.Empty, string.Empty);
-        }
-
-        var parts = cleaned.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 1)
-        {
-            return (parts[0], parts[0]);
-        }
-
-        return (parts[0], parts[1]);
-    }
+    private string SelectedOrganization { get; set; } = string.Empty;
 }

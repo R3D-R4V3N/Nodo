@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Rise.Domain.Users;
 using Rise.Persistence;
 using Rise.Shared.Identity.Accounts;
 
@@ -12,7 +10,7 @@ namespace Rise.Server.Endpoints.Identity.Accounts;
 /// </summary>
 /// <param name="userManager"></param>
 /// <param name="userStore"></param>
-public class Register(UserManager<IdentityUser> userManager, IUserStore<IdentityUser> userStore, ApplicationDbContext dbContext) : Endpoint<AccountRequest.Register, Result>
+public class Register(UserManager<IdentityUser> userManager, IUserStore<IdentityUser> userStore) : Endpoint<AccountRequest.Register, Result>
 {
     public override void Configure()
     {
@@ -32,36 +30,21 @@ public class Register(UserManager<IdentityUser> userManager, IUserStore<Identity
         await userStore.SetUserNameAsync(user, req.Email, CancellationToken.None);
         await emailStore.SetEmailAsync(user, req.Email, CancellationToken.None);
         var result = await userManager.CreateAsync(user, req.Password!);
-
+        
         if (!result.Succeeded)
         {
             return Result.Error(result.Errors.First().Description);
         }
+        
+        // You can do more stuff when injecting a DbContext and create user stuff for example:
+        // dbContext.Technicians.Add(new Technician("Fname", "Lname", user.Id));
+        // or assinging a specific role etc using the RoleManager<IdentityUser> (inject it in the primary constructor).
 
-        var organization = await dbContext.Organizations
-            .FirstOrDefaultAsync(o => o.Id == req.OrganizationId, ctx);
-
-        if (organization is null)
-        {
-            await userManager.DeleteAsync(user);
-            return Result.NotFound("De geselecteerde organisatie werd niet gevonden.");
-        }
-
-        var firstName = req.FirstName!.Trim();
-        var lastName = req.LastName!.Trim();
-
-        var applicationUser = new ApplicationUser(
-            user.Id,
-            firstName,
-            lastName,
-            "Nog geen bio ingevuld.",
-            UserType.ChatUser,
-            organization);
-
-        dbContext.ApplicationUsers.Add(applicationUser);
-        await dbContext.SaveChangesAsync(ctx);
+        
+        // You can send a confirmation email by using a SMTP server or anything in the like. 
+        // await SendConfirmationEmailAsync(user, userManager, context, email); or do something that matters
 
         return Result.Success();
     }
-
+    
 }

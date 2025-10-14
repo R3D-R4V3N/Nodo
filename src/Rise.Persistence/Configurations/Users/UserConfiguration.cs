@@ -18,7 +18,6 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
         builder.Property(x => x.LastName).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Biography).IsRequired().HasMaxLength(500);
         builder.Property(x => x.UserType).IsRequired();
-        builder.Property(x => x.OrganizationId).IsRequired();
 
         builder
             .HasMany<ApplicationUser>("Friends")

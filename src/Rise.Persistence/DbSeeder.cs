@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
-using Rise.Domain.Organizations;
 using Rise.Domain.Users;
 using Rise.Shared.Identity;
 
@@ -22,28 +21,9 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
     public async Task SeedAsync()
     {
         await RolesAsync();
-        await OrganizationsAsync();
         await UsersAsync();
         await ChatsAsync();
         await MessagesAsync();
-    }
-
-    private async Task OrganizationsAsync()
-    {
-        if (dbContext.Organizations.Any())
-        {
-            return;
-        }
-
-        var organizations = new List<Organization>
-        {
-            new("Nodo Gent"),
-            new("Nodo Antwerpen"),
-            new("Nodo Brugge"),
-        };
-
-        dbContext.Organizations.AddRange(organizations);
-        await dbContext.SaveChangesAsync();
     }
 
     private async Task RolesAsync()
@@ -122,17 +102,13 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         await userManager.AddToRoleAsync(chatterMilan, AppRoles.ChatUser);
         await userManager.AddToRoleAsync(chatterLina, AppRoles.ChatUser);
 
-        var organizations = await dbContext.Organizations.ToListAsync();
-        var primaryOrganization = organizations.First();
-        var secondaryOrganization = organizations.Skip(1).FirstOrDefault() ?? primaryOrganization;
-
         var applicationUsers = new List<ApplicationUser>
         {
-            new(supervisorEmma.Id, "Emma", "Begeleider", "Begeleider die jongeren ondersteunt tijdens het chatten.", UserType.Supervisor, primaryOrganization),
-            new(supervisorJonas.Id, "Jonas", "Coach", "Houdt gesprekken in de gaten en helpt wanneer het even moeilijk wordt.", UserType.Supervisor, secondaryOrganization),
-            new(chatterNoor.Id, "Noor", "Vermeulen", "Praat graag over muziek en wil nieuwe vrienden maken.", UserType.ChatUser, primaryOrganization),
-            new(chatterMilan.Id, "Milan", "Peeters", "Zoekt iemand om samen over games te praten.", UserType.ChatUser, secondaryOrganization),
-            new(chatterLina.Id, "Lina", "Jacobs", "Vindt het fijn om vragen te kunnen stellen in een veilige omgeving.", UserType.ChatUser, primaryOrganization)
+            new(supervisorEmma.Id, "Emma", "Begeleider", "Begeleider die jongeren ondersteunt tijdens het chatten.", UserType.Supervisor),
+            new(supervisorJonas.Id, "Jonas", "Coach", "Houdt gesprekken in de gaten en helpt wanneer het even moeilijk wordt.", UserType.Supervisor),
+            new(chatterNoor.Id, "Noor", "Vermeulen", "Praat graag over muziek en wil nieuwe vrienden maken.", UserType.ChatUser),
+            new(chatterMilan.Id, "Milan", "Peeters", "Zoekt iemand om samen over games te praten.", UserType.ChatUser),
+            new(chatterLina.Id, "Lina", "Jacobs", "Vindt het fijn om vragen te kunnen stellen in een veilige omgeving.", UserType.ChatUser)
         };
 
         dbContext.ApplicationUsers.AddRange(applicationUsers);

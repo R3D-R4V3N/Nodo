@@ -37,7 +37,7 @@ namespace Rise.Client.Identity
         /// <param name="password">The user's password.</param>
         /// <returns>The result serialized to a <see cref="Result"/>.
         /// </returns>
-        public async Task<Result> RegisterAsync(string email, string password, string confirmPassword, string firstName, string lastName, int organizationId)
+        public async Task<Result> RegisterAsync(string email, string password, string confirmPassword)
         {
             try
             {
@@ -46,11 +46,8 @@ namespace Rise.Client.Identity
                     Email = email,
                     Password = password,
                     ConfirmPassword = confirmPassword,
-                    FirstName = firstName,
-                    LastName = lastName,
-                    OrganizationId = organizationId
                 });
-
+            
                 var result = await response.Content.ReadFromJsonAsync<Result>();
                 return result!;
             }

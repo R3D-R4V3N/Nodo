@@ -19,28 +19,13 @@ public static partial class AccountRequest
         /// </summary>
         [LogMasked]
         public string? Password { get; set; }
-
+        
         /// <summary>
         /// The user's password.
         /// </summary>
         [LogMasked]
         public string? ConfirmPassword { get; set; }
-
-        /// <summary>
-        /// The user's first name.
-        /// </summary>
-        public string? FirstName { get; set; }
-
-        /// <summary>
-        /// The user's last name.
-        /// </summary>
-        public string? LastName { get; set; }
-
-        /// <summary>
-        /// The identifier of the organization the user belongs to.
-        /// </summary>
-        public int OrganizationId { get; set; }
-
+        
         // Other needed stuff here, like Role(s), Firstname, lastname etc.
 
         /// <summary>
@@ -55,15 +40,6 @@ public static partial class AccountRequest
                 RuleFor(x => x.ConfirmPassword)
                     .Equal(x => x.Password)
                     .WithMessage("Passwords do not match.");
-                RuleFor(x => x.FirstName)
-                    .NotEmpty()
-                    .WithMessage("Gelieve je volledige naam in te geven.");
-                RuleFor(x => x.LastName)
-                    .NotEmpty()
-                    .WithMessage("Gelieve je volledige naam in te geven.");
-                RuleFor(x => x.OrganizationId)
-                    .GreaterThan(0)
-                    .WithMessage("Kies een organisatie om je account te koppelen.");
             }
         }
     }
