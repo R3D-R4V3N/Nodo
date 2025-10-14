@@ -10,6 +10,7 @@
 @using Rise.Client.Components.Chat
 @using Rise.Shared.Chat
 @using Rise.Shared.Chats
+@using Rise.Shared.Assets
 @layout EmptyLayout
 @implements IAsyncDisposable
 @inject IChatService ChatService
@@ -468,11 +469,13 @@
             ? TimeSpan.FromSeconds(dto.AudioDurationSeconds.Value)
             : null;
 
+        var avatarUrl = isOutgoing ? null : DefaultImages.Profile;
+
         return new Message(
             dto.Id.ToString(CultureInfo.InvariantCulture),
             dto.Content ?? string.Empty,
             isOutgoing,
-            AvatarUrl: null,
+            AvatarUrl: avatarUrl,
             Timestamp: dto.Timestamp,
             AudioUrl: audioUrl,
             AudioDuration: audioDuration,
@@ -507,7 +510,7 @@
 
     private string GetAvatarUrl()
     {
-        return "https://i.pravatar.cc/64";
+        return DefaultImages.Profile;
     }
 
     private string GetStatusText()

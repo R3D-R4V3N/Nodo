@@ -1,3 +1,5 @@
+@using Rise.Shared.Assets
+
 @* Header met terugknop, avatar, titel en alarmknop *@
 <div class="relative flex items-center gap-3 bg-[#127646] rounded-b-3xl text-white px-4 pb-4 pt-8">
     <button class="p-2 -ml-2 rounded-full hover:bg-white/10" aria-label="Terug" @onclick="OnBack">
@@ -23,7 +25,7 @@
 
 @code {
     [Parameter] public string DisplayName { get; set; } = "Helena";
-    [Parameter] public string AvatarUrl { get; set; } = "https://i.pravatar.cc/64?img=12";
+    [Parameter] public string AvatarUrl { get; set; } = DefaultImages.Profile;
     [Parameter] public string StatusText { get; set; } = "Online 11 minuten geleden";
     [Parameter] public EventCallback OnBack { get; set; }
     [Parameter] public EventCallback OnAlert { get; set; }
