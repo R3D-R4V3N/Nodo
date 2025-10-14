@@ -18,3 +18,36 @@
     right: 0.75rem;
     top: 0.5rem;
 }
+
+.app-loading-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #F5F4F0;
+}
+
+.app-loading-card {
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 24px;
+    padding: 2.5rem 2rem;
+    box-shadow: 0 20px 45px rgba(4, 50, 12, 0.12);
+    backdrop-filter: blur(6px);
+}
+
+.app-loading-title {
+    margin: 0;
+    font-size: 3rem;
+    font-weight: 600;
+    color: #04320C;
+    letter-spacing: -0.02em;
+}
+
+.app-loading-subtitle {
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #4b5563;
+}
