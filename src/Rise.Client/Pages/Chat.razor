@@ -469,7 +469,9 @@
             ? TimeSpan.FromSeconds(dto.AudioDurationSeconds.Value)
             : null;
 
-        var avatarUrl = isOutgoing ? null : DefaultImages.Profile;
+        var avatarUrl = isOutgoing
+            ? null
+            : DefaultImages.GetProfile(GetAvatarKey(dto));
 
         return new Message(
             dto.Id.ToString(CultureInfo.InvariantCulture),
@@ -510,7 +512,37 @@
 
     private string GetAvatarUrl()
     {
+        var participant = _messages
+            .Where(m => !m.IsOutgoing)
+            .OrderBy(m => m.Timestamp)
+            .FirstOrDefault();
+
+        if (participant is not null && !string.IsNullOrWhiteSpace(participant.AvatarUrl))
+        {
+            return participant.AvatarUrl;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_currentAccountId))
+        {
+            return DefaultImages.GetProfile(_currentAccountId);
+        }
+
         return DefaultImages.Profile;
+    }
+
+    private static string GetAvatarKey(MessageDto dto)
+    {
+        if (!string.IsNullOrWhiteSpace(dto.SenderAccountId))
+        {
+            return dto.SenderAccountId;
+        }
+
+        if (dto.SenderId != 0)
+        {
+            return dto.SenderId.ToString(CultureInfo.InvariantCulture);
+        }
+
+        return dto.SenderName ?? string.Empty;
     }
 
     private string GetStatusText()
