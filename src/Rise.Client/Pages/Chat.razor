@@ -405,7 +405,7 @@
             ? null
             : dto.AudioDataUrl;
 
-        var audioDuration = dto.AudioDurationSeconds.HasValue
+        TimeSpan? audioDuration = dto.AudioDurationSeconds.HasValue
             ? TimeSpan.FromSeconds(dto.AudioDurationSeconds.Value)
             : null;
 

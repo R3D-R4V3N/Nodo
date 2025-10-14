@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Ardalis.Result;
@@ -19,9 +18,6 @@ public class ChatService(
     ISessionContextProvider sessionContextProvider,
     IChatMessageDispatcher? messageDispatcher = null) : IChatService
 {
-    private static readonly Regex DataUrlRegex = new(
-        @"^data:(?<contentType>[^;]+);base64,(?<data>.+)$",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     private readonly ApplicationDbContext _dbContext = dbContext;
     private readonly ISessionContextProvider _sessionContextProvider = sessionContextProvider;
@@ -111,36 +107,18 @@ public class ChatService(
 
         if (!string.IsNullOrWhiteSpace(audioDataUrl))
         {
-            var match = DataUrlRegex.Match(audioDataUrl);
-            if (!match.Success)
+            if (!TryParseAudioDataUrl(audioDataUrl, out audioContentType, out audioBytes, out var parseError))
             {
-                return Result.Invalid(new ValidationError(nameof(request.AudioDataUrl), "Ongeldige audio data-URL."));
+                return Result.Invalid(new ValidationError(nameof(request.AudioDataUrl), parseError ?? "Ongeldige audio data-URL."));
             }
 
-            audioContentType = match.Groups["contentType"].Value;
-
-            if (string.IsNullOrWhiteSpace(audioContentType))
+            if (request.AudioDurationSeconds.HasValue)
             {
-                return Result.Invalid(new ValidationError(nameof(request.AudioDataUrl), "Audio contenttype ontbreekt."));
-            }
-
-            try
-            {
-                audioBytes = Convert.FromBase64String(match.Groups["data"].Value);
-            }
-            catch (FormatException)
-            {
-                return Result.Invalid(new ValidationError(nameof(request.AudioDataUrl), "Audio kon niet gedecodeerd worden."));
-            }
-
-            if (audioBytes.Length == 0)
-            {
-                return Result.Invalid(new ValidationError(nameof(request.AudioDataUrl), "Audio bevat geen data."));
-            }
-
-            if (request.AudioDurationSeconds > 0 && double.IsFinite(request.AudioDurationSeconds))
-            {
-                audioDurationSeconds = request.AudioDurationSeconds;
+                var duration = request.AudioDurationSeconds.Value;
+                if (duration > 0 && double.IsFinite(duration))
+                {
+                    audioDurationSeconds = duration;
+                }
             }
         }
 
@@ -211,5 +189,79 @@ public class ChatService(
 
         var base64 = Convert.ToBase64String(message.AudioData);
         return $"data:{message.AudioContentType};base64,{base64}";
+    }
+
+    private static bool TryParseAudioDataUrl(
+        string audioDataUrl,
+        out string? contentType,
+        out byte[]? data,
+        out string? errorMessage)
+    {
+        contentType = null;
+        data = null;
+        errorMessage = null;
+
+        if (!audioDataUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+        {
+            errorMessage = "Audio data-URL moet starten met 'data:'.";
+            return false;
+        }
+
+        var commaIndex = audioDataUrl.IndexOf(',');
+        if (commaIndex <= 0 || commaIndex >= audioDataUrl.Length - 1)
+        {
+            errorMessage = "Audio data-URL mist inhoud.";
+            return false;
+        }
+
+        var metadata = audioDataUrl.Substring("data:".Length, commaIndex - "data:".Length);
+        if (string.IsNullOrWhiteSpace(metadata))
+        {
+            errorMessage = "Audio contenttype ontbreekt.";
+            return false;
+        }
+
+        var base64MarkerIndex = metadata.IndexOf(";base64", StringComparison.OrdinalIgnoreCase);
+        if (base64MarkerIndex < 0)
+        {
+            errorMessage = "Audio data-URL moet base64-gecodeerd zijn.";
+            return false;
+        }
+
+        var contentTypeSegment = metadata[..base64MarkerIndex];
+        var contentTypeParts = contentTypeSegment
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        contentType = contentTypeParts.FirstOrDefault();
+
+        if (string.IsNullOrWhiteSpace(contentType))
+        {
+            errorMessage = "Audio contenttype ontbreekt.";
+            return false;
+        }
+
+        var base64 = audioDataUrl[(commaIndex + 1)..].Trim();
+        if (string.IsNullOrWhiteSpace(base64))
+        {
+            errorMessage = "Audio bevat geen data.";
+            return false;
+        }
+
+        try
+        {
+            data = Convert.FromBase64String(base64);
+        }
+        catch (FormatException)
+        {
+            errorMessage = "Audio kon niet gedecodeerd worden.";
+            return false;
+        }
+
+        if (data.Length == 0)
+        {
+            errorMessage = "Audio bevat geen data.";
+            return false;
+        }
+
+        return true;
     }
 }
