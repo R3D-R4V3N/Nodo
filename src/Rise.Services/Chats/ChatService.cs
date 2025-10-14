@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Ardalis.Result;
@@ -18,6 +19,10 @@ public class ChatService(
     ISessionContextProvider sessionContextProvider,
     IChatMessageDispatcher? messageDispatcher = null) : IChatService
 {
+    private static readonly Regex DataUrlRegex = new(
+        @"^data:(?<contentType>[^;]+);base64,(?<data>.+)$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
     private readonly ApplicationDbContext _dbContext = dbContext;
     private readonly ISessionContextProvider _sessionContextProvider = sessionContextProvider;
     private readonly IChatMessageDispatcher? _messageDispatcher = messageDispatcher;
@@ -92,11 +97,66 @@ public class ChatService(
             return Result.NotFound($"Chat met id '{request.ChatId}' werd niet gevonden.");
         }
 
+        var trimmedContent = string.IsNullOrWhiteSpace(request.Content)
+            ? null
+            : request.Content.Trim();
+
+        byte[]? audioBytes = null;
+        string? audioContentType = null;
+        double? audioDurationSeconds = null;
+
+        var audioDataUrl = string.IsNullOrWhiteSpace(request.AudioDataUrl)
+            ? null
+            : request.AudioDataUrl.Trim();
+
+        if (!string.IsNullOrWhiteSpace(audioDataUrl))
+        {
+            var match = DataUrlRegex.Match(audioDataUrl);
+            if (!match.Success)
+            {
+                return Result.Invalid(new ValidationError(nameof(request.AudioDataUrl), "Ongeldige audio data-URL."));
+            }
+
+            audioContentType = match.Groups["contentType"].Value;
+
+            if (string.IsNullOrWhiteSpace(audioContentType))
+            {
+                return Result.Invalid(new ValidationError(nameof(request.AudioDataUrl), "Audio contenttype ontbreekt."));
+            }
+
+            try
+            {
+                audioBytes = Convert.FromBase64String(match.Groups["data"].Value);
+            }
+            catch (FormatException)
+            {
+                return Result.Invalid(new ValidationError(nameof(request.AudioDataUrl), "Audio kon niet gedecodeerd worden."));
+            }
+
+            if (audioBytes.Length == 0)
+            {
+                return Result.Invalid(new ValidationError(nameof(request.AudioDataUrl), "Audio bevat geen data."));
+            }
+
+            if (request.AudioDurationSeconds > 0 && double.IsFinite(request.AudioDurationSeconds))
+            {
+                audioDurationSeconds = request.AudioDurationSeconds;
+            }
+        }
+
+        if (trimmedContent is null && audioBytes is null)
+        {
+            return Result.Invalid(new ValidationError(nameof(request.Content), "Een bericht moet tekst of audio bevatten."));
+        }
+
         var message = new Message
         {
             ChatId = chat.Id,
             SenderId = sender.Id,
-            Inhoud = request.Content!.Trim()
+            Inhoud = trimmedContent,
+            AudioContentType = audioContentType,
+            AudioData = audioBytes,
+            AudioDurationSeconds = audioDurationSeconds
         };
 
         _dbContext.Messages.Add(message);
@@ -132,11 +192,24 @@ public class ChatService(
         {
             ChatId = message.ChatId,
             Id = message.Id,
-            Content = message.Inhoud,
+            Content = message.Inhoud ?? string.Empty,
             Timestamp = message.CreatedAt,
             SenderId = message.SenderId,
             SenderName = $"{sender.FirstName} {sender.LastName}",
-            SenderAccountId = sender.AccountId
+            SenderAccountId = sender.AccountId,
+            AudioDataUrl = BuildAudioDataUrl(message),
+            AudioDurationSeconds = message.AudioDurationSeconds
         };
+    }
+
+    private static string? BuildAudioDataUrl(Message message)
+    {
+        if (message.AudioData is not { Length: > 0 } || string.IsNullOrWhiteSpace(message.AudioContentType))
+        {
+            return null;
+        }
+
+        var base64 = Convert.ToBase64String(message.AudioData);
+        return $"data:{message.AudioContentType};base64,{base64}";
     }
 }

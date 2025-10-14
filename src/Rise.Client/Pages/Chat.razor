@@ -209,11 +209,43 @@
         return Task.CompletedTask;
     }
 
-    private Task HandleVoiceMessageAsync(RecordedAudio audio)
+    private async Task HandleVoiceMessageAsync(RecordedAudio audio)
     {
-        _errorMessage = "Spraakberichten worden nog niet ondersteund.";
-        StateHasChanged();
-        return Task.CompletedTask;
+        if (_chat is null || _isSending)
+        {
+            return;
+        }
+
+        _isSending = true;
+        _errorMessage = null;
+
+        try
+        {
+            var request = new ChatRequest.CreateMessage
+            {
+                ChatId = _chat.chatId,
+                AudioDataUrl = audio.DataUrl,
+                AudioDurationSeconds = audio.DurationSeconds
+            };
+
+            var result = await ChatService.CreateMessageAsync(request);
+
+            if (!result.IsSuccess || result.Value is null)
+            {
+                var validationMessage = result.ValidationErrors.FirstOrDefault()?.ErrorMessage;
+                _errorMessage = validationMessage
+                    ?? result.Errors.FirstOrDefault()
+                    ?? "Het spraakbericht kon niet verzonden worden.";
+                return;
+            }
+
+            TryAddMessage(result.Value);
+        }
+        finally
+        {
+            _isSending = false;
+            StateHasChanged();
+        }
     }
 
     private async Task EnsureHubConnectionAsync()
@@ -369,14 +401,22 @@
         var isOutgoing = !string.IsNullOrWhiteSpace(_currentAccountId)
             && string.Equals(dto.SenderAccountId, _currentAccountId, StringComparison.Ordinal);
 
+        var audioUrl = string.IsNullOrWhiteSpace(dto.AudioDataUrl)
+            ? null
+            : dto.AudioDataUrl;
+
+        var audioDuration = dto.AudioDurationSeconds.HasValue
+            ? TimeSpan.FromSeconds(dto.AudioDurationSeconds.Value)
+            : null;
+
         return new Message(
             dto.Id.ToString(CultureInfo.InvariantCulture),
-            dto.Content,
+            dto.Content ?? string.Empty,
             isOutgoing,
             AvatarUrl: null,
             Timestamp: dto.Timestamp,
-            AudioUrl: null,
-            AudioDuration: null,
+            AudioUrl: audioUrl,
+            AudioDuration: audioDuration,
             SenderName: dto.SenderName);
     }
 

@@ -8,6 +8,8 @@ public static partial class ChatRequest
     {
         public int ChatId { get; set; }
         public string? Content { get; set; }
+        public string? AudioDataUrl { get; set; }
+        public double? AudioDurationSeconds { get; set; }
 
         public class Validator : AbstractValidator<CreateMessage>
         {
@@ -15,10 +17,17 @@ public static partial class ChatRequest
             {
                 RuleFor(x => x.ChatId).GreaterThan(0);
                 RuleFor(x => x.Content)
-                    .NotEmpty()
-                    .Must(content => !string.IsNullOrWhiteSpace(content))
-                    .WithMessage("Berichtinhoud mag niet leeg zijn.")
                     .MaximumLength(2_000);
+
+                RuleFor(x => x)
+                    .Must(request =>
+                        !string.IsNullOrWhiteSpace(request.Content) ||
+                        !string.IsNullOrWhiteSpace(request.AudioDataUrl))
+                    .WithMessage("Een bericht moet tekst of audio bevatten.");
+
+                RuleFor(x => x.AudioDurationSeconds)
+                    .GreaterThan(0)
+                    .When(x => !string.IsNullOrWhiteSpace(x.AudioDataUrl));
             }
         }
     }
