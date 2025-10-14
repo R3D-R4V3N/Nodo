@@ -1,0 +1,71 @@
+@page "/userinfo"
+@attribute [Authorize]
+@using System.Security.Claims
+
+<PageTitle>Gebruikersinformatie</PageTitle>
+
+<div class="min-h-screen bg-neutral-100 py-10">
+    <div class="max-w-3xl mx-auto px-4">
+        <div class="bg-white rounded-3xl shadow p-8 space-y-6">
+            <header class="space-y-2">
+                <h1 class="text-3xl font-semibold text-neutral-800">Mijn account</h1>
+                <p class="text-neutral-500">Bekijk een overzicht van je basisgegevens en alle beschikbare claims.</p>
+            </header>
+
+            <AuthorizeView>
+                <Authorized Context="authContext">
+                    <section class="grid gap-6">
+                        <article class="rounded-2xl bg-neutral-100 p-6 space-y-4">
+                            <h2 class="text-lg font-semibold text-neutral-700">Basisgegevens</h2>
+                            <dl class="space-y-3 text-sm text-neutral-600">
+                                <div class="flex items-center justify-between gap-4">
+                                    <dt class="font-medium text-neutral-700">Naam</dt>
+                                    <dd>@GetDisplayValue(authContext.User.Identity?.Name)</dd>
+                                </div>
+                                <div class="flex items-center justify-between gap-4">
+                                    <dt class="font-medium text-neutral-700">Email</dt>
+                                    <dd>@GetDisplayValue(GetClaimValue(authContext.User, ClaimTypes.Email))</dd>
+                                </div>
+                                <div class="flex items-center justify-between gap-4">
+                                    <dt class="font-medium text-neutral-700">Account ID</dt>
+                                    <dd>@GetDisplayValue(GetClaimValue(authContext.User, ClaimTypes.NameIdentifier))</dd>
+                                </div>
+                            </dl>
+                        </article>
+
+                        <article class="rounded-2xl bg-neutral-100 p-6">
+                            <h2 class="text-lg font-semibold text-neutral-700 mb-3">Claims</h2>
+                            @if (authContext.User.Claims.Any())
+                            {
+                                <ul class="space-y-2 text-sm text-neutral-600">
+                                    @foreach (var claim in authContext.User.Claims)
+                                    {
+                                        <li class="flex items-start justify-between gap-4">
+                                            <span class="font-medium text-neutral-700">@claim.Type</span>
+                                            <span class="text-right break-words">@claim.Value</span>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p class="text-neutral-500">Er zijn geen claims gevonden voor je account.</p>
+                            }
+                        </article>
+                    </section>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="rounded-2xl bg-red-50 border border-red-100 text-red-600 p-6">
+                        Je moet ingelogd zijn om deze pagina te bekijken.
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </div>
+</div>
+
+@code {
+    private static string GetDisplayValue(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string? GetClaimValue(ClaimsPrincipal user, string claimType) => user.FindFirst(claimType)?.Value;
+}
