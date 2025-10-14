@@ -17,38 +17,40 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
         builder.Property(x => x.FirstName).IsRequired().HasMaxLength(100);
         builder.Property(x => x.LastName).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Biography).IsRequired().HasMaxLength(500);
+        builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.UserType).IsRequired();
 
-        builder
-            .HasMany<ApplicationUser>("Friends")
-            .WithMany()
-            .UsingEntity<Dictionary<string, object>>(
-                "UserFriends",
-                j => j
-                    .HasOne<ApplicationUser>()
-                    .WithMany()
-                    .HasForeignKey("FriendId")
-                    .OnDelete(DeleteBehavior.Cascade),
-                j => j
-                    .HasOne<ApplicationUser>()
-                    .WithMany()
-                    .HasForeignKey("AccountId")
-                    .OnDelete(DeleteBehavior.ClientCascade));
+        // db just needs _connections
+        builder.Ignore(u => u.Connections);
+        builder.Ignore(u => u.Friends);
+        builder.Ignore(u => u.FriendRequests);
+        builder.Ignore(u => u.BlockedUsers);
 
-        builder
-            .HasMany<ApplicationUser>("FriendRequests")
-            .WithMany()
-            .UsingEntity<Dictionary<string, object>>(
-                "UserFriendRequests",
-                j => j
-                    .HasOne<ApplicationUser>()
-                    .WithMany()
-                    .HasForeignKey("FriendRequestId")
-                    .OnDelete(DeleteBehavior.Cascade),
-                j => j
-                    .HasOne<ApplicationUser>()
-                    .WithMany()
-                    .HasForeignKey("AccountId")
-                    .OnDelete(DeleteBehavior.ClientCascade));
+        builder.OwnsMany<UserConnection>("_connections", connections =>
+        {
+            connections.WithOwner()
+                        .HasForeignKey("UserId");
+
+            // shadow key
+            connections.Property<int>("Id");
+            connections.HasKey("Id");
+
+            connections.Property(c => c.ConnectionType)
+                        .HasConversion<string>()
+                        .IsRequired();
+
+            connections.Property(c => c.CreatedAt)
+                .IsRequired();
+
+            connections.Property<int>("UserConnectionId")
+                        .IsRequired();
+
+            connections.HasOne(c => c.Connection)
+                        .WithMany()
+                        .HasForeignKey("UserConnectionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+            connections.ToTable("UserConnections");
+        });
     }
 }

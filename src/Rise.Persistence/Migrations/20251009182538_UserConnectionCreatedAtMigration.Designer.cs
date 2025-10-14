@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rise.Persistence;
 
@@ -11,9 +12,11 @@ using Rise.Persistence;
 namespace Rise.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251009182538_UserConnectionCreatedAtMigration")]
+    partial class UserConnectionCreatedAtMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -241,7 +244,7 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("UserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Rise.Domain.Chats.Chat", b =>
+            modelBuilder.Entity("Rise.Domain.Products.Product", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -254,10 +257,20 @@ namespace Rise.Persistence.Migrations
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("current_timestamp()");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -266,10 +279,10 @@ namespace Rise.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Chat", (string)null);
+                    b.ToTable("Product", (string)null);
                 });
 
-            modelBuilder.Entity("Rise.Domain.Chats.Message", b =>
+            modelBuilder.Entity("Rise.Domain.Projects.Project", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -277,34 +290,22 @@ namespace Rise.Persistence.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AudioContentType")
-                        .HasMaxLength(128)
-                        .HasColumnType("varchar(128)");
-
-                    b.Property<byte[]>("AudioData")
-                        .HasColumnType("longblob");
-
-                    b.Property<double?>("AudioDurationSeconds")
-                        .HasColumnType("double");
-
-                    b.Property<int>("ChatId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<string>("Inhoud")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
 
-                    b.Property<int>("SenderId")
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
+
+                    b.Property<int>("TechnicianId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -314,11 +315,55 @@ namespace Rise.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChatId");
+                    b.HasIndex("TechnicianId");
 
-                    b.HasIndex("SenderId");
+                    b.ToTable("Project", (string)null);
+                });
 
-                    b.ToTable("Message", (string)null);
+            modelBuilder.Entity("Rise.Domain.Projects.Technician", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("varchar(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId")
+                        .IsUnique();
+
+                    b.ToTable("Technician", (string)null);
                 });
 
             modelBuilder.Entity("Rise.Domain.Users.ApplicationUser", b =>
@@ -429,23 +474,55 @@ namespace Rise.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Rise.Domain.Chats.Message", b =>
+            modelBuilder.Entity("Rise.Domain.Projects.Project", b =>
                 {
-                    b.HasOne("Rise.Domain.Chats.Chat", "Chat")
-                        .WithMany("Messages")
-                        .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", "Sender")
-                        .WithMany()
-                        .HasForeignKey("SenderId")
+                    b.HasOne("Rise.Domain.Projects.Technician", "Technician")
+                        .WithMany("Projects")
+                        .HasForeignKey("TechnicianId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Chat");
+                    b.OwnsOne("Rise.Domain.Projects.Address", "Location", b1 =>
+                        {
+                            b1.Property<int>("ProjectId")
+                                .HasColumnType("int");
 
-                    b.Navigation("Sender");
+                            b1.Property<string>("Addressline1")
+                                .IsRequired()
+                                .HasMaxLength(250)
+                                .HasColumnType("varchar(250)")
+                                .HasColumnName("Addressline1");
+
+                            b1.Property<string>("Addressline2")
+                                .IsRequired()
+                                .HasMaxLength(250)
+                                .HasColumnType("varchar(250)")
+                                .HasColumnName("Addressline2");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("varchar(50)")
+                                .HasColumnName("City");
+
+                            b1.Property<string>("PostalCode")
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("varchar(20)")
+                                .HasColumnName("PostalCode");
+
+                            b1.HasKey("ProjectId");
+
+                            b1.ToTable("Project");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProjectId");
+                        });
+
+                    b.Navigation("Location")
+                        .IsRequired();
+
+                    b.Navigation("Technician");
                 });
 
             modelBuilder.Entity("Rise.Domain.Users.ApplicationUser", b =>
@@ -494,9 +571,9 @@ namespace Rise.Persistence.Migrations
                     b.Navigation("_connections");
                 });
 
-            modelBuilder.Entity("Rise.Domain.Chats.Chat", b =>
+            modelBuilder.Entity("Rise.Domain.Projects.Technician", b =>
                 {
-                    b.Navigation("Messages");
+                    b.Navigation("Projects");
                 });
 #pragma warning restore 612, 618
         }

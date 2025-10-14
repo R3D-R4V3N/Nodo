@@ -26,7 +26,11 @@ internal class MessageConfiguration : EntityConfiguration<Message>
 
         // Extra properties configureren (optioneel)
         builder.Property(m => m.Inhoud)
-            .IsRequired()
             .HasMaxLength(2000);
+
+        builder.Property(m => m.AudioContentType)
+            .HasMaxLength(128);
+
+        builder.Property(m => m.AudioDurationSeconds);
     }
 }

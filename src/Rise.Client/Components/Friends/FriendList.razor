@@ -6,6 +6,7 @@
             <FriendCard Friend="f"
                         OnAccept="OnAccept"
                         OnReject="OnReject"
+                        onCancel="OnCancel"
                         OnAdd="OnAdd"
                         OnOpenChat="OnOpenChat"
                         OnRemove="OnRemove" />
@@ -18,10 +19,11 @@
 </section>
 
 @code {
-    [Parameter] public IReadOnlyList<FriendDto> Items { get; set; } = Array.Empty<FriendDto>();
-    [Parameter] public EventCallback<FriendDto> OnAccept { get; set; }
-    [Parameter] public EventCallback<FriendDto> OnReject { get; set; }
-    [Parameter] public EventCallback<FriendDto> OnAdd { get; set; }
-    [Parameter] public EventCallback<FriendDto> OnOpenChat { get; set; }
-    [Parameter] public EventCallback<FriendDto> OnRemove { get; set; }
+    [Parameter] public IReadOnlyList<UserConnectionDTO> Items { get; set; } = Array.Empty<UserConnectionDTO>();
+    [Parameter] public EventCallback<UserConnectionDTO> OnAccept { get; set; }
+    [Parameter] public EventCallback<UserConnectionDTO> OnReject { get; set; }
+    [Parameter] public EventCallback<UserConnectionDTO> OnCancel { get; set; }
+    [Parameter] public EventCallback<UserConnectionDTO> OnAdd { get; set; }
+    [Parameter] public EventCallback<UserConnectionDTO> OnOpenChat { get; set; }
+    [Parameter] public EventCallback<UserConnectionDTO> OnRemove { get; set; }
 }

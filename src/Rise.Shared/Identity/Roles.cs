@@ -9,5 +9,5 @@ public static class AppRoles
 {
     public const string Administrator = "Administrator";
     public const string Supervisor = "Supervisor";
-    public const string ChatUser = "ChatUser";
+    public const string User = "User";
 }

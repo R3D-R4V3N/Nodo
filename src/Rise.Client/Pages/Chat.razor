@@ -5,6 +5,7 @@
 @using System.Security.Claims
 @using System.Threading
 @using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.JSInterop
 @using Rise.Client.Chats
 @using Rise.Client.Components.Chat
 @using Rise.Shared.Chat
@@ -14,6 +15,7 @@
 @inject IChatService ChatService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <div class="flex flex-col h-screen max-h-screen overflow-hidden bg-neutral-100 text-neutral-900">
 
@@ -57,12 +59,12 @@
         }
 
         <!-- Scrollable messages -->
-        <div class="flex-1 overflow-y-auto px-3 pb-24 no-scrollbar">
+        <div class="flex-1 overflow-y-auto px-3 no-scrollbar" style="@GetMessageHostPaddingStyle()" @ref="_messagesHost">
             <MessageList Messages="_messages" TimestampText="@GetConversationDateLabel()" />
         </div>
 
         <!-- Fixed input bar -->
-        <div class="fixed bottom-0 left-0 right-0 bg-white">
+        <div class="fixed bottom-0 left-0 right-0 bg-white" @ref="_footerHost">
             <div class="mx-auto px-3">
                 <SuggestionChips Suggestions="_suggestions" OnPick="ApplySuggestion" />
                 <ChatInput @bind-Value="_draft"
@@ -118,11 +120,18 @@
     private string? _loadError;
     private bool _isLoading = true;
     private bool _isSending;
+    private bool _shouldScrollToBottom;
+    private ElementReference _messagesHost;
+    private ElementReference _footerHost;
+    private double _footerHeight = 200;
+    private bool _footerMeasurementPending = true;
+    private const double FooterPaddingBuffer = 24;
 
     protected override async Task OnParametersSetAsync()
     {
         _loadError = null;
         _errorMessage = null;
+        ScheduleFooterMeasurement();
 
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
@@ -163,6 +172,8 @@
         }
 
         _isLoading = false;
+        _shouldScrollToBottom = true;
+        ScheduleFooterMeasurement();
 
         await EnsureHubConnectionAsync();
     }
@@ -176,6 +187,7 @@
 
         _isSending = true;
         _errorMessage = null;
+        ScheduleFooterMeasurement();
 
         try
         {
@@ -190,6 +202,7 @@
             if (!result.IsSuccess || result.Value is null)
             {
                 _errorMessage = result.Errors.FirstOrDefault() ?? "Het bericht kon niet verzonden worden.";
+                ScheduleFooterMeasurement();
                 return;
             }
 
@@ -209,11 +222,45 @@
         return Task.CompletedTask;
     }
 
-    private Task HandleVoiceMessageAsync(RecordedAudio audio)
+    private async Task HandleVoiceMessageAsync(RecordedAudio audio)
     {
-        _errorMessage = "Spraakberichten worden nog niet ondersteund.";
-        StateHasChanged();
-        return Task.CompletedTask;
+        if (_chat is null || _isSending)
+        {
+            return;
+        }
+
+        _isSending = true;
+        _errorMessage = null;
+        ScheduleFooterMeasurement();
+
+        try
+        {
+            var request = new ChatRequest.CreateMessage
+            {
+                ChatId = _chat.chatId,
+                AudioDataUrl = audio.DataUrl,
+                AudioDurationSeconds = audio.DurationSeconds
+            };
+
+            var result = await ChatService.CreateMessageAsync(request);
+
+            if (!result.IsSuccess || result.Value is null)
+            {
+                var validationMessage = result.ValidationErrors.FirstOrDefault()?.ErrorMessage;
+                _errorMessage = validationMessage
+                    ?? result.Errors.FirstOrDefault()
+                    ?? "Het spraakbericht kon niet verzonden worden.";
+                ScheduleFooterMeasurement();
+                return;
+            }
+
+            TryAddMessage(result.Value);
+        }
+        finally
+        {
+            _isSending = false;
+            StateHasChanged();
+        }
     }
 
     private async Task EnsureHubConnectionAsync()
@@ -360,8 +407,52 @@
         var mapped = MapToMessage(dto);
         _messages.Add(mapped);
         _messages.Sort((a, b) => Nullable.Compare(a.Timestamp, b.Timestamp));
+        _shouldScrollToBottom = true;
 
         return true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (_footerMeasurementPending)
+        {
+            _footerMeasurementPending = false;
+
+            try
+            {
+                var measuredHeight = await JSRuntime.InvokeAsync<double>("measureElementHeight", _footerHost);
+                if (!double.IsNaN(measuredHeight)
+                    && !double.IsInfinity(measuredHeight)
+                    && measuredHeight > 0
+                    && Math.Abs(measuredHeight - _footerHeight) > 1)
+                {
+                    _footerHeight = measuredHeight;
+                    _shouldScrollToBottom = true;
+                    StateHasChanged();
+                    return;
+                }
+            }
+            catch (JSDisconnectedException)
+            {
+                // Ignore when JS runtime is no longer available.
+            }
+        }
+
+        if (_shouldScrollToBottom)
+        {
+            _shouldScrollToBottom = false;
+
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("scrollToBottom", _messagesHost, true);
+            }
+            catch (JSDisconnectedException)
+            {
+                // Ignore: JS runtime no longer available (e.g., during prerender or disposal).
+            }
+        }
     }
 
     private Message MapToMessage(MessageDto dto)
@@ -369,14 +460,22 @@
         var isOutgoing = !string.IsNullOrWhiteSpace(_currentAccountId)
             && string.Equals(dto.SenderAccountId, _currentAccountId, StringComparison.Ordinal);
 
+        var audioUrl = string.IsNullOrWhiteSpace(dto.AudioDataUrl)
+            ? null
+            : dto.AudioDataUrl;
+
+        TimeSpan? audioDuration = dto.AudioDurationSeconds.HasValue
+            ? TimeSpan.FromSeconds(dto.AudioDurationSeconds.Value)
+            : null;
+
         return new Message(
             dto.Id.ToString(CultureInfo.InvariantCulture),
-            dto.Content,
+            dto.Content ?? string.Empty,
             isOutgoing,
             AvatarUrl: null,
             Timestamp: dto.Timestamp,
-            AudioUrl: null,
-            AudioDuration: null,
+            AudioUrl: audioUrl,
+            AudioDuration: audioDuration,
             SenderName: dto.SenderName);
     }
 
@@ -446,6 +545,17 @@
     {
         // TODO: Hook up with actual alert functionality.
         return Task.CompletedTask;
+    }
+
+    private string GetMessageHostPaddingStyle()
+    {
+        var padding = Math.Max(0, Math.Ceiling(_footerHeight + FooterPaddingBuffer));
+        return $"padding-bottom: {padding}px;";
+    }
+
+    private void ScheduleFooterMeasurement()
+    {
+        _footerMeasurementPending = true;
     }
 
     public async ValueTask DisposeAsync()

@@ -1,0 +1,26 @@
+@page "/friends"
+@using Rise.Client.Shared
+@layout ChatLayout
+<FriendsHeader OnBack="GoBack" />
+
+<section class="bg-neutral-100 px-4 pt-4 pb-2">
+    <FriendsTabs Selected="@_selectedTab" OnChange="ChangeTab" />
+    <FriendSearch @bind-Value="_query" />
+</section>
+
+<FriendList Items="@_filteredConnections"
+            OnAccept="AcceptFriendRequest"
+            OnReject="RejectFriendRequest"
+            OnCancel="CancelFriendRequest"
+            OnAdd="AddFriend"
+            OnOpenChat="OpenChat"
+            OnRemove="RemoveFriend" />
+
+@code {
+    private string? _query;
+    private string? Query
+    {
+        get => _query;
+        set { _query = value; ApplyQuery(); }
+    }
+}

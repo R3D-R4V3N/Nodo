@@ -8,7 +8,7 @@
     </div>
 
     <div class="flex space-x-2">
-        @if (Friend.State == FriendState.Requests)
+        @if (Friend.State == UserConnectionTypeDto.IncomingFriendRequest)
         {
             <button class="h-12 w-12 grid place-items-center rounded-xl bg-[#D64541] hover:bg-[#c53e3a]" aria-label="Verwijderen"
                     @onclick="(() => OnReject.InvokeAsync(Friend))">
@@ -21,7 +21,14 @@
                 </svg>
             </button>
         }
-        else if (Friend.State == FriendState.Add)
+        else if (Friend.State == UserConnectionTypeDto.OutgoingFriendRequest)
+        {
+            <button class="h-12 w-12 grid place-items-center rounded-xl bg-[#D64541] hover:bg-[#c53e3a]" aria-label="Verwijderen"
+                    @onclick="(() => OnCancel.InvokeAsync(Friend))">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="#ffffff" viewBox="0 0 256 256"><path d="M200,56V208a8,8,0,0,1-8,8H64a8,8,0,0,1-8-8V56Z" opacity="0.2"></path><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"></path></svg>
+            </button>
+        }
+        else if (Friend.State == UserConnectionTypeDto.AddFriends)
         {
             <button class="h-12 w-12 grid place-items-center rounded-xl bg-[#127646] hover:bg-[#0f613a]" aria-label="Toevoegen"
                     @onclick="(() => OnAdd.InvokeAsync(Friend))">
@@ -47,10 +54,11 @@
 </article>
 
 @code {
-    [Parameter] public FriendDto Friend { get; set; } = default!;
-    [Parameter] public EventCallback<FriendDto> OnAccept { get; set; }
-    [Parameter] public EventCallback<FriendDto> OnReject { get; set; }
-    [Parameter] public EventCallback<FriendDto> OnAdd { get; set; }
-    [Parameter] public EventCallback<FriendDto> OnOpenChat { get; set; }
-    [Parameter] public EventCallback<FriendDto> OnRemove { get; set; }
+    [Parameter] public UserConnectionDTO Friend { get; set; } = default!;
+    [Parameter] public EventCallback<UserConnectionDTO> OnAccept { get; set; }
+    [Parameter] public EventCallback<UserConnectionDTO> OnReject { get; set; }
+    [Parameter] public EventCallback<UserConnectionDTO> OnCancel { get; set; }
+    [Parameter] public EventCallback<UserConnectionDTO> OnAdd { get; set; }
+    [Parameter] public EventCallback<UserConnectionDTO> OnOpenChat { get; set; }
+    [Parameter] public EventCallback<UserConnectionDTO> OnRemove { get; set; }
 }
