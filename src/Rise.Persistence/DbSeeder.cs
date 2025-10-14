@@ -16,7 +16,7 @@ namespace Rise.Persistence;
 /// <param name="userManager"></param>
 public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager)
 {
-    private const string PasswordDefault = "A1b2C3!";
+    private const string PasswordDefault = "Nodo.1";
 
     public async Task SeedAsync()
     {
@@ -46,6 +46,42 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         }
 
         await dbContext.Roles.ToListAsync();
+        
+        var Kyandro = new IdentityUser
+        {
+            UserName = "kyandro@nodo.chat",
+            Email = "kyandro@nodo.chat",
+            EmailConfirmed = true,
+        };
+        
+        await userManager.CreateAsync(Kyandro, PasswordDefault);
+        
+        var Jasper = new IdentityUser
+        {
+            UserName = "jasper@nodo.chat",
+            Email = "jasper@nodo.chat",
+            EmailConfirmed = true,
+        };
+        
+        await userManager.CreateAsync(Jasper, PasswordDefault);
+        
+        var Bjorn = new IdentityUser
+        {
+            UserName = "bjorn@nodo.chat",
+            Email = "bjorn@nodo.chat",
+            EmailConfirmed = true,
+        };
+        
+        await userManager.CreateAsync(Bjorn, PasswordDefault);
+        
+        var Thibo = new IdentityUser
+        {
+            UserName = "thibo@nodo.chat",
+            Email = "thibo@nodo.chat",
+            EmailConfirmed = true,
+        };
+        
+        await userManager.CreateAsync(Thibo, PasswordDefault);
 
         var admin = new IdentityUser
         {
@@ -101,6 +137,12 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         await userManager.AddToRoleAsync(chatterNoor, AppRoles.ChatUser);
         await userManager.AddToRoleAsync(chatterMilan, AppRoles.ChatUser);
         await userManager.AddToRoleAsync(chatterLina, AppRoles.ChatUser);
+        await userManager.AddToRoleAsync(Kyandro, AppRoles.ChatUser);
+        await userManager.AddToRoleAsync(Jasper, AppRoles.ChatUser);
+        await userManager.AddToRoleAsync(Bjorn, AppRoles.ChatUser);
+        await userManager.AddToRoleAsync(Thibo, AppRoles.ChatUser);
+
+
 
         var applicationUsers = new List<ApplicationUser>
         {
@@ -108,7 +150,11 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(supervisorJonas.Id, "Jonas", "Coach", "Houdt gesprekken in de gaten en helpt wanneer het even moeilijk wordt.", UserType.Supervisor),
             new(chatterNoor.Id, "Noor", "Vermeulen", "Praat graag over muziek en wil nieuwe vrienden maken.", UserType.ChatUser),
             new(chatterMilan.Id, "Milan", "Peeters", "Zoekt iemand om samen over games te praten.", UserType.ChatUser),
-            new(chatterLina.Id, "Lina", "Jacobs", "Vindt het fijn om vragen te kunnen stellen in een veilige omgeving.", UserType.ChatUser)
+            new(chatterLina.Id, "Lina", "Jacobs", "Vindt het fijn om vragen te kunnen stellen in een veilige omgeving.", UserType.ChatUser),
+            new(Kyandro.Id, "Kyandro", "Voet", "Is geïnteresseerd in softwareontwikkeling en helpt vaak bij technische vragen.", UserType.ChatUser),
+            new(Jasper.Id, "Jasper", "Vermeersch", "Vindt het leuk om te discussiëren over technologie en innovatie.", UserType.ChatUser),
+            new(Bjorn.Id, "Bjorn", "Van Damme", "Praat graag over sport en houdt van teamwork.", UserType.ChatUser),
+            new(Thibo.Id, "Thibo", "De Smet", "Is nieuwsgierig en stelt vaak interessante vragen.", UserType.ChatUser)
         };
 
         dbContext.ApplicationUsers.AddRange(applicationUsers);
