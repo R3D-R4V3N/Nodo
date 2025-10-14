@@ -43,6 +43,12 @@ welke gesprekken al voorbeeldberichten bevatten.
 
 ## Vriendschappen en connecties
 
+De onderstaande tabellen bepalen rechtstreeks wat er verschijnt op de `/friends` pagina.
+
+- **Alle** toont de bevestigde vrienden uit de eerste tabel.
+- **Verzoeken** toont de inkomende en uitgaande aanvragen; alleen inkomende zijn zichtbaar voor acceptatie.
+- **Voeg toe** bevat automatisch alle andere chatters met `User`-profiel die geen bestaande connectie hebben met de ingelogde gebruiker. Supervisors worden hier niet getoond.
+
 ### Bevestigde vrienden
 
 | Persoon A | Persoon B | Context |
@@ -62,6 +68,10 @@ welke gesprekken al voorbeeldberichten bevatten.
 | John | Bjorn | John zoekt een sportbuddy. |
 | Stacey | Noor | Stacey wil Noor beter leren kennen. |
 | Amina | Kyandro | Amina zoekt programmeertips voor een nieuw project. |
+
+### Beschikbaar om toe te voegen
+
+Alle andere chatters (zoals John ↔ Lina of Stacey ↔ Yassin) hebben nog geen connectie en verschijnen dus standaard in de tab "Voeg toe" totdat iemand een verzoek verstuurt. Hierdoor kan je snel nieuwe één-op-één gesprekken opzetten zonder supervisors te zien in de lijst.
 
 ## Gesprekken en voorbeeldberichten
 
