@@ -1,0 +1,16 @@
+@if (Errors?.Count > 0)
+{
+    <div class="space-y-2">
+        @foreach (var error in Errors)
+        {
+            <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                @error
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public IReadOnlyCollection<string>? Errors { get; set; }
+}
