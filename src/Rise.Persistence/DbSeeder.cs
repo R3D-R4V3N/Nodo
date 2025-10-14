@@ -261,9 +261,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         if (users.Count == 0)
             return;
 
-        var hasConnections = await dbContext.Entry(users[0])
-            .Collection<UserConnection>("_connections")
-            .Query()
+        var hasConnections = await dbContext.ApplicationUsers
+            .SelectMany(u => EF.Property<IEnumerable<UserConnection>>(u, "_connections"))
             .AnyAsync();
 
         if (hasConnections)
