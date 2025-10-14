@@ -256,14 +256,25 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
     private async Task ConnectionsAsync()
     {
         var users = await dbContext.ApplicationUsers
-            .Include(u => u.Connections)
             .ToListAsync();
 
         if (users.Count == 0)
             return;
 
-        if (users[0].Connections.Count > 0)
+        var hasConnections = await dbContext.Entry(users[0])
+            .Collection<UserConnection>("_connections")
+            .Query()
+            .AnyAsync();
+
+        if (hasConnections)
             return;
+
+        foreach (var user in users)
+        {
+            await dbContext.Entry(user)
+                .Collection<UserConnection>("_connections")
+                .LoadAsync();
+        }
 
         ApplicationUser GetUser(string firstName) => users.Single(u => u.FirstName.Equals(firstName, StringComparison.Ordinal));
 
