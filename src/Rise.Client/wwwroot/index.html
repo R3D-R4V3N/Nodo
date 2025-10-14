@@ -29,10 +29,12 @@
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
     <script>
-        window.scrollToBottom = (el) => {
+        window.scrollToBottom = (el, force = false) => {
             if (!el) return;
-            const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
-            if (atBottom) el.scrollTop = el.scrollHeight;
+            const shouldStick = force || (el.scrollHeight - el.scrollTop - el.clientHeight < 80);
+            if (shouldStick) {
+                el.scrollTop = el.scrollHeight;
+            }
         };
 
     </script>

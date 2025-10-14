@@ -5,6 +5,7 @@
 @using System.Security.Claims
 @using System.Threading
 @using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.JSInterop
 @using Rise.Client.Chats
 @using Rise.Client.Components.Chat
 @using Rise.Shared.Chat
@@ -14,6 +15,7 @@
 @inject IChatService ChatService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <div class="flex flex-col h-screen max-h-screen overflow-hidden bg-neutral-100 text-neutral-900">
 
@@ -57,7 +59,7 @@
         }
 
         <!-- Scrollable messages -->
-        <div class="flex-1 overflow-y-auto px-3 pb-24 no-scrollbar">
+        <div class="flex-1 overflow-y-auto px-3 pb-24 no-scrollbar" @ref="_messagesHost">
             <MessageList Messages="_messages" TimestampText="@GetConversationDateLabel()" />
         </div>
 
@@ -118,6 +120,8 @@
     private string? _loadError;
     private bool _isLoading = true;
     private bool _isSending;
+    private bool _shouldScrollToBottom;
+    private ElementReference _messagesHost;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -163,6 +167,7 @@
         }
 
         _isLoading = false;
+        _shouldScrollToBottom = true;
 
         await EnsureHubConnectionAsync();
     }
@@ -392,8 +397,28 @@
         var mapped = MapToMessage(dto);
         _messages.Add(mapped);
         _messages.Sort((a, b) => Nullable.Compare(a.Timestamp, b.Timestamp));
+        _shouldScrollToBottom = true;
 
         return true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (_shouldScrollToBottom)
+        {
+            _shouldScrollToBottom = false;
+
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("scrollToBottom", _messagesHost, true);
+            }
+            catch (JSDisconnectedException)
+            {
+                // Ignore: JS runtime no longer available (e.g., during prerender or disposal).
+            }
+        }
     }
 
     private Message MapToMessage(MessageDto dto)
