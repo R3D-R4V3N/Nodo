@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Identity;
@@ -49,236 +50,214 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         }
 
         await dbContext.Roles.ToListAsync();
-        
-        var Kyandro = new IdentityUser
-        {
-            UserName = "kyandro@nodo.chat",
-            Email = "kyandro@nodo.chat",
-            EmailConfirmed = true,
-        };
-        
-        await userManager.CreateAsync(Kyandro, PasswordDefault);
-        
-        var Jasper = new IdentityUser
-        {
-            UserName = "jasper@nodo.chat",
-            Email = "jasper@nodo.chat",
-            EmailConfirmed = true,
-        };
-        
-        await userManager.CreateAsync(Jasper, PasswordDefault);
-        
-        var Bjorn = new IdentityUser
-        {
-            UserName = "bjorn@nodo.chat",
-            Email = "bjorn@nodo.chat",
-            EmailConfirmed = true,
-        };
-        
-        await userManager.CreateAsync(Bjorn, PasswordDefault);
-        
-        var Thibo = new IdentityUser
-        {
-            UserName = "thibo@nodo.chat",
-            Email = "thibo@nodo.chat",
-            EmailConfirmed = true,
-        };
-        
-        await userManager.CreateAsync(Thibo, PasswordDefault);
-        
-        var admin = new IdentityUser
-        {
-            UserName = "admin@example.com",
-            Email = "admin@example.com",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(admin, PasswordDefault);
-        
-        var supervisor = new IdentityUser
-        {
-            UserName = "supervisor@example.com",
-            Email = "supervisor@example.com",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(supervisor, PasswordDefault);
-        
-        var userAccount1 = new IdentityUser
-        {
-            UserName = "user1@example.com",
-            Email = "user1@example.com",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(userAccount1, PasswordDefault);
-        
-        var userAccount2 = new IdentityUser
-        {
-            UserName = "user2@example.com",
-            Email = "user2@example.com",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(userAccount2, PasswordDefault);
-                
-        var user = new IdentityUser
-        {
-            UserName = "admin@nodo.chat",
-            Email = "admin@nodo.chat",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(user, PasswordDefault);
-        
-        await userManager.AddToRoleAsync(admin, "Administrator");
-        await userManager.AddToRoleAsync(supervisor, "Supervisor");
-        await userManager.AddToRoleAsync(userAccount1, "User");
-        await userManager.AddToRoleAsync(userAccount2, "User");
 
-        dbContext.ApplicationUsers.AddRange(
-            new ApplicationUser(userAccount1.Id)
+        IdentityUser CreateIdentity(string email) => new()
+        {
+            UserName = email,
+            Email = email,
+            EmailConfirmed = true,
+        };
+
+        var admin = CreateIdentity("admin@example.com");
+        var supervisor = CreateIdentity("supervisor@example.com");
+        var userAccount1 = CreateIdentity("user1@example.com");
+        var userAccount2 = CreateIdentity("user2@example.com");
+        var nodoAdmin = CreateIdentity("admin@nodo.chat");
+
+        var supervisorEmma = CreateIdentity("emma.supervisor@nodo.chat");
+        var supervisorJonas = CreateIdentity("jonas.supervisor@nodo.chat");
+        var supervisorElla = CreateIdentity("ella.supervisor@nodo.chat");
+
+        var chatterNoor = CreateIdentity("noor@nodo.chat");
+        var chatterMilan = CreateIdentity("milan@nodo.chat");
+        var chatterLina = CreateIdentity("lina@nodo.chat");
+        var chatterKyandro = CreateIdentity("kyandro@nodo.chat");
+        var chatterJasper = CreateIdentity("jasper@nodo.chat");
+        var chatterBjorn = CreateIdentity("bjorn@nodo.chat");
+        var chatterThibo = CreateIdentity("thibo@nodo.chat");
+        var chatterSaar = CreateIdentity("saar@nodo.chat");
+        var chatterYassin = CreateIdentity("yassin@nodo.chat");
+        var chatterLotte = CreateIdentity("lotte@nodo.chat");
+        var chatterAmina = CreateIdentity("amina@nodo.chat");
+
+        var accounts = new List<SeedAccount>
+        {
+            new(admin, AppRoles.Administrator, null),
+            new(supervisor, AppRoles.Supervisor,
+                new ApplicationUser(supervisor.Id)
+                {
+                    FirstName = "Super",
+                    LastName = "Visor",
+                    Biography = "Here to help you.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-30)),
+                    UserType = UserType.Supervisor,
+                }),
+            new(userAccount1, AppRoles.User,
+                new ApplicationUser(userAccount1.Id)
+                {
+                    FirstName = "John",
+                    LastName = "Doe",
+                    Biography = "Houdt van katten en rustige gesprekken.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
+                    UserType = UserType.Regular,
+                }),
+            new(userAccount2, AppRoles.User,
+                new ApplicationUser(userAccount2.Id)
+                {
+                    FirstName = "Stacey",
+                    LastName = "Willington",
+                    Biography = "Deelt graag verhalen over haar hulphond.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-26)),
+                    UserType = UserType.Regular,
+                }),
+            new(nodoAdmin, AppRoles.Administrator, null),
+            new(supervisorEmma, AppRoles.Supervisor,
+                new ApplicationUser(supervisorEmma.Id)
+                {
+                    FirstName = "Emma",
+                    LastName = "Claes",
+                    Biography = "Coach voor dagelijkse structuur en zelfvertrouwen.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-35)),
+                    UserType = UserType.Supervisor,
+                }),
+            new(supervisorJonas, AppRoles.Supervisor,
+                new ApplicationUser(supervisorJonas.Id)
+                {
+                    FirstName = "Jonas",
+                    LastName = "Van Lint",
+                    Biography = "Helpt bij plannen en houdt wekelijks groepsmomenten.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-33)),
+                    UserType = UserType.Supervisor,
+                }),
+            new(supervisorElla, AppRoles.Supervisor,
+                new ApplicationUser(supervisorElla.Id)
+                {
+                    FirstName = "Ella",
+                    LastName = "Vervoort",
+                    Biography = "Creatieve begeleider voor beeldende therapie.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-31)),
+                    UserType = UserType.Supervisor,
+                }),
+            new(chatterNoor, AppRoles.User,
+                new ApplicationUser(chatterNoor.Id)
+                {
+                    FirstName = "Noor",
+                    LastName = "Vermeulen",
+                    Biography = "Praat graag over muziek en wil nieuwe vrienden maken.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
+                    UserType = UserType.Regular,
+                }),
+            new(chatterMilan, AppRoles.User,
+                new ApplicationUser(chatterMilan.Id)
+                {
+                    FirstName = "Milan",
+                    LastName = "Peeters",
+                    Biography = "Zoekt iemand om samen over games te praten.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
+                    UserType = UserType.Regular,
+                }),
+            new(chatterLina, AppRoles.User,
+                new ApplicationUser(chatterLina.Id)
+                {
+                    FirstName = "Lina",
+                    LastName = "Jacobs",
+                    Biography = "Vindt het fijn om vragen te kunnen stellen in een veilige omgeving.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-22)),
+                    UserType = UserType.Regular,
+                }),
+            new(chatterKyandro, AppRoles.User,
+                new ApplicationUser(chatterKyandro.Id)
+                {
+                    FirstName = "Kyandro",
+                    LastName = "Voet",
+                    Biography = "Helpt vaak bij technische vragen en deelt programmeertips.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-25)),
+                    UserType = UserType.Regular,
+                }),
+            new(chatterJasper, AppRoles.User,
+                new ApplicationUser(chatterJasper.Id)
+                {
+                    FirstName = "Jasper",
+                    LastName = "Vermeersch",
+                    Biography = "Vindt het leuk om te discussiëren over technologie en innovatie.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
+                    UserType = UserType.Regular,
+                }),
+            new(chatterBjorn, AppRoles.User,
+                new ApplicationUser(chatterBjorn.Id)
+                {
+                    FirstName = "Bjorn",
+                    LastName = "Van Damme",
+                    Biography = "Praat graag over sport en houdt van teamwork.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-27)),
+                    UserType = UserType.Regular,
+                }),
+            new(chatterThibo, AppRoles.User,
+                new ApplicationUser(chatterThibo.Id)
+                {
+                    FirstName = "Thibo",
+                    LastName = "De Smet",
+                    Biography = "Is nieuwsgierig en stelt vaak interessante vragen.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-21)),
+                    UserType = UserType.Regular,
+                }),
+            new(chatterSaar, AppRoles.User,
+                new ApplicationUser(chatterSaar.Id)
+                {
+                    FirstName = "Saar",
+                    LastName = "Vandenberg",
+                    Biography = "Deelt graag foto's van haar tekeningen.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
+                    UserType = UserType.Regular,
+                }),
+            new(chatterYassin, AppRoles.User,
+                new ApplicationUser(chatterYassin.Id)
+                {
+                    FirstName = "Yassin",
+                    LastName = "El Amrani",
+                    Biography = "Leert zelfstandig koken en zoekt tips van vrienden.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-25)),
+                    UserType = UserType.Regular,
+                }),
+            new(chatterLotte, AppRoles.User,
+                new ApplicationUser(chatterLotte.Id)
+                {
+                    FirstName = "Lotte",
+                    LastName = "De Wilde",
+                    Biography = "Wordt blij van dansen en deelt positieve boodschappen.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
+                    UserType = UserType.Regular,
+                }),
+            new(chatterAmina, AppRoles.User,
+                new ApplicationUser(chatterAmina.Id)
+                {
+                    FirstName = "Amina",
+                    LastName = "Karim",
+                    Biography = "Houdt van creatieve projecten en begeleidt graag groepsspelletjes.",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-22)),
+                    UserType = UserType.Regular,
+                }),
+        };
+
+        foreach (var (identity, role, profile) in accounts)
+        {
+            await userManager.CreateAsync(identity, PasswordDefault);
+            await userManager.AddToRoleAsync(identity, role);
+
+            if (profile is not null)
             {
-                FirstName = "John",
-                LastName = "Doe",
-                Biography = "I like cats, meow.",
-                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
-                UserType = UserType.Regular,
-            },
-            new ApplicationUser(userAccount2.Id)
-            {
-                FirstName = "Stacey",
-                LastName = "Willington",
-                Biography = "I like dogs, ruff.",
-                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
-                UserType = UserType.Regular,
-            },
-            new ApplicationUser(supervisor.Id)
-            {
-                FirstName = "Super",
-                LastName = "Visor",
-                Biography = "Here to help you.",
-                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-30)),
-                UserType = UserType.Supervisor,
+                dbContext.ApplicationUsers.Add(profile);
             }
-        );
-
-        var supervisorEmma = new IdentityUser
-        {
-            UserName = "emma.supervisor@nodo.chat",
-            Email = "emma.supervisor@nodo.chat",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(supervisorEmma, PasswordDefault);
-
-        var supervisorJonas = new IdentityUser
-        {
-            UserName = "jonas.supervisor@nodo.chat",
-            Email = "jonas.supervisor@nodo.chat",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(supervisorJonas, PasswordDefault);
-
-        var chatterNoor = new IdentityUser
-        {
-            UserName = "noor@nodo.chat",
-            Email = "noor@nodo.chat",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(chatterNoor, PasswordDefault);
-
-        var chatterMilan = new IdentityUser
-        {
-            UserName = "milan@nodo.chat",
-            Email = "milan@nodo.chat",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(chatterMilan, PasswordDefault);
-
-        var chatterLina = new IdentityUser
-        {
-            UserName = "lina@nodo.chat",
-            Email = "lina@nodo.chat",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(chatterLina, PasswordDefault);
-
-        await userManager.AddToRoleAsync(admin, AppRoles.Administrator);
-        await userManager.AddToRoleAsync(supervisorEmma, AppRoles.Supervisor);
-        await userManager.AddToRoleAsync(supervisorJonas, AppRoles.Supervisor);
-        await userManager.AddToRoleAsync(chatterNoor, AppRoles.User);
-        await userManager.AddToRoleAsync(chatterMilan, AppRoles.User);
-        await userManager.AddToRoleAsync(chatterLina, AppRoles.User);
-        await userManager.AddToRoleAsync(Kyandro, AppRoles.User);
-        await userManager.AddToRoleAsync(Jasper, AppRoles.User);
-        await userManager.AddToRoleAsync(Bjorn, AppRoles.User);
-        await userManager.AddToRoleAsync(Thibo, AppRoles.User);
-
-
-
-        var applicationUsers = new List<ApplicationUser>
-        {
-            new ApplicationUser(chatterNoor.Id)
-            {
-                FirstName = "Noor",
-                LastName = "Vermeulen",
-                Biography = "Praat graag over muziek en wil nieuwe vrienden maken.",
-                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
-                UserType = UserType.Regular,
-            },
-            new ApplicationUser(chatterMilan.Id)
-            {
-                FirstName = "Milan",
-                LastName = "Peeters",
-                Biography = "Zoekt iemand om samen over games te praten.",
-                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
-                UserType = UserType.Regular,
-            },
-            new ApplicationUser(chatterLina.Id)
-            {
-                FirstName = "Lina",
-                LastName = "Jacobs",
-                Biography = "Vindt het fijn om vragen te kunnen stellen in een veilige omgeving.",
-                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
-                UserType = UserType.Regular,
-            },
-            new ApplicationUser(Kyandro.Id)
-            {
-                FirstName = "Kyandro",
-                LastName = "Voet",
-                Biography = "Is geïnteresseerd in softwareontwikkeling en helpt vaak bij technische vragen.",
-                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
-                UserType = UserType.Regular,
-            },
-            new ApplicationUser(Jasper.Id)
-            {
-                FirstName = "Jasper",
-                LastName = "Vermeersch",
-                Biography = "Vindt het leuk om te discussiëren over technologie en innovatie.",
-                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
-                UserType = UserType.Regular,
-            },
-            new ApplicationUser(Bjorn.Id)
-            {
-                FirstName = "Bjorn",
-                LastName = "Van Damme",
-                Biography = "Praat graag over sport en houdt van teamwork.",
-                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
-                UserType = UserType.Regular,
-            },
-            new ApplicationUser(Thibo.Id)
-            {
-                FirstName = "Thibo",
-                LastName = "De Smet",
-                Biography = "Is nieuwsgierig en stelt vaak interessante vragen.",
-                BirthDay = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
-                UserType = UserType.Regular,
-            },
-        };
-
-        dbContext.ApplicationUsers.AddRange(applicationUsers);
+        }
 
         await dbContext.SaveChangesAsync();
     }
 
     private async Task ConnectionsAsync()
     {
-        var users = await dbContext.ApplicationUsers.ToListAsync();
+        var users = await dbContext.ApplicationUsers
+            .Include(u => u.Connections)
+            .ToListAsync();
 
         if (users.Count == 0)
             return;
@@ -286,9 +265,44 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         if (users[0].Connections.Count > 0)
             return;
 
-        users[0].AddFriend(users[1]);
-        users[1].AddFriend(users[2]);
-        users[2].AddFriend(users[1]);
+        ApplicationUser GetUser(string firstName) => users.Single(u => u.FirstName.Equals(firstName, StringComparison.Ordinal));
+
+        var noor = GetUser("Noor");
+        var milan = GetUser("Milan");
+        var lina = GetUser("Lina");
+        var kyandro = GetUser("Kyandro");
+        var jasper = GetUser("Jasper");
+        var bjorn = GetUser("Bjorn");
+        var thibo = GetUser("Thibo");
+        var saar = GetUser("Saar");
+        var yassin = GetUser("Yassin");
+        var lotte = GetUser("Lotte");
+        var amina = GetUser("Amina");
+        var john = GetUser("John");
+        var stacey = GetUser("Stacey");
+
+        // Bevestigde vriendschappen
+        noor.AddFriend(milan);
+        milan.AddFriend(noor);
+
+        kyandro.AddFriend(jasper);
+        jasper.AddFriend(kyandro);
+
+        bjorn.AddFriend(thibo);
+        thibo.AddFriend(bjorn);
+
+        saar.AddFriend(yassin);
+        yassin.AddFriend(saar);
+
+        lotte.AddFriend(amina);
+        amina.AddFriend(lotte);
+
+        // Openstaande verzoeken voor verschillende scenario's
+        noor.AddFriend(lina); // Noor wacht op antwoord van Lina
+        milan.AddFriend(saar); // Milan nodigt Saar uit in de gamegroep
+        john.AddFriend(bjorn); // John zoekt een sportbuddy
+        stacey.AddFriend(noor); // Stacey wil Noor beter leren kennen
+        amina.AddFriend(kyandro); // Amina zoekt tips voor een programmeerclub
 
         await dbContext.SaveChangesAsync();
     }
@@ -308,77 +322,72 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             .Where(u => u.UserType == UserType.Regular)
             .ToListAsync();
 
-        if (supervisors.Count == 0 || chatUsers.Count == 0)
+        if (supervisors.Count == 0 || chatUsers.Count < 3)
         {
             return;
         }
 
-        var firstChatter = chatUsers.First();
-        var secondChatter = chatUsers.Skip(1).FirstOrDefault() ?? firstChatter;
-        var primarySupervisor = supervisors.First();
-        var backupSupervisor = supervisors.Skip(1).FirstOrDefault() ?? primarySupervisor;
-
-        var chat1 = new Chat();
-        var chat2 = new Chat();
-
-        dbContext.Chats.AddRange(chat1, chat2);
-        await dbContext.SaveChangesAsync();
-
-        var messages = new List<Message>
+        var chatsToCreate = new List<Chat>
         {
-            new Message { Inhoud = "Hoi Emma, ik ben een beetje zenuwachtig voor morgen.", ChatId = chat1.Id, SenderId = firstChatter.Id },
-            new Message { Inhoud = "Dat begrijp ik Noor, we bekijken samen hoe je het rustig kunt aanpakken.", ChatId = chat1.Id, SenderId = primarySupervisor.Id },
-            new Message { Inhoud = "Ik heb vandaag een leuke foto van mijn hond gemaakt!", ChatId = chat2.Id, SenderId = secondChatter.Id },
-            new Message { Inhoud = "Wat leuk! Wil je hem straks in de groepschat delen?", ChatId = chat2.Id, SenderId = backupSupervisor.Id },
+            new(), // Individuele check-in
+            new(), // Vrijdagavond groep
+            new(), // Creatieve hoek
+            new(), // Technische hulplijn
         };
 
-        dbContext.Messages.AddRange(messages);
+        dbContext.Chats.AddRange(chatsToCreate);
         await dbContext.SaveChangesAsync();
     }
-    
+
     private async Task MessagesAsync()
     {
-        if (dbContext.Messages.Any())
+        if (await dbContext.Messages.AnyAsync())
         {
             return;
         }
 
-        var supervisors = await dbContext.ApplicationUsers
-            .Where(u => u.UserType == UserType.Supervisor)
+        var chats = await dbContext.Chats
+            .OrderBy(c => c.Id)
             .ToListAsync();
 
-        var chatUsers = await dbContext.ApplicationUsers
-            .Where(u => u.UserType == UserType.Regular)
-            .ToListAsync();
-
-        if (!supervisors.Any() || !chatUsers.Any())
+        if (chats.Count < 4)
         {
             return;
         }
+        var users = await dbContext.ApplicationUsers
+            .ToDictionaryAsync(u => u.FirstName, StringComparer.Ordinal);
 
-        var firstChatter = chatUsers.First();
-        var secondChatter = chatUsers.Skip(1).FirstOrDefault() ?? firstChatter;
-        var primarySupervisor = supervisors.First();
-        var backupSupervisor = supervisors.Skip(1).FirstOrDefault() ?? primarySupervisor;
-
-
-        var chats = await dbContext.Chats.ToListAsync();
-
-        if (chats.Count == 0)
-        {
-            return;
-        }
-
+        var individueleCheckIn = chats[0];
+        var vrijdagGroep = chats[1];
+        var creatieveHoek = chats[2];
+        var technischeHulp = chats[3];
 
         var messages = new List<Message>
         {
-            new Message { Inhoud = "Hoe voelde je je na het gesprek van gisteren?", ChatId = chats[0].Id, SenderId = primarySupervisor.Id },
-            new Message { Inhoud = "Veel beter, bedankt om te luisteren!", ChatId = chats[0].Id, SenderId = firstChatter.Id },
-            new Message { Inhoud = "Zullen we vrijdag samen online tekenen?", ChatId = chats[^1].Id, SenderId = secondChatter.Id },
-            new Message { Inhoud = "Leuk idee! Ik stuur straks een uitnodiging.", ChatId = chats[^1].Id, SenderId = backupSupervisor.Id }
+            new Message { Inhoud = "Hoi Emma, ik ben een beetje zenuwachtig voor morgen.", ChatId = individueleCheckIn.Id, SenderId = users["Noor"].Id },
+            new Message { Inhoud = "Dat begrijp ik Noor, we bekijken samen hoe je het rustig kunt aanpakken.", ChatId = individueleCheckIn.Id, SenderId = users["Emma"].Id },
+            new Message { Inhoud = "Zal ik straks mijn checklist nog eens doornemen?", ChatId = individueleCheckIn.Id, SenderId = users["Noor"].Id },
+            new Message { Inhoud = "Ja, en ik stuur je zo meteen een ademhalingsoefening.", ChatId = individueleCheckIn.Id, SenderId = users["Emma"].Id },
+
+            new Message { Inhoud = "Wie doet er vrijdag mee met de online game-avond?", ChatId = vrijdagGroep.Id, SenderId = users["Milan"].Id },
+            new Message { Inhoud = "Ik! Zal ik snacks klaarzetten?", ChatId = vrijdagGroep.Id, SenderId = users["Saar"].Id },
+            new Message { Inhoud = "Goed idee, ik neem de muziek op mij.", ChatId = vrijdagGroep.Id, SenderId = users["Yassin"].Id },
+            new Message { Inhoud = "Ik plan een korte check-in zodat iedereen zich welkom voelt.", ChatId = vrijdagGroep.Id, SenderId = users["Jonas"].Id },
+
+            new Message { Inhoud = "Ik heb een nieuw schilderij gemaakt met felle kleuren!", ChatId = creatieveHoek.Id, SenderId = users["Lotte"].Id },
+            new Message { Inhoud = "Oh wauw, kan je een foto delen?", ChatId = creatieveHoek.Id, SenderId = users["Amina"].Id },
+            new Message { Inhoud = "Zeker! En misschien kunnen we volgende keer een collagemiddag houden?", ChatId = creatieveHoek.Id, SenderId = users["Lotte"].Id },
+            new Message { Inhoud = "Topidee, ik zorg voor een stappenplan met eenvoudige materialen.", ChatId = creatieveHoek.Id, SenderId = users["Ella"].Id },
+
+            new Message { Inhoud = "Mijn tablet doet raar wanneer ik de spraakopnames open.", ChatId = technischeHulp.Id, SenderId = users["Jasper"].Id },
+            new Message { Inhoud = "Heb je al geprobeerd om de app even opnieuw te starten?", ChatId = technischeHulp.Id, SenderId = users["Kyandro"].Id },
+            new Message { Inhoud = "Ja, maar ik twijfel of ik iets fout doe.", ChatId = technischeHulp.Id, SenderId = users["Jasper"].Id },
+            new Message { Inhoud = "Ik kijk straks met je mee en stuur een korte handleiding door.", ChatId = technischeHulp.Id, SenderId = users["Emma"].Id },
         };
 
         dbContext.Messages.AddRange(messages);
         await dbContext.SaveChangesAsync();
     }
+
+    private sealed record SeedAccount(IdentityUser Identity, string Role, ApplicationUser? Profile);
 }
