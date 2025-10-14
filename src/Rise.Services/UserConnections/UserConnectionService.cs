@@ -25,56 +25,112 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
         if (loggedInUser is null)
             return Result.Unauthorized("You are not authorized to fetch user connections.");
 
-        var query = dbContext.ApplicationUsers
+        var connectionQuery = dbContext.ApplicationUsers
             .Where(u => u.AccountId == userId)
             .SelectMany(u => EF.Property<IEnumerable<UserConnection>>(u, "_connections"))
-            .Where(c => 
+            .Where(c =>
                 c.ConnectionType.Equals(UserConnectionType.Friend)
                 || c.ConnectionType.Equals(UserConnectionType.RequestIncoming)
-                || c.ConnectionType.Equals(UserConnectionType.RequestOutgoing)
-            )
-            .AsQueryable();
+                || c.ConnectionType.Equals(UserConnectionType.RequestOutgoing));
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-            query = query.Where(p => p.Connection.FirstName.Contains(request.SearchTerm) || p.Connection.LastName.Contains(request.SearchTerm));
+            var searchTerm = request.SearchTerm.Trim();
+            connectionQuery = connectionQuery.Where(p =>
+                p.Connection.FirstName.Contains(searchTerm)
+                || p.Connection.LastName.Contains(searchTerm));
         }
 
-        var totalCount = await query.CountAsync(ctx);
-
-        // Apply ordering
-        if (!string.IsNullOrWhiteSpace(request.OrderBy))
-        {
-            query = request.OrderDescending
-                ? query.OrderByDescending(e => EF.Property<object>(e, request.OrderBy))
-                : query.OrderBy(e => EF.Property<object>(e, request.OrderBy));
-        }
-        else
-        {
-            // Default order
-            query = query
-                .OrderByDescending(p => p.Connection.CreatedAt)
-                .ThenBy(p => p.Connection.FirstName);
-        }
-
-        var connections = await query.AsNoTracking()
-            .Skip(request.Skip)
-            .Take(request.Take)
-            .Select(p => new UserConnectionDTO
+        var connectionItems = await connectionQuery
+            .Select(p => new
             {
-                Id = p.Connection.AccountId,
-                Name = $"{p.Connection.FirstName} {p.Connection.LastName}",
-                Age = DateTime.Now.Year - p.Connection.BirthDay.Year -
-                    (DateTime.Now.DayOfYear < p.Connection.BirthDay.DayOfYear ? 1 : 0),
-                State = p.ConnectionType.MapToDto(),
-                AvatarUrl = "" // TODO
+                p.Connection.AccountId,
+                p.Connection.FirstName,
+                p.Connection.LastName,
+                p.Connection.BirthDay,
+                p.Connection.CreatedAt,
+                p.Connection.UserType,
+                p.ConnectionType
             })
             .ToListAsync(ctx);
 
+        var connections = connectionItems
+            .Select(p => new UserConnectionDTO
+            {
+                Id = p.AccountId,
+                Name = $"{p.FirstName} {p.LastName}",
+                Age = CalculateAge(p.BirthDay),
+                State = p.ConnectionType.MapToDto(),
+                AvatarUrl = ""
+            })
+            .ToList();
+
+        var connectedAccountIds = connectionItems
+            .Select(p => p.AccountId)
+            .ToHashSet(StringComparer.Ordinal);
+
+        var potentialQuery = dbContext.ApplicationUsers
+            .Where(u =>
+                u.UserType == UserType.Regular
+                && u.AccountId != userId
+                && !connectedAccountIds.Contains(u.AccountId));
+
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+        {
+            var searchTerm = request.SearchTerm.Trim();
+            potentialQuery = potentialQuery.Where(u =>
+                u.FirstName.Contains(searchTerm)
+                || u.LastName.Contains(searchTerm));
+        }
+
+        var potentialConnections = await potentialQuery
+            .Select(u => new UserConnectionDTO
+            {
+                Id = u.AccountId,
+                Name = $"{u.FirstName} {u.LastName}",
+                Age = CalculateAge(u.BirthDay),
+                State = UserConnectionTypeDto.AddFriends,
+                AvatarUrl = ""
+            })
+            .ToListAsync(ctx);
+
+        var allConnections = connections
+            .Concat(potentialConnections)
+            .ToList();
+
+        if (!string.IsNullOrWhiteSpace(request.OrderBy))
+        {
+            var propertyInfo = typeof(UserConnectionDTO).GetProperty(request.OrderBy);
+            if (propertyInfo is not null)
+            {
+                allConnections = request.OrderDescending
+                    ? allConnections.OrderByDescending(c => propertyInfo.GetValue(c, null)).ToList()
+                    : allConnections.OrderBy(c => propertyInfo.GetValue(c, null)).ToList();
+            }
+        }
+
+        var pagedConnections = allConnections
+            .Skip(request.Skip)
+            .Take(request.Take)
+            .ToList();
+
         return Result.Success(new UserConnectionResponse.Index
         {
-            Connections = connections,
-            TotalCount = totalCount
+            Connections = pagedConnections,
+            TotalCount = allConnections.Count
         });
+    }
+
+    private static int CalculateAge(DateOnly birthDay)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var age = today.Year - birthDay.Year;
+
+        if (today < birthDay.AddYears(age))
+        {
+            age--;
+        }
+
+        return age;
     }
 }

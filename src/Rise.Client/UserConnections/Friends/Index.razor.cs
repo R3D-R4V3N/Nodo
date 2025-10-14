@@ -42,11 +42,12 @@ public partial class Index
 
         q = _selectedTab switch
         {
-            UserConnectionTypeDto.Friend => q.Where(x => x.State.Equals(UserConnectionTypeDto.Friend)).OrderBy(x => x.Name),
-            UserConnectionTypeDto.Request => q.Where(x => 
-                x.State.Equals(UserConnectionTypeDto.IncomingFriendRequest)
-                || x.State.Equals(UserConnectionTypeDto.OutgoingFriendRequest)),
-            _ => q,
+            UserConnectionTypeDto.Friend => q.Where(x => x.State == UserConnectionTypeDto.Friend).OrderBy(x => x.Name),
+            UserConnectionTypeDto.Request => q.Where(x =>
+                x.State == UserConnectionTypeDto.IncomingFriendRequest
+                || x.State == UserConnectionTypeDto.OutgoingFriendRequest).OrderBy(x => x.Name),
+            UserConnectionTypeDto.AddFriends => q.Where(x => x.State == UserConnectionTypeDto.AddFriends).OrderBy(x => x.Name),
+            _ => q.OrderBy(x => x.Name),
         };
         
         // better to query db

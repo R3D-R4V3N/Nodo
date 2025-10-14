@@ -292,29 +292,31 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         var stacey = GetUser("Stacey");
 
         // Bevestigde vriendschappen
-        noor.AddFriend(milan);
-        milan.AddFriend(noor);
-
-        kyandro.AddFriend(jasper);
-        jasper.AddFriend(kyandro);
-
-        bjorn.AddFriend(thibo);
-        thibo.AddFriend(bjorn);
-
-        saar.AddFriend(yassin);
-        yassin.AddFriend(saar);
-
-        lotte.AddFriend(amina);
-        amina.AddFriend(lotte);
+        MakeFriends(noor, milan);
+        MakeFriends(kyandro, jasper);
+        MakeFriends(bjorn, thibo);
+        MakeFriends(saar, yassin);
+        MakeFriends(lotte, amina);
 
         // Openstaande verzoeken voor verschillende scenario's
-        noor.AddFriend(lina); // Noor wacht op antwoord van Lina
-        milan.AddFriend(saar); // Milan nodigt Saar uit in de gamegroep
-        john.AddFriend(bjorn); // John zoekt een sportbuddy
-        stacey.AddFriend(noor); // Stacey wil Noor beter leren kennen
-        amina.AddFriend(kyandro); // Amina zoekt tips voor een programmeerclub
+        SendFriendRequest(noor, lina); // Noor wacht op antwoord van Lina
+        SendFriendRequest(milan, saar); // Milan nodigt Saar uit in de gamegroep
+        SendFriendRequest(john, bjorn); // John zoekt een sportbuddy
+        SendFriendRequest(stacey, noor); // Stacey wil Noor beter leren kennen
+        SendFriendRequest(amina, kyandro); // Amina zoekt tips voor een programmeerclub
 
         await dbContext.SaveChangesAsync();
+
+        static void MakeFriends(ApplicationUser userA, ApplicationUser userB)
+        {
+            userA.AddFriend(userB);
+            userB.AddFriend(userA);
+        }
+
+        static void SendFriendRequest(ApplicationUser requester, ApplicationUser receiver)
+        {
+            requester.AddFriend(receiver);
+        }
     }
 
     private async Task ChatsAsync()
