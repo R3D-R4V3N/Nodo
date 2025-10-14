@@ -84,4 +84,3 @@ verschillende stemmen laten horen (deelnemer ↔ supervisor) zodat je flows kan 
 - Ella begeleidt de creatieve hoek (chat 3).
 - Super Visor (`supervisor@example.com`) kan overal bijspringen maar heeft nog geen vaste chat in de seed.
 
-Met deze tabel kun je gemakkelijk nagaan wie waarvoor verantwoordelijk is en hoe de relaties tussen gebruikers zijn opgebouwd.
