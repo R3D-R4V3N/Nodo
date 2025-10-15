@@ -16,21 +16,18 @@ public class ProfilePictureModerationEndpoint(IImageModerationService moderation
         AllowFileUploads();
     }
 
-    public override async Task HandleAsync(ProfilePictureModerationRequest req, CancellationToken ct)
+    public override async Task<ProfilePictureModerationResponse> ExecuteAsync(ProfilePictureModerationRequest req, CancellationToken ct)
     {
         if (req.File is null || req.File.Length == 0)
         {
-            await SendAsync(ProfilePictureModerationResponse.Rejected("Gelieve een afbeelding te selecteren."), cancellation: ct);
-            return;
+            return ProfilePictureModerationResponse.Rejected("Gelieve een afbeelding te selecteren.");
         }
 
         await using var readStream = req.File.OpenReadStream();
         var moderationResult = await moderationService.ModerateAsync(readStream, req.File.FileName, ct);
 
-        var response = moderationResult.IsApproved
+        return moderationResult.IsApproved
             ? ProfilePictureModerationResponse.Approved("Profiel foto goedgekeurd.")
             : ProfilePictureModerationResponse.Rejected(moderationResult.FailureReason ?? "Profiel foto afgekeurd.");
-
-        await SendAsync(response, cancellation: ct);
     }
 }
