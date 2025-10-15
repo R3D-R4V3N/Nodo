@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Rise.Persistence;
 using Rise.Services.Chats;
 using Rise.Shared.Chats;
+using Rise.Services.Moderation;
 using Rise.Services.UserConnections;
 using Rise.Shared.UserConnections;
 
@@ -15,8 +16,10 @@ public static class ServiceCollectionExtensions
         services.AddTransient<DbSeeder>();
 
         services.AddScoped<IUserConnectionService, UserConnectionService>();
-        services.AddTransient<DbSeeder>();       
-        
+        services.AddTransient<DbSeeder>();
+
+        services.AddSingleton<IImageModerationService, NudeNetImageModerationService>();
+
         // Add other application services here.
         return services;
     }

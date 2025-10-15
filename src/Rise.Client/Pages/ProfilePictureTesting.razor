@@ -1,0 +1,82 @@
+@page "/profilepicturetesting"
+@inject IHttpClientFactory HttpClientFactory
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Profiel foto testen</PageTitle>
+
+<h1 class="title">Profiel foto validatie</h1>
+<p>Selecteer een afbeelding. We keuren enkel goed wanneer NudeNet aangeeft dat ze veilig is.</p>
+
+<InputFile OnChange="HandleSelectedFile" accept="image/*" />
+
+@if (isUploading)
+{
+    <p>Bezig met uploaden en controleren...</p>
+}
+
+@if (!string.IsNullOrWhiteSpace(lastResult))
+{
+    <p>@lastResult</p>
+}
+
+@code {
+    private bool isUploading;
+    private string? lastResult;
+
+    private async Task HandleSelectedFile(InputFileChangeEventArgs args)
+    {
+        var file = args.File;
+        lastResult = null;
+
+        if (file is null)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Gelieve een afbeelding te selecteren.");
+            return;
+        }
+
+        isUploading = true;
+        try
+        {
+            using var content = new MultipartFormDataContent();
+            await using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+            using var streamContent = new StreamContent(stream);
+            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+            content.Add(streamContent, "File", file.Name);
+
+            var client = HttpClientFactory.CreateClient("SecureApi");
+            var response = await client.PostAsync("api/moderation/profile-picture", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                await JsRuntime.InvokeVoidAsync("alert", string.IsNullOrWhiteSpace(error) ? "Er ging iets mis bij het uploaden." : error);
+                lastResult = "Upload mislukt.";
+                return;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<ProfilePictureModerationResponse>();
+            if (result is null)
+            {
+                await JsRuntime.InvokeVoidAsync("alert", "Kon geen antwoord van de server lezen.");
+                lastResult = "Geen antwoord ontvangen.";
+                return;
+            }
+
+            var message = result.IsApproved
+                ? (result.Message ?? "Profiel foto is goedgekeurd.")
+                : (result.Message ?? "Profiel foto is afgekeurd.");
+
+            await JsRuntime.InvokeVoidAsync("alert", message);
+            lastResult = message;
+        }
+        catch (Exception ex)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", $"Er trad een fout op: {ex.Message}");
+            lastResult = "Technische fout tijdens het uploaden.";
+        }
+        finally
+        {
+            isUploading = false;
+        }
+    }
+}
