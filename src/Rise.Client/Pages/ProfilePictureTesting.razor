@@ -1,0 +1,70 @@
+@page "/profilepicturetesting"
+@inject IJSRuntime JS
+
+<h1 class="text-2xl font-semibold mb-4">Profielfoto validatie test</h1>
+<p class="mb-4">Kies een foto om te controleren of deze geschikt is als profielfoto. Foto&apos;s met naaktheid of badkleding worden automatisch afgekeurd.</p>
+
+<InputFile OnChange="HandleFileSelected" accept="image/*" class="mb-4" />
+
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <div class="text-red-600 mb-3">@_errorMessage</div>
+}
+
+@if (!string.IsNullOrEmpty(_previewImage))
+{
+    <div class="rounded border border-gray-300 p-3 max-w-xs">
+        <p class="font-medium mb-2">Voorbeeld:</p>
+        <img src="@_previewImage" alt="Voorbeeld profielfoto" class="max-w-full h-auto rounded" />
+    </div>
+}
+
+@code {
+    private string? _previewImage;
+    private string? _errorMessage;
+    private const long MaxFileSize = 5 * 1024 * 1024; // 5 MB
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        _errorMessage = null;
+        _previewImage = null;
+
+        var file = e.File;
+        if (file is null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(file.ContentType) || !file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+        {
+            _errorMessage = "Kies alstublieft een geldig afbeeldingsbestand.";
+            return;
+        }
+
+        if (file.Size > MaxFileSize)
+        {
+            _errorMessage = "Het bestand is te groot. Kies een afbeelding van maximaal 5 MB.";
+            return;
+        }
+
+        try
+        {
+            using var stream = file.OpenReadStream(MaxFileSize);
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+            _previewImage = $"data:{file.ContentType};base64,{base64}";
+
+            StateHasChanged();
+
+            var approved = await JS.InvokeAsync<bool>("profilePictureValidation.validateImage", _previewImage);
+            await JS.InvokeVoidAsync("profilePictureValidation.showResult", approved);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            _errorMessage = "Er ging iets mis bij het verwerken van de afbeelding. Probeer het opnieuw.";
+            _previewImage = null;
+        }
+    }
+}
