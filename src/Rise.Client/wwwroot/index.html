@@ -38,7 +38,7 @@
         };
 
         window.measureElementHeight = (el) => {
-            if (!el) return 0;
+            if (!el || !(el instanceof HTMLElement)) return 0;
             const rect = el.getBoundingClientRect();
             const computed = getComputedStyle(el);
             const marginTop = parseFloat(computed.marginTop) || 0;
