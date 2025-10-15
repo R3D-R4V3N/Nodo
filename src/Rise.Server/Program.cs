@@ -14,6 +14,7 @@ using Rise.Shared.Chats;
 using Serilog;
 using Serilog.Events;
 using Rise.Server.Hubs;
+using Rise.Server.Endpoints.ProfilePictures;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -67,6 +68,10 @@ try
         {
             o.DocumentSettings = s => { s.Title = "RISE API"; };
         });
+
+    builder.Services.AddHttpClient();
+
+    builder.Services.Configure<GoogleVisionOptions>(builder.Configuration.GetSection("GoogleVision"));
 
     builder.Services.AddSignalR();
 

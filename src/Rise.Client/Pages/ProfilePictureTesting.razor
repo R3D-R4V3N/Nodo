@@ -1,5 +1,8 @@
 @page "/profilepicturetesting"
 @inject IJSRuntime JS
+@inject HttpClient Http
+@using Rise.Shared.ProfilePictures
+@using System.Net.Http.Json
 
 <h1 class="text-2xl font-semibold mb-4">Profielfoto validatie test</h1>
 <p class="mb-4">Kies een foto om te controleren of deze geschikt is als profielfoto. Foto&apos;s met naaktheid of badkleding worden automatisch afgekeurd.</p>
@@ -19,15 +22,26 @@
     </div>
 }
 
+@if (_isApproved.HasValue && !string.IsNullOrEmpty(_validationMessage))
+{
+    <div class="mt-4 p-3 rounded max-w-md @( _isApproved.Value ? "bg-green-100 text-green-800 border border-green-200" : "bg-red-100 text-red-800 border border-red-200")">
+        @_validationMessage
+    </div>
+}
+
 @code {
     private string? _previewImage;
     private string? _errorMessage;
+    private string? _validationMessage;
+    private bool? _isApproved;
     private const long MaxFileSize = 5 * 1024 * 1024; // 5 MB
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
         _errorMessage = null;
         _previewImage = null;
+        _validationMessage = null;
+        _isApproved = null;
 
         var file = e.File;
         if (file is null)
@@ -52,19 +66,53 @@
             using var stream = file.OpenReadStream(MaxFileSize);
             using var memoryStream = new MemoryStream();
             await stream.CopyToAsync(memoryStream);
-            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+            var imageBytes = memoryStream.ToArray();
+            var base64 = Convert.ToBase64String(imageBytes);
+
             _previewImage = $"data:{file.ContentType};base64,{base64}";
 
             StateHasChanged();
 
-            var approved = await JS.InvokeAsync<bool>("profilePictureValidation.validateImage", _previewImage);
-            await JS.InvokeVoidAsync("profilePictureValidation.showResult", approved);
+            var request = new ProfilePictureValidationRequest
+            {
+                ImageBase64 = base64,
+                ContentType = file.ContentType
+            };
+
+            var response = await Http.PostAsJsonAsync("api/profile-pictures/validate", request, cancellationToken: default);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _errorMessage = "De validatie kon niet worden uitgevoerd. Probeer het later opnieuw.";
+                await JS.InvokeVoidAsync("alert", _errorMessage);
+                _previewImage = null;
+                return;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<ProfilePictureValidationResponse>();
+
+            if (result is null)
+            {
+                _errorMessage = "De server gaf geen geldig antwoord terug.";
+                await JS.InvokeVoidAsync("alert", _errorMessage);
+                _previewImage = null;
+                return;
+            }
+
+            _isApproved = result.IsApproved;
+            _validationMessage = result.Message;
+
+            await JS.InvokeVoidAsync("alert", result.IsApproved
+                ? "Profielfoto goedgekeurd! Deze afbeelding is geschikt."
+                : result.Message ?? "Profielfoto afgekeurd. Kies een andere afbeelding.");
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine(ex);
             _errorMessage = "Er ging iets mis bij het verwerken van de afbeelding. Probeer het opnieuw.";
             _previewImage = null;
+            _isApproved = null;
+            _validationMessage = null;
         }
     }
 }

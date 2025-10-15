@@ -37,6 +37,8 @@ try
 
     var backendUri = new Uri(builder.Configuration["BackendUrl"] ?? "https://localhost:5001");
 
+    builder.Services.AddScoped(sp => new HttpClient { BaseAddress = backendUri });
+
     // configure client for auth interactions
     builder.Services.AddHttpClient("SecureApi",opt => opt.BaseAddress = backendUri)
         .AddHttpMessageHandler<CookieHandler>();
