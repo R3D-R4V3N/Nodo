@@ -56,7 +56,7 @@ try
     builder.Services
         .AddHttpContextAccessor()
         .AddScoped<ISessionContextProvider, HttpContextSessionProvider>()
-        .AddApplicationServices()
+        .AddApplicationServices(builder.Configuration)
         .AddAuthorization()
         .AddFastEndpoints(opt =>
         {

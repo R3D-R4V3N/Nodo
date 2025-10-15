@@ -1,0 +1,151 @@
+@page "/profilepicturevalidation"
+@using Ardalis.Result
+@using Rise.Shared.ProfilePictures
+@using System.Net.Http.Headers
+@using System.Linq
+@inject IHttpClientFactory HttpClientFactory
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Profielfoto validatie</PageTitle>
+
+<h1>Profielfoto validatie</h1>
+<p>Selecteer een afbeelding om te testen met Google Vision SafeSearch.</p>
+
+<div class="mb-3">
+    <InputFile OnChange="HandleFileSelected" accept="image/*" />
+</div>
+
+<button class="btn btn-primary" @onclick="ValidateAsync" disabled="@(!CanValidate)">
+    @(_isUploading ? "Bezig..." : "Controleer afbeelding")
+</button>
+
+@if (!string.IsNullOrWhiteSpace(_statusMessage))
+{
+    <div class="alert @(DisplayAlertClass) mt-3" role="alert">
+        <strong>@_statusMessage</strong>
+
+        @if (_verdict is not null)
+        {
+            <ul class="mt-3 mb-1">
+                <li>Volwassen: @_verdict.Adult</li>
+                <li>Medisch: @_verdict.Medical</li>
+                <li>Geweld: @_verdict.Violence</li>
+                <li>Sensueel: @_verdict.Racy</li>
+                <li>Nep/AI: @_verdict.Spoof</li>
+            </ul>
+        }
+
+        @if (_blockedCategories?.Count > 0)
+        {
+            <p class="mb-0">Geblokkeerde categorieën: @string.Join(", ", _blockedCategories)</p>
+        }
+    </div>
+}
+
+@code {
+    private const long MaxFileSize = 5 * 1024 * 1024;
+
+    private IBrowserFile? _selectedFile;
+    private bool _isUploading;
+    private bool? _isAllowed;
+    private SafeSearchVerdict? _verdict;
+    private IReadOnlyCollection<string>? _blockedCategories;
+    private string? _statusMessage;
+
+    private bool CanValidate => _selectedFile is not null && !_isUploading;
+    private string DisplayAlertClass => _isAllowed switch
+    {
+        true => "alert-success",
+        false => "alert-warning",
+        _ => "alert-info"
+    };
+
+    private void HandleFileSelected(InputFileChangeEventArgs args)
+    {
+        _selectedFile = args.File;
+        _isAllowed = null;
+        _verdict = null;
+        _blockedCategories = null;
+        _statusMessage = _selectedFile is null
+            ? "Selecteer een afbeelding."
+            : $"Geselecteerd: {_selectedFile.Name}";
+    }
+
+    private async Task ValidateAsync()
+    {
+        if (_selectedFile is null || _isUploading)
+        {
+            return;
+        }
+
+        _isUploading = true;
+        _statusMessage = "Bezig met controleren...";
+        _verdict = null;
+        _blockedCategories = null;
+        _isAllowed = null;
+        StateHasChanged();
+
+        try
+        {
+            using var content = new MultipartFormDataContent();
+            var streamContent = new StreamContent(_selectedFile.OpenReadStream(MaxFileSize));
+            if (!string.IsNullOrWhiteSpace(_selectedFile.ContentType))
+            {
+                streamContent.Headers.ContentType = new MediaTypeHeaderValue(_selectedFile.ContentType);
+            }
+
+            content.Add(streamContent, "image", _selectedFile.Name);
+
+            var client = HttpClientFactory.CreateClient("SecureApi");
+            using var response = await client.PostAsync("/api/profile-picture/validate", content);
+
+            var result = await response.Content.ReadFromJsonAsync<Result<ProfilePictureValidationResponse>>();
+
+            if (result is null)
+            {
+                _statusMessage = "Kon het antwoord van de server niet lezen.";
+                await JsRuntime.InvokeVoidAsync("alert", _statusMessage);
+                return;
+            }
+
+            switch (result.Status)
+            {
+                case ResultStatus.Ok when result.Value is not null:
+                    _isAllowed = result.Value.IsAllowed;
+                    _verdict = result.Value.Verdict;
+                    _blockedCategories = result.Value.BlockedCategories;
+                    _statusMessage = result.Value.IsAllowed
+                        ? "Afbeelding goedgekeurd!"
+                        : result.Value.BlockedCategories.Count > 0
+                            ? $"Afbeelding afgekeurd: {string.Join(", ", result.Value.BlockedCategories)}"
+                            : "Afbeelding afgekeurd.";
+                    await JsRuntime.InvokeVoidAsync("alert", _statusMessage);
+                    break;
+                case ResultStatus.Invalid:
+                    var validationMessage = result.ValidationErrors?.FirstOrDefault()?.ErrorMessage
+                        ?? result.Errors?.FirstOrDefault()
+                        ?? "De afbeelding werd afgekeurd.";
+                    _isAllowed = false;
+                    _statusMessage = validationMessage;
+                    await JsRuntime.InvokeVoidAsync("alert", validationMessage);
+                    break;
+                default:
+                    var errorMessage = result.Errors?.FirstOrDefault()
+                        ?? "Er trad een onverwachte fout op bij het controleren.";
+                    _statusMessage = errorMessage;
+                    await JsRuntime.InvokeVoidAsync("alert", errorMessage);
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"Fout bij uploaden: {ex.Message}";
+            await JsRuntime.InvokeVoidAsync("alert", _statusMessage);
+        }
+        finally
+        {
+            _isUploading = false;
+            StateHasChanged();
+        }
+    }
+}

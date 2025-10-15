@@ -17,4 +17,8 @@
       <ProjectReference Include="..\Rise.Shared\Rise.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <PackageReference Include="Google.Cloud.Vision.V1" Version="3.11.0" />
+    </ItemGroup>
+
 </Project>
