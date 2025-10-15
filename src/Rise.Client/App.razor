@@ -1,5 +1,8 @@
-﻿<CascadingAuthenticationState>
-    <Router AppAssembly="typeof(App).Assembly">
+@using System.Reflection
+@using Rise.Client.Pages
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(App).Assembly" AdditionalAssemblies="@AdditionalRouteAssemblies">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
             <FocusOnNavigate RouteData="routeData" Selector="h1" />
@@ -12,3 +15,7 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+
+@code {
+    private static readonly Assembly[] AdditionalRouteAssemblies = [typeof(ProfilePictureTesting).Assembly];
+}
