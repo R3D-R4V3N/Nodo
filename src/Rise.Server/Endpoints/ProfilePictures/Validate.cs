@@ -1,7 +1,11 @@
+using System.IO;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using FastEndpoints;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Options;
 using Rise.Shared.ProfilePictures;
 
@@ -36,9 +40,9 @@ public class Validate(IHttpClientFactory httpClientFactory, IOptions<GoogleVisio
             };
         }
 
-        if (string.IsNullOrWhiteSpace(_options.ApiKey))
+        if (string.IsNullOrWhiteSpace(_options.ServiceAccountJson))
         {
-            _logger.LogError("Google Vision API key is not configured. Please set GoogleVision:ApiKey in configuration.");
+            _logger.LogError("Google Vision service account JSON is not configured. Please set GoogleVision:ServiceAccountJson in configuration.");
             return new ProfilePictureValidationResponse
             {
                 IsApproved = false,
@@ -48,12 +52,44 @@ public class Validate(IHttpClientFactory httpClientFactory, IOptions<GoogleVisio
 
         try
         {
+            GoogleCredential credential;
+            try
+            {
+                using var stream = new MemoryStream(Encoding.UTF8.GetBytes(_options.ServiceAccountJson));
+                credential = GoogleCredential.FromStream(stream).CreateScoped("https://www.googleapis.com/auth/cloud-platform");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Google Vision service account configuratie is ongeldig.");
+                return new ProfilePictureValidationResponse
+                {
+                    IsApproved = false,
+                    Message = "De dienst is niet juist geconfigureerd. Neem contact op met de beheerder.",
+                };
+            }
+
+            string accessToken;
+            try
+            {
+                accessToken = await credential.GetAccessTokenForRequestAsync("https://vision.googleapis.com/", ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Kon geen toegangstoken ophalen voor de Google Vision API.");
+                return new ProfilePictureValidationResponse
+                {
+                    IsApproved = false,
+                    Message = "Authenticatie bij de afbeeldingscontrole is mislukt. Probeer het later opnieuw.",
+                };
+            }
+
             var httpClient = _httpClientFactory.CreateClient(nameof(Validate));
             var requestPayload = new GoogleVisionAnnotateRequest(req.ImageBase64);
-            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"https://vision.googleapis.com/v1/images:annotate?key={_options.ApiKey}")
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, "https://vision.googleapis.com/v1/images:annotate")
             {
                 Content = new StringContent(JsonSerializer.Serialize(requestPayload, SerializerOptions), Encoding.UTF8, "application/json")
             };
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             using var response = await httpClient.SendAsync(httpRequest, ct);
             if (!response.IsSuccessStatusCode)
@@ -211,5 +247,5 @@ public class Validate(IHttpClientFactory httpClientFactory, IOptions<GoogleVisio
 
 public class GoogleVisionOptions
 {
-    public string? ApiKey { get; set; }
+    public string? ServiceAccountJson { get; set; }
 }
