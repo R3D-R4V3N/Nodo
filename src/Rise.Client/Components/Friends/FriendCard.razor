@@ -1,5 +1,7 @@
+@using Rise.Shared.Assets
+
 <article class="friend-card flex items-center gap-3 bg-white rounded-2xl px-3 py-3 shadow-sm">
-    <img src="@Friend.AvatarUrl" alt="@Friend.Name" class="h-10 w-10 rounded-full ring-2 ring-white/60" />
+    <img src="@(string.IsNullOrWhiteSpace(Friend.AvatarUrl) ? DefaultImages.GetProfile(Friend.Id) : Friend.AvatarUrl)" alt="@Friend.Name" class="h-10 w-10 rounded-full ring-2 ring-white/60" />
     <div class="flex-1 min-w-0">
         <p class="text-sm font-medium truncate">@Friend.Name</p>
         <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-md bg-[#e7f5ec] text-[#127646] border border-[#cfead9]">

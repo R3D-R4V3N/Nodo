@@ -1,4 +1,4 @@
-﻿using Rise.Domain.Chats;
+using Rise.Domain.Chats;
 using Rise.Domain.Users;
 using Rise.Shared.Chats;
 
@@ -16,10 +16,12 @@ public static class MessageMapper
         {
             ChatId = message.ChatId,
             Id = message.Id,
-            Content = message.Inhoud,
+            Content = message.Inhoud ?? string.Empty,
             Timestamp = message.CreatedAt,
             SenderId = message.SenderId,
             SenderName = $"{sender.FirstName} {sender.LastName}",
-            SenderAccountId = sender.AccountId
+            SenderAccountId = sender.AccountId,
+            AudioDataUrl = AudioHelperMethods.BuildAudioDataUrl(message),
+            AudioDurationSeconds = message.AudioDurationSeconds
         };
 }
