@@ -15,12 +15,17 @@ public static class UserInterestConstants
 
 public class UserInterest : ValueObject
 {
+    private UserInterest()
+    {
+        InterestId = string.Empty;
+    }
+
     public UserInterest(string interestId)
     {
         InterestId = Guard.Against.NullOrWhiteSpace(interestId).Trim().ToLowerInvariant();
     }
 
-    public string InterestId { get; }
+    public string InterestId { get; private set; }
 
     protected override IEnumerable<object> GetEqualityComponents()
     {

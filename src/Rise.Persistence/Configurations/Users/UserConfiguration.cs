@@ -25,7 +25,9 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
         builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.UserType).IsRequired();
 
-        builder.Navigation(nameof(ApplicationUser.Interests)).UsePropertyAccessMode(PropertyAccessMode.Field);
+        builder.Navigation(u => u.Interests)
+            .HasField("_interests")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         // connections
         builder.Ignore(u => u.Connections);
@@ -95,7 +97,7 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
             userSettings.ToTable("UserSetting");
         });
 
-        builder.OwnsMany<UserInterest>("_interests", interests =>
+        builder.OwnsMany(u => u.Interests, interests =>
         {
             interests.WithOwner()
                 .HasForeignKey("UserId");
