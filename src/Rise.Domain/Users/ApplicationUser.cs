@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using Ardalis.GuardClauses;
 using Ardalis.Result;
 using Rise.Domain.Chats;
 
@@ -37,6 +39,36 @@ public class ApplicationUser : Entity
     public required DateOnly BirthDay { get; set; }
     public required UserType UserType { get; set; }
     
+
+    // interests
+    private readonly HashSet<UserInterest> _interests = [];
+    public IReadOnlyCollection<UserInterest> Interests => _interests;
+
+    public void UpdateInterests(IEnumerable<UserInterest> interests)
+    {
+        Guard.Against.Null(interests);
+
+        _interests.Clear();
+        foreach (var interest in interests)
+        {
+            _interests.Add(Guard.Against.Null(interest));
+        }
+    }
+
+    // hobbies
+    private readonly HashSet<UserHobby> _hobbies = [];
+    public IReadOnlyCollection<UserHobby> Hobbies => _hobbies;
+
+    public void UpdateHobbies(IEnumerable<UserHobby> hobbies)
+    {
+        Guard.Against.Null(hobbies);
+
+        _hobbies.Clear();
+        foreach (var hobby in hobbies)
+        {
+            _hobbies.Add(Guard.Against.Null(hobby));
+        }
+    }
 
     //// connections
     private readonly HashSet<UserConnection> _connections = [];

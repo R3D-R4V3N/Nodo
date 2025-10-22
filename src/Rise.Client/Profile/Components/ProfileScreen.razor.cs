@@ -1,57 +1,21 @@
-using System.Collections.Immutable;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Rise.Client.Profile.Models;
+using Rise.Client.Users;
 
 namespace Rise.Client.Profile.Components;
 
 public partial class ProfileScreen : ComponentBase, IDisposable
 {
-    private static readonly IReadOnlyList<InterestOption> _interestOptions = new List<InterestOption>
-    {
-        new("zwemmen",     "Zwemmen",     "🏊"),
-        new("voetbal",     "Voetbal",     "⚽"),
-        new("rugby",       "Rugby",       "🏉"),
-        new("basketbal",   "Basketbal",   "🏀"),
-        new("gaming",      "Gaming",      "🎮"),
-        new("koken",       "Koken",       "🍳"),
-        new("bakken",      "Bakken",      "🧁"),
-        new("wandelen",    "Wandelen",    "🚶"),
-        new("fietsen",     "Fietsen",     "🚴"),
-        new("tekenen",     "Tekenen",     "✏️"),
-        new("schilderen",  "Schilderen",  "🎨"),
-        new("muziek",      "Muziek",      "🎵"),
-        new("zingen",      "Zingen",      "🎤"),
-        new("dansen",      "Dansen",      "🕺"),
-        new("lezen",       "Lezen",       "📚"),
-        new("tuinieren",   "Tuinieren",   "🌱"),
-        new("vissen",      "Vissen",      "🎣"),
-        new("kamperen",    "Kamperen",    "🎕️"),
-        new("reizen",      "Reizen",      "✈️"),
-        new("fotografie",  "Fotografie",  "📸"),
-        new("film",        "Film",        "🎬"),
-        new("series",      "Series",      "📺"),
-        new("dieren",      "Dieren",      "🐶"),
-        new("yoga",        "Yoga",        "🧘‍♂️"),
-        new("fitness",     "Fitness",     "🏋️‍♂️"),
-        new("hardlopen",   "Hardlopen",   "🏃‍♂️"),
-        new("kaarten",     "Kaarten",     "🃏"),
-        new("puzzelen",    "Puzzelen",    "🧩"),
-        new("bordspellen", "Bordspellen", "🎲"),
-        new("knutselen",   "Knutselen",   "✂️")
-    }.ToImmutableList();
-
-    private const int MaxInterests = 3;
-
     private ProfileModel _model = ProfileModel.CreateDefault();
     private ProfileDraft _draft;
 
-    private readonly HashSet<string> _selectedInterestIds = new();
-    private HashSet<string> _pickerSelection = new();
-
     private bool _isEditing;
-    private bool _isPickerOpen;
-    private string _pickerSearch = string.Empty;
+    private bool _isLoading = true;
+    private string? _loadError;
 
     private bool _isToastVisible;
     private string _toastMessage = string.Empty;
@@ -63,13 +27,54 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     }
 
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private UserContextService UserContext { get; set; } = default!;
 
     private bool IsEditing => _isEditing;
-    private bool IsPickerOpen => _isPickerOpen;
-    private IReadOnlyList<InterestOption> InterestOptions => _interestOptions;
-    private IReadOnlyList<InterestOption> SelectedInterests => InterestOptions.Where(i => _selectedInterestIds.Contains(i.Id)).ToList();
+    private bool IsLoading => _isLoading;
+    private bool HasError => !string.IsNullOrWhiteSpace(_loadError);
+    private string? ErrorMessage => _loadError;
+    private IReadOnlyList<ProfileInterestModel> Interests => _model.Interests;
+    private IReadOnlyList<ProfileHobbyModel> Hobbies => _model.Hobbies;
     private string DisplayName => string.IsNullOrWhiteSpace(CurrentName) ? "Jouw Naam" : CurrentName;
     private string CurrentName => _isEditing ? _draft.Name : _model.Name;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var currentUser = await UserContext.InitializeAsync();
+            if (currentUser is null)
+            {
+                _loadError = "Je bent niet aangemeld. Log opnieuw in om je profiel te bekijken.";
+                return;
+            }
+
+            var memberSince = FormatMemberSince(currentUser.CreatedAt);
+            _model = ProfileModel.FromUser(currentUser, memberSince);
+            _draft = ProfileDraft.FromModel(_model);
+        }
+        catch
+        {
+            _loadError = "Er ging iets mis bij het laden van je profiel.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private static string FormatMemberSince(DateTime createdAt)
+    {
+        if (createdAt == default)
+        {
+            return "Actief sinds onbekend";
+        }
+
+        var culture = CultureInfo.GetCultureInfo("nl-BE");
+        var formatted = createdAt.ToString("MMMM yyyy", culture);
+        formatted = culture.TextInfo.ToTitleCase(formatted);
+        return $"Actief sinds {formatted}";
+    }
 
     private Task NavigateBack()
     {
@@ -79,6 +84,11 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
     private void BeginEdit()
     {
+        if (_isLoading || HasError)
+        {
+            return;
+        }
+
         _draft = ProfileDraft.FromModel(_model);
         _isEditing = true;
     }
@@ -91,7 +101,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
     private async Task SaveEdit()
     {
-        _model = _draft.ToModel();
+        _model = _draft.ApplyTo(_model);
         _isEditing = false;
         await ShowToastAsync("Wijzigingen toegepast");
     }
@@ -121,65 +131,6 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         {
             // Ignore failures and keep existing avatar.
         }
-    }
-
-    private void OpenInterestsPicker()
-    {
-        _pickerSelection = _selectedInterestIds.ToHashSet();
-        _pickerSearch = string.Empty;
-        _isPickerOpen = true;
-    }
-
-    private Task ClosePicker()
-    {
-        _isPickerOpen = false;
-        _pickerSearch = string.Empty;
-        return Task.CompletedTask;
-    }
-
-    private Task TogglePickerSelection(string id)
-    {
-        if (_pickerSelection.Contains(id))
-        {
-            _pickerSelection.Remove(id);
-        }
-        else if (_pickerSelection.Count < MaxInterests)
-        {
-            _pickerSelection.Add(id);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    private Task ClearPickerSelection()
-    {
-        _pickerSelection.Clear();
-        return Task.CompletedTask;
-    }
-
-    private async Task ConfirmPickerSelection()
-    {
-        _selectedInterestIds.Clear();
-        foreach (var id in _pickerSelection)
-        {
-            _selectedInterestIds.Add(id);
-        }
-
-        _isPickerOpen = false;
-        _pickerSearch = string.Empty;
-        await ShowToastAsync("Interesses bijgewerkt");
-    }
-
-    private Task RemoveInterest(string id)
-    {
-        _selectedInterestIds.Remove(id);
-        return Task.CompletedTask;
-    }
-
-    private Task UpdatePickerSearch(string value)
-    {
-        _pickerSearch = value;
-        return Task.CompletedTask;
     }
 
     private async Task ShowToastAsync(string message)

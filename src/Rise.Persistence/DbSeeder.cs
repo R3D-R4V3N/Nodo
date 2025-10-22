@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
@@ -48,6 +49,52 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
 
         await dbContext.Roles.ToListAsync();
 
+        static IEnumerable<UserInterest> CreateInterests(
+            string musicLike,
+            string musicDislike,
+            string foodLike,
+            string foodDislike) =>
+            new[]
+            {
+                UserInterest.Create("Muziek", musicLike, musicDislike),
+                UserInterest.Create("Eten", foodLike, foodDislike)
+            };
+
+        static IEnumerable<UserHobby> CreateHobbies(params HobbyType[] hobbies)
+            => hobbies.Select(UserHobby.Create).ToArray();
+
+        static ApplicationUser CreateProfile(
+            string accountId,
+            string firstName,
+            string lastName,
+            string biography,
+            string avatarUrl,
+            DateOnly birthDay,
+            UserType userType,
+            IEnumerable<UserInterest> interests,
+            IEnumerable<UserHobby> hobbies)
+        {
+            var profile = new ApplicationUser(accountId)
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Biography = biography,
+                AvatarUrl = avatarUrl,
+                BirthDay = birthDay,
+                UserType = userType,
+                UserSettings = new ApplicationUserSetting()
+                {
+                    FontSize = 12,
+                    IsDarkMode = false,
+                }
+            };
+
+            profile.UpdateInterests(interests);
+            profile.UpdateHobbies(hobbies);
+
+            return profile;
+        }
+
         IdentityUser CreateIdentity(string email) => new()
         {
             UserName = email,
@@ -81,126 +128,94 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         {
             new(admin, AppRoles.Administrator, null),
             new(supervisor, AppRoles.Supervisor,
-                new ApplicationUser(supervisor.Id)
-                {
-                    FirstName = "Super",
-                    LastName = "Visor",
-                    Biography = "Here to help you.",
-                    AvatarUrl = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-30)),
-                    UserType = UserType.Supervisor,
-                    UserSettings = new ApplicationUserSetting()
-                    { 
-                        FontSize = 12,
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateProfile(
+                    supervisor.Id,
+                    "Super",
+                    "Visor",
+                    "Here to help you.",
+                    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    DateOnly.FromDateTime(DateTime.Today.AddYears(-30)),
+                    UserType.Supervisor,
+                    CreateInterests("Jazz", "Lawaai", "Gezonde salades", "Fastfood"),
+                    CreateHobbies(HobbyType.Hiking, HobbyType.Painting, HobbyType.Reading))),
             new(userAccount1, AppRoles.User,
-                new ApplicationUser(userAccount1.Id)
-                {
-                    FirstName = "John",
-                    LastName = "Doe",
-                    Biography = "Houdt van katten en rustige gesprekken.",
-                    AvatarUrl = "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
-                    UserType = UserType.Regular,
-                    UserSettings = new ApplicationUserSetting()
-                    {
-                        FontSize = 12,
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateProfile(
+                    userAccount1.Id,
+                    "John",
+                    "Doe",
+                    "Houdt van katten en rustige gesprekken.",
+                    "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
+                    UserType.Regular,
+                    CreateInterests("Indie", "Te luide clubs", "Verse pasta", "Spruitjes"),
+                    CreateHobbies(HobbyType.Gaming, HobbyType.BoardGames, HobbyType.Animals))),
             new(userAccount2, AppRoles.User,
-                new ApplicationUser(userAccount2.Id)
-                {
-                    FirstName = "Stacey",
-                    LastName = "Willington",
-                    Biography = "Deelt graag verhalen over haar hulphond.",
-                    AvatarUrl = "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-26)),
-                    UserType = UserType.Regular,
-                    UserSettings = new ApplicationUserSetting()
-                    {
-                        FontSize = 12,
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateProfile(
+                    userAccount2.Id,
+                    "Stacey",
+                    "Willington",
+                    "Deelt graag verhalen over haar hulphond.",
+                    "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    DateOnly.FromDateTime(DateTime.Today.AddYears(-26)),
+                    UserType.Regular,
+                    CreateInterests("Akoestische covers", "Drukke festivals", "Verse soep", "Scherpe curry"),
+                    CreateHobbies(HobbyType.Hiking, HobbyType.Photography, HobbyType.Animals))),
             new(nodoAdmin, AppRoles.Administrator, null),
             new(supervisorEmma, AppRoles.Supervisor,
-                new ApplicationUser(supervisorEmma.Id)
-                {
-                    FirstName = "Emma",
-                    LastName = "Claes",
-                    Biography = "Coach voor dagelijkse structuur en zelfvertrouwen.",
-                    AvatarUrl = "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-35)),
-                    UserType = UserType.Supervisor,
-                    UserSettings = new ApplicationUserSetting()
-                    {
-                        FontSize = 12,
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateProfile(
+                    supervisorEmma.Id,
+                    "Emma",
+                    "Claes",
+                    "Coach voor dagelijkse structuur en zelfvertrouwen.",
+                    "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    DateOnly.FromDateTime(DateTime.Today.AddYears(-35)),
+                    UserType.Supervisor,
+                    CreateInterests("Klassieke muziek", "Scheurende gitaren", "Mediterrane keuken", "Snel eten"),
+                    CreateHobbies(HobbyType.Gardening, HobbyType.Yoga, HobbyType.Painting))),
             new(supervisorJonas, AppRoles.Supervisor,
-                new ApplicationUser(supervisorJonas.Id)
-                {
-                    FirstName = "Jonas",
-                    LastName = "Van Lint",
-                    Biography = "Helpt bij plannen en houdt wekelijks groepsmomenten.",
-                    AvatarUrl = "https://images.unsplash.com/photo-1531891437562-4301cf35b7e4?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-33)),
-                    UserType = UserType.Supervisor,
-                    UserSettings = new ApplicationUserSetting()
-                    {
-                        FontSize = 12,
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateProfile(
+                    supervisorJonas.Id,
+                    "Jonas",
+                    "Van Lint",
+                    "Helpt bij plannen en houdt wekelijks groepsmomenten.",
+                    "https://images.unsplash.com/photo-1531891437562-4301cf35b7e4?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    DateOnly.FromDateTime(DateTime.Today.AddYears(-33)),
+                    UserType.Supervisor,
+                    CreateInterests("Akoestische gitaren", "Harde techno", "Gezonde snacks", "Suikerbommen"),
+                    CreateHobbies(HobbyType.Football, HobbyType.Travel, HobbyType.Hiking))),
             new(supervisorElla, AppRoles.Supervisor,
-                new ApplicationUser(supervisorElla.Id)
-                {
-                    FirstName = "Ella",
-                    LastName = "Vervoort",
-                    Biography = "Creatieve begeleider voor beeldende therapie.",
-                    AvatarUrl = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-31)),
-                    UserType = UserType.Supervisor,
-                    UserSettings = new ApplicationUserSetting()
-                    {
-                        FontSize = 12,
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateProfile(
+                    supervisorElla.Id,
+                    "Ella",
+                    "Vervoort",
+                    "Creatieve begeleider voor beeldende therapie.",
+                    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    DateOnly.FromDateTime(DateTime.Today.AddYears(-31)),
+                    UserType.Supervisor,
+                    CreateInterests("Ambient muziek", "Stilte", "Seizoensgroenten", "Drukke buffetten"),
+                    CreateHobbies(HobbyType.Crafts, HobbyType.Painting, HobbyType.Music))),
             new(chatterNoor, AppRoles.User,
-                new ApplicationUser(chatterNoor.Id)
-                {
-                    FirstName = "Noor",
-                    LastName = "Vermeulen",
-                    Biography = "Praat graag over muziek en wil nieuwe vrienden maken.",
-                    AvatarUrl = "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
-                    UserType = UserType.Regular,
-                    UserSettings = new ApplicationUserSetting()
-                    {
-                        FontSize = 12,
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateProfile(
+                    chatterNoor.Id,
+                    "Noor",
+                    "Vermeulen",
+                    "Praat graag over muziek en wil nieuwe vrienden maken.",
+                    "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
+                    UserType.Regular,
+                    CreateInterests("Pop", "Hardrock", "Zoete desserts", "Bittere smaken"),
+                    CreateHobbies(HobbyType.Music, HobbyType.Gaming, HobbyType.Dancing))),
             new(chatterMilan, AppRoles.User,
-                new ApplicationUser(chatterMilan.Id)
-                {
-                    FirstName = "Milan",
-                    LastName = "Peeters",
-                    Biography = "Zoekt iemand om samen over games te praten.",
-                    AvatarUrl = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
-                    UserType = UserType.Regular,
-                    UserSettings = new ApplicationUserSetting()
-                    {
-                        FontSize = 12,
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateProfile(
+                    chatterMilan.Id,
+                    "Milan",
+                    "Peeters",
+                    "Zoekt iemand om samen over games te praten.",
+                    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
+                    UserType.Regular,
+                    CreateInterests("Synthwave", "Stille ruimtes", "Pizza", "Olijven"),
+                    CreateHobbies(HobbyType.Gaming, HobbyType.Fitness, HobbyType.Series))),
             new(chatterLina, AppRoles.User,
                 new ApplicationUser(chatterLina.Id)
                 {
@@ -337,6 +352,24 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     }
                 }),
         };
+
+        foreach (var account in accounts)
+        {
+            if (account.Profile is not { } profile)
+            {
+                continue;
+            }
+
+            if (!profile.Interests.Any())
+            {
+                profile.UpdateInterests(CreateInterests("Muziek", "Stilte", "Comfortfood", "Bittere smaken"));
+            }
+
+            if (!profile.Hobbies.Any())
+            {
+                profile.UpdateHobbies(CreateHobbies(HobbyType.Reading, HobbyType.Series, HobbyType.BoardGames));
+            }
+        }
 
         foreach (var (identity, role, profile) in accounts)
         {

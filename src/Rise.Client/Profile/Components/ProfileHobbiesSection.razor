@@ -1,0 +1,25 @@
+@using Rise.Client.Profile.Models
+
+<section class="mt-6">
+    <h3 class="mb-2 text-sm font-medium text-neutral-700">Hobby's</h3>
+    <div class="flex flex-wrap gap-2">
+        @if (Hobbies.Any())
+        {
+            @foreach (var hobby in Hobbies)
+            {
+                <span class="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-sm text-neutral-700 border border-neutral-300">
+                    <span class="text-base">@hobby.Emoji</span>
+                    @hobby.Name
+                </span>
+            }
+        }
+        else
+        {
+            <span class="text-sm text-neutral-500">Nog geen hobby's toegevoegd.</span>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter] public IReadOnlyList<ProfileHobbyModel> Hobbies { get; set; } = Array.Empty<ProfileHobbyModel>();
+}

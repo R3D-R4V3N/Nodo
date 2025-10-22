@@ -21,6 +21,47 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
         builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.UserType).IsRequired();
 
+        // interests
+        builder.Ignore(u => u.Interests);
+        builder.OwnsMany<UserInterest>("_interests", interests =>
+        {
+            interests.WithOwner()
+                .HasForeignKey("UserId");
+
+            interests.Property<int>("Id");
+            interests.HasKey("Id");
+
+            interests.Property(i => i.Type)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            interests.Property(i => i.Like)
+                .HasMaxLength(200);
+
+            interests.Property(i => i.Dislike)
+                .HasMaxLength(200);
+
+            interests.ToTable("UserInterests");
+        });
+
+        // hobbies
+        builder.Ignore(u => u.Hobbies);
+        builder.OwnsMany<UserHobby>("_hobbies", hobbies =>
+        {
+            hobbies.WithOwner()
+                .HasForeignKey("UserId");
+
+            hobbies.Property<int>("Id");
+            hobbies.HasKey("Id");
+
+            hobbies.Property(h => h.Hobby)
+                .HasConversion<string>()
+                .HasMaxLength(100)
+                .IsRequired();
+
+            hobbies.ToTable("UserHobbies");
+        });
+
         // connections
         builder.Ignore(u => u.Connections);
         builder.Ignore(u => u.Friends);

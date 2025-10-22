@@ -590,7 +590,71 @@ namespace Rise.Persistence.Migrations
                             b1.Navigation("Connection");
                         });
 
+                    b.OwnsMany("Rise.Domain.Users.UserHobby", "_hobbies", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<string>("Hobby")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("varchar(100)");
+
+                            b1.Property<int>("UserId")
+                                .HasColumnType("int");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("UserId");
+
+                            b1.ToTable("UserHobbies", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserId");
+                        });
+
+                    b.OwnsMany("Rise.Domain.Users.UserInterest", "_interests", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<string>("Dislike")
+                                .HasMaxLength(200)
+                                .HasColumnType("varchar(200)");
+
+                            b1.Property<string>("Like")
+                                .HasMaxLength(200)
+                                .HasColumnType("varchar(200)");
+
+                            b1.Property<string>("Type")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("varchar(100)");
+
+                            b1.Property<int>("UserId")
+                                .HasColumnType("int");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("UserId");
+
+                            b1.ToTable("UserInterests", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserId");
+                        });
+
                     b.Navigation("_connections");
+
+                    b.Navigation("_hobbies");
+
+                    b.Navigation("_interests");
 
                     b.Navigation("_userSettings");
                 });
