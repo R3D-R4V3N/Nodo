@@ -24,11 +24,7 @@ internal class MessageConfiguration : EntityConfiguration<Message>
             .OnDelete(DeleteBehavior.Restrict);
 
         // Extra properties configureren (optioneel)
-<<<<<<< HEAD:src/Rise.Persistence/Chats/MessageConfiguration.cs
-        builder.Property(m => m.Inhoud)
-=======
         builder.Property(m => m.Text)
->>>>>>> codex/add-alert-message-for-supervisor-monitoring:src/Rise.Persistence/Configurations/Chats/MessageConfiguration.cs
             .HasMaxLength(2000);
 
         builder.Property(m => m.AudioContentType)

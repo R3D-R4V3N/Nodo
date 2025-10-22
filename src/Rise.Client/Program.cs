@@ -4,18 +4,12 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Rise.Client;
 using Rise.Client.Chats;
 using Rise.Client.Identity;
-<<<<<<< HEAD
-using Rise.Shared.Chats;
-using Rise.Client.UserConnections;
-using Rise.Shared.UserConnections;
-=======
 using Rise.Client.UserConnections;
 using Rise.Client.Users;
 using Rise.Services.Users;
 using Rise.Shared.Chats;
 using Rise.Shared.UserConnections;
 using Rise.Shared.Users;
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
 
 try
 {
@@ -41,23 +35,14 @@ try
     builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthenticationStateProvider>();
     // register the account management interface
     builder.Services.AddScoped(sp => (IAccountManager)sp.GetRequiredService<AuthenticationStateProvider>());
-<<<<<<< HEAD
-    //  Woordfilter hier
-    builder.Services.AddSingleton<Rise.Services.WordFilter>();
-=======
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
 
-    var backendUri = new Uri(builder.Configuration["BackendUrl"] ?? "https://localhost:5001");
 
-<<<<<<< HEAD
-=======
 
     //  word filter
     builder.Services.AddSingleton<Rise.Services.WordFilter>();
 
     var backendUri = new Uri(builder.Configuration["BackendUrl"] ?? "https://localhost:5001");
 
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
     // configure client for auth interactions
     builder.Services.AddHttpClient("SecureApi",opt => opt.BaseAddress = backendUri)
         .AddHttpMessageHandler<CookieHandler>();
@@ -72,8 +57,6 @@ try
         client.BaseAddress = backendUri;
     });
 
-<<<<<<< HEAD
-=======
     builder.Services.AddHttpClient<IUserService, UserService>(client =>
     {
         client.BaseAddress = backendUri;
@@ -85,7 +68,6 @@ try
         client.BaseAddress = backendUri;
     });
 
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
     await builder.Build().RunAsync();
 }
 catch (Exception ex)

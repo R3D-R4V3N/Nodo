@@ -4,7 +4,6 @@ using Rise.Persistence;
 using Rise.Services.Chats.Mapper;
 using Rise.Services.Identity;
 using Rise.Shared.Chats;
-using Rise.Services.Chats.Mapper;
 using Rise.Shared.Identity;
 
 namespace Rise.Services.Chats;
@@ -19,57 +18,7 @@ public class ChatService(
     private readonly ISessionContextProvider _sessionContextProvider = sessionContextProvider;
     private readonly IChatMessageDispatcher? _messageDispatcher = messageDispatcher;
 
-<<<<<<< HEAD
-    public async Task<Result<ChatResponse.Index>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        var chatsFromDb = await _dbContext.Chats
-            .Include(c => c.Messages)
-                .ThenInclude(m => m.Sender)
-            .ToListAsync(cancellationToken);
-
-        var chatDtos = chatsFromDb.Select(c => new ChatDto.Index
-        {
-            chatId = c.Id,
-            messages = c.Messages
-                .OrderBy(m => m.CreatedAt)
-                .Select(MessageMapper.MapToDto)
-                .ToList()
-        }).ToList();
-
-        return Result.Success(new ChatResponse.Index
-        {
-            Chats = chatDtos
-        });
-    }
-
-    public async Task<Result<ChatDto.Index>> GetByIdAsync(int chatId, CancellationToken cancellationToken = default)
-    {
-        var chat = await _dbContext.Chats
-            .Include(c => c.Messages)
-                .ThenInclude(m => m.Sender)
-            .SingleOrDefaultAsync(c => c.Id == chatId, cancellationToken);
-
-        if (chat is null)
-        {
-            return Result.NotFound($"Chat met id '{chatId}' werd niet gevonden.");
-        }
-
-        var dto = new ChatDto.Index
-        {
-            chatId = chat.Id,
-            messages = chat.Messages
-                .OrderBy(m => m.CreatedAt)
-                .Select(MessageMapper.MapToDto)
-                .ToList()
-        };
-
-        return Result.Success(dto);
-    }
-
-    public async Task<Result<MessageDto>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
-=======
     public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
     {
         var accountId = _sessionContextProvider.User?.GetUserId();
         if (string.IsNullOrWhiteSpace(accountId))
@@ -195,15 +144,9 @@ public class ChatService(
 
         var message = new Message
         {
-<<<<<<< HEAD
-            ChatId = chat.Id,
-            SenderId = sender.Id,
-            Inhoud = trimmedContent,
-=======
             Chat = chat,
             Sender = sender,
             Text = trimmedContent,
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
             AudioContentType = audioContentType,
             AudioData = audioBytes,
             AudioDurationSeconds = audioDurationSeconds
@@ -212,12 +155,7 @@ public class ChatService(
         _dbContext.Messages.Add(message);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-<<<<<<< HEAD
-        message.Sender = sender;
-        var dto = message.MapToDto();
-=======
         var dto = message.ToChatDto();
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
 
         if (_messageDispatcher is not null)
         {

@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
-=======
 ﻿using Microsoft.EntityFrameworkCore.Metadata;
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable

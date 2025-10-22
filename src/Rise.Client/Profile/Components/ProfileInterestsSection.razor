@@ -1,0 +1,41 @@
+@using Rise.Client.Profile.Models
+
+<section class="mt-6">
+    <h3 class="mb-2 text-sm font-medium text-neutral-700">Interesses</h3>
+    <div class="mb-3 min-h-[32px] flex flex-wrap gap-2">
+        @if (SelectedInterests.Any())
+        {
+            @foreach (var interest in SelectedInterests)
+            {
+                <span class="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-sm text-neutral-700 border border-neutral-300">
+                    <span class="text-base">@interest.Emoji</span>
+                    @interest.Name
+                    <button type="button" class="ml-1 rounded-full p-0.5 hover:bg-emerald-100" @onclick="() => HandleRemove(interest.Id)" aria-label='@($"Verwijder {interest.Name}")'>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </span>
+            }
+        }
+        else
+        {
+            <span class="text-sm text-neutral-500">Nog geen interesses geselecteerd.</span>
+        }
+    </div>
+    <button type="button" class="w-full rounded-xl bg-[#127646] px-4 py-3 text-sm font-medium text-white shadow hover:bg-[#0f663c] active:scale-[0.99]" @onclick="HandleManage">
+        Beheer interesses <span class="opacity-90">(@SelectedCount/@MaxSelection)</span>
+    </button>
+</section>
+
+@code {
+    [Parameter] public IReadOnlyList<InterestOption> SelectedInterests { get; set; } = Array.Empty<InterestOption>();
+    [Parameter] public int MaxSelection { get; set; }
+    [Parameter] public EventCallback OnManage { get; set; }
+    [Parameter] public EventCallback<string> OnRemove { get; set; }
+
+    private int SelectedCount => SelectedInterests.Count;
+
+    private Task HandleManage() => OnManage.InvokeAsync();
+    private Task HandleRemove(string id) => OnRemove.InvokeAsync(id);
+}

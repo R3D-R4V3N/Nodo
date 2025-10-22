@@ -1,0 +1,51 @@
+@using Rise.Client.Profile.Models
+
+<div class="min-h-screen bg-neutral-50 text-neutral-900 antialiased overflow-x-hidden">
+    <ProfileHeader
+        Title="Profiel"
+        IsEditing="@IsEditing"
+        OnBack="NavigateBack"
+        OnEdit="BeginEdit"
+        OnCancel="CancelEdit"
+        OnSave="SaveEdit" />
+
+    <main class="mx-auto max-w-screen-sm px-4 pb-24 pt-4">
+        <section class="text-center">
+            <ProfileAvatar
+                AvatarUrl="@_draft.AvatarUrl"
+                DisplayName="@DisplayName"
+                MemberSince="@_model.MemberSince"
+                OnAvatarChanged="OnAvatarChanged" />
+        </section>
+
+        <ProfilePersonalInfo
+            @bind-Name="_draft.Name"
+            @bind-Email="_draft.Email"
+            @bind-Bio="_draft.Bio"
+            @bind-Gender="_draft.Gender"
+            IsEditing="@IsEditing" />
+
+        <ProfileInterestsSection
+            SelectedInterests="@SelectedInterests"
+            MaxSelection="@MaxInterests"
+            OnManage="OpenInterestsPicker"
+            OnRemove="RemoveInterest" />
+    </main>
+
+    <ProfileInterestsPicker
+        Interests="@InterestOptions"
+        Selection="@_pickerSelection"
+        SearchText="@_pickerSearch"
+        MaxSelection="@MaxInterests"
+        IsOpen="@IsPickerOpen"
+        OnToggle="TogglePickerSelection"
+        OnClear="ClearPickerSelection"
+        OnConfirm="ConfirmPickerSelection"
+        OnClose="ClosePicker"
+        SearchTextChanged="UpdatePickerSearch" />
+
+    <ProfileToast Message="@_toastMessage" Visible="@_isToastVisible" />
+</div>
+
+@code {
+}

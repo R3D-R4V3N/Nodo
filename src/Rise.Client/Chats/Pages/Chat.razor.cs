@@ -1,102 +1,3 @@
-<<<<<<< HEAD:src/Rise.Client/Pages/Chat.razor
-@page "/chat/{ChatId:int}"
-@attribute [Authorize]
-@using System.Globalization
-@using System.Linq
-@using System.Security.Claims
-@using System.Threading
-@using Microsoft.AspNetCore.SignalR.Client
-@using Microsoft.JSInterop
-@using Rise.Client.Chats
-@using Rise.Client.Components.Chat
-@using Rise.Shared.Chat
-@using Rise.Shared.Chats
-@using Rise.Shared.Assets
-@layout EmptyLayout
-@implements IAsyncDisposable
-@inject IChatService ChatService
-@inject AuthenticationStateProvider AuthenticationStateProvider
-@inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
-
-<div class="flex flex-col h-screen max-h-screen overflow-hidden bg-neutral-100 text-neutral-900">
-
-    <!-- Header -->
-    <ChatHeader DisplayName="@GetChatTitle()"
-                AvatarUrl="@GetAvatarUrl()"
-                StatusText="@GetStatusText()"
-                OnBack="NavigateBack"
-                OnAlert="TriggerAlert" />
-
-    @if (_isLoading)
-    {
-        <div class="flex-1 grid place-items-center">
-            <p class="text-sm text-neutral-500">Gesprek wordt geladen…</p>
-        </div>
-    }
-    else if (!string.IsNullOrWhiteSpace(_loadError))
-    {
-        <div class="flex-1 grid place-items-center px-6 text-center">
-            <div class="space-y-2">
-                <p class="text-sm text-red-600">@_loadError</p>
-                <button class="text-xs text-[#127646] underline" @onclick="NavigateBack">
-                    Ga terug naar overzicht
-                </button>
-            </div>
-        </div>
-    }
-    else if (_chat is null)
-    {
-        <div class="flex-1 grid place-items-center">
-            <p class="text-sm text-neutral-500">Dit gesprek kon niet gevonden worden.</p>
-        </div>
-    }
-    else
-    {
-        @if (!string.IsNullOrWhiteSpace(_connectionError))
-        {
-            <div class="px-6 py-2 text-xs text-amber-700 bg-amber-50 border-b border-amber-200">
-                @_connectionError
-            </div>
-        }
-
-        <!-- Scrollable messages -->
-        <div class="flex-1 overflow-y-auto px-3 no-scrollbar" style="@GetMessageHostPaddingStyle()" @ref="_messagesHost">
-            <MessageList Messages="_messages" TimestampText="@GetConversationDateLabel()" />
-        </div>
-
-        <!-- Fixed input bar -->
-        <div class="fixed bottom-0 left-0 right-0 bg-white" @ref="_footerHost">
-            <div class="mx-auto px-3">
-                <SuggestionChips Suggestions="_suggestions" OnPick="ApplySuggestion" />
-                <ChatInput @bind-Value="_draft"
-                           OnSend="SendMessageAsync"
-                           OnSendVoice="HandleVoiceMessageAsync" />
-                @if (!string.IsNullOrWhiteSpace(_errorMessage))
-                {
-                    <p class="px-2 pb-3 text-xs text-red-600">@_errorMessage</p>
-                }
-            </div>
-        </div>
-    }
-</div>
-
-<style>
-  html, body {
-      height: 100%;
-      overflow-x: hidden;
-  }
-  .no-scrollbar::-webkit-scrollbar {
-      display: none;
-  }
-  .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-  }
-</style>
-
-@code {
-=======
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
@@ -109,7 +10,6 @@ using System.Globalization;
 namespace Rise.Client.Chats.Pages;
 public partial class Chat
 {
->>>>>>> codex/add-alert-message-for-supervisor-monitoring:src/Rise.Client/Chats/Pages/Chat.razor.cs
     [Parameter] public int ChatId { get; set; }
     [CascadingParameter] public UserDto.CurrentUser? CurrentUser { get; set; }
 
@@ -137,23 +37,6 @@ public partial class Chat
         _loadError = null;
         _errorMessage = null;
         ScheduleFooterMeasurement();
-<<<<<<< HEAD:src/Rise.Client/Pages/Chat.razor
-
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (user?.Identity?.IsAuthenticated != true)
-        {
-            NavigationManager.NavigateTo("/login", true);
-            _isLoading = false;
-            return;
-        }
-
-        _currentAccountId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        _currentUserName = user.Identity?.Name;
-
-=======
->>>>>>> codex/add-alert-message-for-supervisor-monitoring:src/Rise.Client/Chats/Pages/Chat.razor.cs
         _isLoading = true;
 
         var result = await ChatService.GetByIdAsync(ChatId);
@@ -246,11 +129,7 @@ public partial class Chat
         {
             var request = new ChatRequest.CreateMessage
             {
-<<<<<<< HEAD:src/Rise.Client/Pages/Chat.razor
-                ChatId = _chat.chatId,
-=======
                 ChatId = _chat.ChatId,
->>>>>>> codex/add-alert-message-for-supervisor-monitoring:src/Rise.Client/Chats/Pages/Chat.razor.cs
                 AudioDataUrl = audio.DataUrl,
                 AudioDurationSeconds = audio.DurationSeconds
             };
@@ -428,7 +307,6 @@ public partial class Chat
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
-<<<<<<< HEAD:src/Rise.Client/Pages/Chat.razor
     {
         await base.OnAfterRenderAsync(firstRender);
 
@@ -469,75 +347,6 @@ public partial class Chat
                 // Ignore: JS runtime no longer available (e.g., during prerender or disposal).
             }
         }
-    }
-
-    private Message MapToMessage(MessageDto dto)
-=======
->>>>>>> codex/add-alert-message-for-supervisor-monitoring:src/Rise.Client/Chats/Pages/Chat.razor.cs
-    {
-        await base.OnAfterRenderAsync(firstRender);
-
-<<<<<<< HEAD:src/Rise.Client/Pages/Chat.razor
-        var audioUrl = string.IsNullOrWhiteSpace(dto.AudioDataUrl)
-            ? null
-            : dto.AudioDataUrl;
-
-        TimeSpan? audioDuration = dto.AudioDurationSeconds.HasValue
-            ? TimeSpan.FromSeconds(dto.AudioDurationSeconds.Value)
-            : null;
-
-        var avatarUrl = isOutgoing
-            ? null
-            : DefaultImages.GetProfile(GetAvatarKey(dto));
-
-        return new Message(
-            dto.Id.ToString(CultureInfo.InvariantCulture),
-            dto.Content ?? string.Empty,
-            isOutgoing,
-            AvatarUrl: avatarUrl,
-            Timestamp: dto.Timestamp,
-            AudioUrl: audioUrl,
-            AudioDuration: audioDuration,
-            SenderName: dto.SenderName);
-=======
-        if (_footerMeasurementPending)
-        {
-            _footerMeasurementPending = false;
-
-            try
-            {
-                var measuredHeight = await JSRuntime.InvokeAsync<double>("measureElementHeight", _footerHost);
-                if (!double.IsNaN(measuredHeight)
-                    && !double.IsInfinity(measuredHeight)
-                    && measuredHeight > 0
-                    && Math.Abs(measuredHeight - _footerHeight) > 1)
-                {
-                    _footerHeight = measuredHeight;
-                    _shouldScrollToBottom = true;
-                    StateHasChanged();
-                    return;
-                }
-            }
-            catch (JSDisconnectedException)
-            {
-                // Ignore when JS runtime is no longer available.
-            }
-        }
-
-        if (_shouldScrollToBottom)
-        {
-            _shouldScrollToBottom = false;
-
-            try
-            {
-                await JSRuntime.InvokeVoidAsync("scrollToBottom", _messagesHost, true);
-            }
-            catch (JSDisconnectedException)
-            {
-                // Ignore: JS runtime no longer available (e.g., during prerender or disposal).
-            }
-        }
->>>>>>> codex/add-alert-message-for-supervisor-monitoring:src/Rise.Client/Chats/Pages/Chat.razor.cs
     }
 
     private string GetChatTitle()
@@ -553,44 +362,10 @@ public partial class Chat
 
     private string GetAvatarUrl()
     {
-<<<<<<< HEAD:src/Rise.Client/Pages/Chat.razor
-        var participant = _messages
-            .Where(m => !m.IsOutgoing)
-            .OrderBy(m => m.Timestamp)
-            .FirstOrDefault();
-
-        if (participant is not null && !string.IsNullOrWhiteSpace(participant.AvatarUrl))
-        {
-            return participant.AvatarUrl;
-        }
-
-        if (!string.IsNullOrWhiteSpace(_currentAccountId))
-        {
-            return DefaultImages.GetProfile(_currentAccountId);
-        }
-
-        return DefaultImages.Profile;
-    }
-
-    private static string GetAvatarKey(MessageDto dto)
-    {
-        if (!string.IsNullOrWhiteSpace(dto.SenderAccountId))
-        {
-            return dto.SenderAccountId;
-        }
-
-        if (dto.SenderId != 0)
-        {
-            return dto.SenderId.ToString(CultureInfo.InvariantCulture);
-        }
-
-        return dto.SenderName ?? string.Empty;
-=======
         return _chat?
             .Users
             .FirstOrDefault(x => x.Id != CurrentUser!.Id)
             ?.AvatarUrl ?? DefaultImages.Profile;
->>>>>>> codex/add-alert-message-for-supervisor-monitoring:src/Rise.Client/Chats/Pages/Chat.razor.cs
     }
 
     private string GetStatusText()
