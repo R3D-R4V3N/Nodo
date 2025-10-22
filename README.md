@@ -108,19 +108,20 @@ Authentication and authorization is present, you'll host and maintain the user a
 
 ### Users
 
-- user@example.com
-- technician1@example.com
-- technician2@example.com
-- secretary@example.com
-- admin@example.com
+- admin@nodo.chat
+- emma.supervisor@nodo.chat
+- jonas.supervisor@nodo.chat
+- noor@nodo.chat
+- milan@nodo.chat
+- lina@nodo.chat
 
 ### Roles
 
 There are 3 built-in roles, but adjust as needed
 
-- Technician
-- Secretary
 - Administrator
+- Supervisor
+- ChatUser
 
 ### Use cases
 
@@ -156,7 +157,7 @@ Let’s look at each of these in more detail:
 
 **Typical Contents**:
 
-- **Entities**: Classes that represent the core objects of the application, such as `Order`, `Customer`, or `Product`.
+- **Entities**: Classes that represent the core objects of the application, such as `Chat`, `Message`, or `ApplicationUser`.
 
 - **Value Objects**: Immutable objects that represent a concept (like `Money` or `Address`).
 
@@ -220,7 +221,7 @@ You might notice something interesting about how endpoints send responses. In `P
 So how are responses sent? We use a custom **Post-Processor** called `GlobalResponseSender`. This processor runs after every endpoint and is responsible for creating the final HTTP response. It takes the object returned by your endpoint—typically an `Ardalis.Result`—and intelligently maps it to the correct HTTP status code.
 
 For example:
-- If your endpoint returns a successful `Result<ProductDto>`, the processor creates a `200 OK` response containing the product data.
+- If your endpoint returns a successful `Result<ChatDto.Index>`, the processor creates a `200 OK` response containing the chat data.
 - If it returns `Result.Invalid(errors)`, the processor creates a `400 Bad Request` response with the validation errors.
 - If it returns `Result.NotFound()`, it becomes a `404 Not Found` response.
 

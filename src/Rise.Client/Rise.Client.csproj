@@ -7,6 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="UserConnections\Friends.razor.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="UserConnections\Pages\Friends\Index.razor.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Blazored.FluentValidation" Version="2.2.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.9" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />

@@ -1,0 +1,26 @@
+@* Eén chatbubbel, inkomend of uitgaand *@
+@if (IsOutgoing)
+{
+    <div class="flex justify-end">
+        <div class="@OutgoingBubbleClasses">
+            @RenderContent()
+        </div>
+    </div>
+}
+else
+{
+    <div class="flex items-end gap-2">
+        @if (!string.IsNullOrWhiteSpace(AvatarUrl))
+        {
+            <img src="@AvatarUrl" alt="" class="h-7 w-7 rounded-full" />
+        }
+        else
+        {
+            <span class="inline-block h-7 w-7"></span>
+        }
+
+        <div class="@IncomingBubbleClasses">
+            @RenderContent()
+        </div>
+    </div>
+}

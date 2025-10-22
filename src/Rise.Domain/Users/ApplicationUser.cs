@@ -1,74 +1,206 @@
-﻿using Ardalis.Result;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Ardalis.Result;
+using Rise.Domain.Chats;
 
-namespace Rise.Domain.Users
+namespace Rise.Domain.Users;
+
+public class ApplicationUser : Entity
 {
-    public class ApplicationUser : Entity
+    /// <summary>
+    /// Link to the <see cref="IdentityUser"/> account so chatprofielen gekoppeld blijven aan hun login.
+    /// </summary>
+    public string AccountId { get; private set; }
+
+    private string _firstName = string.Empty;
+    public required string FirstName
     {
-        /// <summary>
-        /// Link to the <see cref="IdentityUser"/> account, so a Technician HAS A Account and not IS A <see cref="IdentityUser"/>./>
-        /// </summary>
-        public string AccountId { get; private set; }
+        get => _firstName;
+        set => _firstName = Guard.Against.NullOrWhiteSpace(value);
+    }
+    private string _lastName = string.Empty;
+    public required string LastName
+    {
+        get => _lastName;
+        set => _lastName = Guard.Against.NullOrWhiteSpace(value);
+    }
+    private string _biography = string.Empty;
+    public required string Biography
+    {
+        get => _biography;
+        set => _biography = Guard.Against.NullOrWhiteSpace(value);
+    }
+    private string _avatarUrl = string.Empty;
+    public required string AvatarUrl
+    {
+        get => _avatarUrl;
+        set => _avatarUrl = Guard.Against.NullOrWhiteSpace(value);
+    }
+    public required DateOnly BirthDay { get; set; }
+    public required UserType UserType { get; set; }
+    
 
-        public required string FirstName { get; set; }
-        public required string LastName { get; set; }
-        public required string Biography { get; set; }
-        public required UserType UserType { get; set; }
+    //// connections
+    private readonly HashSet<UserConnection> _connections = [];
+    public IReadOnlyCollection<UserConnection> Connections => _connections;
+    public IEnumerable<UserConnection> Friends => _connections
+        .Where(x => x.ConnectionType.Equals(UserConnectionType.Friend));
+    public IEnumerable<UserConnection> FriendRequests => _connections
+        .Where(x => 
+            x.ConnectionType.Equals(UserConnectionType.RequestIncoming) 
+            || x.ConnectionType.Equals(UserConnectionType.RequestOutgoing));
+    public IEnumerable<UserConnection> BlockedUsers => _connections
+        .Where(x => x.ConnectionType.Equals(UserConnectionType.Blocked));
 
+    // chats
+    private readonly List<Chat> _chats = [];
+    public IReadOnlyList<Chat> Chats => _chats.AsReadOnly();
 
-        //// connections
-        private readonly HashSet<ApplicationUser> friends = [];
-        public IReadOnlyCollection<ApplicationUser> Friends => friends;
-
-        private readonly HashSet<ApplicationUser> friendRequests = [];
-        public IReadOnlyCollection<ApplicationUser> FriendRequests => friendRequests;
-
-        //private readonly HashSet<ApplicationUser> blockedUsers = [];
-        //public IReadOnlyList<ApplicationUser> BlockedUsers => blockedUsers.ToList().AsReadOnly();
-
-        public ApplicationUser()
+    // settings
+    private ApplicationUserSetting _userSettings;
+    public required ApplicationUserSetting UserSettings
+    {
+        get => _userSettings;
+        set
         {
-        }
+            if (_userSettings == value) return;
 
-        [SetsRequiredMembers]
-        public ApplicationUser(string accountId, string firstName, string lastName, string biography, UserType userType)
-        {
-            AccountId = Guard.Against.NullOrWhiteSpace(accountId);
-            FirstName = Guard.Against.NullOrWhiteSpace(firstName);
-            LastName = Guard.Against.NullOrWhiteSpace(lastName);
-            Biography = Guard.Against.NullOrWhiteSpace(biography);
-            UserType = userType;
-        }
-
-        public Result AddFriend(ApplicationUser friend)
-        {
-            if (!friendRequests.Contains(friend))
-                return Result.Conflict($"Can't add {friend} without a request first");
-
-            bool isAdded = friends.Add(friend);
-            if (!isAdded)
-                return Result.Conflict($"User is already friends with {friend}");
-
-            friendRequests.Remove(friend);
-            friend.friends.Add(this);
-
-            return Result.Success();
-        }
-
-        public Result RemoveFriend(ApplicationUser friend)
-        {
-            bool isRemoved = friends.Remove(friend);
-            if (!isRemoved)
-                return Result.Conflict($"User wasn't friends with {friend}");
-
-            friend.friends.Remove(this);
-
-            return Result.Success();
+            _userSettings = Guard.Against.Null(value);
+            if (_userSettings.User != this)
+            {
+                _userSettings.User = this;
+            }
         }
     }
+
+    public ApplicationUser()
+    {
+    }
+
+    public ApplicationUser(string accountId)
+    {
+        AccountId = Guard.Against.NullOrEmpty(accountId);
+    }
+
+    public bool HasFriend(ApplicationUser friend) 
+        => _connections.Contains(new UserConnection() { Connection = friend, ConnectionType = UserConnectionType.Friend});
+
+    public Result<string> AddFriend(ApplicationUser friend)
+    {
+        bool isAdded = Friends
+            .Any(x => x.Connection.Equals(friend));
+
+        if (isAdded)
+        { 
+            return Result.Conflict($"Gebruiker is al bevriend met {friend}");
+        }
+
+        UserConnection? friendRequest = FriendRequests
+            .FirstOrDefault(x => x.Connection.Equals(friend));
+
+        if (friendRequest is null)
+        {
+            _connections.Add(
+                new UserConnection()
+                {
+                    Connection = friend,
+                    ConnectionType = UserConnectionType.RequestOutgoing
+                }
+            );
+
+            friend._connections.Add(
+                new UserConnection() 
+                { 
+                    Connection = this,
+                    ConnectionType = UserConnectionType.RequestIncoming 
+                }
+            );
+
+            return Result.Success($"Gebruiker verstuurd een vriendschapsverzoek naar {friend}");
+        }
+
+        if (friendRequest.ConnectionType.Equals(UserConnectionType.RequestOutgoing))
+        {
+            return Result.Conflict($"Gebruiker heeft al een vriendschapsverzoek naar {friend} verstuurd");
+        }
+
+        _connections.Add(new 
+            UserConnection() 
+            { 
+                Connection = friend, 
+                ConnectionType = UserConnectionType.Friend 
+            }
+        );
+
+        _connections.Remove(
+            new UserConnection()
+            { 
+                Connection = friend, 
+                ConnectionType = UserConnectionType.RequestIncoming 
+            }
+        );
+
+        friend._connections.Add(new
+            UserConnection()
+            {
+                Connection = this,
+                ConnectionType = UserConnectionType.Friend
+            }
+        );
+
+        friend._connections.Remove(
+            new UserConnection()
+            {
+                Connection = this,
+                ConnectionType = UserConnectionType.RequestOutgoing
+            }
+        );
+
+        return Result.Success($"Gebruiker voegt {friend} toe");
+    }
+
+    public Result RemoveFriend(ApplicationUser friend)
+    {
+        _connections.Remove(
+            new UserConnection()
+            {
+                Connection = friend,
+                ConnectionType = UserConnectionType.Friend,
+            }
+        );
+
+        friend._connections.Remove(
+            new UserConnection()
+            {
+                Connection = this,
+                ConnectionType = UserConnectionType.Friend
+            }
+        );
+
+        return Result.Success();
+    }
+
+    public Result AddChat(Chat chat)
+    {
+        if (_chats.Contains(chat))
+        {
+            return Result.Conflict($"Gebruiker is al lid van chat {chat}");
+        }
+
+        _chats.Add(chat);
+        chat.AddUser(this);
+
+        return Result.Success();
+    }
+    public Result RemoveChat(Chat chat)
+    {
+        if (!_chats.Contains(chat))
+        {
+            return Result.Conflict($"Gebruiker is geen lid van chat {chat}");
+        }
+
+        _chats.Remove(chat);
+        chat.RemoveUser(this);
+
+        return Result.Success();
+    }
 }
+

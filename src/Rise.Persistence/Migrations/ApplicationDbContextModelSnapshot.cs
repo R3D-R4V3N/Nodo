@@ -22,6 +22,21 @@ namespace Rise.Persistence.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("ApplicationUserChat", b =>
+                {
+                    b.Property<int>("ChatsId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UsersId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ChatsId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("ApplicationUserChat");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -277,10 +292,17 @@ namespace Rise.Persistence.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ChatId")
-                        .HasColumnType("int");
+                    b.Property<string>("AudioContentType")
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
 
-                    b.Property<int>("SenderId")
+                    b.Property<byte[]>("AudioData")
+                        .HasColumnType("longblob");
+
+                    b.Property<double?>("AudioDurationSeconds")
+                        .HasColumnType("double");
+
+                    b.Property<int>("ChatId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -288,15 +310,17 @@ namespace Rise.Persistence.Migrations
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("current_timestamp()");
 
-                    b.Property<string>("Inhoud")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
+
+                    b.Property<int>("SenderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -312,128 +336,6 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("Message", (string)null);
                 });
 
-            modelBuilder.Entity("Rise.Domain.Products.Product", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Product", (string)null);
-                });
-
-            modelBuilder.Entity("Rise.Domain.Projects.Project", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
-
-                    b.Property<int>("TechnicianId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TechnicianId");
-
-                    b.ToTable("Project", (string)null);
-                });
-
-            modelBuilder.Entity("Rise.Domain.Projects.Technician", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AccountId")
-                        .IsRequired()
-                        .HasMaxLength(36)
-                        .HasColumnType("varchar(36)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountId")
-                        .IsUnique();
-
-                    b.ToTable("Technician", (string)null);
-                });
-
             modelBuilder.Entity("Rise.Domain.Users.ApplicationUser", b =>
                 {
                     b.Property<int>("Id")
@@ -447,10 +349,18 @@ namespace Rise.Persistence.Migrations
                         .HasMaxLength(36)
                         .HasColumnType("varchar(36)");
 
+                    b.Property<string>("AvatarUrl")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
+
                     b.Property<string>("Biography")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
+
+                    b.Property<DateOnly>("BirthDay")
+                        .HasColumnType("date");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -488,34 +398,19 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("ApplicationUser", (string)null);
                 });
 
-            modelBuilder.Entity("UserFriendRequests", b =>
+            modelBuilder.Entity("ApplicationUserChat", b =>
                 {
-                    b.Property<int>("AccountId")
-                        .HasColumnType("int");
+                    b.HasOne("Rise.Domain.Chats.Chat", null)
+                        .WithMany()
+                        .HasForeignKey("ChatsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Property<int>("FriendRequestId")
-                        .HasColumnType("int");
-
-                    b.HasKey("AccountId", "FriendRequestId");
-
-                    b.HasIndex("FriendRequestId");
-
-                    b.ToTable("UserFriendRequests");
-                });
-
-            modelBuilder.Entity("UserFriends", b =>
-                {
-                    b.Property<int>("AccountId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("FriendId")
-                        .HasColumnType("int");
-
-                    b.HasKey("AccountId", "FriendId");
-
-                    b.HasIndex("FriendId");
-
-                    b.ToTable("UserFriends");
+                    b.HasOne("Rise.Domain.Users.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -584,98 +479,125 @@ namespace Rise.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Chat");
+
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("Rise.Domain.Projects.Project", b =>
+            modelBuilder.Entity("Rise.Domain.Users.ApplicationUser", b =>
                 {
-                    b.HasOne("Rise.Domain.Projects.Technician", "Technician")
-                        .WithMany("Projects")
-                        .HasForeignKey("TechnicianId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.OwnsOne("Rise.Domain.Projects.Address", "Location", b1 =>
+                    b.OwnsOne("Rise.Domain.Users.ApplicationUserSetting", "_userSettings", b1 =>
                         {
-                            b1.Property<int>("ProjectId")
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
                                 .HasColumnType("int");
 
-                            b1.Property<string>("Addressline1")
-                                .IsRequired()
-                                .HasMaxLength(250)
-                                .HasColumnType("varchar(250)")
-                                .HasColumnName("Addressline1");
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
 
-                            b1.Property<string>("Addressline2")
-                                .IsRequired()
-                                .HasMaxLength(250)
-                                .HasColumnType("varchar(250)")
-                                .HasColumnName("Addressline2");
+                            b1.Property<int>("FontSize")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasDefaultValue(12);
 
-                            b1.Property<string>("City")
-                                .IsRequired()
-                                .HasMaxLength(50)
-                                .HasColumnType("varchar(50)")
-                                .HasColumnName("City");
+                            b1.Property<bool>("IsDarkMode")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("tinyint(1)")
+                                .HasDefaultValue(false);
 
-                            b1.Property<string>("PostalCode")
-                                .IsRequired()
-                                .HasMaxLength(20)
-                                .HasColumnType("varchar(20)")
-                                .HasColumnName("PostalCode");
+                            b1.Property<int>("UserId")
+                                .HasColumnType("int");
 
-                            b1.HasKey("ProjectId");
+                            b1.HasKey("Id");
 
-                            b1.ToTable("Project");
+                            b1.HasIndex("UserId")
+                                .IsUnique();
 
-                            b1.WithOwner()
-                                .HasForeignKey("ProjectId");
+                            b1.ToTable("UserSetting", (string)null);
+
+                            b1.WithOwner("User")
+                                .HasForeignKey("UserId");
+
+                            b1.OwnsMany("Rise.Domain.Users.UserSettingChatTextLineSuggestion", "ChatTextLineSuggestions", b2 =>
+                                {
+                                    b2.Property<int>("UserSettingsId")
+                                        .HasColumnType("int");
+
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("int");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<int>("Id"));
+
+                                    b2.Property<int>("Rank")
+                                        .HasColumnType("int");
+
+                                    b2.Property<string>("Text")
+                                        .IsRequired()
+                                        .HasMaxLength(200)
+                                        .HasColumnType("varchar(200)")
+                                        .HasColumnName("TextSuggestion");
+
+                                    b2.HasKey("UserSettingsId", "Id");
+
+                                    b2.ToTable("UserSettingChatTextLineSuggestions", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("UserSettingsId");
+                                });
+
+                            b1.Navigation("ChatTextLineSuggestions");
+
+                            b1.Navigation("User");
                         });
 
-                    b.Navigation("Location")
-                        .IsRequired();
+                    b.OwnsMany("Rise.Domain.Users.UserConnection", "_connections", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
 
-                    b.Navigation("Technician");
-                });
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
 
-            modelBuilder.Entity("UserFriendRequests", b =>
-                {
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
+                            b1.Property<string>("ConnectionType")
+                                .IsRequired()
+                                .HasColumnType("longtext");
 
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("FriendRequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
+                            b1.Property<DateTime>("CreatedAt")
+                                .HasColumnType("datetime(6)");
 
-            modelBuilder.Entity("UserFriends", b =>
-                {
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
+                            b1.Property<int>("UserConnectionId")
+                                .HasColumnType("int");
 
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("FriendId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                            b1.Property<int>("UserId")
+                                .HasColumnType("int");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("UserConnectionId");
+
+                            b1.HasIndex("UserId");
+
+                            b1.ToTable("UserConnections", (string)null);
+
+                            b1.HasOne("Rise.Domain.Users.ApplicationUser", "Connection")
+                                .WithMany()
+                                .HasForeignKey("UserConnectionId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserId");
+
+                            b1.Navigation("Connection");
+                        });
+
+                    b.Navigation("_connections");
+
+                    b.Navigation("_userSettings");
                 });
 
             modelBuilder.Entity("Rise.Domain.Chats.Chat", b =>
                 {
                     b.Navigation("Messages");
-                });
-
-            modelBuilder.Entity("Rise.Domain.Projects.Technician", b =>
-                {
-                    b.Navigation("Projects");
                 });
 #pragma warning restore 612, 618
         }

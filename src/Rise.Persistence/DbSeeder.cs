@@ -1,239 +1,526 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
-using Rise.Domain.Products;
-using Rise.Domain.Projects;
 using Rise.Domain.Users;
+using Rise.Shared.Identity;
 
 namespace Rise.Persistence;
+
 /// <summary>
-/// Seeds the database
+/// Seeds the database.
 /// </summary>
 /// <param name="dbContext"></param>
 /// <param name="roleManager"></param>
 /// <param name="userManager"></param>
 public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager)
 {
-    const string PasswordDefault = "A1b2C3!";
+    private const string PasswordDefault = "Nodo.1";
+
     public async Task SeedAsync()
     {
         await RolesAsync();
         await UsersAsync();
-        await ProductsAsync();
-        await ProjectsAsync();
+        await ConnectionsAsync();
         await ChatsAsync();
         await MessagesAsync();
+        //await ProductsAsync();
+        //await ProjectsAsync();
     }
 
     private async Task RolesAsync()
     {
         if (dbContext.Roles.Any())
+        {
             return;
+        }
 
         await roleManager.CreateAsync(new IdentityRole("Administrator"));
-        await roleManager.CreateAsync(new IdentityRole("Secretary"));
-        await roleManager.CreateAsync(new IdentityRole("Technician"));
+        await roleManager.CreateAsync(new IdentityRole("Supervisor"));
+        await roleManager.CreateAsync(new IdentityRole("User"));
     }
     
-    private async Task  UsersAsync()
+    private async Task UsersAsync()
     {
         if (dbContext.Users.Any())
+        {
             return;
-        
+        }
+
         await dbContext.Roles.ToListAsync();
 
-        var admin = new IdentityUser
+        IdentityUser CreateIdentity(string email) => new()
         {
-            UserName = "admin@example.com",
-            Email = "admin@example.com",
+            UserName = email,
+            Email = email,
             EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(admin, PasswordDefault);
-        
-        var secretary = new IdentityUser
-        {
-            UserName = "secretary@example.com",
-            Email = "secretary@example.com",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(secretary, PasswordDefault);
-        
-        var technicianAccount1 = new IdentityUser
-        {
-            UserName = "technician1@example.com",
-            Email = "technician1@example.com",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(technicianAccount1, PasswordDefault);
-        
-        var technicianAccount2 = new IdentityUser
-        {
-            UserName = "technician2@example.com",
-            Email = "technician2@example.com",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(technicianAccount2, PasswordDefault);
-                
-        var user = new IdentityUser
-        {
-            UserName = "user@example.com",
-            Email = "user@example.com",
-            EmailConfirmed = true,
-        };
-        await userManager.CreateAsync(user, PasswordDefault);
-        
-        await userManager.AddToRoleAsync(admin, "Administrator");
-        await userManager.AddToRoleAsync(secretary, "Secretary");
-        await userManager.AddToRoleAsync(technicianAccount1, "Technician");
-        await userManager.AddToRoleAsync(technicianAccount2, "Technician");
-
-        dbContext.Technicians.AddRange(
-            new Technician("Tech 1", "Awesome", technicianAccount1.Id),
-            new Technician("Tech 2", "Less Awesome", technicianAccount2.Id));
-
-        var applicationUsers = new List<ApplicationUser>
-        {
-            new(technicianAccount1.Id, "Max", "Van Dijk", "Ervaren technieker gespecialiseerd in hardware.", UserType.Supervisor),
-            new(technicianAccount2.Id, "Sofie", "Peeters", "Technieker met focus op netwerkoplossingen.", UserType.Supervisor),
-            new(user.Id, "Amber", "Janssens", "Medewerker die ondersteuning zoekt voor haar apparatuur.", UserType.Regular)
         };
 
-        dbContext.ApplicationUsers.AddRange(applicationUsers);
+        var admin = CreateIdentity("admin@example.com");
+        var supervisor = CreateIdentity("supervisor@example.com");
+        var userAccount1 = CreateIdentity("user1@example.com");
+        var userAccount2 = CreateIdentity("user2@example.com");
+        var nodoAdmin = CreateIdentity("admin@nodo.chat");
+
+        var supervisorEmma = CreateIdentity("emma.supervisor@nodo.chat");
+        var supervisorJonas = CreateIdentity("jonas.supervisor@nodo.chat");
+        var supervisorElla = CreateIdentity("ella.supervisor@nodo.chat");
+
+        var chatterNoor = CreateIdentity("noor@nodo.chat");
+        var chatterMilan = CreateIdentity("milan@nodo.chat");
+        var chatterLina = CreateIdentity("lina@nodo.chat");
+        var chatterKyandro = CreateIdentity("kyandro@nodo.chat");
+        var chatterJasper = CreateIdentity("jasper@nodo.chat");
+        var chatterBjorn = CreateIdentity("bjorn@nodo.chat");
+        var chatterThibo = CreateIdentity("thibo@nodo.chat");
+        var chatterSaar = CreateIdentity("saar@nodo.chat");
+        var chatterYassin = CreateIdentity("yassin@nodo.chat");
+        var chatterLotte = CreateIdentity("lotte@nodo.chat");
+        var chatterAmina = CreateIdentity("amina@nodo.chat");
+
+        var accounts = new List<SeedAccount>
+        {
+            new(admin, AppRoles.Administrator, null),
+            new(supervisor, AppRoles.Supervisor,
+                new ApplicationUser(supervisor.Id)
+                {
+                    FirstName = "Super",
+                    LastName = "Visor",
+                    Biography = "Here to help you.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-30)),
+                    UserType = UserType.Supervisor,
+                    UserSettings = new ApplicationUserSetting()
+                    { 
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(userAccount1, AppRoles.User,
+                new ApplicationUser(userAccount1.Id)
+                {
+                    FirstName = "John",
+                    LastName = "Doe",
+                    Biography = "Houdt van katten en rustige gesprekken.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
+                    UserType = UserType.Regular,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(userAccount2, AppRoles.User,
+                new ApplicationUser(userAccount2.Id)
+                {
+                    FirstName = "Stacey",
+                    LastName = "Willington",
+                    Biography = "Deelt graag verhalen over haar hulphond.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-26)),
+                    UserType = UserType.Regular,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(nodoAdmin, AppRoles.Administrator, null),
+            new(supervisorEmma, AppRoles.Supervisor,
+                new ApplicationUser(supervisorEmma.Id)
+                {
+                    FirstName = "Emma",
+                    LastName = "Claes",
+                    Biography = "Coach voor dagelijkse structuur en zelfvertrouwen.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-35)),
+                    UserType = UserType.Supervisor,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(supervisorJonas, AppRoles.Supervisor,
+                new ApplicationUser(supervisorJonas.Id)
+                {
+                    FirstName = "Jonas",
+                    LastName = "Van Lint",
+                    Biography = "Helpt bij plannen en houdt wekelijks groepsmomenten.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1531891437562-4301cf35b7e4?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-33)),
+                    UserType = UserType.Supervisor,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(supervisorElla, AppRoles.Supervisor,
+                new ApplicationUser(supervisorElla.Id)
+                {
+                    FirstName = "Ella",
+                    LastName = "Vervoort",
+                    Biography = "Creatieve begeleider voor beeldende therapie.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-31)),
+                    UserType = UserType.Supervisor,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(chatterNoor, AppRoles.User,
+                new ApplicationUser(chatterNoor.Id)
+                {
+                    FirstName = "Noor",
+                    LastName = "Vermeulen",
+                    Biography = "Praat graag over muziek en wil nieuwe vrienden maken.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
+                    UserType = UserType.Regular,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(chatterMilan, AppRoles.User,
+                new ApplicationUser(chatterMilan.Id)
+                {
+                    FirstName = "Milan",
+                    LastName = "Peeters",
+                    Biography = "Zoekt iemand om samen over games te praten.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
+                    UserType = UserType.Regular,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(chatterLina, AppRoles.User,
+                new ApplicationUser(chatterLina.Id)
+                {
+                    FirstName = "Lina",
+                    LastName = "Jacobs",
+                    Biography = "Vindt het fijn om vragen te kunnen stellen in een veilige omgeving.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1760733345250-6b2625fca116?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-22)),
+                    UserType = UserType.Regular,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(chatterKyandro, AppRoles.User,
+                new ApplicationUser(chatterKyandro.Id)
+                {
+                    FirstName = "Kyandro",
+                    LastName = "Voet",
+                    Biography = "Helpt vaak bij technische vragen en deelt programmeertips.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1760681555543-0a3c65fa10eb?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-25)),
+                    UserType = UserType.Regular,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(chatterJasper, AppRoles.User,
+                new ApplicationUser(chatterJasper.Id)
+                {
+                    FirstName = "Jasper",
+                    LastName = "Vermeersch",
+                    Biography = "Vindt het leuk om te discussiëren over technologie en innovatie.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1760625525477-f725e48f5a13?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
+                    UserType = UserType.Regular,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(chatterBjorn, AppRoles.User,
+                new ApplicationUser(chatterBjorn.Id)
+                {
+                    FirstName = "Bjorn",
+                    LastName = "Van Damme",
+                    Biography = "Praat graag over sport en houdt van teamwork.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1749521166410-9031d6ded805?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-27)),
+                    UserType = UserType.Regular,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(chatterThibo, AppRoles.User,
+                new ApplicationUser(chatterThibo.Id)
+                {
+                    FirstName = "Thibo",
+                    LastName = "De Smet",
+                    Biography = "Is nieuwsgierig en stelt vaak interessante vragen.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1760604278004-91a4d7b22447?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-21)),
+                    UserType = UserType.Regular,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(chatterSaar, AppRoles.User,
+                new ApplicationUser(chatterSaar.Id)
+                {
+                    FirstName = "Saar",
+                    LastName = "Vandenberg",
+                    Biography = "Deelt graag foto's van haar tekeningen.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1760497925596-a6462350c583?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
+                    UserType = UserType.Regular,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(chatterYassin, AppRoles.User,
+                new ApplicationUser(chatterYassin.Id)
+                {
+                    FirstName = "Yassin",
+                    LastName = "El Amrani",
+                    Biography = "Leert zelfstandig koken en zoekt tips van vrienden.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1760411069721-60d7c378b697?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-25)),
+                    UserType = UserType.Regular,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(chatterLotte, AppRoles.User,
+                new ApplicationUser(chatterLotte.Id)
+                {
+                    FirstName = "Lotte",
+                    LastName = "De Wilde",
+                    Biography = "Wordt blij van dansen en deelt positieve boodschappen.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1760086741328-c56df17e8272?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
+                    UserType = UserType.Regular,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+            new(chatterAmina, AppRoles.User,
+                new ApplicationUser(chatterAmina.Id)
+                {
+                    FirstName = "Amina",
+                    LastName = "Karim",
+                    Biography = "Houdt van creatieve projecten en begeleidt graag groepsspelletjes.",
+                    AvatarUrl = "https://images.unsplash.com/photo-1739889399693-8a46b389473f?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-22)),
+                    UserType = UserType.Regular,
+                    UserSettings = new ApplicationUserSetting()
+                    {
+                        FontSize = 12,
+                        IsDarkMode = false,
+                    }
+                }),
+        };
+
+        foreach (var (identity, role, profile) in accounts)
+        {
+            await userManager.CreateAsync(identity, PasswordDefault);
+            await userManager.AddToRoleAsync(identity, role);
+
+            if (profile is not null)
+            {
+                profile.UserSettings.AddChatTextLine("Kowabunga!");
+                profile.UserSettings.AddChatTextLine("Hallo hoe gaat het?");
+                dbContext.ApplicationUsers.Add(profile);
+            }
+        }
 
         await dbContext.SaveChangesAsync();
     }
-    
 
-    
-    private async Task  ProductsAsync()
+    private async Task ConnectionsAsync()
     {
-        if (dbContext.Products.Any())
+        var users = await dbContext.ApplicationUsers
+            .ToListAsync();
+
+        if (users.Count == 0)
             return;
-        
-        dbContext.Products.AddRange(
-            new Product{ Name = "Laptop", Description = "15-inch display, 16GB RAM" },
-            new Product{ Name = "Smartphone", Description = "6.5-inch screen, 128GB storage" },
-            new Product{ Name = "Headphones", Description = "Wireless noise-cancelling" },
-            new Product{ Name = "Keyboard", Description = "Mechanical RGB backlit" },
-            new Product{ Name = "Mouse", Description = "Ergonomic wireless mouse" },
-            new Product{ Name = "Monitor", Description = "27-inch 4K UHD display" },
-            new Product{ Name = "Printer", Description = "All-in-one inkjet printer" },
-            new Product{ Name = "Camera", Description = "Mirrorless 24MP with 4K video" },
-            new Product{ Name = "Smartwatch", Description = "Heart rate monitor, GPS" },
-            new Product{ Name = "Speaker", Description = "Bluetooth portable speaker" }
-        );
+
+        var hasConnections = await dbContext.ApplicationUsers
+            .SelectMany(u => EF.Property<IEnumerable<UserConnection>>(u, "_connections"))
+            .AnyAsync();
+
+        if (hasConnections)
+            return;
+
+        foreach (var user in users)
+        {
+            await dbContext.Entry(user)
+                .Collection<UserConnection>("_connections")
+                .LoadAsync();
+        }
+
+        ApplicationUser GetUser(string firstName) => users.Single(u => u.FirstName.Equals(firstName, StringComparison.Ordinal));
+
+        var noor = GetUser("Noor");
+        var milan = GetUser("Milan");
+        var lina = GetUser("Lina");
+        var kyandro = GetUser("Kyandro");
+        var jasper = GetUser("Jasper");
+        var bjorn = GetUser("Bjorn");
+        var thibo = GetUser("Thibo");
+        var saar = GetUser("Saar");
+        var yassin = GetUser("Yassin");
+        var lotte = GetUser("Lotte");
+        var amina = GetUser("Amina");
+        var john = GetUser("John");
+        var stacey = GetUser("Stacey");
+
+        // Bevestigde vriendschappen
+        MakeFriends(noor, milan);
+        MakeFriends(kyandro, jasper);
+        MakeFriends(bjorn, thibo);
+        MakeFriends(saar, yassin);
+        MakeFriends(lotte, amina);
+
+        // Openstaande verzoeken voor verschillende scenario's
+        SendFriendRequest(noor, lina); // Noor wacht op antwoord van Lina
+        SendFriendRequest(milan, saar); // Milan nodigt Saar uit in de gamegroep
+        SendFriendRequest(john, bjorn); // John zoekt een sportbuddy
+        SendFriendRequest(stacey, noor); // Stacey wil Noor beter leren kennen
+        SendFriendRequest(amina, kyandro); // Amina zoekt tips voor een programmeerclub
 
         await dbContext.SaveChangesAsync();
-    }
-    
-    private async Task  ProjectsAsync()
-    {
-        if (dbContext.Projects.Any())
-            return;
-        
-        var technicians = await dbContext.Technicians.ToListAsync();
-        
-        if (!technicians.Any())
-            return;
-        
-        var addresses = new List<Address>
-        {
-            new Address("Koningstraat 12", "Bus 3A", "Brussel", "1000"),
-            new Address("Meir 45", "", "Antwerpen", "2000"),
-            new Address("Veldstraat 78", "2e verdieping", "Gent", "9000"),
-            new Address("Rue de la Loi 175", "", "Bruxelles", "1040"),
-            new Address("Place Saint-Lambert 8", "Bureau 12", "Liège", "4000"),
-        };
 
-        var rnd = new Random(123); // Using a seed so the random is always the same.
-        
-        var projects = new List<Project>
+        static void MakeFriends(ApplicationUser userA, ApplicationUser userB)
         {
-            new("Website Redesign", technicians[rnd.Next(technicians.Count)], addresses[0]),
-            new("Mobile App Development", technicians[rnd.Next(technicians.Count)], addresses[1]),
-            new("Database Migration", technicians[rnd.Next(technicians.Count)], addresses[2]),
-            new("E-commerce Platform", technicians[rnd.Next(technicians.Count)], addresses[3]),
-            new("CRM Integration", technicians[rnd.Next(technicians.Count)], addresses[4])
-        };
+            userA.AddFriend(userB);
+            userB.AddFriend(userA);
+        }
 
-        dbContext.Projects.AddRange(projects);
-        await dbContext.SaveChangesAsync();
+        static void SendFriendRequest(ApplicationUser requester, ApplicationUser receiver)
+        {
+            requester.AddFriend(receiver);
+        }
     }
-    
+
     private async Task ChatsAsync()
     {
         if (dbContext.Chats.Any())
+        {
             return;
+        }
 
         var supervisors = await dbContext.ApplicationUsers
             .Where(u => u.UserType == UserType.Supervisor)
             .ToListAsync();
 
-        var regularUsers = await dbContext.ApplicationUsers
+        var chatUsers = await dbContext.ApplicationUsers
             .Where(u => u.UserType == UserType.Regular)
             .ToListAsync();
 
-        if (!supervisors.Any() || !regularUsers.Any())
-            return;
-
-        var customer = regularUsers.First();
-        var primaryTechnician = supervisors.First();
-        var secondaryTechnician = supervisors.Skip(1).FirstOrDefault() ?? primaryTechnician;
-
-        var chat1 = new Chat();
-        var chat2 = new Chat();
-
-        dbContext.Chats.AddRange(chat1, chat2);
-        await dbContext.SaveChangesAsync();
-
-        // voeg berichten toe
-        var messages = new List<Message>
+        if (supervisors.Count == 0 || chatUsers.Count < 3)
         {
-            new Message { Inhoud = "Hallo, ik heb een probleem met mijn laptop.", ChatId = chat1.Id, SenderId = customer.Id },
-            new Message { Inhoud = "Ik kijk er meteen naar!", ChatId = chat1.Id, SenderId = primaryTechnician.Id },
-            new Message { Inhoud = "De printer werkt weer, bedankt!", ChatId = chat2.Id, SenderId = customer.Id },
-            new Message { Inhoud = "Graag gedaan!", ChatId = chat2.Id, SenderId = secondaryTechnician.Id },
+            return;
+        }
+
+        var chatsToCreate = new List<Chat>
+        {
+            new(), // Individuele check-in
+            new(), // Vrijdagavond groep
+            new(), // Creatieve hoek
+            new(), // Technische hulplijn
         };
 
-        dbContext.Messages.AddRange(messages);
+        dbContext.Chats.AddRange(chatsToCreate);
         await dbContext.SaveChangesAsync();
     }
-    
+
     private async Task MessagesAsync()
     {
-        if (dbContext.Messages.Any())
+        if (await dbContext.Messages.AnyAsync())
+        {
             return;
+        }
 
-        var chats = await dbContext.Chats.ToListAsync();
-
-        if (!chats.Any())
-            return;
-
-        var supervisors = await dbContext.ApplicationUsers
-            .Where(u => u.UserType == UserType.Supervisor)
+        var chats = await dbContext.Chats
+            .OrderBy(c => c.Id)
             .ToListAsync();
 
-        var customer = await dbContext.ApplicationUsers
-            .FirstOrDefaultAsync(u => u.UserType == UserType.Regular);
-
-        if (!supervisors.Any() || customer is null)
-            return;
-
-        var primaryTechnician = supervisors.First();
-        var secondaryTechnician = supervisors.Skip(1).FirstOrDefault() ?? primaryTechnician;
-
-        // voorbeeldberichten per chat
-        var messages = new List<Message>
+        if (chats.Count < 4)
         {
-            new Message { Inhoud = "Hoi, hoe gaat het met het project?", ChatId = chats[0].Id, SenderId = customer.Id },
-            new Message { Inhoud = "Prima, ik heb net de laatste bug opgelost!", ChatId = chats[0].Id, SenderId = primaryTechnician.Id },
+            return;
+        }
+        var users = await dbContext.ApplicationUsers
+            .ToDictionaryAsync(u => u.FirstName, StringComparer.Ordinal);
 
-            new Message { Inhoud = "De server lijkt traag te reageren vandaag.", ChatId = chats[^1].Id, SenderId = customer.Id },
-            new Message { Inhoud = "Ik zal even de logs checken, geef me 5 minuten.", ChatId = chats[^1].Id, SenderId = secondaryTechnician.Id }
-        };
+        var individueleCheckIn = chats[0];
+        var vrijdagGroep = chats[1];
+        var creatieveHoek = chats[2];
+        var technischeHulp = chats[3];
 
-        dbContext.Messages.AddRange(messages);
+        var noor = users["Noor"];
+        var emma = users["Emma"];
+
+        var milan = users["Milan"];
+        var saar = users["Saar"];
+        var yassin = users["Yassin"];
+        var jonas = users["Jonas"];
+
+        individueleCheckIn.AddUser(noor);
+        individueleCheckIn.AddUser(emma);
+
+        individueleCheckIn.AddTextMessage("Hoi Emma, ik ben een beetje zenuwachtig voor morgen.", noor);
+        individueleCheckIn.AddTextMessage("Dat begrijp ik Noor, we bekijken samen hoe je het rustig kunt aanpakken.", emma);
+        individueleCheckIn.AddTextMessage("Zal ik straks mijn checklist nog eens doornemen?", noor);
+        individueleCheckIn.AddTextMessage("Ja, en ik stuur je zo meteen een ademhalingsoefening.", emma);
+
+        vrijdagGroep.AddUser(milan);
+        vrijdagGroep.AddUser(saar);
+        vrijdagGroep.AddUser(yassin);
+        vrijdagGroep.AddUser(jonas);
+
+        vrijdagGroep.AddTextMessage("Wie doet er vrijdag mee met de online game-avond?", milan);
+        vrijdagGroep.AddTextMessage("Ik! Zal ik snacks klaarzetten?", saar);
+        vrijdagGroep.AddTextMessage("Wie doet er vrijdag mee met de online game-avond?", yassin);
+        vrijdagGroep.AddTextMessage("Ik plan een korte check-in zodat iedereen zich welkom voelt.", jonas);
+
+        creatieveHoek.AddUser(users["Lotte"]);
+        creatieveHoek.AddUser(users["Amina"]);
+        creatieveHoek.AddUser(users["Ella"]);
+
+        creatieveHoek.AddTextMessage("Ik heb een nieuw schilderij gemaakt met felle kleuren!", users["Lotte"]);
+        creatieveHoek.AddTextMessage("Oh wauw, kan je een foto delen?", users["Amina"]);
+        creatieveHoek.AddTextMessage("Zeker! En misschien kunnen we volgende keer een collagemiddag houden?", users["Lotte"]);
+        creatieveHoek.AddTextMessage("Topidee, ik zorg voor een stappenplan met eenvoudige materialen.", users["Ella"]);
+
+        technischeHulp.AddUser(users["Jasper"]);
+        technischeHulp.AddUser(users["Kyandro"]);
+        technischeHulp.AddUser(users["Bjorn"]);
+
+        technischeHulp.AddTextMessage("Mijn tablet doet raar wanneer ik de spraakopnames open.", users["Jasper"]);
+        technischeHulp.AddTextMessage("Heb je al geprobeerd om de app even opnieuw te starten?", users["Kyandro"]);
+        technischeHulp.AddTextMessage("Ja, maar ik twijfel of ik iets fout doe.", users["Jasper"]);
+        technischeHulp.AddTextMessage("Ik kijk straks met je mee en stuur een korte handleiding door.", users["Bjorn"]);
+
         await dbContext.SaveChangesAsync();
     }
-    
+
+    private sealed record SeedAccount(IdentityUser Identity, string Role, ApplicationUser? Profile);
 }

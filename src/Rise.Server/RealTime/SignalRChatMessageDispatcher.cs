@@ -1,5 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Rise.Server.Hubs;
 using Rise.Services.Chats;
@@ -11,7 +9,7 @@ public class SignalRChatMessageDispatcher(IHubContext<Chathub> hubContext) : ICh
 {
     private readonly IHubContext<Chathub> _hubContext = hubContext;
 
-    public Task NotifyMessageCreatedAsync(int chatId, MessageDto message, CancellationToken cancellationToken = default)
+    public Task NotifyMessageCreatedAsync(int chatId, MessageDto.Chat message, CancellationToken cancellationToken = default)
     {
         return _hubContext
             .Clients

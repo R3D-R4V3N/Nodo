@@ -1,76 +1,92 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Rise.Domain.Projects;
 using Rise.Domain.Users;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Rise.Persistence.Configurations.Users
+
+namespace Rise.Persistence.Configurations.Users;
+
+internal class UserConfiguration : EntityConfiguration<ApplicationUser>
 {
-    internal class UserConfiguration : EntityConfiguration<ApplicationUser>
+    public override void Configure(EntityTypeBuilder<ApplicationUser> builder)
     {
-        public override void Configure(EntityTypeBuilder<ApplicationUser> builder)
+        base.Configure(builder);
+
+        builder.Property(x => x.AccountId).IsRequired().HasMaxLength(36);
+        builder.HasIndex(x => x.AccountId).IsUnique();
+
+        builder.Property(x => x.FirstName).IsRequired().HasMaxLength(100);
+        builder.Property(x => x.LastName).IsRequired().HasMaxLength(100);
+        builder.Property(x => x.Biography).IsRequired().HasMaxLength(500);
+        builder.Property(x => x.AvatarUrl).IsRequired().HasMaxLength(250);
+        builder.Property(x => x.BirthDay).IsRequired();
+        builder.Property(x => x.UserType).IsRequired();
+
+        // connections
+        builder.Ignore(u => u.Connections);
+        builder.Ignore(u => u.Friends);
+        builder.Ignore(u => u.FriendRequests);
+        builder.Ignore(u => u.BlockedUsers);
+
+        builder.OwnsMany<UserConnection>("_connections", connections =>
         {
-            base.Configure(builder);
-           
-            builder.Property(x => x.AccountId).IsRequired().HasMaxLength(36);
-            builder.HasIndex(x => x.AccountId).IsUnique();
+            connections.WithOwner()
+                        .HasForeignKey("UserId");
 
+            // shadow key
+            connections.Property<int>("Id");
+            connections.HasKey("Id");
 
-            builder.Property(x => x.FirstName).IsRequired().HasMaxLength(100);
-            builder.Property(x => x.LastName).IsRequired().HasMaxLength(100);
-            builder.Property(x => x.Biography).IsRequired().HasMaxLength(500);
-            builder.Property(x => x.UserType).IsRequired();
+            connections.Property(c => c.ConnectionType)
+                        .HasConversion<string>()
+                        .IsRequired();
 
-            builder
-                .HasMany<ApplicationUser>("Friends")
-                .WithMany()
-                .UsingEntity<Dictionary<string, object>>(
-                    "UserFriends",
-                    j => j
-                        .HasOne<ApplicationUser>()
+            connections.Property(c => c.CreatedAt)
+                .IsRequired();
+
+            connections.Property<int>("UserConnectionId")
+                        .IsRequired();
+
+            connections.HasOne(c => c.Connection)
                         .WithMany()
-                        .HasForeignKey("FriendId")
-                        .OnDelete(DeleteBehavior.Cascade),
-                    j => j
-                        .HasOne<ApplicationUser>()
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.ClientCascade));
+                        .HasForeignKey("UserConnectionId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
-            builder
-                .HasMany<ApplicationUser>("FriendRequests")
-                .WithMany()
-                .UsingEntity<Dictionary<string, object>>(
-                    "UserFriendRequests",
-                    j => j
-                        .HasOne<ApplicationUser>()
-                        .WithMany()
-                        .HasForeignKey("FriendRequestId")
-                        .OnDelete(DeleteBehavior.Cascade),
-                    j => j
-                        .HasOne<ApplicationUser>()
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.ClientCascade));
+            connections.ToTable("UserConnections");
+        });
 
-            // connections
-            //builder.HasMany<ApplicationUser>("friends").WithMany();
-            //builder.HasMany<ApplicationUser>("friendRequests").WithMany();
-            //builder.HasMany<ApplicationUser>("blockedUsers").WithMany();
+        // settings
+        builder.Ignore(u => u.UserSettings);
 
-            //builder.Navigation(e => e.Friends)
-            //    .UsePropertyAccessMode(PropertyAccessMode.Field);
+        builder.OwnsOne<ApplicationUserSetting>("_userSettings", userSettings => 
+        {
+            userSettings.WithOwner(s => s.User)
+                .HasForeignKey("UserId");
 
-            //builder.Navigation(e => e.FriendRequests)
-            //    .UsePropertyAccessMode(PropertyAccessMode.Field);
+            //shadow key
+            userSettings.Property<int>("Id");
+            userSettings.HasKey("Id");
 
-            //builder.Navigation(e => e.BlockedUsers)
-            //    .UsePropertyAccessMode(PropertyAccessMode.Field);
-        }
+            userSettings.Property(s=> s.IsDarkMode)
+                .HasDefaultValue(false);
+
+            userSettings.Property(s => s.FontSize)
+                .HasDefaultValue(12);
+
+            userSettings.OwnsMany(s => s.ChatTextLineSuggestions, nav =>
+            {
+                nav.ToTable("UserSettingChatTextLineSuggestions");
+                nav.WithOwner()
+                    .HasForeignKey("UserSettingsId");
+
+                nav.Property(p => p.Text)
+                   .HasColumnName("TextSuggestion")
+                   .IsRequired();
+
+                nav.Property(p => p.Rank)
+                   .IsRequired();
+            });
+
+            userSettings.ToTable("UserSetting");
+        });
     }
 }
