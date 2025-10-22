@@ -71,13 +71,9 @@ public class UserService(
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        await LoadProfileAsync(currentUser, cancellationToken);
-        var email = await GetEmailAsync(accountId, cancellationToken);
+        _dbContext.ChangeTracker.Clear();
 
-        return Result.Success(new UserResponse.CurrentUser
-        {
-            User = UserMapper.ToCurrentUserDto(currentUser, email)
-        });
+        return await GetCurrentUserAsync(cancellationToken);
     }
 
     private async Task<string> GetEmailAsync(string accountId, CancellationToken cancellationToken)
