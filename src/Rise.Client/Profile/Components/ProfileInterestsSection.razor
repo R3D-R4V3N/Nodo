@@ -22,11 +22,7 @@
                         @foreach (var chip in _likeChips)
                         {
                             <span class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-sm text-emerald-800 shadow-sm">
-                                <span class="font-medium">@chip.Value</span>
-                                @if (chip.HasType)
-                                {
-                                    <span class="text-xs text-emerald-600">@chip.Type</span>
-                                }
+                                <span class="font-medium">@chip</span>
                             </span>
                         }
                     </div>
@@ -48,11 +44,7 @@
                         @foreach (var chip in _dislikeChips)
                         {
                             <span class="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-1 text-sm text-rose-700 shadow-sm">
-                                <span class="font-medium">@chip.Value</span>
-                                @if (chip.HasType)
-                                {
-                                    <span class="text-xs text-rose-500">@chip.Type</span>
-                                }
+                                <span class="font-medium">@chip</span>
                             </span>
                         }
                     </div>
@@ -69,8 +61,8 @@
 @code {
     [Parameter] public IReadOnlyList<ProfileInterestModel> Interests { get; set; } = Array.Empty<ProfileInterestModel>();
 
-    private IReadOnlyList<InterestChip> _likeChips = Array.Empty<InterestChip>();
-    private IReadOnlyList<InterestChip> _dislikeChips = Array.Empty<InterestChip>();
+    private IReadOnlyList<string> _likeChips = Array.Empty<string>();
+    private IReadOnlyList<string> _dislikeChips = Array.Empty<string>();
 
     protected override void OnParametersSet()
     {
@@ -78,17 +70,13 @@
         _dislikeChips = BuildChips(static interest => interest.Dislike);
     }
 
-    private IReadOnlyList<InterestChip> BuildChips(Func<ProfileInterestModel, string?> selector)
+    private IReadOnlyList<string> BuildChips(Func<ProfileInterestModel, string?> selector)
     {
         return Interests
-            .Select(interest => new InterestChip(selector(interest)?.Trim(), interest.Type.Trim()))
-            .Where(chip => chip.HasValue)
+            .Select(selector)
+            .Select(static value => value?.Trim())
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value!)
             .ToList();
-    }
-
-    private sealed record InterestChip(string? Value, string Type)
-    {
-        public bool HasValue => !string.IsNullOrWhiteSpace(Value);
-        public bool HasType => !string.IsNullOrWhiteSpace(Type);
     }
 }
