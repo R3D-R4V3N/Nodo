@@ -1,17 +1,60 @@
+@using System
+@using System.Linq
 @using Rise.Client.Profile.Models
 
 <section class="mt-6">
     <h3 class="mb-2 text-sm font-medium text-neutral-700">Interesses</h3>
-    @if (Interests.Any())
+    @if (_likeChips.Any() || _dislikeChips.Any())
     {
-        <div class="space-y-3">
-            @foreach (var interest in Interests)
+        <div class="space-y-4">
+            @if (_likeChips.Any())
             {
-                <div class="rounded-2xl border border-neutral-200 bg-white px-4 py-3">
-                    <div class="text-sm font-semibold text-neutral-800">@interest.Type</div>
-                    <div class="mt-2 grid gap-1 text-sm text-neutral-600">
-                        <span><span class="font-medium text-emerald-700">Leuk:</span> @(string.IsNullOrWhiteSpace(interest.Like) ? "–" : interest.Like)</span>
-                        <span><span class="font-medium text-rose-700">Niet leuk:</span> @(string.IsNullOrWhiteSpace(interest.Dislike) ? "–" : interest.Dislike)</span>
+                <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+                    <div class="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-700">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4">
+                                <path fill-rule="evenodd" d="M7.5 4.5A3 3 0 0 1 10.5 1.5h.284a2.25 2.25 0 0 1 2.12 1.5l.154.462a4.5 4.5 0 0 0 2.58 2.724l.341.136A3 3 0 0 1 17.872 8.7l.628 1.257A1.5 1.5 0 0 1 18 11.442L14.95 15.1a3 3 0 0 1-2.25 1.066H10.5A1.5 1.5 0 0 0 9 17.666v.834A1.5 1.5 0 0 1 7.5 20H6a3 3 0 0 1-3-3v-6A3 3 0 0 1 6 8h1.172a3 3 0 0 0 2.121-.879L7.5 4.5Z" clip-rule="evenodd" />
+                            </svg>
+                        </span>
+                        <span>Wat ik leuk vind</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach (var chip in _likeChips)
+                        {
+                            <span class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-sm text-emerald-800 shadow-sm">
+                                <span class="font-medium">@chip.Value</span>
+                                @if (chip.HasType)
+                                {
+                                    <span class="text-xs text-emerald-600">@chip.Type</span>
+                                }
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (_dislikeChips.Any())
+            {
+                <div class="rounded-2xl border border-rose-100 bg-rose-50 p-4">
+                    <div class="mb-3 flex items-center gap-2 text-sm font-semibold text-rose-600">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-rose-100 text-rose-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4">
+                                <path fill-rule="evenodd" d="M16.5 19.5A3 3 0 0 1 13.5 22.5h-.284a2.25 2.25 0 0 1-2.12-1.5l-.154-.462a4.5 4.5 0 0 0-2.58-2.724l-.341-.136A3 3 0 0 1 6.128 15.3l-.628-1.257A1.5 1.5 0 0 1 6 12.558L9.05 8.9a3 3 0 0 1 2.25-1.066h2.2A1.5 1.5 0 0 0 15 6.334V5.5A1.5 1.5 0 0 1 16.5 4H18a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3h-1.172a3 3 0 0 0-2.121.879l1.793 2.621Z" clip-rule="evenodd" />
+                            </svg>
+                        </span>
+                        <span>Wat ik minder leuk vind</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach (var chip in _dislikeChips)
+                        {
+                            <span class="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-1 text-sm text-rose-700 shadow-sm">
+                                <span class="font-medium">@chip.Value</span>
+                                @if (chip.HasType)
+                                {
+                                    <span class="text-xs text-rose-500">@chip.Type</span>
+                                }
+                            </span>
+                        }
                     </div>
                 </div>
             }
@@ -25,4 +68,27 @@
 
 @code {
     [Parameter] public IReadOnlyList<ProfileInterestModel> Interests { get; set; } = Array.Empty<ProfileInterestModel>();
+
+    private IReadOnlyList<InterestChip> _likeChips = Array.Empty<InterestChip>();
+    private IReadOnlyList<InterestChip> _dislikeChips = Array.Empty<InterestChip>();
+
+    protected override void OnParametersSet()
+    {
+        _likeChips = BuildChips(static interest => interest.Like);
+        _dislikeChips = BuildChips(static interest => interest.Dislike);
+    }
+
+    private IReadOnlyList<InterestChip> BuildChips(Func<ProfileInterestModel, string?> selector)
+    {
+        return Interests
+            .Select(interest => new InterestChip(selector(interest)?.Trim(), interest.Type.Trim()))
+            .Where(chip => chip.HasValue)
+            .ToList();
+    }
+
+    private sealed record InterestChip(string? Value, string Type)
+    {
+        public bool HasValue => !string.IsNullOrWhiteSpace(Value);
+        public bool HasType => !string.IsNullOrWhiteSpace(Type);
+    }
 }
