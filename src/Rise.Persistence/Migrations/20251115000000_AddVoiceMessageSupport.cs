@@ -11,11 +11,7 @@ namespace Rise.Persistence.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-<<<<<<< HEAD
-                name: "Inhoud",
-=======
                 name: "Text",
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
                 table: "Message",
                 type: "varchar(2000)",
                 maxLength: 2000,

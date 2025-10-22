@@ -1,27 +1,4 @@
-<<<<<<< HEAD:src/Rise.Client/Components/Chat/MessageBubble.razor
-@* Eén chatbubbel, inkomend of uitgaand *@
-@if (IsOutgoing)
-{
-    <div class="flex justify-end">
-        <div class="@OutgoingBubbleClasses">
-            @RenderContent()
-        </div>
-    </div>
-}
-else
-{
-    <div class="flex items-end gap-2">
-        @if (!string.IsNullOrWhiteSpace(AvatarUrl))
-        {
-            <img src="@AvatarUrl" alt="" class="h-7 w-7 rounded-full" />
-        }
-        else
-        {
-            <span class="inline-block h-7 w-7"></span>
-        }
-=======
 using Microsoft.AspNetCore.Components;
->>>>>>> codex/add-alert-message-for-supervisor-monitoring:src/Rise.Client/Chats/Components/MessageBubble.razor.cs
 
 namespace Rise.Client.Chats.Components;
 public partial class MessageBubble

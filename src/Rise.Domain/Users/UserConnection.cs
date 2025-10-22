@@ -1,14 +1,4 @@
-<<<<<<< HEAD
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Rise.Domain.Users;
-=======
 ﻿namespace Rise.Domain.Users;
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
 public class UserConnection : ValueObject
 {
     public UserConnection()

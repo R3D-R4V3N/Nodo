@@ -310,13 +310,6 @@ namespace Rise.Persistence.Migrations
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("current_timestamp()");
 
-<<<<<<< HEAD
-                    b.Property<string>("Inhoud")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
-=======
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
@@ -325,13 +318,10 @@ namespace Rise.Persistence.Migrations
                     b.Property<int>("SenderId")
                         .HasColumnType("int");
 
-<<<<<<< HEAD
-=======
                     b.Property<string>("Text")
                         .HasMaxLength(2000)
                         .HasColumnType("varchar(2000)");
 
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
@@ -408,8 +398,6 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("ApplicationUser", (string)null);
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("ApplicationUserChat", b =>
                 {
                     b.HasOne("Rise.Domain.Chats.Chat", null)
@@ -425,7 +413,6 @@ namespace Rise.Persistence.Migrations
                         .IsRequired();
                 });
 
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -498,29 +485,13 @@ namespace Rise.Persistence.Migrations
 
             modelBuilder.Entity("Rise.Domain.Users.ApplicationUser", b =>
                 {
-<<<<<<< HEAD
-                    b.OwnsMany("Rise.Domain.Users.UserConnection", "_connections", b1 =>
-=======
                     b.OwnsOne("Rise.Domain.Users.ApplicationUserSetting", "_userSettings", b1 =>
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
                         {
                             b1.Property<int>("Id")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("int");
 
                             MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
-<<<<<<< HEAD
-
-                            b1.Property<string>("ConnectionType")
-                                .IsRequired()
-                                .HasColumnType("longtext");
-
-                            b1.Property<DateTime>("CreatedAt")
-                                .HasColumnType("datetime(6)");
-
-                            b1.Property<int>("UserConnectionId")
-                                .HasColumnType("int");
-=======
 
                             b1.Property<int>("FontSize")
                                 .ValueGeneratedOnAdd()
@@ -531,34 +502,12 @@ namespace Rise.Persistence.Migrations
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("tinyint(1)")
                                 .HasDefaultValue(false);
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
 
                             b1.Property<int>("UserId")
                                 .HasColumnType("int");
 
                             b1.HasKey("Id");
 
-<<<<<<< HEAD
-                            b1.HasIndex("UserConnectionId");
-
-                            b1.HasIndex("UserId");
-
-                            b1.ToTable("UserConnections", (string)null);
-
-                            b1.HasOne("Rise.Domain.Users.ApplicationUser", "Connection")
-                                .WithMany()
-                                .HasForeignKey("UserConnectionId")
-                                .OnDelete(DeleteBehavior.Cascade)
-                                .IsRequired();
-
-                            b1.WithOwner()
-                                .HasForeignKey("UserId");
-
-                            b1.Navigation("Connection");
-                        });
-
-                    b.Navigation("_connections");
-=======
                             b1.HasIndex("UserId")
                                 .IsUnique();
 
@@ -644,7 +593,6 @@ namespace Rise.Persistence.Migrations
                     b.Navigation("_connections");
 
                     b.Navigation("_userSettings");
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
                 });
 
             modelBuilder.Entity("Rise.Domain.Chats.Chat", b =>

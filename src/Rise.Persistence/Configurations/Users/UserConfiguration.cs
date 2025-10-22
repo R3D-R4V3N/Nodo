@@ -1,15 +1,8 @@
-<<<<<<< HEAD
-using System.Collections.Generic;
-=======
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rise.Domain.Users;
 
-<<<<<<< HEAD
-=======
 
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
 namespace Rise.Persistence.Configurations.Users;
 
 internal class UserConfiguration : EntityConfiguration<ApplicationUser>
@@ -24,18 +17,11 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
         builder.Property(x => x.FirstName).IsRequired().HasMaxLength(100);
         builder.Property(x => x.LastName).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Biography).IsRequired().HasMaxLength(500);
-<<<<<<< HEAD
-        builder.Property(x => x.BirthDay).IsRequired();
-        builder.Property(x => x.UserType).IsRequired();
-
-        // db just needs _connections
-=======
         builder.Property(x => x.AvatarUrl).IsRequired().HasMaxLength(250);
         builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.UserType).IsRequired();
 
         // connections
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
         builder.Ignore(u => u.Connections);
         builder.Ignore(u => u.Friends);
         builder.Ignore(u => u.FriendRequests);
@@ -67,8 +53,6 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
 
             connections.ToTable("UserConnections");
         });
-<<<<<<< HEAD
-=======
 
         // settings
         builder.Ignore(u => u.UserSettings);
@@ -104,6 +88,5 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
 
             userSettings.ToTable("UserSetting");
         });
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
     }
 }

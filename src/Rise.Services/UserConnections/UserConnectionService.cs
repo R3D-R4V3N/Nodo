@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-﻿using Microsoft.EntityFrameworkCore;
-=======
 using Microsoft.EntityFrameworkCore;
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
 using Rise.Domain.Users;
 using Rise.Persistence;
 using Rise.Services.Identity;
@@ -10,10 +6,7 @@ using Rise.Services.UserConnections.Mapper;
 using Rise.Shared.Common;
 using Rise.Shared.Identity;
 using Rise.Shared.UserConnections;
-<<<<<<< HEAD
-=======
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
 
 namespace Rise.Services.UserConnections;
 /// <summary>
@@ -23,11 +16,7 @@ namespace Rise.Services.UserConnections;
 /// <param name="sessionContextProvider"></param>
 public class UserConnectionService(ApplicationDbContext dbContext, ISessionContextProvider sessionContextProvider) : IUserConnectionService
 {
-<<<<<<< HEAD
-    public async Task<Result<UserConnectionResponse.Index>> GetFriendIndexAsync(QueryRequest.SkipTake request, CancellationToken ctx = default)
-=======
     public async Task<Result<UserConnectionResponse.GetFriends>> GetFriendIndexAsync(QueryRequest.SkipTake request, CancellationToken ctx = default)
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
     {
         var userId = sessionContextProvider.User!.GetUserId();
 
@@ -37,11 +26,7 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
         if (loggedInUser is null)
             return Result.Unauthorized("You are not authorized to fetch user connections.");
 
-<<<<<<< HEAD
-        var connectionQuery = dbContext.ApplicationUsers
-=======
         var query = dbContext.ApplicationUsers
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
             .Where(u => u.AccountId == userId)
             .SelectMany(u => EF.Property<IEnumerable<UserConnection>>(u, "_connections"))
             .Where(c =>
@@ -51,91 +36,6 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-<<<<<<< HEAD
-            var searchTerm = request.SearchTerm.Trim();
-            connectionQuery = connectionQuery.Where(p =>
-                p.Connection.FirstName.Contains(searchTerm)
-                || p.Connection.LastName.Contains(searchTerm));
-        }
-
-        var connectionItems = await connectionQuery
-            .Select(p => new
-            {
-                p.Connection.AccountId,
-                p.Connection.FirstName,
-                p.Connection.LastName,
-                p.Connection.BirthDay,
-                p.Connection.CreatedAt,
-                p.Connection.UserType,
-                p.ConnectionType
-            })
-            .ToListAsync(ctx);
-
-        var connections = connectionItems
-            .Select(p => new UserConnectionDTO
-            {
-                Id = p.AccountId,
-                Name = $"{p.FirstName} {p.LastName}",
-                Age = CalculateAge(p.BirthDay),
-                State = p.ConnectionType.MapToDto(),
-                AvatarUrl = ""
-            })
-            .ToList();
-
-        var connectedAccountIds = connectionItems
-            .Select(p => p.AccountId)
-            .ToHashSet(StringComparer.Ordinal);
-
-        var potentialQuery = dbContext.ApplicationUsers
-            .Where(u =>
-                u.UserType == UserType.Regular
-                && u.AccountId != userId
-                && !connectedAccountIds.Contains(u.AccountId));
-
-        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
-        {
-            var searchTerm = request.SearchTerm.Trim();
-            potentialQuery = potentialQuery.Where(u =>
-                u.FirstName.Contains(searchTerm)
-                || u.LastName.Contains(searchTerm));
-        }
-
-        var potentialConnections = await potentialQuery
-            .Select(u => new UserConnectionDTO
-            {
-                Id = u.AccountId,
-                Name = $"{u.FirstName} {u.LastName}",
-                Age = CalculateAge(u.BirthDay),
-                State = UserConnectionTypeDto.AddFriends,
-                AvatarUrl = ""
-            })
-            .ToListAsync(ctx);
-
-        var allConnections = connections
-            .Concat(potentialConnections)
-            .ToList();
-
-        if (!string.IsNullOrWhiteSpace(request.OrderBy))
-        {
-            var propertyInfo = typeof(UserConnectionDTO).GetProperty(request.OrderBy);
-            if (propertyInfo is not null)
-            {
-                allConnections = request.OrderDescending
-                    ? allConnections.OrderByDescending(c => propertyInfo.GetValue(c, null)).ToList()
-                    : allConnections.OrderBy(c => propertyInfo.GetValue(c, null)).ToList();
-            }
-        }
-
-        var pagedConnections = allConnections
-            .Skip(request.Skip)
-            .Take(request.Take)
-            .ToList();
-
-        return Result.Success(new UserConnectionResponse.Index
-        {
-            Connections = pagedConnections,
-            TotalCount = allConnections.Count
-=======
             query = query.Where(p => p.Connection.FirstName.Contains(request.SearchTerm) || p.Connection.LastName.Contains(request.SearchTerm));
         }
 
@@ -166,7 +66,6 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
         {
             Connections = connections.Select(UserConnectionMapper.ToIndexUserConnectionDto),
             TotalCount = totalCount
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
         });
     }
 
@@ -182,8 +81,6 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
 
         return age;
     }
-<<<<<<< HEAD
-=======
     
     public async Task<Result<string>> AddFriendAsync(string targetAccountId, CancellationToken ctx = default)
     {
@@ -211,5 +108,4 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
         await dbContext.SaveChangesAsync(ctx);
         return result;
     }
->>>>>>> codex/add-alert-message-for-supervisor-monitoring
 }
