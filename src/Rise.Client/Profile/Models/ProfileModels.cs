@@ -50,7 +50,7 @@ public record ProfileModel
         Gender = profile.Gender,
         AvatarUrl = string.IsNullOrWhiteSpace(profile.AvatarUrl) ? DefaultAvatar : profile.AvatarUrl,
         MemberSince = profile.MemberSince,
-        Interests = profile.Interests?.ToList() ?? Array.Empty<string>()
+        Interests = profile.Interests?.ToList() ?? new List<string>()
     };
 
     public static ProfileModel CreateDefault() => new()
