@@ -11,8 +11,6 @@ public record ProfileModel
     public string AvatarUrl { get; init; } = DefaultAvatar;
     public string MemberSince { get; init; } = "Actief sinds jan. 2024";
 
-    public ProfileModel Clone() => this with { };
-
     public static ProfileModel CreateDefault() => new()
     {
         Name = "Jouw Naam",
