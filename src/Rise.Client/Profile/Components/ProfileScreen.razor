@@ -47,20 +47,17 @@
             <ProfileInterestsSection
                 Likes="@LikeChips"
                 Dislikes="@DislikeChips"
+                Hobbies="@Hobbies"
                 IsEditing="@IsEditing"
                 MaxLikes="@MaxLikes"
                 MaxDislikes="@MaxDislikes"
+                MaxHobbies="@MaxHobbies"
                 OnManageLikes="OpenLikesPicker"
                 OnManageDislikes="OpenDislikesPicker"
+                OnManageHobbies="OpenHobbiesPicker"
                 OnRemoveLike="RemoveLike"
-                OnRemoveDislike="RemoveDislike" />
-
-            <ProfileHobbiesSection
-                Hobbies="@Hobbies"
-                IsEditing="@IsEditing"
-                MaxSelection="@MaxHobbies"
-                OnManage="OpenHobbiesPicker"
-                OnRemove="RemoveHobby" />
+                OnRemoveDislike="RemoveDislike"
+                OnRemoveHobby="RemoveHobby" />
         </main>
     }
 

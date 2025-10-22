@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rise.Domain.Users;
@@ -55,7 +56,9 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
             hobbies.HasKey("Id");
 
             hobbies.Property(h => h.Hobby)
-                .HasConversion<string>()
+                .HasConversion(
+                    hobby => hobby.ToString(),
+                    value => ConvertLegacyHobby(value))
                 .HasMaxLength(100)
                 .IsRequired();
 
@@ -129,5 +132,28 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
 
             userSettings.ToTable("UserSetting");
         });
+}
+
+    private static HobbyType ConvertLegacyHobby(string value)
+    {
+        var normalized = value ?? string.Empty;
+
+        if (Enum.TryParse<HobbyType>(normalized, out var hobby))
+        {
+            return hobby;
+        }
+
+        return normalized switch
+        {
+            "Music" => HobbyType.MusicMaking,
+            "Crafts" => HobbyType.Crafting,
+            "Cards" => HobbyType.CardGames,
+            "Travel" => HobbyType.Hiking,
+            "Movies" => HobbyType.Photography,
+            "Series" => HobbyType.BoardGames,
+            "Animals" => HobbyType.Birdwatching,
+            "Fitness" => HobbyType.Running,
+            _ => HobbyType.Crafting
+        };
     }
 }

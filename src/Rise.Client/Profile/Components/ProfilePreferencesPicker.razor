@@ -41,7 +41,13 @@
                     var isSelected = IsSelected(option.Id);
                     var isLocked = !isSelected && SelectedCount >= MaxSelection;
                     <button type="button" class="group relative rounded-2xl border @(GetOptionClasses(isSelected)) px-3 py-3 text-left text-sm font-medium text-neutral-800 shadow-sm focus:outline-none focus:ring-2 @(GetRingClasses(isSelected)) disabled:opacity-40 disabled:cursor-not-allowed" role="option" aria-selected="@isSelected" disabled="@isLocked" @onclick="() => HandleToggle(option.Id)">
-                        <span class="block">@option.Name</span>
+                        <span class="flex items-center gap-2">
+                            @if (!string.IsNullOrWhiteSpace(option.Emoji))
+                            {
+                                <span class="text-lg">@option.Emoji</span>
+                            }
+                            <span class="block">@option.Name</span>
+                        </span>
                         @if (isSelected)
                         {
                             <span class="absolute -top-1 -right-1 h-5 w-5 rounded-full text-white grid place-items-center text-[11px] @(SelectedBadgeClass)">✓</span>
@@ -82,7 +88,9 @@
 
     private IEnumerable<PreferenceOption> FilteredOptions => string.IsNullOrWhiteSpace(SearchText)
         ? Options
-        : Options.Where(o => o.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+        : Options.Where(o =>
+            o.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
+            || o.Label.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
 
     private int SelectedCount => Selection.Count;
 

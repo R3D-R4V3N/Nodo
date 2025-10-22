@@ -10,7 +10,10 @@ public record ProfileHobbyModel(string Id, string Name, string Emoji);
 
 public record HobbyOption(string Id, string Name, string Emoji);
 
-public record PreferenceOption(string Id, string Name);
+public record PreferenceOption(string Id, string Name, string? Emoji = null)
+{
+    public string Label => string.IsNullOrWhiteSpace(Emoji) ? Name : $"{Emoji} {Name}";
+}
 
 public record PreferenceChip(string Id, string Label);
 
@@ -35,13 +38,15 @@ public record ProfileModel
         MemberSince = "Actief sinds jan. 2024",
         Interests = new List<ProfileInterestModel>
         {
-            new("Muziek", "Pop", "Hardrock"),
-            new("Eten", "Pasta", "Spruitjes")
+            new("Like", "Muziekfestivals", null),
+            new("Like", "Uit eten gaan", null),
+            new("Dislike", null, "Hartige snacks"),
+            new("Dislike", null, "Pittig eten")
         },
         Hobbies = new List<ProfileHobbyModel>
         {
-            new("Gaming", "Gaming", "🎮"),
-            new("Travel", "Reizen", "✈️")
+            new("Gaming", "Gamen", "🎮"),
+            new("Hiking", "Wandelen in de natuur", "🥾")
         }
     };
 

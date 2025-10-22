@@ -19,86 +19,92 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         new("Football", "Voetbal", "⚽"),
         new("Rugby", "Rugby", "🏉"),
         new("Basketball", "Basketbal", "🏀"),
-        new("Gaming", "Gaming", "🎮"),
+        new("Gaming", "Gamen", "🎮"),
         new("Cooking", "Koken", "🍳"),
         new("Baking", "Bakken", "🧁"),
-        new("Hiking", "Wandelen", "🚶"),
+        new("Hiking", "Wandelen in de natuur", "🥾"),
         new("Cycling", "Fietsen", "🚴"),
         new("Drawing", "Tekenen", "✏️"),
         new("Painting", "Schilderen", "🎨"),
-        new("Music", "Muziek", "🎵"),
+        new("MusicMaking", "Muziek maken", "🎶"),
         new("Singing", "Zingen", "🎤"),
-        new("Dancing", "Dansen", "🕺"),
+        new("Dancing", "Dansen", "💃"),
         new("Reading", "Lezen", "📚"),
         new("Gardening", "Tuinieren", "🌱"),
         new("Fishing", "Vissen", "🎣"),
-        new("Camping", "Kamperen", "🎪"),
-        new("Travel", "Reizen", "✈️"),
+        new("Camping", "Kamperen", "🏕️"),
         new("Photography", "Fotografie", "📸"),
-        new("Movies", "Films", "🎬"),
-        new("Series", "Series", "📺"),
-        new("Animals", "Dieren", "🐶"),
-        new("Yoga", "Yoga", "🧘"),
-        new("Fitness", "Fitness", "🏋️"),
-        new("Running", "Hardlopen", "🏃"),
-        new("Cards", "Kaarten", "🃏"),
-        new("Puzzles", "Puzzelen", "🧩"),
+        new("Crafting", "Knutselen", "✂️"),
+        new("Sewing", "Naaien", "🧵"),
+        new("Knitting", "Breien", "🧶"),
+        new("Woodworking", "Houtbewerking", "🪚"),
+        new("Pottery", "Keramiek", "🏺"),
+        new("Writing", "Verhalen schrijven", "✍️"),
+        new("Birdwatching", "Vogels spotten", "🐦"),
+        new("ModelBuilding", "Modelbouw", "🧱"),
+        new("Chess", "Schaken", "♟️"),
         new("BoardGames", "Bordspellen", "🎲"),
-        new("Crafts", "Knutselen", "✂️"),
+        new("Puzzles", "Puzzels leggen", "🧩"),
+        new("CardGames", "Kaartspellen", "🃏"),
+        new("Running", "Hardlopen", "🏃"),
+        new("Yoga", "Yoga", "🧘"),
+        new("Pilates", "Pilates", "🤸"),
+        new("Skating", "Skeeleren", "⛸️"),
+        new("Bouldering", "Boulderen", "🧗"),
     };
 
     private static readonly IReadOnlyList<PreferenceOption> _preferenceOptions = new List<PreferenceOption>
     {
-        new("jazz", "Jazz"),
-        new("lawaai", "Lawaai"),
-        new("gezonde-salades", "Gezonde salades"),
-        new("fastfood", "Fastfood"),
-        new("indie", "Indie"),
-        new("te-luide-clubs", "Te luide clubs"),
-        new("verse-pasta", "Verse pasta"),
-        new("spruitjes", "Spruitjes"),
-        new("akoestische-covers", "Akoestische covers"),
-        new("drukke-festivals", "Drukke festivals"),
-        new("verse-soep", "Verse soep"),
-        new("scherpe-curry", "Scherpe curry"),
-        new("klassieke-muziek", "Klassieke muziek"),
-        new("scheurende-gitaren", "Scheurende gitaren"),
-        new("mediterrane-keuken", "Mediterrane keuken"),
-        new("snel-eten", "Snel eten"),
-        new("akoestische-gitaren", "Akoestische gitaren"),
-        new("harde-techno", "Harde techno"),
-        new("gezonde-snacks", "Gezonde snacks"),
-        new("suikerbommen", "Suikerbommen"),
-        new("ambient-muziek", "Ambient muziek"),
-        new("stilte", "Stilte"),
-        new("seizoensgroenten", "Seizoensgroenten"),
-        new("drukke-buffetten", "Drukke buffetten"),
-        new("pop", "Pop"),
-        new("hardrock", "Hardrock"),
-        new("zoete-desserts", "Zoete desserts"),
-        new("bittere-smaken", "Bittere smaken"),
-        new("synthwave", "Synthwave"),
-        new("stille-ruimtes", "Stille ruimtes"),
-        new("pizza", "Pizza"),
-        new("olijven", "Olijven"),
-        new("muziek", "Muziek"),
-        new("comfortfood", "Comfortfood"),
-        new("bordspellen", "Bordspellen"),
-        new("kaasplankjes", "Kaasplankjes"),
-        new("rollercoasters", "Rollercoasters"),
-        new("rustige-wandelingen", "Rustige wandelingen"),
-        new("dansfeestjes", "Dansfeestjes"),
-        new("kampvuren", "Kampvuren"),
-        new("horrorfilms", "Horrorfilms"),
-        new("romantische-films", "Romantische films"),
-        new("pasta", "Pasta"),
-        new("karaoke-avonden", "Karaoke avonden"),
-        new("stranddagen", "Stranddagen"),
-        new("sneeuwpret", "Sneeuwpret"),
-        new("warm-weer", "Warm weer"),
-        new("regenachtige-dagen", "Regenachtige dagen"),
-        new("koffie", "Koffie"),
-        new("thee", "Thee"),
+        new("travel-adventures", "Reizen", "✈️"),
+        new("city-trips", "Stedentrips", "🏙️"),
+        new("beach-days", "Stranddagen", "🏖️"),
+        new("mountain-views", "Bergen bewonderen", "🏔️"),
+        new("shopping-sprees", "Shoppen", "🛍️"),
+        new("market-visits", "Markten bezoeken", "🛒"),
+        new("cozy-cafes", "Gezellige cafeetjes", "☕"),
+        new("dining-out", "Uit eten gaan", "🍽️"),
+        new("street-food", "Straatvoedsel proeven", "🌮"),
+        new("new-flavours", "Nieuwe smaken proberen", "🧂"),
+        new("sweet-treats", "Zoete desserts", "🍰"),
+        new("savoury-snacks", "Hartige snacks", "🥨"),
+        new("spicy-dishes", "Pittig eten", "🌶️"),
+        new("fresh-salads", "Frisse salades", "🥗"),
+        new("seasonal-soups", "Seizoenssoepen", "🍲"),
+        new("fruity-moments", "Vers fruit", "🍓"),
+        new("chocolate-moments", "Chocolade", "🍫"),
+        new("cheese-boards", "Kaasplankjes", "🧀"),
+        new("coffee-breaks", "Koffie momenten", "☕"),
+        new("tea-time", "Theepauzes", "🍵"),
+        new("smoothie-bar", "Smoothies", "🥤"),
+        new("juice-stands", "Verse sappen", "🧃"),
+        new("breakfast-dates", "Uitgebreide ontbijtjes", "🥐"),
+        new("brunch-plans", "Weekendbrunch", "🥞"),
+        new("picnic-plans", "Picknicken", "🧺"),
+        new("food-trucks", "Foodtrucks", "🚚"),
+        new("farmers-markets", "Boerenmarkten", "🌻"),
+        new("road-trips", "Roadtrips", "🚗"),
+        new("train-journeys", "Treinreizen", "🚆"),
+        new("ferry-rides", "Boottochtjes", "⛴️"),
+        new("wellness-days", "Wellness dagen", "💆"),
+        new("spa-relax", "Spa bezoeken", "🧖"),
+        new("sauna-evenings", "Saunabezoek", "🧖‍♂️"),
+        new("cinema-nights", "Bioscoopavonden", "🎬"),
+        new("series-marathons", "Series bingewatchen", "📺"),
+        new("romantic-movies", "Romantische films", "💞"),
+        new("action-movies", "Actiefilms", "💥"),
+        new("horror-movies", "Horrorfilms", "👻"),
+        new("documentaries", "Documentaires", "🎥"),
+        new("podcasts", "Podcasts luisteren", "🎧"),
+        new("radio-hits", "Radiohits", "📻"),
+        new("live-concerts", "Live concerten", "🎶"),
+        new("music-festivals", "Muziekfestivals", "🎉"),
+        new("dance-parties", "Dansfeestjes", "🪩"),
+        new("quiet-evenings", "Rustige avonden thuis", "🛋️"),
+        new("candlelight-dinners", "Diner bij kaarslicht", "🕯️"),
+        new("sunset-watching", "Zonsondergangen", "🌅"),
+        new("rainy-days", "Regenachtige dagen", "🌧️"),
+        new("snowy-days", "Sneeuwdagen", "❄️"),
+        new("amusement-parks", "Pretparken", "🎢"),
     };
 
     private static readonly IReadOnlyDictionary<string, PreferenceOption> _preferenceOptionsById =
@@ -672,12 +678,32 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         return id;
     }
 
+    private string GetPreferenceLabel(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return string.Empty;
+        }
+
+        if (_preferenceOptionsById.TryGetValue(id, out var option))
+        {
+            return option.Label;
+        }
+
+        if (_customPreferenceOptions.TryGetValue(id, out var custom))
+        {
+            return custom;
+        }
+
+        return id;
+    }
+
     private IReadOnlyList<PreferenceChip> BuildPreferenceChips(IEnumerable<string> ids)
     {
         var chips = new List<PreferenceChip>();
         foreach (var id in ids)
         {
-            var label = GetPreferenceName(id);
+            var label = GetPreferenceLabel(id);
             if (!string.IsNullOrWhiteSpace(label))
             {
                 chips.Add(new PreferenceChip(id, label));
