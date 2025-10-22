@@ -1,0 +1,45 @@
+<header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-neutral-200">
+    <div class="mx-auto max-w-screen-sm px-4 py-3 flex items-center gap-3">
+        <button type="button" class="p-2 -ml-2 rounded-full hover:bg-neutral-100" @onclick="HandleBack" aria-label="Terug">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </button>
+        <h1 class="text-base font-semibold">@Title</h1>
+        <div class="ml-auto flex items-center gap-2">
+            @if (IsEditing)
+            {
+                <button type="button" class="rounded-xl border border-[#127646] text-[#127646] px-4 py-3 text-sm font-medium hover:bg-[#127646] hover:text-white active:scale-[0.99]" @onclick="HandleCancel">Annuleren</button>
+                <button type="button" class="rounded-xl bg-[#127646] px-4 py-3 text-sm font-medium text-white shadow hover:bg-[#0f663c] active:scale-[0.99] inline-flex items-center" @onclick="HandleSave">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM51.31,160l90.35-90.35,16.68,16.69L68,176.68ZM48,179.31,76.69,208H48Zm48,25.38L79.31,188l90.35-90.35h0l16.68,16.69Z"></path>
+                    </svg>
+                    Opslaan
+                </button>
+            }
+            else
+            {
+                <button type="button" class="rounded-xl bg-[#127646] px-4 py-3 text-sm font-medium text-white shadow hover:bg-[#0f663c] active:scale-[0.99] inline-flex items-center" @onclick="HandleEdit">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM51.31,160l90.35-90.35,16.68,16.69L68,176.68ZM48,179.31,76.69,208H48Zm48,25.38L79.31,188l90.35-90.35h0l16.68,16.69Z"></path>
+                    </svg>
+                    Bewerken
+                </button>
+            }
+        </div>
+    </div>
+</header>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public bool IsEditing { get; set; }
+    [Parameter] public EventCallback OnBack { get; set; }
+    [Parameter] public EventCallback OnEdit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    private Task HandleBack() => OnBack.InvokeAsync();
+    private Task HandleEdit() => OnEdit.InvokeAsync();
+    private Task HandleCancel() => OnCancel.InvokeAsync();
+    private Task HandleSave() => OnSave.InvokeAsync();
+}

@@ -1,0 +1,11 @@
+@if (Visible)
+{
+    <div class="pointer-events-none fixed bottom-16 left-1/2 -translate-x-1/2">
+        <div class="rounded-full bg-neutral-900 text-white text-sm px-4 py-2 shadow">@Message</div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public string Message { get; set; } = "";
+}
