@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Rise.Client.Profile.Models;
@@ -10,12 +11,55 @@ namespace Rise.Client.Profile.Components;
 
 public partial class ProfileScreen : ComponentBase, IDisposable
 {
+    private static readonly IReadOnlyList<HobbyOption> _hobbyOptions = new List<HobbyOption>
+    {
+        new("Swimming", "Zwemmen", "🏊"),
+        new("Football", "Voetbal", "⚽"),
+        new("Rugby", "Rugby", "🏉"),
+        new("Basketball", "Basketbal", "🏀"),
+        new("Gaming", "Gaming", "🎮"),
+        new("Cooking", "Koken", "🍳"),
+        new("Baking", "Bakken", "🧁"),
+        new("Hiking", "Wandelen", "🚶"),
+        new("Cycling", "Fietsen", "🚴"),
+        new("Drawing", "Tekenen", "✏️"),
+        new("Painting", "Schilderen", "🎨"),
+        new("Music", "Muziek", "🎵"),
+        new("Singing", "Zingen", "🎤"),
+        new("Dancing", "Dansen", "🕺"),
+        new("Reading", "Lezen", "📚"),
+        new("Gardening", "Tuinieren", "🌱"),
+        new("Fishing", "Vissen", "🎣"),
+        new("Camping", "Kamperen", "🎪"),
+        new("Travel", "Reizen", "✈️"),
+        new("Photography", "Fotografie", "📸"),
+        new("Movies", "Films", "🎬"),
+        new("Series", "Series", "📺"),
+        new("Animals", "Dieren", "🐶"),
+        new("Yoga", "Yoga", "🧘"),
+        new("Fitness", "Fitness", "🏋️"),
+        new("Running", "Hardlopen", "🏃"),
+        new("Cards", "Kaarten", "🃏"),
+        new("Puzzles", "Puzzelen", "🧩"),
+        new("BoardGames", "Bordspellen", "🎲"),
+        new("Crafts", "Knutselen", "✂️"),
+    };
+
+    private const int HobbySelectionLimit = 3;
+
     private ProfileModel _model = ProfileModel.CreateDefault();
     private ProfileDraft _draft;
+
+    private readonly HashSet<string> _selectedHobbyIds = new();
+    private HashSet<string> _initialHobbyIds = new();
+    private HashSet<string> _pickerSelection = new();
 
     private bool _isEditing;
     private bool _isLoading = true;
     private string? _loadError;
+
+    private bool _isPickerOpen;
+    private string _pickerSearch = string.Empty;
 
     private bool _isToastVisible;
     private string _toastMessage = string.Empty;
@@ -24,6 +68,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     public ProfileScreen()
     {
         _draft = ProfileDraft.FromModel(_model);
+        SyncSelectionFromModel();
     }
 
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
@@ -35,6 +80,11 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private string? ErrorMessage => _loadError;
     private IReadOnlyList<ProfileInterestModel> Interests => _model.Interests;
     private IReadOnlyList<ProfileHobbyModel> Hobbies => _model.Hobbies;
+    private IReadOnlyList<HobbyOption> HobbyOptions => _hobbyOptions;
+    private IReadOnlyCollection<string> PickerSelection => _pickerSelection;
+    private string PickerSearch => _pickerSearch;
+    private bool IsPickerOpen => _isPickerOpen;
+    private int MaxHobbies => HobbySelectionLimit;
     private string DisplayName => string.IsNullOrWhiteSpace(CurrentName) ? "Jouw Naam" : CurrentName;
     private string CurrentName => _isEditing ? _draft.Name : _model.Name;
 
@@ -52,6 +102,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
             var memberSince = FormatMemberSince(currentUser.CreatedAt);
             _model = ProfileModel.FromUser(currentUser, memberSince);
             _draft = ProfileDraft.FromModel(_model);
+            SyncSelectionFromModel();
         }
         catch
         {
@@ -61,6 +112,21 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         {
             _isLoading = false;
         }
+    }
+
+    private void SyncSelectionFromModel()
+    {
+        _selectedHobbyIds.Clear();
+        foreach (var hobby in _model.Hobbies)
+        {
+            if (!string.IsNullOrWhiteSpace(hobby.Id))
+            {
+                _selectedHobbyIds.Add(hobby.Id);
+            }
+        }
+
+        _pickerSelection = _selectedHobbyIds.ToHashSet();
+        _initialHobbyIds = _selectedHobbyIds.ToHashSet();
     }
 
     private static string FormatMemberSince(DateTime createdAt)
@@ -90,18 +156,35 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         }
 
         _draft = ProfileDraft.FromModel(_model);
+        _pickerSelection = _selectedHobbyIds.ToHashSet();
+        _initialHobbyIds = _selectedHobbyIds.ToHashSet();
         _isEditing = true;
     }
 
     private void CancelEdit()
     {
         _draft = ProfileDraft.FromModel(_model);
+        _selectedHobbyIds.Clear();
+        foreach (var id in _initialHobbyIds)
+        {
+            _selectedHobbyIds.Add(id);
+        }
+
+        var restoredHobbies = _selectedHobbyIds
+            .Select(CreateHobbyModel)
+            .Where(h => h is not null)
+            .Cast<ProfileHobbyModel>()
+            .ToList();
+
+        _model = _model with { Hobbies = restoredHobbies };
+        _pickerSelection = _selectedHobbyIds.ToHashSet();
         _isEditing = false;
     }
 
     private async Task SaveEdit()
     {
         _model = _draft.ApplyTo(_model);
+        _initialHobbyIds = _selectedHobbyIds.ToHashSet();
         _isEditing = false;
         await ShowToastAsync("Wijzigingen toegepast");
     }
@@ -131,6 +214,103 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         {
             // Ignore failures and keep existing avatar.
         }
+    }
+
+    private Task OpenHobbiesPicker()
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        _pickerSelection = _selectedHobbyIds.ToHashSet();
+        _pickerSearch = string.Empty;
+        _isPickerOpen = true;
+
+        return Task.CompletedTask;
+    }
+
+    private Task ClosePicker()
+    {
+        _isPickerOpen = false;
+        _pickerSearch = string.Empty;
+        return Task.CompletedTask;
+    }
+
+    private Task TogglePickerSelection(string id)
+    {
+        if (_pickerSelection.Contains(id))
+        {
+            _pickerSelection.Remove(id);
+        }
+        else if (_pickerSelection.Count < HobbySelectionLimit)
+        {
+            _pickerSelection.Add(id);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task ClearPickerSelection()
+    {
+        _pickerSelection.Clear();
+        return Task.CompletedTask;
+    }
+
+    private async Task ConfirmPickerSelection()
+    {
+        _selectedHobbyIds.Clear();
+        foreach (var id in _pickerSelection)
+        {
+            _selectedHobbyIds.Add(id);
+        }
+
+        var updatedHobbies = _selectedHobbyIds
+            .Select(CreateHobbyModel)
+            .Where(h => h is not null)
+            .Cast<ProfileHobbyModel>()
+            .ToList();
+
+        _model = _model with { Hobbies = updatedHobbies };
+        _pickerSelection = _selectedHobbyIds.ToHashSet();
+
+        _isPickerOpen = false;
+        _pickerSearch = string.Empty;
+        await ShowToastAsync("Hobby's bijgewerkt");
+    }
+
+    private Task RemoveHobby(string id)
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (_selectedHobbyIds.Remove(id))
+        {
+            _pickerSelection.Remove(id);
+            var updatedHobbies = _selectedHobbyIds
+                .Select(CreateHobbyModel)
+                .Where(h => h is not null)
+                .Cast<ProfileHobbyModel>()
+                .ToList();
+
+            _model = _model with { Hobbies = updatedHobbies };
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task UpdatePickerSearch(string value)
+    {
+        _pickerSearch = value;
+        return Task.CompletedTask;
+    }
+
+    private static ProfileHobbyModel? CreateHobbyModel(string id)
+    {
+        var option = _hobbyOptions.FirstOrDefault(o => string.Equals(o.Id, id, StringComparison.Ordinal));
+        return option is null ? null : new ProfileHobbyModel(option.Id, option.Name, option.Emoji);
     }
 
     private async Task ShowToastAsync(string message)

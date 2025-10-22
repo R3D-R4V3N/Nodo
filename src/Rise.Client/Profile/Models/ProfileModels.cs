@@ -8,6 +8,8 @@ public record ProfileInterestModel(string Type, string? Like, string? Dislike);
 
 public record ProfileHobbyModel(string Id, string Name, string Emoji);
 
+public record HobbyOption(string Id, string Name, string Emoji);
+
 public record ProfileModel
 {
     public string Name { get; init; } = string.Empty;
@@ -35,7 +37,7 @@ public record ProfileModel
         Hobbies = new List<ProfileHobbyModel>
         {
             new("Gaming", "Gaming", "🎮"),
-            new("Reizen", "Reizen", "✈️")
+            new("Travel", "Reizen", "✈️")
         }
     };
 

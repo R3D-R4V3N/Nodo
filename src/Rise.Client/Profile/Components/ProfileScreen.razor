@@ -45,9 +45,27 @@
                 IsEditing="@IsEditing" />
 
             <ProfileInterestsSection Interests="@Interests" />
-            <ProfileHobbiesSection Hobbies="@Hobbies" />
+
+            <ProfileHobbiesSection
+                Hobbies="@Hobbies"
+                IsEditing="@IsEditing"
+                MaxSelection="@MaxHobbies"
+                OnManage="OpenHobbiesPicker"
+                OnRemove="RemoveHobby" />
         </main>
     }
+
+    <ProfileInterestsPicker
+        Interests="@HobbyOptions"
+        Selection="@PickerSelection"
+        SearchText="@PickerSearch"
+        MaxSelection="@MaxHobbies"
+        IsOpen="@IsPickerOpen"
+        OnToggle="TogglePickerSelection"
+        OnClear="ClearPickerSelection"
+        OnConfirm="ConfirmPickerSelection"
+        OnClose="ClosePicker"
+        SearchTextChanged="UpdatePickerSearch" />
 
     <ProfileToast Message="@_toastMessage" Visible="@_isToastVisible" />
 </div>
