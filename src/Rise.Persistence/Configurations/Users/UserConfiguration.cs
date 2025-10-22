@@ -1,8 +1,15 @@
+<<<<<<< HEAD
 using System.Collections.Generic;
+=======
+>>>>>>> codex/add-alert-message-for-supervisor-monitoring
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rise.Domain.Users;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> codex/add-alert-message-for-supervisor-monitoring
 namespace Rise.Persistence.Configurations.Users;
 
 internal class UserConfiguration : EntityConfiguration<ApplicationUser>
@@ -17,10 +24,18 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
         builder.Property(x => x.FirstName).IsRequired().HasMaxLength(100);
         builder.Property(x => x.LastName).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Biography).IsRequired().HasMaxLength(500);
+<<<<<<< HEAD
         builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.UserType).IsRequired();
 
         // db just needs _connections
+=======
+        builder.Property(x => x.AvatarUrl).IsRequired().HasMaxLength(250);
+        builder.Property(x => x.BirthDay).IsRequired();
+        builder.Property(x => x.UserType).IsRequired();
+
+        // connections
+>>>>>>> codex/add-alert-message-for-supervisor-monitoring
         builder.Ignore(u => u.Connections);
         builder.Ignore(u => u.Friends);
         builder.Ignore(u => u.FriendRequests);
@@ -52,5 +67,43 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
 
             connections.ToTable("UserConnections");
         });
+<<<<<<< HEAD
+=======
+
+        // settings
+        builder.Ignore(u => u.UserSettings);
+
+        builder.OwnsOne<ApplicationUserSetting>("_userSettings", userSettings => 
+        {
+            userSettings.WithOwner(s => s.User)
+                .HasForeignKey("UserId");
+
+            //shadow key
+            userSettings.Property<int>("Id");
+            userSettings.HasKey("Id");
+
+            userSettings.Property(s=> s.IsDarkMode)
+                .HasDefaultValue(false);
+
+            userSettings.Property(s => s.FontSize)
+                .HasDefaultValue(12);
+
+            userSettings.OwnsMany(s => s.ChatTextLineSuggestions, nav =>
+            {
+                nav.ToTable("UserSettingChatTextLineSuggestions");
+                nav.WithOwner()
+                    .HasForeignKey("UserSettingsId");
+
+                nav.Property(p => p.Text)
+                   .HasColumnName("TextSuggestion")
+                   .IsRequired();
+
+                nav.Property(p => p.Rank)
+                   .IsRequired();
+            });
+
+            userSettings.ToTable("UserSetting");
+        });
+>>>>>>> codex/add-alert-message-for-supervisor-monitoring
     }
 }

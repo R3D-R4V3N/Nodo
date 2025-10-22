@@ -1,0 +1,97 @@
+@page "/chat/{ChatId:int}"
+@attribute [Authorize]
+@using System.Globalization
+@using System.Linq
+@using System.Security.Claims
+@using System.Threading
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.JSInterop
+@using Rise.Client.Chats
+@using Rise.Client.Chats.Components;
+@using Rise.Services
+@using Rise.Shared.Chats
+@using Rise.Shared.Assets
+@layout EmptyLayout
+@implements IAsyncDisposable
+@inject IChatService ChatService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject WordFilter Filter
+
+
+<div class="flex flex-col h-screen max-h-screen overflow-hidden bg-neutral-100 text-neutral-900">
+
+    <!-- Header -->
+    <ChatHeader DisplayName="@GetChatTitle()"
+                AvatarUrl="@GetAvatarUrl()"
+                StatusText="@GetStatusText()"
+                OnBack="NavigateBack"
+                OnAlert="TriggerAlert" />
+
+    @if (_isLoading)
+    {
+        <div class="flex-1 grid place-items-center">
+            <p class="text-sm text-neutral-500">Gesprek wordt geladen…</p>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_loadError))
+    {
+        <div class="flex-1 grid place-items-center px-6 text-center">
+            <div class="space-y-2">
+                <p class="text-sm text-red-600">@_loadError</p>
+                <button class="text-xs text-[#127646] underline" @onclick="NavigateBack">
+                    Ga terug naar overzicht
+                </button>
+            </div>
+        </div>
+    }
+    else if (_chat is null)
+    {
+        <div class="flex-1 grid place-items-center">
+            <p class="text-sm text-neutral-500">Dit gesprek kon niet gevonden worden.</p>
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrWhiteSpace(_connectionError))
+        {
+            <div class="px-6 py-2 text-xs text-amber-700 bg-amber-50 border-b border-amber-200">
+                @_connectionError
+            </div>
+        }
+
+        <!-- Scrollable messages -->
+        <div class="flex-1 overflow-y-auto px-3 no-scrollbar" style="@GetMessageHostPaddingStyle()" @ref="_messagesHost">
+            <MessageList Messages="_messages" TimestampText="@GetConversationDateLabel()" />
+        </div>
+
+        <!-- Fixed input bar -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white" @ref="_footerHost">
+            <div class="mx-auto px-3">
+                <SuggestionChips Suggestions="CurrentUser!.DefaultChatLines" OnPick="ApplySuggestion" />
+                <ChatInput @bind-Value="_draft"
+                           OnSend="SendMessageAsync"
+                           OnSendVoice="HandleVoiceMessageAsync" />
+                @if (!string.IsNullOrWhiteSpace(_errorMessage))
+                {
+                    <p class="px-2 pb-3 text-xs text-red-600">@_errorMessage</p>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+  html, body {
+      height: 100%;
+      overflow-x: hidden;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+      display: none;
+  }
+  .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+  }
+</style>

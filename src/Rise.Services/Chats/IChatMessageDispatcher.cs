@@ -6,5 +6,5 @@ using Rise.Shared.Chats;
 
 public interface IChatMessageDispatcher
 {
-    Task NotifyMessageCreatedAsync(int chatId, MessageDto message, CancellationToken cancellationToken = default);
+    Task NotifyMessageCreatedAsync(int chatId, MessageDto.Chat message, CancellationToken cancellationToken = default);
 }

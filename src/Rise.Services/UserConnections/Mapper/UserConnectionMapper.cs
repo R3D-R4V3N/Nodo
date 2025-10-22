@@ -1,4 +1,5 @@
 ﻿using Rise.Domain.Users;
+<<<<<<< HEAD
 using Rise.Shared.UserConnections;
 
 namespace Rise.Services.UserConnections.Mapper;
@@ -22,5 +23,19 @@ public static class UserConnectionTypeMapper
             UserConnectionTypeDto.OutgoingFriendRequest => UserConnectionType.RequestOutgoing,
             UserConnectionTypeDto.Blocked => UserConnectionType.Blocked,
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+=======
+using Rise.Services.UserConnections.Mapper;
+using Rise.Services.Users.Mapper;
+using Rise.Shared.UserConnections;
+
+namespace Rise.Services.UserConnections.Mapper;
+public static class UserConnectionMapper
+{
+    public static UserConnectionDto.GetFriends ToIndexUserConnectionDto(this UserConnection user) =>
+        new UserConnectionDto.GetFriends
+        {
+            User = user.Connection.ToConnectionDto(),
+            State = user.ConnectionType.MapToDto(),
+>>>>>>> codex/add-alert-message-for-supervisor-monitoring
         };
 }

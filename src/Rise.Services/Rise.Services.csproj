@@ -17,4 +17,8 @@
       <ProjectReference Include="..\Rise.Shared\Rise.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Friends\" />
+    </ItemGroup>
+
 </Project>

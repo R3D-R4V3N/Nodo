@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Identity;
-using Rise.Persistence;
 using Rise.Shared.Identity.Accounts;
 
 namespace Rise.Server.Endpoints.Identity.Accounts;

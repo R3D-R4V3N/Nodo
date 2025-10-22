@@ -1,4 +1,5 @@
 using Rise.Domain.Chats;
+<<<<<<< HEAD
 using Rise.Domain.Users;
 using Rise.Shared.Chats;
 
@@ -23,5 +24,25 @@ public static class MessageMapper
             SenderAccountId = sender.AccountId,
             AudioDataUrl = AudioHelperMethods.BuildAudioDataUrl(message),
             AudioDurationSeconds = message.AudioDurationSeconds
+=======
+using Rise.Services.Users.Mapper;
+using Rise.Shared.Chats;
+
+namespace Rise.Services.Chats.Mapper;
+internal static class MessageMapper
+{
+    public static MessageDto.Chat ToChatDto(this Message message) =>
+        new MessageDto.Chat
+        {
+            ChatId = message.Chat.Id,
+            Id = message.Id,
+            Content = message.Text ?? string.Empty,
+            Timestamp = message.CreatedAt,
+            User = UserMapper.ToMessageDto(message.Sender),
+            AudioDataUrl = AudioHelperMethods.BuildAudioDataUrl(message),
+            AudioDuration = message.AudioDurationSeconds.HasValue
+                ? TimeSpan.FromSeconds(message.AudioDurationSeconds.Value)
+                : null,
+>>>>>>> codex/add-alert-message-for-supervisor-monitoring
         };
 }

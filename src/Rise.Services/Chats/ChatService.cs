@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
-using Rise.Domain.Users;
 using Rise.Persistence;
+using Rise.Services.Chats.Mapper;
 using Rise.Services.Identity;
 using Rise.Shared.Chats;
 using Rise.Services.Chats.Mapper;
@@ -19,6 +19,7 @@ public class ChatService(
     private readonly ISessionContextProvider _sessionContextProvider = sessionContextProvider;
     private readonly IChatMessageDispatcher? _messageDispatcher = messageDispatcher;
 
+<<<<<<< HEAD
     public async Task<Result<ChatResponse.Index>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var chatsFromDb = await _dbContext.Chats
@@ -66,6 +67,9 @@ public class ChatService(
     }
 
     public async Task<Result<MessageDto>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
+=======
+    public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
+>>>>>>> codex/add-alert-message-for-supervisor-monitoring
     {
         var accountId = _sessionContextProvider.User?.GetUserId();
         if (string.IsNullOrWhiteSpace(accountId))
@@ -81,8 +85,74 @@ public class ChatService(
             return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
         }
 
+        var chatsFromDb = await _dbContext.Chats
+            .Include(c => c.Messages)
+                .ThenInclude(m => m.Sender)
+            .Include(c => c.Users)
+            .Where(c => c.Users.Contains(sender))
+            .ToListAsync(cancellationToken);
+
+        var chatDtos = chatsFromDb.Select(ChatMapper.ToIndexDto).ToList();
+
+        return Result.Success(new ChatResponse.GetChats
+        {
+            Chats = chatDtos
+        });
+    }
+
+    public async Task<Result<ChatDto.GetChats>> GetByIdAsync(int chatId, CancellationToken cancellationToken = default)
+    {
+        var accountId = _sessionContextProvider.User?.GetUserId();
+        if (string.IsNullOrWhiteSpace(accountId))
+        {
+            return Result.Unauthorized();
+        }
+
+        var sender = await _dbContext.ApplicationUsers
+            .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+
+        if (sender is null)
+        {
+            return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
+        }
+
+        // no clue how 'c.Id == chatId && c.Users.Contains(sender)' translates to sql
         var chat = await _dbContext.Chats
-            .SingleOrDefaultAsync(c => c.Id == request.ChatId, cancellationToken);
+            .Include(c => c.Messages)
+                .ThenInclude(m => m.Sender)
+            .Include(c => c.Users)
+            .SingleOrDefaultAsync(c => c.Id == chatId && c.Users.Contains(sender), cancellationToken);
+
+        if (chat is null)
+        {
+            return Result.NotFound($"Chat met id '{chatId}' werd niet gevonden.");
+        }
+
+        var dto = chat.ToIndexDto();
+
+        return Result.Success(dto);
+    }
+
+    public async Task<Result<MessageDto.Chat>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
+    {
+        var accountId = _sessionContextProvider.User?.GetUserId();
+        if (string.IsNullOrWhiteSpace(accountId))
+        {
+            return Result.Unauthorized();
+        }
+
+        var sender = await _dbContext.ApplicationUsers
+            .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+
+        if (sender is null)
+        {
+            return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
+        }
+
+        // no clue how 'c.Id == chatId && c.Users.Contains(sender)' translates to sql
+        var chat = await _dbContext.Chats
+            .Include(c => c.Users)
+            .SingleOrDefaultAsync(c => c.Id == request.ChatId && c.Users.Contains(sender), cancellationToken);
 
         if (chat is null)
         {
@@ -125,9 +195,15 @@ public class ChatService(
 
         var message = new Message
         {
+<<<<<<< HEAD
             ChatId = chat.Id,
             SenderId = sender.Id,
             Inhoud = trimmedContent,
+=======
+            Chat = chat,
+            Sender = sender,
+            Text = trimmedContent,
+>>>>>>> codex/add-alert-message-for-supervisor-monitoring
             AudioContentType = audioContentType,
             AudioData = audioBytes,
             AudioDurationSeconds = audioDurationSeconds
@@ -136,8 +212,12 @@ public class ChatService(
         _dbContext.Messages.Add(message);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
+<<<<<<< HEAD
         message.Sender = sender;
         var dto = message.MapToDto();
+=======
+        var dto = message.ToChatDto();
+>>>>>>> codex/add-alert-message-for-supervisor-monitoring
 
         if (_messageDispatcher is not null)
         {

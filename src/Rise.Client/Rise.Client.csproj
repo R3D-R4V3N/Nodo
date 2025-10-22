@@ -11,7 +11,11 @@
     </ItemGroup>
 
     <ItemGroup>
+<<<<<<< HEAD
       <Content Include="UserConnections\Friends\Index.razor.cs" />
+=======
+      <Content Include="UserConnections\Pages\Friends\Index.razor.cs" />
+>>>>>>> codex/add-alert-message-for-supervisor-monitoring
     </ItemGroup>
 
     <ItemGroup>

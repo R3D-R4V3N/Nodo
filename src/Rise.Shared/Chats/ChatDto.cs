@@ -1,11 +1,13 @@
+using Rise.Shared.Users;
+
 namespace Rise.Shared.Chats;
 
 public static class ChatDto
 {
-    public class Index
+    public class GetChats
     {
-        public int chatId { get; set; }
-        public List<MessageDto> messages { get; set; } = [];
-
+        public int ChatId { get; set; }
+        public List<UserDto.Chat> Users { get; set; }
+        public List<MessageDto.Chat> Messages { get; set; } = [];
     }
 }

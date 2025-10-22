@@ -1,9 +1,12 @@
 ﻿using Rise.Domain.Chats;
+<<<<<<< HEAD
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+=======
+>>>>>>> codex/add-alert-message-for-supervisor-monitoring
 
 namespace Rise.Services;
 

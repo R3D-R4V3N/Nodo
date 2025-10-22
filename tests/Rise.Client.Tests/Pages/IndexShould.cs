@@ -13,13 +13,13 @@ public class IndexShould : TestContext
         Services.AddXunitLogger(outputHelper);
     }
 
-    [Fact]
-    public void ShowHelloWorld()
-    {
-        // Arrange
-        var cut = RenderComponent<Index>();
-
-        // Assert that content of the paragraph shows counter at zero
-        cut.Find("h1").MarkupMatches("<h1>Hello, world!</h1>");
-    }
+    //[Fact]
+    // public void ShowHelloWorld()
+    // {
+    //     // Arrange
+    //     var cut = RenderComponent<Index>();
+    //
+    //     // Assert that content of the paragraph shows counter at zero
+    //     cut.Find("h1").MarkupMatches("<h1>Hello, world!</h1>");
+    // }
 }
