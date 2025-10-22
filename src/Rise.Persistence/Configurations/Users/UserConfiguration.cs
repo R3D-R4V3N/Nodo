@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rise.Domain.Users;
@@ -20,6 +21,49 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
         builder.Property(x => x.AvatarUrl).IsRequired().HasMaxLength(250);
         builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.UserType).IsRequired();
+
+        // interests
+        builder.Ignore(u => u.Interests);
+        builder.OwnsMany<UserInterest>("_interests", interests =>
+        {
+            interests.WithOwner()
+                .HasForeignKey("UserId");
+
+            interests.Property<int>("Id");
+            interests.HasKey("Id");
+
+            interests.Property(i => i.Type)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            interests.Property(i => i.Like)
+                .HasMaxLength(200);
+
+            interests.Property(i => i.Dislike)
+                .HasMaxLength(200);
+
+            interests.ToTable("UserInterests");
+        });
+
+        // hobbies
+        builder.Ignore(u => u.Hobbies);
+        builder.OwnsMany<UserHobby>("_hobbies", hobbies =>
+        {
+            hobbies.WithOwner()
+                .HasForeignKey("UserId");
+
+            hobbies.Property<int>("Id");
+            hobbies.HasKey("Id");
+
+            hobbies.Property(h => h.Hobby)
+                .HasConversion(
+                    hobby => hobby.ToString(),
+                    value => ConvertLegacyHobby(value))
+                .HasMaxLength(100)
+                .IsRequired();
+
+            hobbies.ToTable("UserHobbies");
+        });
 
         // connections
         builder.Ignore(u => u.Connections);
@@ -88,5 +132,28 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
 
             userSettings.ToTable("UserSetting");
         });
+}
+
+    private static HobbyType ConvertLegacyHobby(string value)
+    {
+        var normalized = value ?? string.Empty;
+
+        if (Enum.TryParse<HobbyType>(normalized, out var hobby))
+        {
+            return hobby;
+        }
+
+        return normalized switch
+        {
+            "Music" => HobbyType.MusicMaking,
+            "Crafts" => HobbyType.Crafting,
+            "Cards" => HobbyType.CardGames,
+            "Travel" => HobbyType.Hiking,
+            "Movies" => HobbyType.Photography,
+            "Series" => HobbyType.BoardGames,
+            "Animals" => HobbyType.Birdwatching,
+            "Fitness" => HobbyType.Running,
+            _ => HobbyType.Crafting
+        };
     }
 }

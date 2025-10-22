@@ -14,13 +14,37 @@ internal static class UserMapper
                     (DateTime.Now.DayOfYear < user.BirthDay.DayOfYear ? 1 : 0),
             AvatarUrl = user.AvatarUrl,
         };
-    public static UserDto.CurrentUser ToCurrentUserDto(this ApplicationUser user) =>
+    public static UserDto.CurrentUser ToCurrentUserDto(this ApplicationUser user, string email) =>
         new UserDto.CurrentUser
         {
             Id = user.Id,
             Name = $"{user.FirstName} {user.LastName}",
             AccountId = user.AccountId,
             AvatarUrl = user.AvatarUrl,
+            Email = email,
+            Biography = user.Biography,
+            BirthDay = user.BirthDay,
+            CreatedAt = user.CreatedAt,
+            Interests = user.Interests
+                .Select(i => new UserDto.Interest
+                {
+                    Type = i.Type,
+                    Like = i.Like,
+                    Dislike = i.Dislike,
+                })
+                .ToList(),
+            Hobbies = user.Hobbies
+                .Select(h =>
+                {
+                    var descriptor = HobbyCatalog.GetDescriptor(h.Hobby);
+                    return new UserDto.Hobby
+                    {
+                        Id = h.Hobby.ToString(),
+                        Name = descriptor.Name,
+                        Emoji = descriptor.Emoji,
+                    };
+                })
+                .ToList(),
             DefaultChatLines = user
                 .UserSettings
                 .ChatTextLineSuggestions
