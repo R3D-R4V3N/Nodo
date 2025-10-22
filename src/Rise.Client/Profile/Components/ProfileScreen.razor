@@ -44,7 +44,16 @@
                 @bind-Gender="_draft.Gender"
                 IsEditing="@IsEditing" />
 
-            <ProfileInterestsSection Interests="@Interests" />
+            <ProfileInterestsSection
+                Likes="@LikeChips"
+                Dislikes="@DislikeChips"
+                IsEditing="@IsEditing"
+                MaxLikes="@MaxLikes"
+                MaxDislikes="@MaxDislikes"
+                OnManageLikes="OpenLikesPicker"
+                OnManageDislikes="OpenDislikesPicker"
+                OnRemoveLike="RemoveLike"
+                OnRemoveDislike="RemoveDislike" />
 
             <ProfileHobbiesSection
                 Hobbies="@Hobbies"
@@ -66,6 +75,21 @@
         OnConfirm="ConfirmPickerSelection"
         OnClose="ClosePicker"
         SearchTextChanged="UpdatePickerSearch" />
+
+    <ProfilePreferencesPicker
+        Title="@PreferencePickerTitle"
+        SearchPlaceholder="@PreferencePickerPlaceholder"
+        Options="@PreferenceOptions"
+        Selection="@PreferencePickerSelection"
+        SearchText="@PreferencePickerSearch"
+        MaxSelection="@MaxPreferences"
+        IsOpen="@IsPreferencePickerOpen"
+        UseDislikeTheme="@IsDislikePicker"
+        OnToggle="TogglePreferencePickerSelection"
+        OnClear="ClearPreferencePickerSelection"
+        OnConfirm="ConfirmPreferencePickerSelection"
+        OnClose="ClosePreferencePicker"
+        SearchTextChanged="UpdatePreferencePickerSearch" />
 
     <ProfileToast Message="@_toastMessage" Visible="@_isToastVisible" />
 </div>

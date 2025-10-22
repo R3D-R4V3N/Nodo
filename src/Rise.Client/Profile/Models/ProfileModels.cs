@@ -10,6 +10,10 @@ public record ProfileHobbyModel(string Id, string Name, string Emoji);
 
 public record HobbyOption(string Id, string Name, string Emoji);
 
+public record PreferenceOption(string Id, string Name);
+
+public record PreferenceChip(string Id, string Label);
+
 public record ProfileModel
 {
     public string Name { get; init; } = string.Empty;

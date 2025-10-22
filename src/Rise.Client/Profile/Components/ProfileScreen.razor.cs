@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Rise.Client.Profile.Models;
@@ -45,7 +47,73 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         new("Crafts", "Knutselen", "✂️"),
     };
 
+    private static readonly IReadOnlyList<PreferenceOption> _preferenceOptions = new List<PreferenceOption>
+    {
+        new("jazz", "Jazz"),
+        new("lawaai", "Lawaai"),
+        new("gezonde-salades", "Gezonde salades"),
+        new("fastfood", "Fastfood"),
+        new("indie", "Indie"),
+        new("te-luide-clubs", "Te luide clubs"),
+        new("verse-pasta", "Verse pasta"),
+        new("spruitjes", "Spruitjes"),
+        new("akoestische-covers", "Akoestische covers"),
+        new("drukke-festivals", "Drukke festivals"),
+        new("verse-soep", "Verse soep"),
+        new("scherpe-curry", "Scherpe curry"),
+        new("klassieke-muziek", "Klassieke muziek"),
+        new("scheurende-gitaren", "Scheurende gitaren"),
+        new("mediterrane-keuken", "Mediterrane keuken"),
+        new("snel-eten", "Snel eten"),
+        new("akoestische-gitaren", "Akoestische gitaren"),
+        new("harde-techno", "Harde techno"),
+        new("gezonde-snacks", "Gezonde snacks"),
+        new("suikerbommen", "Suikerbommen"),
+        new("ambient-muziek", "Ambient muziek"),
+        new("stilte", "Stilte"),
+        new("seizoensgroenten", "Seizoensgroenten"),
+        new("drukke-buffetten", "Drukke buffetten"),
+        new("pop", "Pop"),
+        new("hardrock", "Hardrock"),
+        new("zoete-desserts", "Zoete desserts"),
+        new("bittere-smaken", "Bittere smaken"),
+        new("synthwave", "Synthwave"),
+        new("stille-ruimtes", "Stille ruimtes"),
+        new("pizza", "Pizza"),
+        new("olijven", "Olijven"),
+        new("muziek", "Muziek"),
+        new("comfortfood", "Comfortfood"),
+        new("bordspellen", "Bordspellen"),
+        new("kaasplankjes", "Kaasplankjes"),
+        new("rollercoasters", "Rollercoasters"),
+        new("rustige-wandelingen", "Rustige wandelingen"),
+        new("dansfeestjes", "Dansfeestjes"),
+        new("kampvuren", "Kampvuren"),
+        new("horrorfilms", "Horrorfilms"),
+        new("romantische-films", "Romantische films"),
+        new("pasta", "Pasta"),
+        new("karaoke-avonden", "Karaoke avonden"),
+        new("stranddagen", "Stranddagen"),
+        new("sneeuwpret", "Sneeuwpret"),
+        new("warm-weer", "Warm weer"),
+        new("regenachtige-dagen", "Regenachtige dagen"),
+        new("koffie", "Koffie"),
+        new("thee", "Thee"),
+    };
+
+    private static readonly IReadOnlyDictionary<string, PreferenceOption> _preferenceOptionsById =
+        _preferenceOptions.ToDictionary(option => option.Id, option => option, StringComparer.OrdinalIgnoreCase);
+
+    private static readonly IReadOnlyDictionary<string, string> _preferenceIdByName =
+        _preferenceOptions.ToDictionary(option => option.Name, option => option.Id, StringComparer.OrdinalIgnoreCase);
+
+    private static readonly IReadOnlyDictionary<string, int> _preferenceOrderById =
+        _preferenceOptions
+            .Select((option, index) => new { option.Id, index })
+            .ToDictionary(entry => entry.Id, entry => entry.index, StringComparer.OrdinalIgnoreCase);
+
     private const int HobbySelectionLimit = 3;
+    private const int PreferenceSelectionLimit = 5;
 
     private ProfileModel _model = ProfileModel.CreateDefault();
     private ProfileDraft _draft;
@@ -54,6 +122,12 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private HashSet<string> _initialHobbyIds = new();
     private HashSet<string> _pickerSelection = new();
 
+    private List<string> _selectedLikeIds = new();
+    private List<string> _selectedDislikeIds = new();
+    private List<string> _initialLikeIds = new();
+    private List<string> _initialDislikeIds = new();
+    private readonly Dictionary<string, string> _customPreferenceOptions = new(StringComparer.OrdinalIgnoreCase);
+
     private bool _isEditing;
     private bool _isLoading = true;
     private string? _loadError;
@@ -61,9 +135,21 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private bool _isPickerOpen;
     private string _pickerSearch = string.Empty;
 
+    private HashSet<string> _preferencePickerSelection = new(StringComparer.OrdinalIgnoreCase);
+    private PreferencePickerMode _preferencePickerMode = PreferencePickerMode.None;
+    private bool _isPreferencePickerOpen;
+    private string _preferencePickerSearch = string.Empty;
+
     private bool _isToastVisible;
     private string _toastMessage = string.Empty;
     private CancellationTokenSource? _toastCts;
+
+    private enum PreferencePickerMode
+    {
+        None,
+        Likes,
+        Dislikes
+    }
 
     public ProfileScreen()
     {
@@ -78,13 +164,34 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private bool IsLoading => _isLoading;
     private bool HasError => !string.IsNullOrWhiteSpace(_loadError);
     private string? ErrorMessage => _loadError;
-    private IReadOnlyList<ProfileInterestModel> Interests => _model.Interests;
     private IReadOnlyList<ProfileHobbyModel> Hobbies => _model.Hobbies;
     private IReadOnlyList<HobbyOption> HobbyOptions => _hobbyOptions;
+    private IReadOnlyList<PreferenceOption> PreferenceOptions => _preferenceOptions;
+    private IReadOnlyList<PreferenceChip> LikeChips => BuildPreferenceChips(_selectedLikeIds);
+    private IReadOnlyList<PreferenceChip> DislikeChips => BuildPreferenceChips(_selectedDislikeIds);
     private IReadOnlyCollection<string> PickerSelection => _pickerSelection;
     private string PickerSearch => _pickerSearch;
     private bool IsPickerOpen => _isPickerOpen;
     private int MaxHobbies => HobbySelectionLimit;
+    private int MaxLikes => PreferenceSelectionLimit;
+    private int MaxDislikes => PreferenceSelectionLimit;
+    private int MaxPreferences => PreferenceSelectionLimit;
+    private IReadOnlyCollection<string> PreferencePickerSelection => _preferencePickerSelection;
+    private string PreferencePickerSearch => _preferencePickerSearch;
+    private bool IsPreferencePickerOpen => _isPreferencePickerOpen;
+    private bool IsDislikePicker => _preferencePickerMode == PreferencePickerMode.Dislikes;
+    private string PreferencePickerTitle => _preferencePickerMode switch
+    {
+        PreferencePickerMode.Likes => "Kies wat je leuk vindt",
+        PreferencePickerMode.Dislikes => "Kies wat je minder leuk vindt",
+        _ => string.Empty
+    };
+    private string PreferencePickerPlaceholder => _preferencePickerMode switch
+    {
+        PreferencePickerMode.Likes => "Zoek iets dat je leuk vindt…",
+        PreferencePickerMode.Dislikes => "Zoek iets dat je niet fijn vindt…",
+        _ => "Zoek..."
+    };
     private string DisplayName => string.IsNullOrWhiteSpace(CurrentName) ? "Jouw Naam" : CurrentName;
     private string CurrentName => _isEditing ? _draft.Name : _model.Name;
 
@@ -127,6 +234,44 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
         _pickerSelection = _selectedHobbyIds.ToHashSet();
         _initialHobbyIds = _selectedHobbyIds.ToHashSet();
+
+        _customPreferenceOptions.Clear();
+
+        var likeIds = new List<string>();
+        var dislikeIds = new List<string>();
+
+        foreach (var interest in _model.Interests)
+        {
+            if (!string.IsNullOrWhiteSpace(interest.Like))
+            {
+                var likeId = ResolvePreferenceId(interest.Like);
+                if (!string.IsNullOrWhiteSpace(likeId))
+                {
+                    likeIds.Add(likeId);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(interest.Dislike))
+            {
+                var dislikeId = ResolvePreferenceId(interest.Dislike);
+                if (!string.IsNullOrWhiteSpace(dislikeId))
+                {
+                    dislikeIds.Add(dislikeId);
+                }
+            }
+        }
+
+        _selectedLikeIds = OrderPreferenceIds(likeIds).Take(PreferenceSelectionLimit).ToList();
+        _selectedDislikeIds = OrderPreferenceIds(dislikeIds).Take(PreferenceSelectionLimit).ToList();
+        _initialLikeIds = _selectedLikeIds.ToList();
+        _initialDislikeIds = _selectedDislikeIds.ToList();
+
+        _preferencePickerSelection = new HashSet<string>(_selectedLikeIds, StringComparer.OrdinalIgnoreCase);
+        _preferencePickerMode = PreferencePickerMode.None;
+        _isPreferencePickerOpen = false;
+        _preferencePickerSearch = string.Empty;
+
+        UpdateInterestsModel();
     }
 
     private static string FormatMemberSince(DateTime createdAt)
@@ -158,6 +303,12 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _draft = ProfileDraft.FromModel(_model);
         _pickerSelection = _selectedHobbyIds.ToHashSet();
         _initialHobbyIds = _selectedHobbyIds.ToHashSet();
+        _initialLikeIds = _selectedLikeIds.ToList();
+        _initialDislikeIds = _selectedDislikeIds.ToList();
+        _preferencePickerSelection = new HashSet<string>(_selectedLikeIds, StringComparer.OrdinalIgnoreCase);
+        _preferencePickerMode = PreferencePickerMode.None;
+        _isPreferencePickerOpen = false;
+        _preferencePickerSearch = string.Empty;
         _isEditing = true;
     }
 
@@ -178,6 +329,15 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
         _model = _model with { Hobbies = restoredHobbies };
         _pickerSelection = _selectedHobbyIds.ToHashSet();
+
+        _selectedLikeIds = OrderPreferenceIds(_initialLikeIds);
+        _selectedDislikeIds = OrderPreferenceIds(_initialDislikeIds);
+        _preferencePickerSelection = new HashSet<string>(_selectedLikeIds, StringComparer.OrdinalIgnoreCase);
+        _preferencePickerMode = PreferencePickerMode.None;
+        _isPreferencePickerOpen = false;
+        _preferencePickerSearch = string.Empty;
+        UpdateInterestsModel();
+
         _isEditing = false;
     }
 
@@ -185,6 +345,8 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     {
         _model = _draft.ApplyTo(_model);
         _initialHobbyIds = _selectedHobbyIds.ToHashSet();
+        _initialLikeIds = _selectedLikeIds.ToList();
+        _initialDislikeIds = _selectedDislikeIds.ToList();
         _isEditing = false;
         await ShowToastAsync("Wijzigingen toegepast");
     }
@@ -222,6 +384,11 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         {
             return Task.CompletedTask;
         }
+
+        _isPreferencePickerOpen = false;
+        _preferencePickerMode = PreferencePickerMode.None;
+        _preferencePickerSearch = string.Empty;
+        _preferencePickerSelection.Clear();
 
         _pickerSelection = _selectedHobbyIds.ToHashSet();
         _pickerSearch = string.Empty;
@@ -301,10 +468,260 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         return Task.CompletedTask;
     }
 
+    private Task OpenLikesPicker()
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        _isPickerOpen = false;
+        _pickerSearch = string.Empty;
+
+        _preferencePickerSelection = new HashSet<string>(_selectedLikeIds, StringComparer.OrdinalIgnoreCase);
+        _preferencePickerMode = PreferencePickerMode.Likes;
+        _preferencePickerSearch = string.Empty;
+        _isPreferencePickerOpen = true;
+
+        return Task.CompletedTask;
+    }
+
+    private Task OpenDislikesPicker()
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        _isPickerOpen = false;
+        _pickerSearch = string.Empty;
+
+        _preferencePickerSelection = new HashSet<string>(_selectedDislikeIds, StringComparer.OrdinalIgnoreCase);
+        _preferencePickerMode = PreferencePickerMode.Dislikes;
+        _preferencePickerSearch = string.Empty;
+        _isPreferencePickerOpen = true;
+
+        return Task.CompletedTask;
+    }
+
+    private Task ClosePreferencePicker()
+    {
+        _isPreferencePickerOpen = false;
+        _preferencePickerMode = PreferencePickerMode.None;
+        _preferencePickerSearch = string.Empty;
+        _preferencePickerSelection.Clear();
+        return Task.CompletedTask;
+    }
+
+    private Task TogglePreferencePickerSelection(string id)
+    {
+        if (_preferencePickerSelection.Contains(id))
+        {
+            _preferencePickerSelection.Remove(id);
+        }
+        else if (_preferencePickerSelection.Count < PreferenceSelectionLimit)
+        {
+            _preferencePickerSelection.Add(id);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task ClearPreferencePickerSelection()
+    {
+        _preferencePickerSelection.Clear();
+        return Task.CompletedTask;
+    }
+
+    private async Task ConfirmPreferencePickerSelection()
+    {
+        if (_preferencePickerMode == PreferencePickerMode.None)
+        {
+            _preferencePickerSelection.Clear();
+            _isPreferencePickerOpen = false;
+            _preferencePickerSearch = string.Empty;
+            return;
+        }
+
+        var ordered = OrderPreferenceIds(_preferencePickerSelection)
+            .Take(PreferenceSelectionLimit)
+            .ToList();
+
+        if (_preferencePickerMode == PreferencePickerMode.Likes)
+        {
+            _selectedLikeIds = ordered;
+        }
+        else
+        {
+            _selectedDislikeIds = ordered;
+        }
+
+        UpdateInterestsModel();
+
+        var message = _preferencePickerMode == PreferencePickerMode.Likes
+            ? "Wat ik leuk vind bijgewerkt"
+            : "Wat ik minder leuk vind bijgewerkt";
+
+        _isPreferencePickerOpen = false;
+        _preferencePickerMode = PreferencePickerMode.None;
+        _preferencePickerSearch = string.Empty;
+        _preferencePickerSelection.Clear();
+
+        await ShowToastAsync(message);
+    }
+
+    private Task UpdatePreferencePickerSearch(string value)
+    {
+        _preferencePickerSearch = value;
+        return Task.CompletedTask;
+    }
+
+    private Task RemoveLike(string id)
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (RemovePreference(_selectedLikeIds, id))
+        {
+            UpdateInterestsModel();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task RemoveDislike(string id)
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (RemovePreference(_selectedDislikeIds, id))
+        {
+            UpdateInterestsModel();
+        }
+
+        return Task.CompletedTask;
+    }
+
     private Task UpdatePickerSearch(string value)
     {
         _pickerSearch = value;
         return Task.CompletedTask;
+    }
+
+    private List<string> OrderPreferenceIds(IEnumerable<string> ids)
+    {
+        return ids
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(id => id.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(id => _preferenceOrderById.TryGetValue(id, out var order) ? order : int.MaxValue)
+            .ThenBy(id => GetPreferenceName(id), StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private string ResolvePreferenceId(string value)
+    {
+        var normalized = NormalizePreferenceValue(value);
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return string.Empty;
+        }
+
+        if (_preferenceOptionsById.TryGetValue(normalized, out var optionById))
+        {
+            return optionById.Id;
+        }
+
+        if (_preferenceIdByName.TryGetValue(normalized, out var optionId))
+        {
+            return optionId;
+        }
+
+        if (!_customPreferenceOptions.ContainsKey(normalized))
+        {
+            _customPreferenceOptions[normalized] = normalized;
+        }
+
+        return normalized;
+    }
+
+    private static string NormalizePreferenceValue(string value)
+        => value.Trim();
+
+    private string GetPreferenceName(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return string.Empty;
+        }
+
+        if (_preferenceOptionsById.TryGetValue(id, out var option))
+        {
+            return option.Name;
+        }
+
+        if (_customPreferenceOptions.TryGetValue(id, out var custom))
+        {
+            return custom;
+        }
+
+        return id;
+    }
+
+    private IReadOnlyList<PreferenceChip> BuildPreferenceChips(IEnumerable<string> ids)
+    {
+        var chips = new List<PreferenceChip>();
+        foreach (var id in ids)
+        {
+            var label = GetPreferenceName(id);
+            if (!string.IsNullOrWhiteSpace(label))
+            {
+                chips.Add(new PreferenceChip(id, label));
+            }
+        }
+
+        return chips;
+    }
+
+    private static bool RemovePreference(List<string> list, string id)
+    {
+        var index = list.FindIndex(existing => string.Equals(existing, id, StringComparison.OrdinalIgnoreCase));
+        if (index >= 0)
+        {
+            list.RemoveAt(index);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void UpdateInterestsModel()
+    {
+        var interests = new List<ProfileInterestModel>();
+
+        foreach (var likeId in _selectedLikeIds)
+        {
+            var label = GetPreferenceName(likeId);
+            if (!string.IsNullOrWhiteSpace(label))
+            {
+                interests.Add(new ProfileInterestModel("Like", label, null));
+            }
+        }
+
+        foreach (var dislikeId in _selectedDislikeIds)
+        {
+            var label = GetPreferenceName(dislikeId);
+            if (!string.IsNullOrWhiteSpace(label))
+            {
+                interests.Add(new ProfileInterestModel("Dislike", null, label));
+            }
+        }
+
+        _model = _model with { Interests = interests };
     }
 
     private static ProfileHobbyModel? CreateHobbyModel(string id)
