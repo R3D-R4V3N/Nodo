@@ -11,7 +11,7 @@
 
         <div class="px-4 pt-2 pb-3 sm:px-6">
             <div class="flex items-center justify-between gap-3">
-                <h2 class="text-lg font-semibold">Kies je hobby's</h2>
+                <h2 class="text-lg font-semibold">@Title</h2>
                 <button type="button" class="rounded-full p-2 text-neutral-500 hover:bg-neutral-100" @onclick="HandleClose" aria-label="Sluiten">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -20,12 +20,12 @@
             </div>
 
             <div class="mt-3">
-                <label class="sr-only" for="hobby-search">Zoek hobby</label>
+                <label class="sr-only" for="preference-search">Zoek voorkeur</label>
                 <div class="flex items-center gap-2 rounded-2xl border border-neutral-200 bg-neutral-50 px-3 py-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-neutral-500" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M12.9 14.32a8 8 0 111.414-1.414l3.387 3.387a1 1 0 01-1.414 1.414l-3.387-3.387zM14 8a6 6 0 11-12 0 6 6 0 0112 0z" clip-rule="evenodd" />
                     </svg>
-                    <input id="hobby-search" value="@SearchText" @oninput="HandleSearch" type="search" inputmode="search" autocomplete="off" placeholder="Zoek bv. voetbal…" class="w-full bg-transparent text-[15px] placeholder:text-neutral-400 focus:outline-none" />
+                    <input id="preference-search" value="@SearchText" @oninput="HandleSearch" type="search" inputmode="search" autocomplete="off" placeholder="@SearchPlaceholder" class="w-full bg-transparent text-[15px] placeholder:text-neutral-400 focus:outline-none" />
                     @if (!string.IsNullOrWhiteSpace(SearchText))
                     {
                         <button type="button" class="text-sm text-neutral-500 hover:text-neutral-700" @onclick="ClearSearch">Wis</button>
@@ -35,17 +35,22 @@
         </div>
 
         <div class="px-4 pb-3 sm:px-6">
-            <div class="grid grid-cols-3 gap-3 overflow-y-auto overscroll-contain touch-scroll pb-24 max-h-[50vh] sm:max-h-[55vh] pt-1 px-1" role="listbox" aria-multiselectable="true">
-                @foreach (var hobby in FilteredHobbies)
+            <div class="grid grid-cols-2 gap-3 overflow-y-auto overscroll-contain touch-scroll pb-24 max-h-[50vh] sm:max-h-[55vh] pt-1 px-1" role="listbox" aria-multiselectable="true">
+                @foreach (var option in FilteredOptions)
                 {
-                    var isSelected = IsSelected(hobby.Id);
+                    var isSelected = IsSelected(option.Id);
                     var isLocked = !isSelected && SelectedCount >= MaxSelection;
-                    <button type="button" class="group relative rounded-2xl border @(isSelected ? "ring-2 ring-emerald-600 bg-emerald-50 border-emerald-200" : "border-neutral-200 bg-white") px-2 py-3 text-center shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed" role="option" aria-selected="@isSelected" disabled="@isLocked" @onclick="() => HandleToggle(hobby.Id)">
-                        <span class="block text-2xl leading-none mb-1">@hobby.Emoji</span>
-                        <span class="block text-[13px] font-medium text-neutral-800">@hobby.Name</span>
+                    <button type="button" class="group relative rounded-2xl border @(GetOptionClasses(isSelected)) px-3 py-3 text-left text-sm font-medium text-neutral-800 shadow-sm focus:outline-none focus:ring-2 @(GetRingClasses(isSelected)) disabled:opacity-40 disabled:cursor-not-allowed" role="option" aria-selected="@isSelected" disabled="@isLocked" @onclick="() => HandleToggle(option.Id)">
+                        <span class="flex items-center gap-2">
+                            @if (!string.IsNullOrWhiteSpace(option.Emoji))
+                            {
+                                <span class="text-lg">@option.Emoji</span>
+                            }
+                            <span class="block">@option.Name</span>
+                        </span>
                         @if (isSelected)
                         {
-                            <span class="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-emerald-600 text-white grid place-items-center text-[11px]">✓</span>
+                            <span class="absolute -top-1 -right-1 h-5 w-5 rounded-full text-white grid place-items-center text-[11px] @(SelectedBadgeClass)">✓</span>
                         }
                     </button>
                 }
@@ -56,8 +61,8 @@
             <div class="flex items-center justify-between">
                 <p class="text-sm text-neutral-600">Geselecteerd: <span class="font-medium">@SelectedCount/@MaxSelection</span></p>
                 <div class="flex items-center gap-2">
-                    <button type="button" class="rounded-xl border border-[#127646] text-[#127646] px-4 py-3 text-sm font-medium hover:bg-[#127646] hover:text-white" @onclick="HandleClear">Leegmaken</button>
-                    <button type="button" class="rounded-xl bg-[#127646] px-4 py-3 text-sm font-medium text-white shadow hover:bg-[#0f663c] disabled:opacity-40 disabled:cursor-not-allowed" disabled="@(SelectedCount == 0)" @onclick="HandleConfirm">Bewaar</button>
+                    <button type="button" class="rounded-xl border px-4 py-3 text-sm font-medium @(OutlineButtonClass)" @onclick="HandleClear">Leegmaken</button>
+                    <button type="button" class="rounded-xl px-4 py-3 text-sm font-medium text-white shadow disabled:opacity-40 disabled:cursor-not-allowed @(PrimaryButtonClass)" disabled="@(SelectedCount == 0)" @onclick="HandleConfirm">Bewaar</button>
                 </div>
             </div>
         </div>
@@ -65,31 +70,54 @@
 </div>
 
 @code {
-    [Parameter] public IReadOnlyList<HobbyOption> Interests { get; set; } = Array.Empty<HobbyOption>();
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string SearchPlaceholder { get; set; } = string.Empty;
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public bool UseDislikeTheme { get; set; }
+    [Parameter] public IReadOnlyList<PreferenceOption> Options { get; set; } = Array.Empty<PreferenceOption>();
     [Parameter] public IReadOnlyCollection<string> Selection { get; set; } = Array.Empty<string>();
     [Parameter] public string SearchText { get; set; } = string.Empty;
     [Parameter] public EventCallback<string> SearchTextChanged { get; set; }
-    [Parameter] public bool IsOpen { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback<string> OnToggle { get; set; }
     [Parameter] public EventCallback OnClear { get; set; }
     [Parameter] public EventCallback OnConfirm { get; set; }
     [Parameter] public int MaxSelection { get; set; }
 
-    private HashSet<string> _selectionLookup = new();
+    private HashSet<string> _selectionLookup = new(StringComparer.OrdinalIgnoreCase);
 
-    private IEnumerable<HobbyOption> FilteredHobbies => string.IsNullOrWhiteSpace(SearchText)
-        ? Interests
-        : Interests.Where(i => i.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+    private IEnumerable<PreferenceOption> FilteredOptions => string.IsNullOrWhiteSpace(SearchText)
+        ? Options
+        : Options.Where(o =>
+            o.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
+            || o.Label.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
 
     private int SelectedCount => Selection.Count;
 
+    private string SelectedBadgeClass => UseDislikeTheme ? "bg-rose-500" : "bg-emerald-600";
+
+    private string PrimaryButtonClass => UseDislikeTheme ? "bg-rose-500 hover:bg-rose-600" : "bg-[#127646] hover:bg-[#0f663c]";
+
+    private string OutlineButtonClass => UseDislikeTheme ? "border-rose-500 text-rose-500 hover:bg-rose-50" : "border-[#127646] text-[#127646] hover:bg-[#127646] hover:text-white";
+
     protected override void OnParametersSet()
     {
-        _selectionLookup = Selection is HashSet<string> set ? new HashSet<string>(set) : Selection.ToHashSet();
+        _selectionLookup = Selection is HashSet<string> set
+            ? new HashSet<string>(set, StringComparer.OrdinalIgnoreCase)
+            : Selection.ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
     private bool IsSelected(string id) => _selectionLookup.Contains(id);
+
+    private string GetOptionClasses(bool isSelected)
+        => isSelected
+            ? (UseDislikeTheme ? "border-rose-200 bg-rose-50" : "border-emerald-200 bg-emerald-50")
+            : "border-neutral-200 bg-white";
+
+    private string GetRingClasses(bool isSelected)
+        => isSelected
+            ? (UseDislikeTheme ? "ring-rose-500" : "ring-emerald-600")
+            : "ring-transparent";
 
     private Task HandleClose() => OnClose.InvokeAsync();
     private Task HandleToggle(string id) => OnToggle.InvokeAsync(id);
