@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Rise.Client;
 using Rise.Client.Chats;
 using Rise.Client.Identity;
+using Rise.Client.Profile;
 using Rise.Client.UserConnections;
 using Rise.Client.Users;
 using Rise.Services.Users;
 using Rise.Shared.Chats;
 using Rise.Shared.UserConnections;
+using Rise.Shared.Profile;
 using Rise.Shared.Users;
 
 try
@@ -56,6 +58,11 @@ try
     {
         client.BaseAddress = backendUri;
     });
+
+    builder.Services.AddHttpClient<IProfileService, ProfileApiClient>(client =>
+    {
+        client.BaseAddress = backendUri;
+    }).AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<IUserService, UserService>(client =>
     {

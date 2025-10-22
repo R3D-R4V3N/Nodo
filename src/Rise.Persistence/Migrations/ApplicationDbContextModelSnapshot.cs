@@ -354,6 +354,12 @@ namespace Rise.Persistence.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("varchar(250)");
 
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)")
+                        .HasDefaultValue("x");
+
                     b.Property<string>("Biography")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -590,7 +596,35 @@ namespace Rise.Persistence.Migrations
                             b1.Navigation("Connection");
                         });
 
+                    b.OwnsMany("Rise.Domain.Users.UserInterest", "_interests", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<string>("InterestId")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("varchar(50)")
+                                .HasColumnName("InterestId");
+
+                            b1.Property<int>("UserId")
+                                .HasColumnType("int");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("UserId");
+
+                            b1.ToTable("UserInterests");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserId");
+                        });
+
                     b.Navigation("_connections");
+                    b.Navigation("_interests");
 
                     b.Navigation("_userSettings");
                 });

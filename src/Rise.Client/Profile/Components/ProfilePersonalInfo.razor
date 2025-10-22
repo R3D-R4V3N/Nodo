@@ -10,11 +10,11 @@
             </label>
             @if (IsEditing)
             {
-                <input id="name-input" type="text" class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" @bind="Name" @bind:event="oninput" autocomplete="name" />
+                <input id="name-input" type="text" class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" @bind="FullName" @bind:event="oninput" autocomplete="name" />
             }
             else
             {
-                <p class="mt-1 text-sm">@NameOrPlaceholder</p>
+                <p class="mt-1 text-sm">@FullNameOrPlaceholder</p>
             }
         </div>
 
@@ -79,8 +79,8 @@
 </section>
 
 @code {
-    [Parameter] public string Name { get; set; } = string.Empty;
-    [Parameter] public EventCallback<string> NameChanged { get; set; }
+    [Parameter] public string FullName { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> FullNameChanged { get; set; }
     [Parameter] public string Email { get; set; } = string.Empty;
     [Parameter] public EventCallback<string> EmailChanged { get; set; }
     [Parameter] public string Bio { get; set; } = string.Empty;
@@ -89,7 +89,7 @@
     [Parameter] public EventCallback<string> GenderChanged { get; set; }
     [Parameter] public bool IsEditing { get; set; }
 
-    private string NameOrPlaceholder => string.IsNullOrWhiteSpace(Name) ? "–" : Name;
+    private string FullNameOrPlaceholder => string.IsNullOrWhiteSpace(FullName) ? "–" : FullName;
     private string EmailOrPlaceholder => string.IsNullOrWhiteSpace(Email) ? "–" : Email;
     private string BioOrPlaceholder => string.IsNullOrWhiteSpace(Bio) ? "–" : Bio;
     private int BioLength => Bio?.Length ?? 0;

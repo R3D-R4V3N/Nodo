@@ -18,8 +18,14 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
         builder.Property(x => x.LastName).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Biography).IsRequired().HasMaxLength(500);
         builder.Property(x => x.AvatarUrl).IsRequired().HasMaxLength(250);
+        builder.Property(x => x.Gender)
+            .IsRequired()
+            .HasMaxLength(10)
+            .HasDefaultValue(UserInterestConstants.DefaultGender);
         builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.UserType).IsRequired();
+
+        builder.Navigation(nameof(ApplicationUser.Interests)).UsePropertyAccessMode(PropertyAccessMode.Field);
 
         // connections
         builder.Ignore(u => u.Connections);
@@ -57,7 +63,7 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
         // settings
         builder.Ignore(u => u.UserSettings);
 
-        builder.OwnsOne<ApplicationUserSetting>("_userSettings", userSettings => 
+        builder.OwnsOne<ApplicationUserSetting>("_userSettings", userSettings =>
         {
             userSettings.WithOwner(s => s.User)
                 .HasForeignKey("UserId");
@@ -87,6 +93,22 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
             });
 
             userSettings.ToTable("UserSetting");
+        });
+
+        builder.OwnsMany<UserInterest>("_interests", interests =>
+        {
+            interests.WithOwner()
+                .HasForeignKey("UserId");
+
+            interests.Property<int>("Id").ValueGeneratedOnAdd();
+            interests.HasKey("Id");
+
+            interests.Property(i => i.InterestId)
+                .HasColumnName("InterestId")
+                .HasMaxLength(50)
+                .IsRequired();
+
+            interests.ToTable("UserInterests");
         });
     }
 }

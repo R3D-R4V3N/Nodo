@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Ardalis.Result;
 using Rise.Domain.Chats;
 
@@ -34,6 +35,21 @@ public class ApplicationUser : Entity
         get => _avatarUrl;
         set => _avatarUrl = Guard.Against.NullOrWhiteSpace(value);
     }
+    private string _gender = UserInterestConstants.DefaultGender;
+    public string Gender
+    {
+        get => _gender;
+        set
+        {
+            var normalized = Guard.Against.NullOrWhiteSpace(value).Trim().ToLowerInvariant();
+            if (!UserInterestConstants.AllowedGenders.Contains(normalized))
+            {
+                throw new ArgumentException("Ongeldige genderwaarde.", nameof(value));
+            }
+
+            _gender = normalized;
+        }
+    }
     public required DateOnly BirthDay { get; set; }
     public required UserType UserType { get; set; }
     
@@ -53,6 +69,19 @@ public class ApplicationUser : Entity
     // chats
     private readonly List<Chat> _chats = [];
     public IReadOnlyList<Chat> Chats => _chats.AsReadOnly();
+
+    // interests
+    private readonly HashSet<UserInterest> _interests = [];
+    public IReadOnlyCollection<UserInterest> Interests => _interests;
+
+    public void SetInterests(IEnumerable<string> interestIds)
+    {
+        _interests.Clear();
+        foreach (var id in interestIds)
+        {
+            _interests.Add(new UserInterest(id));
+        }
+    }
 
     // settings
     private ApplicationUserSetting _userSettings;
