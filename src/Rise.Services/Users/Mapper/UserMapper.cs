@@ -1,7 +1,10 @@
-﻿using Rise.Domain.Users;
+using System;
+using System.Linq;
+using Rise.Domain.Users;
 using Rise.Shared.Users;
 
 namespace Rise.Services.Users.Mapper;
+
 internal static class UserMapper
 {
     public static UserDto.Connection ToConnectionDto(this ApplicationUser user) =>
@@ -14,6 +17,7 @@ internal static class UserMapper
                     (DateTime.Now.DayOfYear < user.BirthDay.DayOfYear ? 1 : 0),
             AvatarUrl = user.AvatarUrl,
         };
+
     public static UserDto.CurrentUser ToCurrentUserDto(this ApplicationUser user, string email) =>
         new UserDto.CurrentUser
         {
@@ -26,24 +30,10 @@ internal static class UserMapper
             BirthDay = user.BirthDay,
             CreatedAt = user.CreatedAt,
             Interests = user.Interests
-                .Select(i => new UserDto.Interest
-                {
-                    Type = i.Type,
-                    Like = i.Like,
-                    Dislike = i.Dislike,
-                })
+                .Select(InterestMapper.ToDto)
                 .ToList(),
             Hobbies = user.Hobbies
-                .Select(h =>
-                {
-                    var descriptor = HobbyCatalog.GetDescriptor(h.Hobby);
-                    return new UserDto.Hobby
-                    {
-                        Id = h.Hobby.ToString(),
-                        Name = descriptor.Name,
-                        Emoji = descriptor.Emoji,
-                    };
-                })
+                .Select(HobbyMapper.ToDto)
                 .ToList(),
             DefaultChatLines = user
                 .UserSettings
