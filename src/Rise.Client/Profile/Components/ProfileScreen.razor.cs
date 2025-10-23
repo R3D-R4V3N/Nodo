@@ -4,13 +4,16 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Rise.Client.Profile.Models;
 using Rise.Client.Users;
+using Rise.Shared.Users;
 
 namespace Rise.Client.Profile.Components;
 
+[Authorize]
 public partial class ProfileScreen : ComponentBase, IDisposable
 {
     private static readonly IReadOnlyList<HobbyOption> _hobbyOptions = new List<HobbyOption>
@@ -121,8 +124,9 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private const int HobbySelectionLimit = 3;
     private const int PreferenceSelectionLimit = 5;
 
-    private ProfileModel _model = ProfileModel.CreateDefault();
+    private ProfileModel _model = new();
     private ProfileDraft _draft;
+    private UserDto.CurrentUser? _currentUser;
 
     private readonly HashSet<string> _selectedHobbyIds = new();
     private HashSet<string> _initialHobbyIds = new();
@@ -213,6 +217,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
             }
 
             var memberSince = FormatMemberSince(currentUser.CreatedAt);
+            _currentUser = currentUser;
             _model = ProfileModel.FromUser(currentUser, memberSince);
             _draft = ProfileDraft.FromModel(_model);
             SyncSelectionFromModel();

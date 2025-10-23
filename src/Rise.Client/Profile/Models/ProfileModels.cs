@@ -24,31 +24,9 @@ public record ProfileModel
     public string Bio { get; init; } = string.Empty;
     public string Gender { get; init; } = "x";
     public string AvatarUrl { get; init; } = DefaultAvatar;
-    public string MemberSince { get; init; } = "";
+    public string MemberSince { get; init; } = string.Empty;
     public IReadOnlyList<ProfileInterestModel> Interests { get; init; } = Array.Empty<ProfileInterestModel>();
     public IReadOnlyList<ProfileHobbyModel> Hobbies { get; init; } = Array.Empty<ProfileHobbyModel>();
-
-    public static ProfileModel CreateDefault() => new()
-    {
-        Name = "Jouw Naam",
-        Email = "jij@example.com",
-        Bio = "Kort over mij: ik hou van wandelen, koken en bordspellen.",
-        Gender = "x",
-        AvatarUrl = DefaultAvatar,
-        MemberSince = "Actief sinds jan. 2024",
-        Interests = new List<ProfileInterestModel>
-        {
-            new("Like", "Muziekfestivals", null),
-            new("Like", "Uit eten gaan", null),
-            new("Dislike", null, "Hartige snacks"),
-            new("Dislike", null, "Pittig eten")
-        },
-        Hobbies = new List<ProfileHobbyModel>
-        {
-            new("Gaming", "Gamen", "🎮"),
-            new("Hiking", "Wandelen in de natuur", "🥾")
-        }
-    };
 
     public static ProfileModel FromUser(UserDto.CurrentUser user, string memberSince)
     {

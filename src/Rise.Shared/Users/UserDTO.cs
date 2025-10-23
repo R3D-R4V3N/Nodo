@@ -1,4 +1,7 @@
-﻿namespace Rise.Shared.Users;
+using System.Collections.Generic;
+
+namespace Rise.Shared.Users;
+
 public static class UserDto
 {
     public record CurrentUser
@@ -11,22 +14,11 @@ public static class UserDto
         public string Biography { get; init; } = string.Empty;
         public DateOnly BirthDay { get; init; }
         public DateTime CreatedAt { get; init; }
-        public List<Interest> Interests { get; init; } = [];
-        public List<Hobby> Hobbies { get; init; } = [];
+        public List<UserInterestDto> Interests { get; init; } = [];
+        public List<UserHobbyDto> Hobbies { get; init; } = [];
         public List<string> DefaultChatLines { get; init; } = [];
     }
-    public record Interest
-    {
-        public string Type { get; init; } = string.Empty;
-        public string? Like { get; init; }
-        public string? Dislike { get; init; }
-    }
-    public record Hobby
-    {
-        public string Id { get; init; } = string.Empty;
-        public string Name { get; init; } = string.Empty;
-        public string Emoji { get; init; } = string.Empty;
-    }
+
     public record Connection
     {
         public int Id { get; init; }
@@ -35,6 +27,7 @@ public static class UserDto
         public int Age { get; init; }
         public string AvatarUrl { get; init; } = string.Empty;
     }
+
     public record Chat
     {
         public int Id { get; init; }
