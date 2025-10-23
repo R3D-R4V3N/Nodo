@@ -121,8 +121,44 @@ public partial class ProfileScreen : ComponentBase, IDisposable
             .Select((option, index) => new { option.Id, index })
             .ToDictionary(entry => entry.Id, entry => entry.index, StringComparer.OrdinalIgnoreCase);
 
+    private static readonly IReadOnlyList<ChatSuggestionOption> _chatSuggestionOptions = new List<ChatSuggestionOption>
+    {
+        new("greeting-hallo-gaat", "Hallo hoe gaat het?"),
+        new("checkin-gevoel", "Hoe voel je je vandaag?"),
+        new("daily-gedaan", "Wat heb je vandaag gedaan?"),
+        new("future-uitkijken", "Waar kijk je naar uit deze week?"),
+        new("help-aanbieden", "Kan ik je ergens mee helpen?"),
+        new("positief-blij", "Wat maakt je vandaag blij?"),
+        new("samen-plannen", "Zullen we samen iets plannen?"),
+        new("over-jezelf", "Vertel eens iets leuks over jezelf."),
+        new("hobby-leuk", "Wat vind je leuk om te doen?"),
+        new("slaap-goed", "Heb je goed geslapen?"),
+        new("planning-wat", "Wat staat er op je planning?"),
+        new("trots-op", "Waar ben je trots op?"),
+        new("praten-over", "Wil je daar over praten?"),
+        new("betekenis", "Wat kan ik voor je betekenen?"),
+        new("er-voor-je", "Ik ben er voor je."),
+        new("hoogtepunt", "Wat was het hoogtepunt van je dag?"),
+        new("proberen", "Wat zou je graag willen proberen?"),
+        new("spelletje", "Zullen we een spelletje doen?"),
+        new("toekomst-dromen", "Waar droom je van voor de toekomst?"),
+        new("kowabunga", "Kowabunga!"),
+    };
+
+    private static readonly IReadOnlyDictionary<string, ChatSuggestionOption> _chatSuggestionOptionsById =
+        _chatSuggestionOptions.ToDictionary(option => option.Id, option => option, StringComparer.OrdinalIgnoreCase);
+
+    private static readonly IReadOnlyDictionary<string, string> _chatSuggestionIdByText =
+        _chatSuggestionOptions.ToDictionary(option => option.Text, option => option.Id, StringComparer.OrdinalIgnoreCase);
+
+    private static readonly IReadOnlyDictionary<string, int> _chatSuggestionOrderById =
+        _chatSuggestionOptions
+            .Select((option, index) => new { option.Id, index })
+            .ToDictionary(entry => entry.Id, entry => entry.index, StringComparer.OrdinalIgnoreCase);
+
     private const int HobbySelectionLimit = 3;
     private const int PreferenceSelectionLimit = 5;
+    private const int ChatSuggestionSelectionLimit = 5;
 
     private ProfileModel _model = new();
     private ProfileDraft _draft;
@@ -138,6 +174,9 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private List<string> _initialDislikeIds = new();
     private readonly Dictionary<string, string> _customPreferenceOptions = new(StringComparer.OrdinalIgnoreCase);
 
+    private List<string> _selectedChatSuggestionIds = new();
+    private List<string> _initialChatSuggestionIds = new();
+
     private bool _isEditing;
     private bool _isLoading = true;
     private string? _loadError;
@@ -149,6 +188,10 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private PreferencePickerMode _preferencePickerMode = PreferencePickerMode.None;
     private bool _isPreferencePickerOpen;
     private string _preferencePickerSearch = string.Empty;
+
+    private HashSet<string> _chatSuggestionPickerSelection = new(StringComparer.OrdinalIgnoreCase);
+    private bool _isChatSuggestionPickerOpen;
+    private string _chatSuggestionSearch = string.Empty;
 
     private bool _isToastVisible;
     private string _toastMessage = string.Empty;
@@ -186,6 +229,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private int MaxLikes => PreferenceSelectionLimit;
     private int MaxDislikes => PreferenceSelectionLimit;
     private int MaxPreferences => PreferenceSelectionLimit;
+    private int MaxChatSuggestions => ChatSuggestionSelectionLimit;
     private IReadOnlyCollection<string> PreferencePickerSelection => _preferencePickerSelection;
     private string PreferencePickerSearch => _preferencePickerSearch;
     private bool IsPreferencePickerOpen => _isPreferencePickerOpen;
@@ -204,6 +248,11 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     };
     private string DisplayName => string.IsNullOrWhiteSpace(CurrentName) ? "Jouw Naam" : CurrentName;
     private string CurrentName => _isEditing ? _draft.Name : _model.Name;
+    private IReadOnlyList<string> ChatSuggestions => _model.ChatSuggestions;
+    private IReadOnlyList<ChatSuggestionOption> ChatSuggestionOptions => _chatSuggestionOptions;
+    private IReadOnlyCollection<string> ChatSuggestionPickerSelection => _chatSuggestionPickerSelection;
+    private string ChatSuggestionSearch => _chatSuggestionSearch;
+    private bool IsChatSuggestionPickerOpen => _isChatSuggestionPickerOpen;
 
     protected override async Task OnInitializedAsync()
     {
@@ -282,7 +331,37 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _isPreferencePickerOpen = false;
         _preferencePickerSearch = string.Empty;
 
+        var suggestionIds = new List<string>();
+        var seenSuggestionIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var suggestion in _model.ChatSuggestions)
+        {
+            if (string.IsNullOrWhiteSpace(suggestion))
+            {
+                continue;
+            }
+
+            var suggestionId = ResolveChatSuggestionId(suggestion);
+            if (string.IsNullOrWhiteSpace(suggestionId))
+            {
+                continue;
+            }
+
+            if (seenSuggestionIds.Add(suggestionId))
+            {
+                suggestionIds.Add(suggestionId);
+            }
+        }
+
+        _selectedChatSuggestionIds = OrderChatSuggestionIds(suggestionIds)
+            .Take(ChatSuggestionSelectionLimit)
+            .ToList();
+        _initialChatSuggestionIds = _selectedChatSuggestionIds.ToList();
+        _chatSuggestionPickerSelection = new HashSet<string>(_selectedChatSuggestionIds, StringComparer.OrdinalIgnoreCase);
+        _isChatSuggestionPickerOpen = false;
+        _chatSuggestionSearch = string.Empty;
+
         UpdateInterestsModel();
+        UpdateChatSuggestionsModel();
     }
 
     private static string FormatMemberSince(DateTime createdAt)
@@ -320,6 +399,10 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _preferencePickerMode = PreferencePickerMode.None;
         _isPreferencePickerOpen = false;
         _preferencePickerSearch = string.Empty;
+        _initialChatSuggestionIds = _selectedChatSuggestionIds.ToList();
+        _chatSuggestionPickerSelection = new HashSet<string>(_selectedChatSuggestionIds, StringComparer.OrdinalIgnoreCase);
+        _isChatSuggestionPickerOpen = false;
+        _chatSuggestionSearch = string.Empty;
         _isEditing = true;
     }
 
@@ -347,7 +430,12 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _preferencePickerMode = PreferencePickerMode.None;
         _isPreferencePickerOpen = false;
         _preferencePickerSearch = string.Empty;
+        _selectedChatSuggestionIds = OrderChatSuggestionIds(_initialChatSuggestionIds);
+        _chatSuggestionPickerSelection = new HashSet<string>(_selectedChatSuggestionIds, StringComparer.OrdinalIgnoreCase);
+        _isChatSuggestionPickerOpen = false;
+        _chatSuggestionSearch = string.Empty;
         UpdateInterestsModel();
+        UpdateChatSuggestionsModel();
 
         _isEditing = false;
     }
@@ -358,6 +446,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _initialHobbyIds = _selectedHobbyIds.ToHashSet();
         _initialLikeIds = _selectedLikeIds.ToList();
         _initialDislikeIds = _selectedDislikeIds.ToList();
+        _initialChatSuggestionIds = _selectedChatSuggestionIds.ToList();
         _isEditing = false;
         await ShowToastAsync("Wijzigingen toegepast");
     }
@@ -515,6 +604,27 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         return Task.CompletedTask;
     }
 
+    private Task OpenChatSuggestionPicker()
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        _isPickerOpen = false;
+        _pickerSearch = string.Empty;
+
+        _isPreferencePickerOpen = false;
+        _preferencePickerMode = PreferencePickerMode.None;
+        _preferencePickerSearch = string.Empty;
+
+        _chatSuggestionPickerSelection = new HashSet<string>(_selectedChatSuggestionIds, StringComparer.OrdinalIgnoreCase);
+        _chatSuggestionSearch = string.Empty;
+        _isChatSuggestionPickerOpen = true;
+
+        return Task.CompletedTask;
+    }
+
     private Task ClosePreferencePicker()
     {
         _isPreferencePickerOpen = false;
@@ -587,6 +697,55 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         return Task.CompletedTask;
     }
 
+    private Task UpdateChatSuggestionSearch(string value)
+    {
+        _chatSuggestionSearch = value;
+        return Task.CompletedTask;
+    }
+
+    private Task CloseChatSuggestionPicker()
+    {
+        _isChatSuggestionPickerOpen = false;
+        _chatSuggestionSearch = string.Empty;
+        _chatSuggestionPickerSelection.Clear();
+        return Task.CompletedTask;
+    }
+
+    private Task ToggleChatSuggestionSelection(string id)
+    {
+        if (_chatSuggestionPickerSelection.Contains(id))
+        {
+            _chatSuggestionPickerSelection.Remove(id);
+        }
+        else if (_chatSuggestionPickerSelection.Count < ChatSuggestionSelectionLimit)
+        {
+            _chatSuggestionPickerSelection.Add(id);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task ClearChatSuggestionSelection()
+    {
+        _chatSuggestionPickerSelection.Clear();
+        return Task.CompletedTask;
+    }
+
+    private async Task ConfirmChatSuggestionSelection()
+    {
+        _selectedChatSuggestionIds = OrderChatSuggestionIds(_chatSuggestionPickerSelection)
+            .Take(ChatSuggestionSelectionLimit)
+            .ToList();
+
+        UpdateChatSuggestionsModel();
+
+        _isChatSuggestionPickerOpen = false;
+        _chatSuggestionSearch = string.Empty;
+        _chatSuggestionPickerSelection = new HashSet<string>(_selectedChatSuggestionIds, StringComparer.OrdinalIgnoreCase);
+
+        await ShowToastAsync("Gesprekssuggesties bijgewerkt");
+    }
+
     private Task RemoveLike(string id)
     {
         if (!_isEditing)
@@ -617,6 +776,28 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         return Task.CompletedTask;
     }
 
+    private Task RemoveChatSuggestion(string suggestion)
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        var id = ResolveChatSuggestionId(suggestion);
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return Task.CompletedTask;
+        }
+
+        if (RemovePreference(_selectedChatSuggestionIds, id))
+        {
+            _chatSuggestionPickerSelection.Remove(id);
+            UpdateChatSuggestionsModel();
+        }
+
+        return Task.CompletedTask;
+    }
+
     private Task UpdatePickerSearch(string value)
     {
         _pickerSearch = value;
@@ -631,6 +812,16 @@ public partial class ProfileScreen : ComponentBase, IDisposable
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(id => _preferenceOrderById.TryGetValue(id, out var order) ? order : int.MaxValue)
             .ThenBy(id => GetPreferenceName(id), StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private List<string> OrderChatSuggestionIds(IEnumerable<string> ids)
+    {
+        return ids
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(id => id.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(id => _chatSuggestionOrderById.TryGetValue(id, out var order) ? order : int.MaxValue)
             .ToList();
     }
 
@@ -703,6 +894,27 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         return id;
     }
 
+    private static string ResolveChatSuggestionId(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var normalized = value.Trim();
+        return _chatSuggestionIdByText.TryGetValue(normalized, out var id) ? id : string.Empty;
+    }
+
+    private static string GetChatSuggestionText(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return string.Empty;
+        }
+
+        return _chatSuggestionOptionsById.TryGetValue(id, out var option) ? option.Text : string.Empty;
+    }
+
     private IReadOnlyList<PreferenceChip> BuildPreferenceChips(IEnumerable<string> ids)
     {
         var chips = new List<PreferenceChip>();
@@ -728,6 +940,16 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         }
 
         return false;
+    }
+
+    private void UpdateChatSuggestionsModel()
+    {
+        var suggestions = _selectedChatSuggestionIds
+            .Select(GetChatSuggestionText)
+            .Where(text => !string.IsNullOrWhiteSpace(text))
+            .ToList();
+
+        _model = _model with { ChatSuggestions = suggestions };
     }
 
     private void UpdateInterestsModel()

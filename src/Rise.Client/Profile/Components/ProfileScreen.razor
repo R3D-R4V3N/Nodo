@@ -60,6 +60,13 @@
                 OnRemoveLike="RemoveLike"
                 OnRemoveDislike="RemoveDislike"
                 OnRemoveHobby="RemoveHobby" />
+
+            <ProfileChatSuggestionsSection
+                Suggestions="@ChatSuggestions"
+                IsEditing="@IsEditing"
+                MaxSuggestions="@MaxChatSuggestions"
+                OnManageSuggestions="OpenChatSuggestionPicker"
+                OnRemoveSuggestion="RemoveChatSuggestion" />
         </main>
     }
 
@@ -89,6 +96,18 @@
         OnConfirm="ConfirmPreferencePickerSelection"
         OnClose="ClosePreferencePicker"
         SearchTextChanged="UpdatePreferencePickerSearch" />
+
+    <ProfileChatSuggestionsPicker
+        Options="@ChatSuggestionOptions"
+        Selection="@ChatSuggestionPickerSelection"
+        SearchText="@ChatSuggestionSearch"
+        MaxSelection="@MaxChatSuggestions"
+        IsOpen="@IsChatSuggestionPickerOpen"
+        OnToggle="ToggleChatSuggestionSelection"
+        OnClear="ClearChatSuggestionSelection"
+        OnConfirm="ConfirmChatSuggestionSelection"
+        OnClose="CloseChatSuggestionPicker"
+        SearchTextChanged="UpdateChatSuggestionSearch" />
 
     <ProfileToast Message="@_toastMessage" Visible="@_isToastVisible" />
 </div>
