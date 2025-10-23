@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Rise.Client.Profile.Models;
 using Rise.Client.Users;
-using Rise.Shared.Users;
 
 namespace Rise.Client.Profile.Components;
 
@@ -53,10 +52,6 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         new("Skating", "Skeeleren", "⛸️"),
         new("Bouldering", "Boulderen", "🧗"),
     };
-
-    private static readonly IReadOnlyDictionary<string, int> _hobbyOrderById = _hobbyOptions
-        .Select((option, index) => new { option.Id, index })
-        .ToDictionary(entry => entry.Id, entry => entry.index, StringComparer.OrdinalIgnoreCase);
 
     private static readonly IReadOnlyList<PreferenceOption> _preferenceOptions = new List<PreferenceOption>
     {
@@ -142,7 +137,6 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private bool _isEditing;
     private bool _isLoading = true;
     private string? _loadError;
-    private bool _isSaving;
 
     private bool _isPickerOpen;
     private string _pickerSearch = string.Empty;
@@ -355,35 +349,12 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
     private async Task SaveEdit()
     {
-        if (_isSaving)
-        {
-            return;
-        }
-
-        _isSaving = true;
-
-        try
-        {
-            var request = BuildUpdateRequest();
-            var updatedUser = await UserContext.UpdateProfileAsync(request);
-            var memberSince = FormatMemberSince(updatedUser.CreatedAt);
-
-            _model = ProfileModel.FromUser(updatedUser, memberSince);
-            _draft = ProfileDraft.FromModel(_model);
-            SyncSelectionFromModel();
-
-            _isEditing = false;
-
-            await ShowToastAsync("Wijzigingen opgeslagen");
-        }
-        catch
-        {
-            await ShowToastAsync("Opslaan is niet gelukt");
-        }
-        finally
-        {
-            _isSaving = false;
-        }
+        _model = _draft.ApplyTo(_model);
+        _initialHobbyIds = _selectedHobbyIds.ToHashSet();
+        _initialLikeIds = _selectedLikeIds.ToList();
+        _initialDislikeIds = _selectedDislikeIds.ToList();
+        _isEditing = false;
+        await ShowToastAsync("Wijzigingen toegepast");
     }
 
     private async Task OnAvatarChanged(InputFileChangeEventArgs args)
@@ -609,44 +580,6 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     {
         _preferencePickerSearch = value;
         return Task.CompletedTask;
-    }
-
-    private UserRequest.UpdateCurrentUser BuildUpdateRequest()
-    {
-        var likes = BuildPreferencePayload(_selectedLikeIds);
-        var dislikes = BuildPreferencePayload(_selectedDislikeIds);
-        var hobbies = BuildHobbyPayload();
-
-        return new UserRequest.UpdateCurrentUser
-        {
-            Name = _draft.Name?.Trim() ?? string.Empty,
-            Biography = _draft.Bio?.Trim() ?? string.Empty,
-            AvatarUrl = _draft.AvatarUrl?.Trim() ?? string.Empty,
-            Likes = likes,
-            Dislikes = dislikes,
-            HobbyIds = hobbies
-        };
-    }
-
-    private List<string> BuildPreferencePayload(IEnumerable<string> ids)
-    {
-        return ids
-            .Where(id => !string.IsNullOrWhiteSpace(id))
-            .Select(GetPreferenceName)
-            .Select(name => name?.Trim() ?? string.Empty)
-            .Where(name => !string.IsNullOrWhiteSpace(name))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Take(PreferenceSelectionLimit)
-            .ToList();
-    }
-
-    private List<string> BuildHobbyPayload()
-    {
-        return _selectedHobbyIds
-            .Where(id => _hobbyOrderById.ContainsKey(id))
-            .OrderBy(id => _hobbyOrderById.TryGetValue(id, out var order) ? order : int.MaxValue)
-            .Take(HobbySelectionLimit)
-            .ToList();
     }
 
     private Task RemoveLike(string id)

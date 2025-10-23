@@ -10,18 +10,11 @@
             @if (IsEditing)
             {
                 <button type="button" class="rounded-xl border border-[#127646] text-[#127646] px-4 py-3 text-sm font-medium hover:bg-[#127646] hover:text-white active:scale-[0.99]" @onclick="HandleCancel">Annuleren</button>
-                <button type="button" class="rounded-xl bg-[#127646] px-4 py-3 text-sm font-medium text-white shadow hover:bg-[#0f663c] active:scale-[0.99] inline-flex items-center transition-opacity disabled:cursor-not-allowed disabled:opacity-60" @onclick="HandleSave" disabled="@IsSaving">
+                <button type="button" class="rounded-xl bg-[#127646] px-4 py-3 text-sm font-medium text-white shadow hover:bg-[#0f663c] active:scale-[0.99] inline-flex items-center" @onclick="HandleSave">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 256 256">
                         <path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM51.31,160l90.35-90.35,16.68,16.69L68,176.68ZM48,179.31,76.69,208H48Zm48,25.38L79.31,188l90.35-90.35h0l16.68,16.69Z"></path>
                     </svg>
-                    @if (IsSaving)
-                    {
-                        <span>Opslaan…</span>
-                    }
-                    else
-                    {
-                        <span>Opslaan</span>
-                    }
+                    Opslaan
                 </button>
             }
             else
@@ -48,7 +41,6 @@
     [Parameter] public EventCallback OnEdit { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
-    [Parameter] public bool IsSaving { get; set; }
 
     private Task HandleBack() => OnBack.InvokeAsync();
     private Task HandleEdit() => OnEdit.InvokeAsync();

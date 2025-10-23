@@ -20,9 +20,17 @@
     --color-emerald-200: oklch(90.5% 0.093 164.15);
     --color-emerald-400: oklch(76.5% 0.177 163.223);
     --color-emerald-600: oklch(59.6% 0.145 163.225);
+    --color-emerald-700: oklch(50.8% 0.118 165.612);
+    --color-emerald-800: oklch(43.2% 0.095 166.913);
     --color-blue-600: oklch(54.6% 0.245 262.881);
     --color-blue-700: oklch(48.8% 0.243 264.376);
     --color-blue-800: oklch(42.4% 0.199 265.638);
+    --color-rose-50: oklch(96.9% 0.015 12.422);
+    --color-rose-100: oklch(94.1% 0.03 12.58);
+    --color-rose-200: oklch(89.2% 0.058 10.001);
+    --color-rose-500: oklch(64.5% 0.246 16.439);
+    --color-rose-600: oklch(58.6% 0.253 17.585);
+    --color-rose-700: oklch(51.4% 0.222 16.935);
     --color-slate-600: oklch(44.6% 0.043 257.281);
     --color-gray-200: oklch(92.8% 0.006 264.531);
     --color-gray-400: oklch(70.7% 0.022 261.325);
@@ -444,8 +452,8 @@
   .max-h-screen {
     max-height: 100vh;
   }
-  .min-h-\[32px\] {
-    min-height: 32px;
+  .min-h-\[36px\] {
+    min-height: 36px;
   }
   .min-h-dvh {
     min-height: 100dvh;
@@ -564,6 +572,9 @@
   .scroll-px-4 {
     scroll-padding-inline: calc(var(--spacing) * 4);
   }
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -596,9 +607,6 @@
   }
   .justify-end {
     justify-content: flex-end;
-  }
-  .gap-1 {
-    gap: calc(var(--spacing) * 1);
   }
   .gap-2 {
     gap: calc(var(--spacing) * 2);
@@ -733,6 +741,10 @@
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 1px;
   }
+  .border-dashed {
+    --tw-border-style: dashed;
+    border-style: dashed;
+  }
   .border-\[\#0B6532\] {
     border-color: #0B6532;
   }
@@ -745,6 +757,9 @@
   .border-amber-200 {
     border-color: var(--color-amber-200);
   }
+  .border-emerald-100 {
+    border-color: var(--color-emerald-100);
+  }
   .border-emerald-200 {
     border-color: var(--color-emerald-200);
   }
@@ -756,6 +771,15 @@
   }
   .border-red-200 {
     border-color: var(--color-red-200);
+  }
+  .border-rose-100 {
+    border-color: var(--color-rose-100);
+  }
+  .border-rose-200 {
+    border-color: var(--color-rose-200);
+  }
+  .border-rose-500 {
+    border-color: var(--color-rose-500);
   }
   .border-white {
     border-color: var(--color-white);
@@ -796,6 +820,9 @@
   .bg-emerald-50 {
     background-color: var(--color-emerald-50);
   }
+  .bg-emerald-100 {
+    background-color: var(--color-emerald-100);
+  }
   .bg-emerald-600 {
     background-color: var(--color-emerald-600);
   }
@@ -823,11 +850,26 @@
   .bg-red-600 {
     background-color: var(--color-red-600);
   }
+  .bg-rose-50 {
+    background-color: var(--color-rose-50);
+  }
+  .bg-rose-100 {
+    background-color: var(--color-rose-100);
+  }
+  .bg-rose-500 {
+    background-color: var(--color-rose-500);
+  }
   .bg-transparent {
     background-color: transparent;
   }
   .bg-white {
     background-color: var(--color-white);
+  }
+  .bg-white\/60 {
+    background-color: color-mix(in srgb, #fff 60%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-white) 60%, transparent);
+    }
   }
   .bg-white\/70 {
     background-color: color-mix(in srgb, #fff 70%, transparent);
@@ -906,6 +948,9 @@
   }
   .py-5 {
     padding-block: calc(var(--spacing) * 5);
+  }
+  .py-6 {
+    padding-block: calc(var(--spacing) * 6);
   }
   .py-8 {
     padding-block: calc(var(--spacing) * 8);
@@ -1060,6 +1105,21 @@
   .text-current {
     color: currentcolor;
   }
+  .text-emerald-600 {
+    color: var(--color-emerald-600);
+  }
+  .text-emerald-700 {
+    color: var(--color-emerald-700);
+  }
+  .text-emerald-700\/80 {
+    color: color-mix(in srgb, oklch(50.8% 0.118 165.612) 80%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-emerald-700) 80%, transparent);
+    }
+  }
+  .text-emerald-800 {
+    color: var(--color-emerald-800);
+  }
   .text-gray-400 {
     color: var(--color-gray-400);
   }
@@ -1092,6 +1152,21 @@
   }
   .text-red-700 {
     color: var(--color-red-700);
+  }
+  .text-rose-500 {
+    color: var(--color-rose-500);
+  }
+  .text-rose-600 {
+    color: var(--color-rose-600);
+  }
+  .text-rose-600\/80 {
+    color: color-mix(in srgb, oklch(58.6% 0.253 17.585) 80%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-rose-600) 80%, transparent);
+    }
+  }
+  .text-rose-700 {
+    color: var(--color-rose-700);
   }
   .text-slate-600 {
     color: var(--color-slate-600);
@@ -1188,6 +1263,12 @@
   .ring-emerald-600 {
     --tw-ring-color: var(--color-emerald-600);
   }
+  .ring-rose-500 {
+    --tw-ring-color: var(--color-rose-500);
+  }
+  .ring-transparent {
+    --tw-ring-color: transparent;
+  }
   .ring-white\/30 {
     --tw-ring-color: color-mix(in srgb, #fff 30%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
@@ -1222,6 +1303,11 @@
   }
   .transition {
     transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, opacity, box-shadow, transform, translate, scale, rotate, filter, -webkit-backdrop-filter, backdrop-filter, display, content-visibility, overlay, pointer-events;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .transition-opacity {
+    transition-property: opacity;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
@@ -1334,6 +1420,27 @@
       }
     }
   }
+  .hover\:bg-rose-50 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-rose-50);
+      }
+    }
+  }
+  .hover\:bg-rose-100 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-rose-100);
+      }
+    }
+  }
+  .hover\:bg-rose-600 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-rose-600);
+      }
+    }
+  }
   .hover\:bg-white\/10 {
     &:hover {
       @media (hover: hover) {
@@ -1434,6 +1541,11 @@
   .disabled\:opacity-50 {
     &:disabled {
       opacity: 50%;
+    }
+  }
+  .disabled\:opacity-60 {
+    &:disabled {
+      opacity: 60%;
     }
   }
   .sm\:mt-5 {
