@@ -42,7 +42,7 @@
                     var isLocked = !isSelected && SelectedCount >= MaxSelection;
                     <button type="button" class="w-full rounded-2xl border px-4 py-3 text-left text-sm font-medium shadow-sm focus:outline-none transition @GetOptionClasses(isSelected) disabled:opacity-40 disabled:cursor-not-allowed" role="option" aria-selected="@isSelected" disabled="@isLocked" @onclick="() => HandleToggle(option.Id)">
                         <div class="flex items-start gap-3">
-                            <span class="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full border @(isSelected ? "border-sky-500 bg-sky-500 text-white" : "border-neutral-300 text-transparent")">✓</span>
+                            <span class="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full border @(isSelected ? "border-emerald-500 bg-emerald-500 text-white" : "border-neutral-300 text-transparent")">✓</span>
                             <span class="text-neutral-800">@option.Text</span>
                         </div>
                     </button>
@@ -54,8 +54,8 @@
             <div class="flex items-center justify-between">
                 <p class="text-sm text-neutral-600">Geselecteerd: <span class="font-medium">@SelectedCount/@MaxSelection</span></p>
                 <div class="flex items-center gap-2">
-                    <button type="button" class="rounded-xl border border-sky-600 px-4 py-3 text-sm font-medium text-sky-700 hover:bg-sky-50" @onclick="HandleClear">Leegmaken</button>
-                    <button type="button" class="rounded-xl bg-sky-600 px-4 py-3 text-sm font-medium text-white shadow hover:bg-sky-700 disabled:opacity-40 disabled:cursor-not-allowed" disabled="@(SelectedCount == 0)" @onclick="HandleConfirm">Bewaar</button>
+                    <button type="button" class="rounded-xl border border-[#127646] px-4 py-3 text-sm font-medium text-[#127646] hover:bg-[#127646] hover:text-white" @onclick="HandleClear">Leegmaken</button>
+                    <button type="button" class="rounded-xl bg-[#127646] px-4 py-3 text-sm font-medium text-white shadow hover:bg-[#0f663c] disabled:opacity-40 disabled:cursor-not-allowed" disabled="@(SelectedCount == 0)" @onclick="HandleConfirm">Bewaar</button>
                 </div>
             </div>
         </div>
@@ -93,8 +93,8 @@
 
     private string GetOptionClasses(bool isSelected)
         => isSelected
-            ? "border-sky-200 bg-sky-50"
-            : "border-neutral-200 bg-white hover:border-sky-200 hover:bg-sky-50";
+            ? "border-emerald-200 bg-emerald-50"
+            : "border-neutral-200 bg-white hover:border-emerald-200 hover:bg-emerald-50";
 
     private Task HandleClose() => OnClose.InvokeAsync();
     private Task HandleToggle(string id) => OnToggle.InvokeAsync(id);
