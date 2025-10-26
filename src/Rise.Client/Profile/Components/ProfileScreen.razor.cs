@@ -12,6 +12,7 @@ using Rise.Client.Profile.Models;
 using Rise.Client.Users;
 using Rise.Shared.Common;
 using Rise.Shared.Users;
+using Ardalis.Result;
 
 namespace Rise.Client.Profile.Components;
 
@@ -193,6 +194,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private readonly Dictionary<string, string> _customChatLineOptions = new(StringComparer.OrdinalIgnoreCase);
 
     private bool _isEditing;
+    private bool _isSaving;
     private bool _isLoading = true;
     private string? _loadError;
 
@@ -482,14 +484,53 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
     private async Task SaveEdit()
     {
-        _model = _draft.ApplyTo(_model);
-        _initialHobbyIds = _selectedHobbyIds.ToHashSet();
-        _initialLikeIds = _selectedLikeIds.ToList();
-        _initialDislikeIds = _selectedDislikeIds.ToList();
-        _initialChatLineIds = _selectedChatLineIds.ToList();
-        _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
-        _isEditing = false;
-        await ShowToastAsync("Wijzigingen toegepast");
+        if (_isLoading || HasError || _isSaving)
+        {
+            return;
+        }
+
+        _isSaving = true;
+
+        var request = new UserRequest.UpdateCurrentUser
+        {
+            Name = _draft.Name?.Trim() ?? string.Empty,
+            Email = _draft.Email?.Trim() ?? string.Empty,
+            Biography = _draft.Bio ?? string.Empty,
+            Gender = _draft.Gender,
+            AvatarUrl = string.IsNullOrWhiteSpace(_draft.AvatarUrl) ? ProfileModel.DefaultAvatar : _draft.AvatarUrl,
+            HobbyIds = _selectedHobbyIds.ToList(),
+            LikePreferenceIds = _selectedLikeIds.ToList(),
+            DislikePreferenceIds = _selectedDislikeIds.ToList(),
+            DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds)
+        };
+
+        try
+        {
+            var result = await UserContext.UpdateCurrentUserAsync(request);
+            if (result is { IsSuccess: true, Value.User: not null })
+            {
+                var updatedUser = result.Value.User;
+                _currentUser = updatedUser;
+                var memberSince = FormatMemberSince(updatedUser.CreatedAt);
+                _model = ProfileModel.FromUser(updatedUser, memberSince);
+                _draft = ProfileDraft.FromModel(_model);
+                SyncSelectionFromModel();
+                _isEditing = false;
+                await ShowToastAsync("Wijzigingen toegepast");
+                return;
+            }
+
+            var errorMessage = ExtractErrorMessage(result);
+            await ShowToastAsync(errorMessage);
+        }
+        catch
+        {
+            await ShowToastAsync("Er ging iets mis bij het opslaan van je profiel.");
+        }
+        finally
+        {
+            _isSaving = false;
+        }
     }
 
     private async Task OnAvatarChanged(InputFileChangeEventArgs args)
@@ -1164,6 +1205,46 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     {
         var option = _hobbyOptions.FirstOrDefault(o => string.Equals(o.Id, id, StringComparison.Ordinal));
         return option is null ? null : new ProfileHobbyModel(option.Id, option.Name, option.Emoji);
+    }
+
+    private static string ExtractErrorMessage(Result<UserResponse.CurrentUser>? result)
+    {
+        if (result is null)
+        {
+            return "Er ging iets mis bij het opslaan van je profiel.";
+        }
+
+        if (result.Status == ResultStatus.Unauthorized)
+        {
+            return "Je bent niet aangemeld. Log opnieuw in om je profiel te bewerken.";
+        }
+
+        if (result.Status == ResultStatus.Invalid && result.ValidationErrors?.Count > 0)
+        {
+            var validationMessages = result.ValidationErrors
+                .Select(error => error.ErrorMessage)
+                .Where(message => !string.IsNullOrWhiteSpace(message))
+                .ToList();
+
+            if (validationMessages.Count > 0)
+            {
+                return string.Join(" ", validationMessages);
+            }
+        }
+
+        if (result.Errors?.Count > 0)
+        {
+            var errorMessages = result.Errors
+                .Where(message => !string.IsNullOrWhiteSpace(message))
+                .ToList();
+
+            if (errorMessages.Count > 0)
+            {
+                return string.Join(" ", errorMessages);
+            }
+        }
+
+        return "Er ging iets mis bij het opslaan van je profiel.";
     }
 
     private async Task ShowToastAsync(string message)

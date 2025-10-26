@@ -12,6 +12,7 @@ public static class UserDto
         public string AvatarUrl { get; init; } = string.Empty;
         public string Email { get; init; } = string.Empty;
         public string Biography { get; init; } = string.Empty;
+        public string Gender { get; init; } = "x";
         public DateOnly BirthDay { get; init; }
         public DateTime CreatedAt { get; init; }
         public List<UserSentimentDto> Interests { get; init; } = [];

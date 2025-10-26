@@ -26,6 +26,7 @@ internal static class UserMapper
             AvatarUrl = user.AvatarUrl,
             Email = email,
             Biography = user.Biography,
+            Gender = user.Gender,
             BirthDay = user.BirthDay,
             CreatedAt = user.CreatedAt,
             Interests = user.Sentiments

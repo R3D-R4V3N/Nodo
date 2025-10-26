@@ -33,6 +33,12 @@ public class ApplicationUser : Entity
         get => _biography;
         set => _biography = Guard.Against.NullOrWhiteSpace(value);
     }
+    private string _gender = "x";
+    public required string Gender
+    {
+        get => _gender;
+        set => _gender = Guard.Against.NullOrWhiteSpace(value);
+    }
     private string _avatarUrl = string.Empty;
     public required string AvatarUrl
     {

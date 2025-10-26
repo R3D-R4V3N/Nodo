@@ -52,7 +52,7 @@ public record ProfileModel
             Name = user.Name,
             Email = user.Email,
             Bio = user.Biography,
-            Gender = "x",
+            Gender = user.Gender,
             AvatarUrl = string.IsNullOrWhiteSpace(user.AvatarUrl) ? DefaultAvatar : user.AvatarUrl,
             MemberSince = memberSince,
             Interests = interests,
