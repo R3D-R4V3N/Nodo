@@ -45,7 +45,7 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
                    });
 
         // hobbies
-        builder.HasMany<UserHobby>("_hobbies")
+        builder.HasMany(u => u.Hobbies)
             .WithOne()
             .HasForeignKey("UserId")
             .OnDelete(DeleteBehavior.Cascade);
