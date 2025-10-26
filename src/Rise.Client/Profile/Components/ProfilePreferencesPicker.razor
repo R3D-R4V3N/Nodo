@@ -46,7 +46,7 @@
                 <label class="text-xs font-medium text-neutral-500" for="custom-preference-input">@CustomEntryLabel</label>
                 <div class="mt-1 flex items-start gap-2">
                     <input id="custom-preference-input"
-                           class="w-full rounded-2xl border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                           class="w-full rounded-2xl border border-neutral-200 bg-white px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
                            placeholder="@CustomEntryPlaceholder"
                            value="@CustomEntryValue"
                            @oninput="HandleCustomEntryInput"
@@ -54,12 +54,10 @@
                            maxlength="@CustomEntryMaxLengthValue"
                            autocomplete="off" />
                     <button type="button"
-                            class="shrink-0 rounded-xl px-4 py-2 text-sm font-medium text-white shadow disabled:opacity-40 disabled:cursor-not-allowed @(PrimaryButtonClass) inline-flex items-center justify-center gap-2"
+                            class="shrink-0 rounded-xl px-4 py-3 text-sm font-medium text-white shadow disabled:opacity-40 disabled:cursor-not-allowed @(PrimaryButtonClass) inline-flex items-center justify-center gap-2"
                             disabled="@(IsCustomEntryBusy || IsCustomEntryDisabled || string.IsNullOrWhiteSpace(CustomEntryValue))"
                             @onclick="HandleAddCustomEntry">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 256 256"><path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"></path></svg>
                         <span>@(IsCustomEntryBusy ? "Toevoegen…" : "Toevoegen")</span>
                     </button>
                 </div>
@@ -98,15 +96,11 @@
                 <p class="text-sm text-neutral-600">Geselecteerd: <span class="font-medium">@SelectedCount/@MaxSelection</span></p>
                 <div class="flex items-center gap-2">
                     <button type="button" class="rounded-xl border px-4 py-3 text-sm font-medium @(OutlineButtonClass) inline-flex items-center gap-2" @onclick="HandleClear">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3h6a1 1 0 0 1 1 1v2h3M6 6h12l-.87 12.14A2 2 0 0 1 15.14 20H8.86a2 2 0 0 1-1.99-1.86L6 6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M10 11v6m4-6v6" />
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 256 256"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM112,168a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm0-120H96V40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8Z"></path></svg>
                         <span>Leegmaken</span>
                     </button>
                     <button type="button" class="rounded-xl px-4 py-3 text-sm font-medium text-white shadow disabled:opacity-40 disabled:cursor-not-allowed @(PrimaryButtonClass) inline-flex items-center gap-2" disabled="@(SelectedCount == 0)" @onclick="HandleConfirm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 256 256">
-                            <path d="M216.49,79.51l-112,112a12,12,0,0,1-17,0l-48-48a12,12,0,0,1,17-17L96,166l103-103a12,12,0,0,1,17,17Z" />
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor"  viewBox="0 0 256 256"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"></path></svg>
                         <span>Bewaar</span>
                     </button>
                 </div>
