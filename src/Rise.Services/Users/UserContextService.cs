@@ -146,7 +146,12 @@ public class UserContextService(
         var updateSentimentsResult = currentUser.UpdateSentiments(sentiments);
         if (!updateSentimentsResult.IsSuccess)
         {
-            return Result.Invalid(updateSentimentsResult.Errors.ToArray());
+            return Result.Invalid(
+                updateSentimentsResult.Errors
+                    .Select(error => new ValidationError(
+                        nameof(UserRequest.UpdateCurrentUser.LikePreferenceIds),
+                        error))
+                    .ToArray());
         }
 
         var settings = await LoadUserSettingsAsync(currentUser, cancellationToken)
@@ -170,7 +175,12 @@ public class UserContextService(
             var addResult = settings.AddChatTextLine(chatLine, index++);
             if (!addResult.IsSuccess)
             {
-                return Result.Invalid(addResult.Errors.ToArray());
+                return Result.Invalid(
+                    addResult.Errors
+                        .Select(error => new ValidationError(
+                            nameof(UserRequest.UpdateCurrentUser.DefaultChatLines),
+                            error))
+                        .ToArray());
             }
         }
 
