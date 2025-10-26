@@ -107,7 +107,17 @@
         OnClear="ClearChatLinePickerSelection"
         OnConfirm="ConfirmChatLinePickerSelection"
         OnClose="CloseChatLinePicker"
-        SearchTextChanged="UpdateChatLinePickerSearch" />
+        SearchTextChanged="UpdateChatLinePickerSearch"
+        AllowCustomEntry="true"
+        CustomEntryLabel="Voeg je eigen zin toe"
+        CustomEntryPlaceholder="Typ een eigen zin…"
+        CustomEntryValue="@NewChatLineText"
+        CustomEntryValueChanged="UpdateNewChatLineText"
+        OnCreateCustomEntry="AddCustomChatLineAsync"
+        CustomEntryError="@NewChatLineError"
+        IsCustomEntryBusy="@IsAddingCustomChatLine"
+        IsCustomEntryDisabled="@IsCustomChatLineLimitReached"
+        CustomEntryMaxLength="@CustomChatLineMaxLength" />
 
     <ProfileToast Message="@_toastMessage" Visible="@_isToastVisible" />
 </div>

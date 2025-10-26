@@ -1,4 +1,5 @@
 @using System.Linq
+@using Microsoft.AspNetCore.Components.Web
 @using Rise.Client.Profile.Models
 
 <div class="@(IsOpen ? "fixed" : "hidden") inset-0 z-50" aria-hidden="@(IsOpen ? "false" : "true")">
@@ -33,6 +34,33 @@
                 </div>
             </div>
         </div>
+
+        @if (AllowCustomEntry)
+        {
+            <div class="px-4 pb-2 sm:px-6">
+                <label class="text-xs font-medium text-neutral-500" for="custom-preference-input">@CustomEntryLabel</label>
+                <div class="mt-1 flex items-start gap-2">
+                    <input id="custom-preference-input"
+                           class="w-full rounded-2xl border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                           placeholder="@CustomEntryPlaceholder"
+                           value="@CustomEntryValue"
+                           @oninput="HandleCustomEntryInput"
+                           @onkeydown="HandleCustomEntryKeyDown"
+                           maxlength="@CustomEntryMaxLengthValue"
+                           autocomplete="off" />
+                    <button type="button"
+                            class="shrink-0 rounded-xl px-4 py-2 text-sm font-medium text-white shadow disabled:opacity-40 disabled:cursor-not-allowed @(PrimaryButtonClass)"
+                            disabled="@(IsCustomEntryBusy || IsCustomEntryDisabled || string.IsNullOrWhiteSpace(CustomEntryValue))"
+                            @onclick="HandleAddCustomEntry">
+                        @(IsCustomEntryBusy ? "Toevoegen…" : "Toevoegen")
+                    </button>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(CustomEntryError))
+                {
+                    <p class="mt-1 text-xs text-red-600">@CustomEntryError</p>
+                }
+            </div>
+        }
 
         <div class="px-4 pb-3 sm:px-6">
             <div class="grid @(UseSingleColumnLayout ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-2") gap-3 overflow-y-auto overscroll-contain touch-scroll pb-24 max-h-[50vh] sm:max-h-[55vh] pt-1 px-1" role="listbox" aria-multiselectable="true">
@@ -84,6 +112,16 @@
     [Parameter] public EventCallback OnConfirm { get; set; }
     [Parameter] public int MaxSelection { get; set; }
     [Parameter] public bool UseSingleColumnLayout { get; set; }
+    [Parameter] public bool AllowCustomEntry { get; set; }
+    [Parameter] public string CustomEntryLabel { get; set; } = string.Empty;
+    [Parameter] public string CustomEntryPlaceholder { get; set; } = string.Empty;
+    [Parameter] public string CustomEntryValue { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> CustomEntryValueChanged { get; set; }
+    [Parameter] public EventCallback<string> OnCreateCustomEntry { get; set; }
+    [Parameter] public string CustomEntryError { get; set; } = string.Empty;
+    [Parameter] public bool IsCustomEntryBusy { get; set; }
+    [Parameter] public bool IsCustomEntryDisabled { get; set; }
+    [Parameter] public int CustomEntryMaxLength { get; set; }
 
     private HashSet<string> _selectionLookup = new(StringComparer.OrdinalIgnoreCase);
 
@@ -100,6 +138,8 @@
     private string PrimaryButtonClass => UseDislikeTheme ? "bg-rose-500 hover:bg-rose-600" : "bg-[#127646] hover:bg-[#0f663c]";
 
     private string OutlineButtonClass => UseDislikeTheme ? "border-rose-500 text-rose-500 hover:bg-rose-50" : "border-[#127646] text-[#127646] hover:bg-[#127646] hover:text-white";
+
+    private int? CustomEntryMaxLengthValue => CustomEntryMaxLength > 0 ? CustomEntryMaxLength : null;
 
     protected override void OnParametersSet()
     {
@@ -132,4 +172,30 @@
     }
 
     private Task ClearSearch() => SearchTextChanged.InvokeAsync(string.Empty);
+
+    private Task HandleCustomEntryInput(ChangeEventArgs args)
+    {
+        var value = args.Value?.ToString() ?? string.Empty;
+        return CustomEntryValueChanged.InvokeAsync(value);
+    }
+
+    private Task HandleAddCustomEntry()
+    {
+        if (!OnCreateCustomEntry.HasDelegate || IsCustomEntryBusy || IsCustomEntryDisabled)
+        {
+            return Task.CompletedTask;
+        }
+
+        return OnCreateCustomEntry.InvokeAsync(CustomEntryValue);
+    }
+
+    private Task HandleCustomEntryKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key is "Enter")
+        {
+            return HandleAddCustomEntry();
+        }
+
+        return Task.CompletedTask;
+    }
 }
