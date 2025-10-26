@@ -1219,7 +1219,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
             return "Je bent niet aangemeld. Log opnieuw in om je profiel te bewerken.";
         }
 
-        if (result.Status == ResultStatus.Invalid && result.ValidationErrors?.Count > 0)
+        if (result.Status == ResultStatus.Invalid && result.ValidationErrors?.Any() == true)
         {
             var validationMessages = result.ValidationErrors
                 .Select(error => error.ErrorMessage)
@@ -1232,7 +1232,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
             }
         }
 
-        if (result.Errors?.Count > 0)
+        if (result.Errors?.Any() == true)
         {
             var errorMessages = result.Errors
                 .Where(message => !string.IsNullOrWhiteSpace(message))
