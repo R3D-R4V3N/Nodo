@@ -237,7 +237,28 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private IReadOnlyList<ProfileHobbyModel> Hobbies => _model.Hobbies;
     private IReadOnlyList<HobbyOption> HobbyOptions => _hobbyOptions;
     private IReadOnlyList<PreferenceOption> PreferenceOptions => _preferenceOptions;
-    private IReadOnlyList<PreferenceOption> ChatLineOptions => _chatLineOptions;
+    private IReadOnlyList<PreferenceOption> ChatLineOptions
+    {
+        get
+        {
+            if (_customChatLineOptions.Count == 0)
+            {
+                return _chatLineOptions;
+            }
+
+            var combined = new List<PreferenceOption>(_chatLineOptions.Count + _customChatLineOptions.Count);
+            combined.AddRange(_chatLineOptions);
+
+            foreach (var option in _customChatLineOptions
+                .Where(entry => !_chatLineOptionsById.ContainsKey(entry.Key))
+                .OrderBy(entry => entry.Value, StringComparer.OrdinalIgnoreCase))
+            {
+                combined.Add(new PreferenceOption(option.Key, option.Value));
+            }
+
+            return combined;
+        }
+    }
     private IReadOnlyList<PreferenceChip> LikeChips => BuildPreferenceChips(_selectedLikeIds);
     private IReadOnlyList<PreferenceChip> DislikeChips => BuildPreferenceChips(_selectedDislikeIds);
     private IReadOnlyList<PreferenceChip> ChatLineChips => BuildChatLineChips(_selectedChatLineIds);
