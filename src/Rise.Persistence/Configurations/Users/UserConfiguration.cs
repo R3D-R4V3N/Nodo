@@ -45,10 +45,13 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
                    });
 
         // hobbies
-        builder.HasMany(u => u.Hobbies)
+        builder.HasMany<UserHobby>("_hobbies")
             .WithOne()
             .HasForeignKey("UserId")
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(u => u.Hobbies)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         // connections
         builder.Ignore(u => u.Connections);
