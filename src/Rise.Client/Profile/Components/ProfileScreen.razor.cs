@@ -443,14 +443,44 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
     private async Task SaveEdit()
     {
-        _model = _draft.ApplyTo(_model);
-        _initialHobbyIds = _selectedHobbyIds.ToHashSet();
-        _initialLikeIds = _selectedLikeIds.ToList();
-        _initialDislikeIds = _selectedDislikeIds.ToList();
-        _initialChatLineIds = _selectedChatLineIds.ToList();
-        _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
+        if (!_isEditing || _isLoading)
+        {
+            return;
+        }
+
+        var request = new UserRequest.UpdateProfile
+        {
+            Name = _draft.Name?.Trim() ?? string.Empty,
+            Email = _draft.Email?.Trim() ?? string.Empty,
+            Bio = _draft.Bio?.Trim() ?? string.Empty,
+            AvatarUrl = string.IsNullOrWhiteSpace(_draft.AvatarUrl) ? ProfileModel.DefaultAvatar : _draft.AvatarUrl,
+            Likes = OrderPreferenceIds(_selectedLikeIds),
+            Dislikes = OrderPreferenceIds(_selectedDislikeIds),
+            Hobbies = _selectedHobbyIds
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Select(id => id.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(HobbySelectionLimit)
+                .ToList(),
+            DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds).ToList()
+        };
+
+        var result = await UserContext.UpdateProfileAsync(request);
+
+        if (result is not { IsSuccess: true, Value.User: not null })
+        {
+            await ShowToastAsync(BuildErrorMessage(result));
+            return;
+        }
+
+        var updatedUser = result.Value.User;
+        _currentUser = updatedUser;
+        var memberSince = FormatMemberSince(updatedUser.CreatedAt);
+        _model = ProfileModel.FromUser(updatedUser, memberSince);
+        _draft = ProfileDraft.FromModel(_model);
+        SyncSelectionFromModel();
         _isEditing = false;
-        await ShowToastAsync("Wijzigingen toegepast");
+        await ShowToastAsync("Wijzigingen opgeslagen");
     }
 
     private async Task OnAvatarChanged(InputFileChangeEventArgs args)
@@ -766,6 +796,26 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     {
         _preferencePickerSearch = value;
         return Task.CompletedTask;
+    }
+
+    private static string BuildErrorMessage(Result<UserResponse.CurrentUser>? result)
+    {
+        if (result is null)
+        {
+            return "Opslaan mislukt.";
+        }
+
+        if (result.ValidationErrors?.Any() ?? false)
+        {
+            return string.Join(" ", result.ValidationErrors.Select(error => error.ErrorMessage));
+        }
+
+        if (result.Errors?.Any() ?? false)
+        {
+            return string.Join(" ", result.Errors);
+        }
+
+        return "Opslaan mislukt.";
     }
 
     private Task RemoveLike(string id)
