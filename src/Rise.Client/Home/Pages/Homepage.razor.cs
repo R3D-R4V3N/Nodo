@@ -1,22 +1,19 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Rise.Shared.Chats;
-using System.Security.Claims;
+using Rise.Shared.Users;
 
 namespace Rise.Client.Home.Pages;
 public partial class Homepage
 {
+    [CascadingParameter] public UserDto.CurrentUser? CurrentUser { get; set; }
     private readonly List<ChatDto.GetChats> _chats = new();
     private List<ChatDto.GetChats> _filteredChats => string.IsNullOrWhiteSpace(_searchTerm)
         ? _chats
-        : _chats.Where(c =>
-                GetChatTitle(c).Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                c.Messages.Any(m => m.Content.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)))
-            .ToList();
+        : _chats.Where(c => GetChatTitle(c)
+            .Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)
+        ).ToList();
 
-    private string? _currentAccountId;
-    private string? _currentUserName;
-    private string _greetingName = "gebruiker";
     private bool _isLoading = true;
     private string? _loadError;
     private string? _searchTerm;
@@ -31,16 +28,11 @@ public partial class Homepage
             return;
         }
 
-        _currentAccountId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        _currentUserName = user.Identity?.Name;
-        _greetingName = DetermineGreetingNameFromIdentity();
-
         var result = await ChatService.GetAllAsync();
         if (result.IsSuccess && result.Value is not null)
         {
             _chats.Clear();
-            _chats.AddRange(result.Value.Chats ?? Array.Empty<ChatDto.GetChats>());
-            UpdateGreetingNameFromChats();
+            _chats.AddRange(result.Value.Chats ?? []);
         }
         else
         {
@@ -50,13 +42,14 @@ public partial class Homepage
         _isLoading = false;
     }
 
-    private void NavigateToChat(ChatDto.GetChats chat) => NavigationManager.NavigateTo($"/chat/{chat.ChatId}");
+    private void NavigateToChat(ChatDto.GetChats chat) 
+        => NavigationManager.NavigateTo($"/chat/{chat.ChatId}");
 
     private string GetChatTitle(ChatDto.GetChats chat)
     {
         var chatUserNames = chat?
             .Users
-            .Where(x => x.AccountId != _currentAccountId)
+            .Where(x => x.AccountId != CurrentUser!.AccountId)
             .Select(x => x.Name)
             .ToList() ?? [$"Chat {chat?.ChatId}"];
 
@@ -65,34 +58,20 @@ public partial class Homepage
 
     private static string GetLastMessagePreview(ChatDto.GetChats chat)
     {
-        var last = chat.Messages.OrderBy(m => m.Timestamp).LastOrDefault();
-        if (last is null || string.IsNullOrWhiteSpace(last.Content)) return "Nog geen berichten";
-        var preview = last.Content.Trim();
-        return preview.Length <= 80 ? preview : string.Concat(preview.AsSpan(0, 80), "…");
+        var last = chat.LastMessage;
+        if (last is null || string.IsNullOrWhiteSpace(last.Content)) 
+            return "Nog geen berichten";
+
+        var preview = last.Content;
+
+        return preview.Length <= 80 
+            ? preview : 
+            string.Concat(preview.AsSpan(0, 80), "…");
     }
 
     private static string GetLastActivity(ChatDto.GetChats chat)
     {
-        var last = chat.Messages.OrderBy(m => m.Timestamp).LastOrDefault();
+        var last = chat.LastMessage;
         return last?.Timestamp?.ToString("HH:mm") ?? "-";
-    }
-
-    private string DetermineGreetingNameFromIdentity()
-    {
-        if (!string.IsNullOrWhiteSpace(_currentUserName))
-        {
-            var at = _currentUserName.IndexOf('@');
-            return at > 0 ? _currentUserName[..at] : _currentUserName;
-        }
-        return "gebruiker";
-    }
-
-    private void UpdateGreetingNameFromChats()
-    {
-        if (string.IsNullOrWhiteSpace(_currentAccountId)) return;
-        var own = _chats.SelectMany(c => c.Messages)
-                       .FirstOrDefault(m => string.Equals(m.User.AccountId, _currentAccountId, StringComparison.Ordinal));
-        if (own is not null && !string.IsNullOrWhiteSpace(own.User.Name))
-            _greetingName = own.User.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? _greetingName;
     }
 }

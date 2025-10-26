@@ -13,8 +13,7 @@ internal static class UserMapper
             Id = user.Id,
             Name = $"{user.FirstName} {user.LastName}",
             AccountId = user.AccountId,
-            Age = DateTime.Now.Year - user.BirthDay.Year -
-                    (DateTime.Now.DayOfYear < user.BirthDay.DayOfYear ? 1 : 0),
+            Age = CalculateAge(user.BirthDay),
             AvatarUrl = user.AvatarUrl,
         };
 
@@ -29,8 +28,8 @@ internal static class UserMapper
             Biography = user.Biography,
             BirthDay = user.BirthDay,
             CreatedAt = user.CreatedAt,
-            Interests = user.Interests
-                .Select(InterestMapper.ToDto)
+            Interests = user.Sentiments
+                .Select(SentimentMapper.ToDto)
                 .ToList(),
             Hobbies = user.Hobbies
                 .Select(HobbyMapper.ToDto)
@@ -59,4 +58,17 @@ internal static class UserMapper
             AccountId = user.AccountId,
             AvatarUrl = user.AvatarUrl
         };
+
+    private static int CalculateAge(DateOnly birthDay)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var age = today.Year - birthDay.Year;
+
+        if (today < birthDay.AddYears(age))
+        {
+            age--;
+        }
+
+        return age;
+    }
 }

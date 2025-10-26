@@ -69,18 +69,6 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
         });
     }
 
-    private static int CalculateAge(DateOnly birthDay)
-    {
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        var age = today.Year - birthDay.Year;
-
-        if (today < birthDay.AddYears(age))
-        {
-            age--;
-        }
-
-        return age;
-    }
     
     public async Task<Result<string>> AddFriendAsync(string targetAccountId, CancellationToken ctx = default)
     {

@@ -4,10 +4,10 @@ namespace Rise.Services
 {
     public class WordFilter
     {
-        private readonly HashSet<string> _blacklistedWords = new(StringComparer.OrdinalIgnoreCase);
-        private readonly Regex _blacklistRegex;
+        private static HashSet<string> _blacklistedWords = new(StringComparer.OrdinalIgnoreCase);
+        private static Regex _blacklistRegex;
 
-        public WordFilter()
+        static WordFilter()
         {
             // check if certain words can be removed
             // also regex for l33tstyle writing
@@ -294,7 +294,7 @@ namespace Rise.Services
             _blacklistRegex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
         }
 
-        public string Censor(string input)
+        public static string Censor(string input)
         {
             if (string.IsNullOrWhiteSpace(input))
                 return string.Empty; //incase the user just spams alot of whitespaces

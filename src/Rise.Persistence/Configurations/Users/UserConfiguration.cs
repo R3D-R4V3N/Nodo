@@ -1,7 +1,10 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rise.Domain.Users;
+using Rise.Domain.Users.Hobbys;
+using Rise.Domain.Users.Sentiment;
+using System;
+using System.Reflection.Emit;
 
 
 namespace Rise.Persistence.Configurations.Users;
@@ -22,28 +25,25 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
         builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.UserType).IsRequired();
 
-        // interests
-        builder.Ignore(u => u.Interests);
-        builder.OwnsMany<UserInterest>("_interests", interests =>
-        {
-            interests.WithOwner()
-                .HasForeignKey("UserId");
-
-            interests.Property<int>("Id");
-            interests.HasKey("Id");
-
-            interests.Property(i => i.Type)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            interests.Property(i => i.Like)
-                .HasMaxLength(200);
-
-            interests.Property(i => i.Dislike)
-                .HasMaxLength(200);
-
-            interests.ToTable("UserInterests");
-        });
+        // sentiments
+        builder.Ignore(u => u.Likes);
+        builder.Ignore(u => u.Dislikes);
+        builder.HasMany(u => u.Sentiments)
+               .WithMany()
+               .UsingEntity<UserSentimentJoin>(
+                   j => j
+                       .HasOne(js => js.Sentiment)
+                       .WithMany()
+                       .HasForeignKey(js => js.SentimentId),
+                   j => j
+                       .HasOne(js => js.User)
+                       .WithMany()
+                       .HasForeignKey(js => js.UserId),
+                   j =>
+                   {
+                       j.ToTable("UserSentiments");
+                       j.HasKey(x => new { x.UserId, x.SentimentId });
+                   });
 
         // hobbies
         builder.Ignore(u => u.Hobbies);

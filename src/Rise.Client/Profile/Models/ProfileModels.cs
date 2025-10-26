@@ -17,8 +17,6 @@ public record PreferenceOption(string Id, string Name, string? Emoji = null)
 
 public record PreferenceChip(string Id, string Label);
 
-public record ChatSuggestionOption(string Id, string Text);
-
 public record ProfileModel
 {
     public string Name { get; init; } = string.Empty;
@@ -29,12 +27,19 @@ public record ProfileModel
     public string MemberSince { get; init; } = string.Empty;
     public IReadOnlyList<ProfileInterestModel> Interests { get; init; } = Array.Empty<ProfileInterestModel>();
     public IReadOnlyList<ProfileHobbyModel> Hobbies { get; init; } = Array.Empty<ProfileHobbyModel>();
-    public IReadOnlyList<string> ChatSuggestions { get; init; } = Array.Empty<string>();
 
     public static ProfileModel FromUser(UserDto.CurrentUser user, string memberSince)
     {
         var interests = user.Interests
-            .Select(i => new ProfileInterestModel(i.Type, i.Like, i.Dislike))
+            .Select(i =>
+            {
+                bool isLike = i.Type.Equals(SentimentTypeDto.Like);
+                if (isLike)
+                {
+                    return new ProfileInterestModel(i.Type.ToString(), i.Text, string.Empty);
+                }
+                return new ProfileInterestModel(i.Type.ToString(), string.Empty, i.Text);
+            })
             .ToList();
 
         var hobbies = user.Hobbies
@@ -50,8 +55,7 @@ public record ProfileModel
             AvatarUrl = string.IsNullOrWhiteSpace(user.AvatarUrl) ? DefaultAvatar : user.AvatarUrl,
             MemberSince = memberSince,
             Interests = interests,
-            Hobbies = hobbies,
-            ChatSuggestions = user.DefaultChatLines
+            Hobbies = hobbies
         };
     }
 

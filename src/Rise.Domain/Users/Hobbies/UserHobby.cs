@@ -1,61 +1,8 @@
-using System;
-using System.Collections.Generic;
-using Ardalis.GuardClauses;
-using Rise.Domain.Common;
+namespace Rise.Domain.Users.Hobbys;
 
-namespace Rise.Domain.Users;
-
-public class UserHobby : ValueObject
+public class UserHobby : Entity
 {
     public required HobbyType Hobby { get; set; }
-
-    public static UserHobby Create(HobbyType hobby)
-        => new() { Hobby = Guard.Against.Default(hobby) };
-
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return Hobby;
-    }
-}
-
-public enum HobbyType
-{
-    Swimming,
-    Football,
-    Rugby,
-    Basketball,
-    Gaming,
-    Cooking,
-    Baking,
-    Hiking,
-    Cycling,
-    Drawing,
-    Painting,
-    MusicMaking,
-    Singing,
-    Dancing,
-    Reading,
-    Gardening,
-    Fishing,
-    Camping,
-    Photography,
-    Yoga,
-    Running,
-    Crafting,
-    Sewing,
-    Knitting,
-    Woodworking,
-    Pottery,
-    Writing,
-    Birdwatching,
-    ModelBuilding,
-    Chess,
-    BoardGames,
-    Puzzles,
-    CardGames,
-    Pilates,
-    Skating,
-    Bouldering,
 }
 
 public static class HobbyCatalog

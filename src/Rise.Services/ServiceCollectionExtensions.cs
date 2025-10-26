@@ -14,7 +14,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddScoped<IChatService, ChatService>();
-        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IUserContextService, UserContextService>();
         services.AddScoped<IUserConnectionService, UserConnectionService>();
         services.AddTransient<DbSeeder>();       
         

@@ -1,13 +1,8 @@
 using System.Security.Claims;
-using AngleSharp.Dom;
 using Ardalis.Result;
-using Bunit;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Components.Authorization;
 using NSubstitute;
-using Rise.Client.Pages;
 using Rise.Shared.Chats;
-using Rise.Client.Chats;
 using Xunit.Abstractions;
 using Rise.Client.Home.Pages;
 
@@ -73,19 +68,16 @@ public class HomepageShould : TestContext
                 new ChatDto.GetChats
                 {
                     ChatId = 1,
-                    Messages = new List<MessageDto.Chat>
+                    LastMessage = new MessageDto.Chat
                     {
-                        new MessageDto.Chat
+                        Content = "Hallo, testbericht",
+                        Timestamp = DateTime.UtcNow,
+                        User = new Rise.Shared.Users.UserDto.Message()
                         {
-                            Content = "Hallo, testbericht",
-                            Timestamp = DateTime.UtcNow,
-                            User = new Rise.Shared.Users.UserDto.Message()
-                            {
-                                Id = 1,
-                                AccountId = "1",
-                                AvatarUrl = "",
-                                Name = "Kyandro voet"
-                            }
+                            Id = 1,
+                            AccountId = "1",
+                            AvatarUrl = "",
+                            Name = "Kyandro voet"
                         }
                     }
                 }
@@ -96,11 +88,10 @@ public class HomepageShould : TestContext
 
         // Voeg fake authenticated user toe
         var fakeUser = new ClaimsPrincipal(new ClaimsIdentity(
-            new[]
-            {
+            [
                 new Claim(ClaimTypes.NameIdentifier, "1"),
                 new Claim(ClaimTypes.Name, "kyandro@nodo.chat")
-            },
+            ],
             "TestAuth"));
 
         var mockAuth = Substitute.For<AuthenticationStateProvider>();
@@ -119,5 +110,4 @@ public class HomepageShould : TestContext
         Assert.Contains("Hallo, testbericht", chatItems[0].TextContent);
         Assert.Contains("Kyandro", chatItems[0].TextContent);
     }
-    
 }

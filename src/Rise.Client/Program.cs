@@ -6,7 +6,6 @@ using Rise.Client.Chats;
 using Rise.Client.Identity;
 using Rise.Client.UserConnections;
 using Rise.Client.Users;
-using Rise.Services.Users;
 using Rise.Shared.Chats;
 using Rise.Shared.UserConnections;
 using Rise.Shared.Users;
@@ -36,11 +35,6 @@ try
     // register the account management interface
     builder.Services.AddScoped(sp => (IAccountManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
-
-
-    //  word filter
-    builder.Services.AddSingleton<Rise.Services.WordFilter>();
-
     var backendUri = new Uri(builder.Configuration["BackendUrl"] ?? "https://localhost:5001");
 
     // configure client for auth interactions
@@ -57,7 +51,7 @@ try
         client.BaseAddress = backendUri;
     });
 
-    builder.Services.AddHttpClient<IUserService, UserService>(client =>
+    builder.Services.AddHttpClient<IUserContextService, UserContextService>(client =>
     {
         client.BaseAddress = backendUri;
     });
