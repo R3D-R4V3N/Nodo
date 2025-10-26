@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -121,8 +122,54 @@ public partial class ProfileScreen : ComponentBase, IDisposable
             .Select((option, index) => new { option.Id, index })
             .ToDictionary(entry => entry.Id, entry => entry.index, StringComparer.OrdinalIgnoreCase);
 
+    private static readonly IReadOnlyList<PreferenceOption> _chatLineOptions = new List<PreferenceOption>
+    {
+        new("greeting-how-are-you", "Hoi! Hoe gaat het met je vandaag?"),
+        new("weekend-plans", "Heb je leuke plannen voor dit weekend?"),
+        new("weather-check", "Wat vind je van het weer vandaag?"),
+        new("favorite-hobby", "Wat doe je het liefst in je vrije tijd?"),
+        new("share-highlight", "Wat was het leukste dat je deze week meemaakte?"),
+        new("coffee-invite", "Zin om binnenkort samen koffie te drinken?"),
+        new("movie-talk", "Heb je onlangs nog een leuke film gezien?"),
+        new("music-question", "Welke muziek luister je graag?"),
+        new("book-recommendation", "Heb je nog een boekentip voor mij?"),
+        new("food-question", "Wat eet jij het liefst als comfort food?"),
+        new("walk-invite", "Zullen we binnenkort eens een wandeling maken?"),
+        new("fun-fact", "Ik wil graag een leuk weetje horen over jou!"),
+        new("gratitude", "Waar ben jij vandaag dankbaar voor?"),
+        new("motivation", "Wat geeft jou energie op een drukke dag?"),
+        new("relax-tip", "Hoe ontspan jij het liefst na een lange dag?"),
+        new("game-question", "Speel je graag spelletjes?"),
+        new("sport-chat", "Welke sport kijk of doe jij het liefst?"),
+        new("travel-dream", "Welke plek wil je ooit nog bezoeken?"),
+        new("memory-share", "Vertel eens over een mooie herinnering."),
+        new("goal-question", "Waar kijk je deze maand het meest naar uit?"),
+        new("support-offer", "Laat het me weten als ik iets voor je kan doen!"),
+        new("photo-share", "Ik ben benieuwd naar je laatste foto, wil je die delen?"),
+        new("daily-check-in", "Wat houdt je vandaag bezig?"),
+        new("morning-message", "Goedemorgen! Heb je lekker geslapen?"),
+        new("evening-message", "Slaap zacht straks, wat ga je nog doen vanavond?"),
+        new("compliment", "Ik waardeer het echt om met jou te praten!"),
+        new("laugh-question", "Waar heb je laatst hard om gelachen?"),
+        new("learning", "Wat wil je graag nog leren?"),
+        new("pet-talk", "Heb je huisdieren? Vertel eens!"),
+        new("recipe-share", "Heb je een favoriet recept dat ik moet proberen?"),
+    };
+
+    private static readonly IReadOnlyDictionary<string, PreferenceOption> _chatLineOptionsById =
+        _chatLineOptions.ToDictionary(option => option.Id, option => option, StringComparer.OrdinalIgnoreCase);
+
+    private static readonly IReadOnlyDictionary<string, string> _chatLineIdByName =
+        _chatLineOptions.ToDictionary(option => option.Name, option => option.Id, StringComparer.OrdinalIgnoreCase);
+
+    private static readonly IReadOnlyDictionary<string, int> _chatLineOrderById =
+        _chatLineOptions
+            .Select((option, index) => new { option.Id, index })
+            .ToDictionary(entry => entry.Id, entry => entry.index, StringComparer.OrdinalIgnoreCase);
+
     private const int HobbySelectionLimit = 3;
     private const int PreferenceSelectionLimit = 5;
+    private const int ChatLineSelectionLimit = 5;
 
     private ProfileModel _model = new();
     private ProfileDraft _draft;
@@ -138,6 +185,11 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private List<string> _initialDislikeIds = new();
     private readonly Dictionary<string, string> _customPreferenceOptions = new(StringComparer.OrdinalIgnoreCase);
 
+    private List<string> _selectedChatLineIds = new();
+    private List<string> _initialChatLineIds = new();
+    private HashSet<string> _chatLinePickerSelection = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> _customChatLineOptions = new(StringComparer.OrdinalIgnoreCase);
+
     private bool _isEditing;
     private bool _isLoading = true;
     private string? _loadError;
@@ -149,6 +201,9 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private PreferencePickerMode _preferencePickerMode = PreferencePickerMode.None;
     private bool _isPreferencePickerOpen;
     private string _preferencePickerSearch = string.Empty;
+
+    private bool _isChatLinePickerOpen;
+    private string _chatLinePickerSearch = string.Empty;
 
     private bool _isToastVisible;
     private string _toastMessage = string.Empty;
@@ -177,8 +232,10 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private IReadOnlyList<ProfileHobbyModel> Hobbies => _model.Hobbies;
     private IReadOnlyList<HobbyOption> HobbyOptions => _hobbyOptions;
     private IReadOnlyList<PreferenceOption> PreferenceOptions => _preferenceOptions;
+    private IReadOnlyList<PreferenceOption> ChatLineOptions => _chatLineOptions;
     private IReadOnlyList<PreferenceChip> LikeChips => BuildPreferenceChips(_selectedLikeIds);
     private IReadOnlyList<PreferenceChip> DislikeChips => BuildPreferenceChips(_selectedDislikeIds);
+    private IReadOnlyList<PreferenceChip> ChatLineChips => BuildChatLineChips(_selectedChatLineIds);
     private IReadOnlyCollection<string> PickerSelection => _pickerSelection;
     private string PickerSearch => _pickerSearch;
     private bool IsPickerOpen => _isPickerOpen;
@@ -186,10 +243,14 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private int MaxLikes => PreferenceSelectionLimit;
     private int MaxDislikes => PreferenceSelectionLimit;
     private int MaxPreferences => PreferenceSelectionLimit;
+    private int MaxChatLines => ChatLineSelectionLimit;
     private IReadOnlyCollection<string> PreferencePickerSelection => _preferencePickerSelection;
     private string PreferencePickerSearch => _preferencePickerSearch;
     private bool IsPreferencePickerOpen => _isPreferencePickerOpen;
     private bool IsDislikePicker => _preferencePickerMode == PreferencePickerMode.Dislikes;
+    private bool IsChatLinePickerOpen => _isChatLinePickerOpen;
+    private IReadOnlyCollection<string> ChatLinePickerSelection => _chatLinePickerSelection;
+    private string ChatLinePickerSearch => _chatLinePickerSearch;
     private string PreferencePickerTitle => _preferencePickerMode switch
     {
         PreferencePickerMode.Likes => "Kies wat je leuk vindt",
@@ -247,6 +308,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _initialHobbyIds = _selectedHobbyIds.ToHashSet();
 
         _customPreferenceOptions.Clear();
+        _customChatLineOptions.Clear();
 
         var likeIds = new List<string>();
         var dislikeIds = new List<string>();
@@ -281,6 +343,24 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _preferencePickerMode = PreferencePickerMode.None;
         _isPreferencePickerOpen = false;
         _preferencePickerSearch = string.Empty;
+
+        var chatLineIds = new List<string>();
+        foreach (var line in _model.DefaultChatLines)
+        {
+            var id = ResolveChatLineId(line);
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                chatLineIds.Add(id);
+            }
+        }
+
+        _selectedChatLineIds = OrderChatLineIds(chatLineIds).Take(ChatLineSelectionLimit).ToList();
+        _initialChatLineIds = _selectedChatLineIds.ToList();
+        _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
+
+        _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
 
         UpdateInterestsModel();
     }
@@ -320,6 +400,10 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _preferencePickerMode = PreferencePickerMode.None;
         _isPreferencePickerOpen = false;
         _preferencePickerSearch = string.Empty;
+        _initialChatLineIds = _selectedChatLineIds.ToList();
+        _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
         _isEditing = true;
     }
 
@@ -347,6 +431,11 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _preferencePickerMode = PreferencePickerMode.None;
         _isPreferencePickerOpen = false;
         _preferencePickerSearch = string.Empty;
+        _selectedChatLineIds = OrderChatLineIds(_initialChatLineIds);
+        _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
+        _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
         UpdateInterestsModel();
 
         _isEditing = false;
@@ -358,6 +447,8 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _initialHobbyIds = _selectedHobbyIds.ToHashSet();
         _initialLikeIds = _selectedLikeIds.ToList();
         _initialDislikeIds = _selectedDislikeIds.ToList();
+        _initialChatLineIds = _selectedChatLineIds.ToList();
+        _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
         _isEditing = false;
         await ShowToastAsync("Wijzigingen toegepast");
     }
@@ -400,6 +491,8 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _preferencePickerMode = PreferencePickerMode.None;
         _preferencePickerSearch = string.Empty;
         _preferencePickerSelection.Clear();
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
 
         _pickerSelection = _selectedHobbyIds.ToHashSet();
         _pickerSearch = string.Empty;
@@ -493,6 +586,8 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _preferencePickerMode = PreferencePickerMode.Likes;
         _preferencePickerSearch = string.Empty;
         _isPreferencePickerOpen = true;
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
 
         return Task.CompletedTask;
     }
@@ -511,6 +606,92 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _preferencePickerMode = PreferencePickerMode.Dislikes;
         _preferencePickerSearch = string.Empty;
         _isPreferencePickerOpen = true;
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
+
+        return Task.CompletedTask;
+    }
+
+    private Task OpenChatLinesPicker()
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        _isPickerOpen = false;
+        _pickerSearch = string.Empty;
+
+        _isPreferencePickerOpen = false;
+        _preferencePickerMode = PreferencePickerMode.None;
+        _preferencePickerSearch = string.Empty;
+
+        _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
+        _chatLinePickerSearch = string.Empty;
+        _isChatLinePickerOpen = true;
+
+        return Task.CompletedTask;
+    }
+
+    private Task CloseChatLinePicker()
+    {
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
+        return Task.CompletedTask;
+    }
+
+    private Task ToggleChatLinePickerSelection(string id)
+    {
+        if (_chatLinePickerSelection.Contains(id))
+        {
+            _chatLinePickerSelection.Remove(id);
+        }
+        else if (_chatLinePickerSelection.Count < ChatLineSelectionLimit)
+        {
+            _chatLinePickerSelection.Add(id);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task ClearChatLinePickerSelection()
+    {
+        _chatLinePickerSelection.Clear();
+        return Task.CompletedTask;
+    }
+
+    private async Task ConfirmChatLinePickerSelection()
+    {
+        _selectedChatLineIds = OrderChatLineIds(_chatLinePickerSelection)
+            .Take(ChatLineSelectionLimit)
+            .ToList();
+
+        _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
+
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
+        _chatLinePickerSelection.Clear();
+
+        await ShowToastAsync("Favoriete chatzinnen bijgewerkt");
+    }
+
+    private Task UpdateChatLinePickerSearch(string value)
+    {
+        _chatLinePickerSearch = value;
+        return Task.CompletedTask;
+    }
+
+    private Task RemoveChatLine(string id)
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (RemovePreference(_selectedChatLineIds, id))
+        {
+            _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
+        }
 
         return Task.CompletedTask;
     }
@@ -716,6 +897,99 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         }
 
         return chips;
+    }
+
+    private List<string> OrderChatLineIds(IEnumerable<string> ids)
+    {
+        return ids
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(id => id.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(id => _chatLineOrderById.TryGetValue(id, out var order) ? order : int.MaxValue)
+            .ThenBy(id => GetChatLineText(id), StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private string ResolveChatLineId(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var normalized = value.Trim();
+
+        if (_chatLineOptionsById.TryGetValue(normalized, out var optionById))
+        {
+            return optionById.Id;
+        }
+
+        if (_chatLineIdByName.TryGetValue(normalized, out var optionId))
+        {
+            return optionId;
+        }
+
+        if (!_customChatLineOptions.ContainsKey(normalized))
+        {
+            _customChatLineOptions[normalized] = normalized;
+        }
+
+        return normalized;
+    }
+
+    private string GetChatLineText(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return string.Empty;
+        }
+
+        if (_chatLineOptionsById.TryGetValue(id, out var option))
+        {
+            return option.Name;
+        }
+
+        if (_customChatLineOptions.TryGetValue(id, out var custom))
+        {
+            return custom;
+        }
+
+        if (_chatLineIdByName.TryGetValue(id, out var resolvedId) && _chatLineOptionsById.TryGetValue(resolvedId, out var resolvedOption))
+        {
+            return resolvedOption.Name;
+        }
+
+        return id;
+    }
+
+    private IReadOnlyList<PreferenceChip> BuildChatLineChips(IEnumerable<string> ids)
+    {
+        var chips = new List<PreferenceChip>();
+        foreach (var id in ids)
+        {
+            var text = GetChatLineText(id);
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                chips.Add(new PreferenceChip(id, text));
+            }
+        }
+
+        return chips;
+    }
+
+    private IReadOnlyList<string> BuildChatLineTexts(IEnumerable<string> ids)
+    {
+        var result = new List<string>();
+        foreach (var id in ids)
+        {
+            var text = GetChatLineText(id);
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                result.Add(text);
+            }
+        }
+
+        return result;
     }
 
     private static bool RemovePreference(List<string> list, string id)

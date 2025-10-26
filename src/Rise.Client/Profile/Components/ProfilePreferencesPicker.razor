@@ -35,7 +35,7 @@
         </div>
 
         <div class="px-4 pb-3 sm:px-6">
-            <div class="grid grid-cols-2 gap-3 overflow-y-auto overscroll-contain touch-scroll pb-24 max-h-[50vh] sm:max-h-[55vh] pt-1 px-1" role="listbox" aria-multiselectable="true">
+            <div class="grid @(UseSingleColumnLayout ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-2") gap-3 overflow-y-auto overscroll-contain touch-scroll pb-24 max-h-[50vh] sm:max-h-[55vh] pt-1 px-1" role="listbox" aria-multiselectable="true">
                 @foreach (var option in FilteredOptions)
                 {
                     var isSelected = IsSelected(option.Id);
@@ -83,6 +83,7 @@
     [Parameter] public EventCallback OnClear { get; set; }
     [Parameter] public EventCallback OnConfirm { get; set; }
     [Parameter] public int MaxSelection { get; set; }
+    [Parameter] public bool UseSingleColumnLayout { get; set; }
 
     private HashSet<string> _selectionLookup = new(StringComparer.OrdinalIgnoreCase);
 

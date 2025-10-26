@@ -152,6 +152,60 @@
                 </button>
             }
         </div>
+
+    </div>
+</section>
+
+<section class="mt-6">
+    <h3 class="mb-2 text-sm font-medium text-neutral-700">Standaardzinnen</h3>
+    <div class="space-y-4">
+        <div class="rounded-2xl border border-neutral-200 bg-white p-4">
+            <div class="mb-3 flex items-center justify-between gap-2 text-sm font-semibold text-neutral-700">
+                <div class="flex items-center gap-2">
+                    <span class="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor"viewBox="0 0 256 256"><path d="M216,48H40A16,16,0,0,0,24,64V224a15.84,15.84,0,0,0,9.25,14.5A16.05,16.05,0,0,0,40,240a15.89,15.89,0,0,0,10.25-3.78l.09-.07L83,208H216a16,16,0,0,0,16-16V64A16,16,0,0,0,216,48ZM160,152H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Z"></path></svg>
+                    </span>
+                    <span>Mijn favoriete chatzinnen</span>
+                </div>
+                @if (IsEditing)
+                {
+                    <span class="text-xs font-medium text-neutral-500">@DefaultChatLines.Count/@MaxChatLines</span>
+                }
+            </div>
+            <div class="min-h-[36px] flex flex-wrap gap-2">
+                @if (DefaultChatLines.Any())
+                {
+                    @foreach (var chip in DefaultChatLines)
+                    {
+                        <span class="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-3 py-1 text-sm text-neutral-700 shadow-sm">
+                            <span class="font-medium">@chip.Label</span>
+                            @if (IsEditing)
+                            {
+                                <button type="button" class="ml-1 rounded-full p-0.5 text-neutral-500 hover:bg-neutral-100" @onclick="() => HandleRemoveChatLine(chip.Id)" aria-label='@($"Verwijder {chip.Label}")'>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            }
+                        </span>
+                    }
+                }
+                else if (IsEditing)
+                {
+                    <span class="text-sm text-neutral-500">Kies zinnen die je snel wilt sturen.</span>
+                }
+                else
+                {
+                    <span class="text-sm text-neutral-500">Nog geen favoriete zinnen ingesteld.</span>
+                }
+            </div>
+            @if (IsEditing)
+            {
+                <button type="button" class="mt-3 w-full rounded-xl bg-[#127646] px-4 py-3 text-sm font-medium text-white shadow hover:bg-[#0f663c] active:scale-[0.99]" @onclick="HandleManageChatLines">
+                    Kies mijn favoriete chatzinnen
+                </button>
+            }
+        </div>
     </div>
 </section>
 
@@ -159,21 +213,27 @@
     [Parameter] public IReadOnlyList<PreferenceChip> Likes { get; set; } = Array.Empty<PreferenceChip>();
     [Parameter] public IReadOnlyList<PreferenceChip> Dislikes { get; set; } = Array.Empty<PreferenceChip>();
     [Parameter] public IReadOnlyList<ProfileHobbyModel> Hobbies { get; set; } = Array.Empty<ProfileHobbyModel>();
+    [Parameter] public IReadOnlyList<PreferenceChip> DefaultChatLines { get; set; } = Array.Empty<PreferenceChip>();
     [Parameter] public bool IsEditing { get; set; }
     [Parameter] public int MaxLikes { get; set; }
     [Parameter] public int MaxDislikes { get; set; }
     [Parameter] public int MaxHobbies { get; set; }
+    [Parameter] public int MaxChatLines { get; set; }
     [Parameter] public EventCallback OnManageLikes { get; set; }
     [Parameter] public EventCallback OnManageDislikes { get; set; }
     [Parameter] public EventCallback OnManageHobbies { get; set; }
+    [Parameter] public EventCallback OnManageChatLines { get; set; }
     [Parameter] public EventCallback<string> OnRemoveLike { get; set; }
     [Parameter] public EventCallback<string> OnRemoveDislike { get; set; }
     [Parameter] public EventCallback<string> OnRemoveHobby { get; set; }
+    [Parameter] public EventCallback<string> OnRemoveChatLine { get; set; }
 
     private Task HandleManageLikes() => OnManageLikes.InvokeAsync();
     private Task HandleManageDislikes() => OnManageDislikes.InvokeAsync();
     private Task HandleManageHobbies() => OnManageHobbies.InvokeAsync();
+    private Task HandleManageChatLines() => OnManageChatLines.InvokeAsync();
     private Task HandleRemoveLike(string id) => OnRemoveLike.InvokeAsync(id);
     private Task HandleRemoveDislike(string id) => OnRemoveDislike.InvokeAsync(id);
     private Task HandleRemoveHobby(string id) => OnRemoveHobby.InvokeAsync(id);
+    private Task HandleRemoveChatLine(string id) => OnRemoveChatLine.InvokeAsync(id);
 }
