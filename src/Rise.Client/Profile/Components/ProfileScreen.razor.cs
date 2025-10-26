@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Rise.Client.Profile.Models;
 using Rise.Client.Users;
+using Rise.Shared.Common;
 using Rise.Shared.Users;
 
 namespace Rise.Client.Profile.Components;
@@ -170,6 +171,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private const int HobbySelectionLimit = 3;
     private const int PreferenceSelectionLimit = 5;
     private const int ChatLineSelectionLimit = 5;
+    private const int ChatLineTextMaxLength = 150;
 
     private ProfileModel _model = new();
     private ProfileDraft _draft;
@@ -204,6 +206,9 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
     private bool _isChatLinePickerOpen;
     private string _chatLinePickerSearch = string.Empty;
+    private string _newChatLineText = string.Empty;
+    private string _newChatLineError = string.Empty;
+    private bool _isAddingCustomChatLine;
 
     private bool _isToastVisible;
     private string _toastMessage = string.Empty;
@@ -251,6 +256,11 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private bool IsChatLinePickerOpen => _isChatLinePickerOpen;
     private IReadOnlyCollection<string> ChatLinePickerSelection => _chatLinePickerSelection;
     private string ChatLinePickerSearch => _chatLinePickerSearch;
+    private string NewChatLineText => _newChatLineText;
+    private string NewChatLineError => _newChatLineError;
+    private bool IsAddingCustomChatLine => _isAddingCustomChatLine;
+    private bool IsCustomChatLineLimitReached => _chatLinePickerSelection.Count >= ChatLineSelectionLimit;
+    private int CustomChatLineMaxLength => ChatLineTextMaxLength;
     private string PreferencePickerTitle => _preferencePickerMode switch
     {
         PreferencePickerMode.Likes => "Kies wat je leuk vindt",
@@ -359,6 +369,9 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
         _isChatLinePickerOpen = false;
         _chatLinePickerSearch = string.Empty;
+        _newChatLineText = string.Empty;
+        _newChatLineError = string.Empty;
+        _isAddingCustomChatLine = false;
 
         _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
 
@@ -404,6 +417,8 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
         _isChatLinePickerOpen = false;
         _chatLinePickerSearch = string.Empty;
+        _newChatLineText = string.Empty;
+        _newChatLineError = string.Empty;
         _isEditing = true;
     }
 
@@ -435,6 +450,9 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
         _isChatLinePickerOpen = false;
         _chatLinePickerSearch = string.Empty;
+        _newChatLineText = string.Empty;
+        _newChatLineError = string.Empty;
+        _isAddingCustomChatLine = false;
         _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
         UpdateInterestsModel();
 
@@ -628,6 +646,8 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
         _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
         _chatLinePickerSearch = string.Empty;
+        _newChatLineText = string.Empty;
+        _newChatLineError = string.Empty;
         _isChatLinePickerOpen = true;
 
         return Task.CompletedTask;
@@ -637,6 +657,8 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     {
         _isChatLinePickerOpen = false;
         _chatLinePickerSearch = string.Empty;
+        _newChatLineText = string.Empty;
+        _newChatLineError = string.Empty;
         return Task.CompletedTask;
     }
 
@@ -671,6 +693,8 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _isChatLinePickerOpen = false;
         _chatLinePickerSearch = string.Empty;
         _chatLinePickerSelection.Clear();
+        _newChatLineText = string.Empty;
+        _newChatLineError = string.Empty;
 
         await ShowToastAsync("Favoriete chatzinnen bijgewerkt");
     }
@@ -678,6 +702,90 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private Task UpdateChatLinePickerSearch(string value)
     {
         _chatLinePickerSearch = value;
+        return Task.CompletedTask;
+    }
+
+    private Task UpdateNewChatLineText(string value)
+    {
+        _newChatLineText = value;
+
+        if (!string.IsNullOrEmpty(_newChatLineError))
+        {
+            _newChatLineError = string.Empty;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task AddCustomChatLineAsync(string value)
+    {
+        if (_isAddingCustomChatLine)
+        {
+            return Task.CompletedTask;
+        }
+
+        _newChatLineError = string.Empty;
+
+        var input = value?.Trim() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            _newChatLineError = "Typ een zin om toe te voegen.";
+            return Task.CompletedTask;
+        }
+
+        if (input.Length > ChatLineTextMaxLength)
+        {
+            _newChatLineError = $"Zin mag maximaal {ChatLineTextMaxLength} tekens bevatten.";
+            return Task.CompletedTask;
+        }
+
+        var censored = WordFilter.Censor(input).Trim();
+
+        if (string.IsNullOrWhiteSpace(censored))
+        {
+            _newChatLineError = "Deze zin kan niet worden gebruikt.";
+            return Task.CompletedTask;
+        }
+
+        var id = ResolveChatLineId(censored);
+
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            _newChatLineError = "Deze zin kan niet worden gebruikt.";
+            return Task.CompletedTask;
+        }
+
+        if (_chatLinePickerSelection.Contains(id))
+        {
+            _newChatLineError = "Deze zin staat al in je lijst.";
+            return Task.CompletedTask;
+        }
+
+        if (_chatLinePickerSelection.Count >= ChatLineSelectionLimit)
+        {
+            _newChatLineError = $"Je kan maximaal {ChatLineSelectionLimit} zinnen kiezen.";
+            return Task.CompletedTask;
+        }
+
+        _isAddingCustomChatLine = true;
+
+        try
+        {
+            _chatLinePickerSelection.Add(id);
+            _selectedChatLineIds = OrderChatLineIds(_chatLinePickerSelection)
+                .Take(ChatLineSelectionLimit)
+                .ToList();
+
+            _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
+            _newChatLineText = string.Empty;
+            _newChatLineError = string.Empty;
+        }
+        finally
+        {
+            _isAddingCustomChatLine = false;
+        }
+
         return Task.CompletedTask;
     }
 
@@ -691,6 +799,8 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         if (RemovePreference(_selectedChatLineIds, id))
         {
             _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
+            _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
+            _newChatLineError = string.Empty;
         }
 
         return Task.CompletedTask;

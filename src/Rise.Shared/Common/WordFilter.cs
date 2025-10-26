@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
 
-namespace Rise.Services
+namespace Rise.Shared.Common
 {
-    public class WordFilter
+    public static class WordFilter
     {
         private static HashSet<string> _blacklistedWords = new(StringComparer.OrdinalIgnoreCase);
         private static Regex _blacklistRegex;
