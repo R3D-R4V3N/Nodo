@@ -50,16 +50,20 @@
                 Likes="@LikeChips"
                 Dislikes="@DislikeChips"
                 Hobbies="@Hobbies"
+                DefaultChatLines="@ChatLineChips"
                 IsEditing="@IsEditing"
                 MaxLikes="@MaxLikes"
                 MaxDislikes="@MaxDislikes"
                 MaxHobbies="@MaxHobbies"
+                MaxChatLines="@MaxChatLines"
                 OnManageLikes="OpenLikesPicker"
                 OnManageDislikes="OpenDislikesPicker"
                 OnManageHobbies="OpenHobbiesPicker"
+                OnManageChatLines="OpenChatLinesPicker"
                 OnRemoveLike="RemoveLike"
                 OnRemoveDislike="RemoveDislike"
-                OnRemoveHobby="RemoveHobby" />
+                OnRemoveHobby="RemoveHobby"
+                OnRemoveChatLine="RemoveChatLine" />
         </main>
     }
 
@@ -89,6 +93,20 @@
         OnConfirm="ConfirmPreferencePickerSelection"
         OnClose="ClosePreferencePicker"
         SearchTextChanged="UpdatePreferencePickerSearch" />
+
+    <ProfilePreferencesPicker
+        Title="Kies je favoriete chatzinnen"
+        SearchPlaceholder="Zoek een zin…"
+        Options="@ChatLineOptions"
+        Selection="@ChatLinePickerSelection"
+        SearchText="@ChatLinePickerSearch"
+        MaxSelection="@MaxChatLines"
+        IsOpen="@IsChatLinePickerOpen"
+        OnToggle="ToggleChatLinePickerSelection"
+        OnClear="ClearChatLinePickerSelection"
+        OnConfirm="ConfirmChatLinePickerSelection"
+        OnClose="CloseChatLinePicker"
+        SearchTextChanged="UpdateChatLinePickerSearch" />
 
     <ProfileToast Message="@_toastMessage" Visible="@_isToastVisible" />
 </div>
