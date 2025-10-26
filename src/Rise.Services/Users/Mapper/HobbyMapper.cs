@@ -1,4 +1,4 @@
-using Rise.Domain.Users;
+using Rise.Domain.Users.Hobbys;
 using Rise.Shared.Users;
 
 namespace Rise.Services.Users.Mapper;

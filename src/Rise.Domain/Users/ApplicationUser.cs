@@ -1,7 +1,10 @@
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Ardalis.GuardClauses;
 using Ardalis.Result;
 using Rise.Domain.Chats;
+using Rise.Domain.Users.Hobbys;
+using Rise.Domain.Users.Sentiment;
 
 namespace Rise.Domain.Users;
 
@@ -40,19 +43,52 @@ public class ApplicationUser : Entity
     public required UserType UserType { get; set; }
     
 
-    // interests
-    private readonly HashSet<UserInterest> _interests = [];
-    public IReadOnlyCollection<UserInterest> Interests => _interests;
+    // sentiments
+    private readonly List<UserSentiment> _sentiments = [];
+    public IReadOnlyCollection<UserSentiment> Sentiments => _sentiments;
+    public IEnumerable<UserSentiment> Likes => _sentiments
+        .Where(x => x.Type.Equals(SentimentType.Like));
+    public IEnumerable<UserSentiment> Dislikes => _sentiments
+        .Where(x => x.Type.Equals(SentimentType.Dislike));
 
-    public void UpdateInterests(IEnumerable<UserInterest> interests)
+    public Result UpdateSentiments(IEnumerable<UserSentiment> sentiments)
     {
-        Guard.Against.Null(interests);
+        if (sentiments is null)
+            return Result.Conflict("Gevoelens is null");
 
-        _interests.Clear();
-        foreach (var interest in interests)
+        const int MAX_SENTIMENT_TYPE = 5;
+        // if performance becomes an issue and you know SentimentType
+        // will be nicely indexed, use stackalloc
+        Dictionary<SentimentType, int> freq = Enum.GetValues<SentimentType>()
+            .ToDictionary(x => x, _ => 0);
+
+        List<UserSentiment> tempLst = [];
+
+        foreach (var sentiment in sentiments)
         {
-            _interests.Add(Guard.Against.Null(interest));
+            if (sentiment is null)
+                return Result.Conflict("Gevoelens is null");
+
+            if (tempLst.Contains(sentiment))
+                continue;
+
+            if (++freq[sentiment.Type] > MAX_SENTIMENT_TYPE)
+                return Result.Conflict($"Mag maximaal {MAX_SENTIMENT_TYPE} van een gevoelens type hebben, {sentiment.Type} overschreed dit");
+
+            var hasConflictingSentiment = tempLst
+                .Any(x => x.Type != sentiment.Type 
+                    && x.Category == sentiment.Category);
+
+            if (hasConflictingSentiment)
+                return Result.Conflict("Bevat duplicaat category in een andere gevoel");
+
+            tempLst.Add(sentiment);
         }
+
+        _sentiments.Clear();
+        _sentiments.AddRange(tempLst);
+
+        return Result.Success();
     }
 
     // hobbies

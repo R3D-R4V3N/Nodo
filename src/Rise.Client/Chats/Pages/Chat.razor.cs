@@ -13,9 +13,7 @@ public partial class Chat
     [Parameter] public int ChatId { get; set; }
     [CascadingParameter] public UserDto.CurrentUser? CurrentUser { get; set; }
 
-    private ChatDto.GetChats? _chat;
-    private readonly List<MessageDto.Chat> _messages = new();
-    private readonly HashSet<int> _messageIds = new();
+    private ChatDto.GetChat? _chat;
     private readonly SemaphoreSlim _hubConnectionLock = new(1, 1);
     private HubConnection? _hubConnection;
     private int? _joinedChatId;
@@ -30,81 +28,32 @@ public partial class Chat
     private ElementReference _footerHost;
     private double _footerHeight = 200;
     private bool _footerMeasurementPending = true;
-    private const double FooterPaddingBuffer = 24;
+    private const double _footerPaddingBuffer = 24;
 
     protected override async Task OnParametersSetAsync()
     {
         _loadError = null;
         _errorMessage = null;
-        ScheduleFooterMeasurement();
         _isLoading = true;
+        ScheduleFooterMeasurement();
 
         var result = await ChatService.GetByIdAsync(ChatId);
 
         if (result.IsSuccess && result.Value is not null)
         {
-            _chat = result.Value;
-            _messages.Clear();
-            _messages.AddRange(_chat.Messages
-                .OrderBy(m => m.Timestamp));
-
-            _messageIds.Clear();
-            foreach (var message in _chat.Messages)
-            {
-                _messageIds.Add(message.Id);
-            }
+            _chat = result.Value.Chat;
         }
         else
         {
             _chat = null;
-            _messages.Clear();
-            _messageIds.Clear();
-            _loadError = result.Errors.FirstOrDefault() ?? "Het gesprek kon niet geladen worden.";
+            _loadError = result.Errors.FirstOrDefault() 
+                ?? "Het gesprek kon niet geladen worden.";
         }
 
         _isLoading = false;
         _shouldScrollToBottom = true;
-        ScheduleFooterMeasurement();
 
         await EnsureHubConnectionAsync();
-    }
-
-    private async Task SendMessageAsync(string text)
-    {
-        if (_chat is null || _isSending || string.IsNullOrWhiteSpace(text))
-        {
-            return;
-        }
-
-        _isSending = true;
-        _errorMessage = null;
-        ScheduleFooterMeasurement();
-
-        try
-        {
-            text = Filter.Censor(text);
-            var request = new ChatRequest.CreateMessage
-            {
-                ChatId = _chat.ChatId,
-                Content = text
-            };
-
-            var result = await ChatService.CreateMessageAsync(request);
-
-            if (!result.IsSuccess || result.Value is null)
-            {
-                _errorMessage = result.Errors.FirstOrDefault() ?? "Het bericht kon niet verzonden worden.";
-                ScheduleFooterMeasurement();
-                return;
-            }
-
-            TryAddMessage(result.Value);
-        }
-        finally
-        {
-            _isSending = false;
-            StateHasChanged();
-        }
     }
 
     private Task ApplySuggestion(string text)
@@ -114,6 +63,22 @@ public partial class Chat
         return Task.CompletedTask;
     }
 
+    private async Task HandleTextMessageAsync(string text)
+    {
+        if (_chat is null || _isSending || string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        var request = new ChatRequest.CreateMessage
+        {
+            ChatId = _chat.ChatId,
+            Content = text
+        };
+
+        await SendMessageAsync(request, "Het bericht kon niet verzonden worden.");
+    }
+
     private async Task HandleVoiceMessageAsync(RecordedAudio audio)
     {
         if (_chat is null || _isSending)
@@ -121,37 +86,42 @@ public partial class Chat
             return;
         }
 
-        _isSending = true;
-        _errorMessage = null;
-        ScheduleFooterMeasurement();
+        var request = new ChatRequest.CreateMessage
+        {
+            ChatId = _chat.ChatId,
+            AudioDataUrl = audio.DataUrl,
+            AudioDurationSeconds = audio.DurationSeconds
+        };
 
+        await SendMessageAsync(request, "Het spraakbericht kon niet verzonden worden.");
+    }
+
+    private async Task SendMessageAsync(ChatRequest.CreateMessage createRequest, string errorMessage) 
+    {
         try
         {
-            var request = new ChatRequest.CreateMessage
-            {
-                ChatId = _chat.ChatId,
-                AudioDataUrl = audio.DataUrl,
-                AudioDurationSeconds = audio.DurationSeconds
-            };
+            _isSending = true;
+            _errorMessage = null;
 
-            var result = await ChatService.CreateMessageAsync(request);
+            var result = await ChatService.CreateMessageAsync(createRequest);
 
-            if (!result.IsSuccess || result.Value is null)
+            if (result.IsSuccess)
             {
-                var validationMessage = result.ValidationErrors.FirstOrDefault()?.ErrorMessage;
-                _errorMessage = validationMessage
-                    ?? result.Errors.FirstOrDefault()
-                    ?? "Het spraakbericht kon niet verzonden worden.";
-                ScheduleFooterMeasurement();
                 return;
             }
 
-            TryAddMessage(result.Value);
+            var validationMessage = result
+                .ValidationErrors
+                .FirstOrDefault()
+                ?.ErrorMessage;
+
+            _errorMessage = validationMessage
+                ?? result.Errors.FirstOrDefault()
+                ?? errorMessage;
         }
         finally
         {
             _isSending = false;
-            StateHasChanged();
         }
     }
 
@@ -219,12 +189,10 @@ public partial class Chat
         {
             return;
         }
-        if (!string.IsNullOrWhiteSpace(dto.Content))
-        {
-            dto.Content = Filter.Censor(dto.Content);
-        }
         if (TryAddMessage(dto))
         {
+            ScheduleFooterMeasurement();
+            _shouldScrollToBottom = true;
             StateHasChanged();
         }
     }
@@ -258,12 +226,7 @@ public partial class Chat
 
         if (_chat is null)
         {
-            if (_joinedChatId is int previousId)
-            {
-                await _hubConnection.SendAsync("LeaveChat", previousId);
-                _joinedChatId = null;
-            }
-
+            await LeaveCurrentChatAsync();
             return;
         }
 
@@ -272,10 +235,7 @@ public partial class Chat
             return;
         }
 
-        if (_joinedChatId is int oldChatId)
-        {
-            await _hubConnection.SendAsync("LeaveChat", oldChatId);
-        }
+        await LeaveCurrentChatAsync();
 
         await _hubConnection.SendAsync("JoinChat", _chat.ChatId);
         _joinedChatId = _chat.ChatId;
@@ -289,19 +249,16 @@ public partial class Chat
             return false;
         }
 
-        if (!_messageIds.Add(dto.Id))
-        {
-            return false;
-        }
-
         _chat.Messages.Add(dto);
-        _chat.Messages = _chat.Messages
-            .OrderBy(m => m.Timestamp)
-            .ToList();
 
-        _messages.Add(dto);
-        _messages.Sort((a, b) => Nullable.Compare(a.Timestamp, b.Timestamp));
-        _shouldScrollToBottom = true;
+        // is sort needed?
+        // if yes: better to use a sorted datastructure than to sort on every new message
+
+        //_chat.Messages = _chat.Messages
+        //    .OrderBy(m => m.Timestamp)
+        //    .ToList();
+
+        //_messages.Sort((a, b) => Nullable.Compare(a.Timestamp, b.Timestamp));
 
         return true;
     }
@@ -360,7 +317,7 @@ public partial class Chat
         return string.Join(", ", participantNames);
     }
 
-    private string GetAvatarUrl()
+    private string GetChatImage()
     {
         return _chat?
             .Users
@@ -368,9 +325,9 @@ public partial class Chat
             ?.AvatarUrl ?? DefaultImages.Profile;
     }
 
-    private string GetStatusText()
+    private string GetChatStatusText()
     {
-        var lastMessage = _messages.LastOrDefault();
+        var lastMessage = _chat?.Messages.LastOrDefault();
         if (lastMessage?.Timestamp is DateTime timestamp)
         {
             return $"Laatste bericht {timestamp.ToLocalTime():HH:mm}";
@@ -407,7 +364,7 @@ public partial class Chat
 
     private string GetMessageHostPaddingStyle()
     {
-        var padding = Math.Max(0, Math.Ceiling(_footerHeight + FooterPaddingBuffer));
+        var padding = Math.Max(0, Math.Ceiling(_footerHeight + _footerPaddingBuffer));
         return $"padding-bottom: {padding}px;";
     }
 
@@ -418,11 +375,30 @@ public partial class Chat
 
     public async ValueTask DisposeAsync()
     {
+        await LeaveCurrentChatAsync();
         if (_hubConnection is not null)
         {
             await _hubConnection.DisposeAsync();
         }
 
         _hubConnectionLock.Dispose();
+    }
+
+    private async Task LeaveCurrentChatAsync()
+    {
+        if (_hubConnection is null || _hubConnection.State != HubConnectionState.Connected)
+            return;
+
+        if (_joinedChatId is int oldChatId)
+        {
+            try
+            {
+                await _hubConnection.SendAsync("LeaveChat", oldChatId);
+            }
+            finally
+            {
+                _joinedChatId = null;
+            }
+        }
     }
 }

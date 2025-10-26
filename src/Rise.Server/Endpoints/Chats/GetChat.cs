@@ -3,7 +3,7 @@ using Rise.Shared.Chats;
 
 namespace Rise.Server.Endpoints.Chats;
 
-public class GetChat(IChatService chatService) : Endpoint<ChatRequest.GetChat, Result<ChatDto.GetChats>>
+public class GetChat(IChatService chatService) : Endpoint<ChatRequest.GetChat, Result<ChatResponse.GetChat>>
 {
     public override void Configure()
     {
@@ -11,7 +11,7 @@ public class GetChat(IChatService chatService) : Endpoint<ChatRequest.GetChat, R
         Claims(ClaimTypes.NameIdentifier);
     }
 
-    public override Task<Result<ChatDto.GetChats>> ExecuteAsync(ChatRequest.GetChat req, CancellationToken ct)
+    public override Task<Result<ChatResponse.GetChat>> ExecuteAsync(ChatRequest.GetChat req, CancellationToken ct)
     {
         req.ChatId = Route<int>("ChatId");
         return chatService.GetByIdAsync(req.ChatId, ct);

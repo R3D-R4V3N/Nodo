@@ -7,25 +7,24 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.JSInterop
 @using Rise.Client.Chats
-@using Rise.Client.Chats.Components;
-@using Rise.Services
+@using Rise.Client.Chats.Components
 @using Rise.Shared.Chats
 @using Rise.Shared.Assets
+
 @layout EmptyLayout
 @implements IAsyncDisposable
 @inject IChatService ChatService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
-@inject WordFilter Filter
 
 
 <div class="flex flex-col h-screen max-h-screen overflow-hidden bg-neutral-100 text-neutral-900">
 
     <!-- Header -->
     <ChatHeader DisplayName="@GetChatTitle()"
-                AvatarUrl="@GetAvatarUrl()"
-                StatusText="@GetStatusText()"
+                AvatarUrl="@GetChatImage()"
+                StatusText="@GetChatStatusText()"
                 OnBack="NavigateBack"
                 OnAlert="TriggerAlert" />
 
@@ -63,7 +62,7 @@
 
         <!-- Scrollable messages -->
         <div class="flex-1 overflow-y-auto px-3 no-scrollbar" style="@GetMessageHostPaddingStyle()" @ref="_messagesHost">
-            <MessageList Messages="_messages" TimestampText="@GetConversationDateLabel()" />
+            <MessageList Messages="_chat?.Messages" TimestampText="@GetConversationDateLabel()" />
         </div>
 
         <!-- Fixed input bar -->
@@ -71,7 +70,7 @@
             <div class="mx-auto px-3">
                 <SuggestionChips Suggestions="CurrentUser!.DefaultChatLines" OnPick="ApplySuggestion" />
                 <ChatInput @bind-Value="_draft"
-                           OnSend="SendMessageAsync"
+                           OnSend="HandleTextMessageAsync"
                            OnSendVoice="HandleVoiceMessageAsync" />
                 @if (!string.IsNullOrWhiteSpace(_errorMessage))
                 {

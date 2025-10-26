@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
 using Rise.Domain.Users;
+using Rise.Domain.Users.Hobbys;
+using Rise.Domain.Users.Sentiment;
 using Rise.Shared.Identity;
 
 namespace Rise.Persistence;
@@ -20,6 +22,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
     public async Task SeedAsync()
     {
         await RolesAsync();
+        await SentimentsAsync();
         await UsersAsync();
         await ConnectionsAsync();
         await ChatsAsync();
@@ -39,7 +42,39 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         await roleManager.CreateAsync(new IdentityRole("Supervisor"));
         await roleManager.CreateAsync(new IdentityRole("User"));
     }
-    
+
+    private async Task SentimentsAsync()
+    {
+        if (dbContext.Sentiments.Any())
+        {
+            return;
+        }
+
+        var sentimentList = new List<UserSentiment>();
+
+        foreach (var categoryType in Enum.GetValues<SentimentCategoryType>())
+        {
+            sentimentList.Add(
+                new UserSentiment()
+                {
+                    Type = SentimentType.Like,
+                    Category = categoryType,
+                }
+            );
+
+            sentimentList.Add(
+                new UserSentiment()
+                {
+                    Type = SentimentType.Dislike,
+                    Category = categoryType,
+                }
+            );
+        }
+
+        dbContext.Sentiments.AddRange(sentimentList);
+        await dbContext.SaveChangesAsync();
+    }
+
     private async Task UsersAsync()
     {
         if (dbContext.Users.Any())
@@ -49,19 +84,25 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
 
         await dbContext.Roles.ToListAsync();
 
-        static IEnumerable<UserInterest> CreateInterests(
-            string musicLike,
-            string musicDislike,
-            string foodLike,
-            string foodDislike) =>
-            new[]
-            {
-                UserInterest.Create("Muziek", musicLike, musicDislike),
-                UserInterest.Create("Eten", foodLike, foodDislike)
-            };
+        IEnumerable<UserSentiment> CreateInterests()
+        {
+            var allSentiments = dbContext.Sentiments.ToList();
+
+            var random = new Random();
+
+            var groupedByCategory = allSentiments
+                .GroupBy(s => s.Category)
+                .Select(g => g.OrderBy(_ => random.Next()).First())
+                .ToList();
+
+            return groupedByCategory
+                .OrderBy(_ => random.Next())
+                .Take(5)
+                .ToList();
+        }
 
         static IEnumerable<UserHobby> CreateHobbies(params HobbyType[] hobbies)
-            => hobbies.Select(UserHobby.Create).ToArray();
+            => hobbies.Select(x => new UserHobby { Hobby = x });
 
         static ApplicationUser CreateProfile(
             string accountId,
@@ -71,7 +112,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             string avatarUrl,
             DateOnly birthDay,
             UserType userType,
-            IEnumerable<UserInterest> interests,
+            IEnumerable<UserSentiment> interests,
             IEnumerable<UserHobby> hobbies)
         {
             var profile = new ApplicationUser(accountId)
@@ -89,7 +130,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 }
             };
 
-            profile.UpdateInterests(interests);
+            profile.UpdateSentiments(interests);
             profile.UpdateHobbies(hobbies);
 
             return profile;
@@ -136,7 +177,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-30)),
                     UserType.Supervisor,
-                    CreateInterests("Muziekfestivals", "Radiohits", "Uit eten gaan", "Hartige snacks"),
+                    CreateInterests(),
                     CreateHobbies(HobbyType.Hiking, HobbyType.Painting, HobbyType.Reading))),
             new(userAccount1, AppRoles.User,
                 CreateProfile(
@@ -147,7 +188,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
                     UserType.Regular,
-                    CreateInterests("Live concerten", "Dansfeestjes", "Zoete desserts", "Pittig eten"),
+                    CreateInterests(),
                     CreateHobbies(HobbyType.Gaming, HobbyType.BoardGames, HobbyType.ModelBuilding))),
             new(userAccount2, AppRoles.User,
                 CreateProfile(
@@ -158,7 +199,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-26)),
                     UserType.Regular,
-                    CreateInterests("Rustige avonden thuis", "Dansfeestjes", "Seizoenssoepen", "Straatvoedsel proeven"),
+                    CreateInterests(),
                     CreateHobbies(HobbyType.Hiking, HobbyType.Photography, HobbyType.Birdwatching))),
             new(nodoAdmin, AppRoles.Administrator, null),
             new(supervisorEmma, AppRoles.Supervisor,
@@ -170,7 +211,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-35)),
                     UserType.Supervisor,
-                    CreateInterests("Romantische films", "Actiefilms", "Weekendbrunch", "Foodtrucks"),
+                    CreateInterests(),
                     CreateHobbies(HobbyType.Gardening, HobbyType.Yoga, HobbyType.Painting))),
             new(supervisorJonas, AppRoles.Supervisor,
                 CreateProfile(
@@ -181,7 +222,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1531891437562-4301cf35b7e4?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-33)),
                     UserType.Supervisor,
-                    CreateInterests("Podcasts luisteren", "Radiohits", "Boerenmarkten", "Zoete desserts"),
+                    CreateInterests(),
                     CreateHobbies(HobbyType.Football, HobbyType.Running, HobbyType.Hiking))),
             new(supervisorElla, AppRoles.Supervisor,
                 CreateProfile(
@@ -192,7 +233,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-31)),
                     UserType.Supervisor,
-                    CreateInterests("Documentaires", "Dansfeestjes", "Frisse salades", "Hartige snacks"),
+                    CreateInterests(),
                     CreateHobbies(HobbyType.Crafting, HobbyType.Painting, HobbyType.MusicMaking))),
             new(chatterNoor, AppRoles.User,
                 CreateProfile(
@@ -203,7 +244,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
                     UserType.Regular,
-                    CreateInterests("Live concerten", "Horrorfilms", "Zoete desserts", "Pittig eten"),
+                    CreateInterests(),
                     CreateHobbies(HobbyType.MusicMaking, HobbyType.Gaming, HobbyType.Dancing))),
             new(chatterMilan, AppRoles.User,
                 CreateProfile(
@@ -214,7 +255,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
                     UserType.Regular,
-                    CreateInterests("Muziekfestivals", "Rustige avonden thuis", "Foodtrucks", "Frisse salades"),
+                    CreateInterests(),
                     CreateHobbies(HobbyType.Gaming, HobbyType.Skating, HobbyType.BoardGames))),
             new(chatterLina, AppRoles.User,
                 new ApplicationUser(chatterLina.Id)
@@ -360,9 +401,9 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 continue;
             }
 
-            if (!profile.Interests.Any())
+            if (!profile.Sentiments.Any())
             {
-                profile.UpdateInterests(CreateInterests("Podcasts luisteren", "Dansfeestjes", "Koffie momenten", "Pittig eten"));
+                profile.UpdateSentiments(CreateInterests());
             }
 
             if (!profile.Hobbies.Any())

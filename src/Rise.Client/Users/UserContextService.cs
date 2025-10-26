@@ -7,11 +7,14 @@ namespace Rise.Client.Users;
 public class UserContextService(
     AuthenticationStateProvider authProvider, 
     HttpClient httpClient
-)
+) : IUserContextService
 {
     private readonly AuthenticationStateProvider _authProvider = authProvider;
     private readonly HttpClient _http = httpClient;
     private UserDto.CurrentUser? CurrentUser = null;
+
+    public async Task<Result<UserResponse.CurrentUser>> GetCurrentUserAsync(CancellationToken ctx = default) 
+        => await _http.GetFromJsonAsync<Result<UserResponse.CurrentUser>>($"/api/users/current", cancellationToken: ctx)!;
 
     public async Task<UserDto.CurrentUser?> InitializeAsync(CancellationToken ctx = default)
     {
@@ -26,8 +29,7 @@ public class UserContextService(
             return null;
         }
 
-        var result = await _http
-            .GetFromJsonAsync<Result<UserResponse.CurrentUser>>($"/api/users/current", cancellationToken: ctx);
+        var result = await GetCurrentUserAsync(ctx);
 
         if (result is { IsSuccess: true, Value.User: not null })
         {

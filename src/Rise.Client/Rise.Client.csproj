@@ -32,7 +32,6 @@
     
     <ItemGroup>
       <ProjectReference Include="..\Rise.Shared\Rise.Shared.csproj" />
-      <ProjectReference Include="..\Rise.Services\Rise.Services.csproj" />
     </ItemGroup>
     
     <ItemGroup>

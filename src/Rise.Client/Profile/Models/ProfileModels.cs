@@ -31,7 +31,15 @@ public record ProfileModel
     public static ProfileModel FromUser(UserDto.CurrentUser user, string memberSince)
     {
         var interests = user.Interests
-            .Select(i => new ProfileInterestModel(i.Type, i.Like, i.Dislike))
+            .Select(i =>
+            {
+                bool isLike = i.Type.Equals(SentimentTypeDto.Like);
+                if (isLike)
+                {
+                    return new ProfileInterestModel(i.Type.ToString(), i.Text, string.Empty);
+                }
+                return new ProfileInterestModel(i.Type.ToString(), string.Empty, i.Text);
+            })
             .ToList();
 
         var hobbies = user.Hobbies

@@ -35,21 +35,25 @@ public class ChatService(
         }
 
         var chatsFromDb = await _dbContext.Chats
-            .Include(c => c.Messages)
-                .ThenInclude(m => m.Sender)
+            .Include(c => c.Messages.OrderByDescending(m => m.CreatedAt)
+                    .ThenByDescending(m => m.Id)
+                    .Take(1)
+                ).ThenInclude(m => m.Sender)
             .Include(c => c.Users)
             .Where(c => c.Users.Contains(sender))
             .ToListAsync(cancellationToken);
 
-        var chatDtos = chatsFromDb.Select(ChatMapper.ToIndexDto).ToList();
+        var chatDtos = chatsFromDb
+            .Select(ChatMapper.ToGetChatsDto)
+            .ToList();
 
         return Result.Success(new ChatResponse.GetChats
         {
-            Chats = chatDtos
+            Chats = chatDtos!
         });
     }
 
-    public async Task<Result<ChatDto.GetChats>> GetByIdAsync(int chatId, CancellationToken cancellationToken = default)
+    public async Task<Result<ChatResponse.GetChat>> GetByIdAsync(int chatId, CancellationToken cancellationToken = default)
     {
         var accountId = _sessionContextProvider.User?.GetUserId();
         if (string.IsNullOrWhiteSpace(accountId))
@@ -77,9 +81,12 @@ public class ChatService(
             return Result.NotFound($"Chat met id '{chatId}' werd niet gevonden.");
         }
 
-        var dto = chat.ToIndexDto();
+        var dto = chat.ToGetChatDto();
 
-        return Result.Success(dto);
+        return Result.Success(new ChatResponse.GetChat() 
+        { 
+            Chat = dto
+        });
     }
 
     public async Task<Result<MessageDto.Chat>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
@@ -110,7 +117,7 @@ public class ChatService(
 
         var trimmedContent = string.IsNullOrWhiteSpace(request.Content)
             ? null
-            : request.Content.Trim();
+            : WordFilter.Censor(request.Content.Trim());
 
         byte[]? audioBytes = null;
         string? audioContentType = null;

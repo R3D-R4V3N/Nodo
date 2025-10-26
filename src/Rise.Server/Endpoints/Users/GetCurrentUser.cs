@@ -3,7 +3,7 @@ using Rise.Shared.Users;
 
 namespace Rise.Server.Endpoints.Users;
 
-public class GetCurrentUser(IUserService userService) : EndpointWithoutRequest<Result<UserResponse.CurrentUser>>
+public class GetCurrentUser(IUserContextService userService) : EndpointWithoutRequest<Result<UserResponse.CurrentUser>>
 {
     public override void Configure()
     {

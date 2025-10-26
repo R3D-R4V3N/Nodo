@@ -14,7 +14,7 @@ public static class UserDto
         public string Biography { get; init; } = string.Empty;
         public DateOnly BirthDay { get; init; }
         public DateTime CreatedAt { get; init; }
-        public List<UserInterestDto> Interests { get; init; } = [];
+        public List<UserSentimentDto> Interests { get; init; } = [];
         public List<UserHobbyDto> Hobbies { get; init; } = [];
         public List<string> DefaultChatLines { get; init; } = [];
     }

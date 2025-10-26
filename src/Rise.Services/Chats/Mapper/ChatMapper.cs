@@ -5,14 +5,30 @@ using Rise.Shared.Chats;
 namespace Rise.Services.Chats.Mapper;
 internal static class ChatMapper
 {
-    public static ChatDto.GetChats ToIndexDto(this Chat chat) =>
-        new ChatDto.GetChats
+    public static ChatDto.GetChat ToGetChatDto(this Chat chat) =>
+        new ChatDto.GetChat
         {
             ChatId = chat.Id,
             Users = chat.Users.Select(UserMapper.ToChatDto).ToList(),
             Messages = chat.Messages
                 .OrderBy(m => m.CreatedAt)
                 .Select(MessageMapper.ToChatDto)
-                .ToList()
+                .ToList()!
         };
+
+    public static ChatDto.GetChats? ToGetChatsDto(this Chat chat)
+    {
+        if (chat is null)
+            return null;
+
+        return new ChatDto.GetChats
+        {
+            ChatId = chat.Id,
+            Users = chat
+                .Users
+                .Select(UserMapper.ToChatDto)
+                .ToList(),
+            LastMessage = MessageMapper.ToChatDto(chat.Messages.FirstOrDefault()),
+        };
+    }
 }
