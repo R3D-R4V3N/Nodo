@@ -28,7 +28,12 @@
                     <input id="hobby-search" value="@SearchText" @oninput="HandleSearch" type="search" inputmode="search" autocomplete="off" placeholder="Zoek bv. voetbal…" class="w-full bg-transparent text-[15px] placeholder:text-neutral-400 focus:outline-none" />
                     @if (!string.IsNullOrWhiteSpace(SearchText))
                     {
-                        <button type="button" class="text-sm text-neutral-500 hover:text-neutral-700" @onclick="ClearSearch">Wis</button>
+                        <button type="button" class="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-700" @onclick="ClearSearch">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            <span>Wis</span>
+                        </button>
                     }
                 </div>
             </div>
@@ -56,8 +61,18 @@
             <div class="flex items-center justify-between">
                 <p class="text-sm text-neutral-600">Geselecteerd: <span class="font-medium">@SelectedCount/@MaxSelection</span></p>
                 <div class="flex items-center gap-2">
-                    <button type="button" class="rounded-xl border border-[#127646] text-[#127646] px-4 py-3 text-sm font-medium hover:bg-[#127646] hover:text-white" @onclick="HandleClear">Leegmaken</button>
-                    <button type="button" class="rounded-xl bg-[#127646] px-4 py-3 text-sm font-medium text-white shadow hover:bg-[#0f663c] disabled:opacity-40 disabled:cursor-not-allowed" disabled="@(SelectedCount == 0)" @onclick="HandleConfirm">Bewaar</button>
+                    <button type="button" class="rounded-xl border border-[#127646] text-[#127646] px-4 py-3 text-sm font-medium hover:bg-[#127646] hover:text-white inline-flex items-center gap-2" @onclick="HandleClear">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3h6a1 1 0 0 1 1 1v2h3M6 6h12l-.87 12.14A2 2 0 0 1 15.14 20H8.86a2 2 0 0 1-1.99-1.86L6 6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M10 11v6m4-6v6" />
+                        </svg>
+                        <span>Leegmaken</span>
+                    </button>
+                    <button type="button" class="rounded-xl bg-[#127646] px-4 py-3 text-sm font-medium text-white shadow hover:bg-[#0f663c] disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2" disabled="@(SelectedCount == 0)" @onclick="HandleConfirm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 256 256">
+                            <path d="M216.49,79.51l-112,112a12,12,0,0,1-17,0l-48-48a12,12,0,0,1,17-17L96,166l103-103a12,12,0,0,1,17,17Z" />
+                        </svg>
+                        <span>Bewaar</span>
+                    </button>
                 </div>
             </div>
         </div>
