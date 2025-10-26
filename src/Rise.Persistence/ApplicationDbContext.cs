@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
 using Rise.Domain.Users;
+using Rise.Domain.Users.Hobbys;
 using Rise.Domain.Users.Sentiment;
 using Rise.Persistence.Configurations.Users;
 
@@ -22,6 +23,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> opts) :
     public DbSet<Chat> Chats => Set<Chat>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
+    public DbSet<UserHobby> Hobbies => Set<UserHobby>();
     public DbSet<UserSentiment> Sentiments => Set<UserSentiment>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
