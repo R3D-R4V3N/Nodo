@@ -1,5 +1,6 @@
 @page "/register"
 @using Rise.Client.Identity.Components
+@using Rise.Client.Home.Components
 @layout EmptyLayout
 
 <PageTitle>Register</PageTitle>
@@ -7,6 +8,10 @@
 <AuthorizeView Context="authContext">
     <Authorized>
         <AuthLayout>
+            <HeaderContent>
+                <HomeLogo />
+                <HomeHeading />
+            </HeaderContent>
             <div class="space-y-4 rounded-3xl bg-white/70 p-6 text-center shadow-xl backdrop-blur">
                 <p class="text-lg font-semibold text-[#04320C]">You're already logged in as @authContext.User.Identity?.Name.</p>
             </div>
@@ -14,6 +19,10 @@
     </Authorized>
     <NotAuthorized>
         <AuthLayout>
+            <HeaderContent>
+                <HomeLogo />
+                <HomeHeading />
+            </HeaderContent>
             @if (_result?.IsSuccess == true)
             {
                 <div class="space-y-4 rounded-3xl bg-white/70 p-6 text-center shadow-xl backdrop-blur">
