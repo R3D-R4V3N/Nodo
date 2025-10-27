@@ -13,21 +13,23 @@
                 <HomeLogo />
                 <HomeHeading />
             </HeaderContent>
-            <div class="space-y-4 rounded-3xl bg-white/70 p-6 text-center shadow-xl backdrop-blur">
-                <p class="text-lg font-semibold text-[#04320C]">Je bent ingelogd als @authContext.User.Identity?.Name.</p>
-                <div class="text-left">
-                    <p class="text-sm font-semibold text-[#04320C]">Claims</p>
-                    <div class="mt-2 space-y-2">
-                        @foreach (var claim in authContext.User.Claims)
-                        {
-                            <div class="rounded-2xl bg-[#F5F4F0] px-4 py-2">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-[#0B6532]">@claim.Type</p>
-                                <p class="text-sm text-[#04320C]">@claim.Value</p>
-                            </div>
-                        }
+            <ChildContent>
+                <div class="space-y-4 rounded-3xl bg-white/70 p-6 text-center shadow-xl backdrop-blur">
+                    <p class="text-lg font-semibold text-[#04320C]">Je bent ingelogd als @authContext.User.Identity?.Name.</p>
+                    <div class="text-left">
+                        <p class="text-sm font-semibold text-[#04320C]">Claims</p>
+                        <div class="mt-2 space-y-2">
+                            @foreach (var claim in authContext.User.Claims)
+                            {
+                                <div class="rounded-2xl bg-[#F5F4F0] px-4 py-2">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-[#0B6532]">@claim.Type</p>
+                                    <p class="text-sm text-[#04320C]">@claim.Value</p>
+                                </div>
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
+            </ChildContent>
         </AuthLayout>
     </Authorized>
     <NotAuthorized>
@@ -36,9 +38,11 @@
                 <HomeLogo />
                 <HomeHeading />
             </HeaderContent>
-            <div class="rounded-3xl bg-white/70 p-6 text-center shadow-xl backdrop-blur">
-                <p class="text-lg font-semibold text-[#04320C]">Je hebt geen toegang tot deze pagina.</p>
-            </div>
+            <ChildContent>
+                <div class="rounded-3xl bg-white/70 p-6 text-center shadow-xl backdrop-blur">
+                    <p class="text-lg font-semibold text-[#04320C]">Je hebt geen toegang tot deze pagina.</p>
+                </div>
+            </ChildContent>
         </AuthLayout>
     </NotAuthorized>
 </AuthorizeView>
