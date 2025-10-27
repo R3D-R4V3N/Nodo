@@ -56,17 +56,32 @@ public partial class Homepage
         return string.Join(", ", chatUserNames);
     }
 
+    private string GetChatInitial(ChatDto.GetChats chat)
+    {
+        var title = GetChatTitle(chat).Trim();
+        if (string.IsNullOrEmpty(title))
+        {
+            return "?";
+        }
+
+        var first = title[0];
+        return char.IsLetterOrDigit(first)
+            ? first.ToString().ToUpperInvariant()
+            : first.ToString();
+    }
+
     private static string GetLastMessagePreview(ChatDto.GetChats chat)
     {
         var last = chat.LastMessage;
-        if (last is null || string.IsNullOrWhiteSpace(last.Content)) 
+        if (last is null || string.IsNullOrWhiteSpace(last.Content))
             return "Nog geen berichten";
 
         var preview = last.Content;
 
-        return preview.Length <= 80 
-            ? preview : 
-            string.Concat(preview.AsSpan(0, 80), "…");
+        const int maxLength = 80;
+        return preview.Length <= maxLength
+            ? preview
+            : string.Concat(preview.AsSpan(0, maxLength), "â€¦");
     }
 
     private static string GetLastActivity(ChatDto.GetChats chat)
