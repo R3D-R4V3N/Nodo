@@ -32,7 +32,8 @@ internal static class UserMapper
                 .Select(SentimentMapper.ToDto)
                 .ToList(),
             Hobbies = user.Hobbies
-                .Select(HobbyMapper.ToDto)
+                .GroupBy(hobby => hobby.Hobby)
+                .Select(group => HobbyMapper.ToDto(group.First()))
                 .ToList(),
             DefaultChatLines = user
                 .UserSettings

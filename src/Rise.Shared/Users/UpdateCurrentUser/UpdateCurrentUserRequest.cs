@@ -4,6 +4,8 @@ public static partial class UserRequest
 {
     public class UpdateCurrentUser
     {
+        public const int MaxHobbies = 3;
+
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Biography { get; set; } = string.Empty;
@@ -21,7 +23,6 @@ public static partial class UserRequest
         private const int MaxAvatarLength = 250;
         private const int MaxDefaultChatLines = 5;
         private const int MaxPreferences = 5;
-        private const int MaxHobbies = 3;
         private const int MaxChatLineLength = 150;
 
         public UpdateCurrentUserValidator()
@@ -49,8 +50,8 @@ public static partial class UserRequest
                 .WithMessage("Avatar mag niet leeg zijn.");
 
             RuleFor(x => x.HobbyIds)
-                .Must(list => (list ?? []).Distinct(StringComparer.OrdinalIgnoreCase).Count() <= MaxHobbies)
-                .WithMessage($"Je mag maximaal {MaxHobbies} hobby's selecteren.");
+                .Must(list => (list ?? []).Distinct(StringComparer.OrdinalIgnoreCase).Count() <= UpdateCurrentUser.MaxHobbies)
+                .WithMessage($"Je mag maximaal {UpdateCurrentUser.MaxHobbies} hobby's selecteren.");
 
             RuleFor(x => x.Likes)
                 .Must(list => (list ?? []).Distinct(StringComparer.OrdinalIgnoreCase).Count() <= MaxPreferences)

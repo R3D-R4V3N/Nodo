@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Rise.Domain.Users;
@@ -203,6 +204,8 @@ public class UserContextService(
             return Result.Success(hobbies);
         }
 
+        var seen = new HashSet<HobbyType>();
+
         foreach (var rawId in hobbyIds)
         {
             if (string.IsNullOrWhiteSpace(rawId))
@@ -215,7 +218,17 @@ public class UserContextService(
                 return Result.Invalid(new ValidationError(nameof(UserRequest.UpdateCurrentUser.HobbyIds), $"Onbekende hobby '{rawId}'."));
             }
 
+            if (!seen.Add(hobby))
+            {
+                continue;
+            }
+
             hobbies.Add(new UserHobby { Hobby = hobby });
+
+            if (hobbies.Count > UserRequest.UpdateCurrentUser.MaxHobbies)
+            {
+                return Result.Invalid(new ValidationError(nameof(UserRequest.UpdateCurrentUser.HobbyIds), $"Je mag maximaal {UserRequest.UpdateCurrentUser.MaxHobbies} hobby's selecteren."));
+            }
         }
 
         return Result.Success(hobbies);
