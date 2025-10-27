@@ -1,6 +1,7 @@
 @page "/homepage"
 @attribute [Authorize]
 @using System.Security.Claims
+@using System.Linq
 @using Rise.Client.Chats
 @using Rise.Shared.Chats
 @layout MainLayout
@@ -8,77 +9,253 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 
-<div class="min-h-dvh bg-neutral-100 overflow-x-hidden">
-  <!-- Header -->
-  <header class="bg-[#127646] text-white px-4 sm:px-6 lg:px-8 pt-6 pb-6 sm:pb-7 rounded-b-3xl shadow">
-    <h1 class="text-2xl sm:text-3xl text-center lg:text-4xl font-semibold leading-tight">
-      Goeiemorgen @CurrentUser?.Name
-    </h1>
+<div class="relative min-h-dvh overflow-hidden bg-neutral-100 text-neutral-900">
+    <div class="relative isolate overflow-hidden pb-28">
+        <div class="absolute inset-x-0 top-0 h-[260px] bg-gradient-to-br from-[#127646] via-[#0f6a3f] to-[#0c5233]"></div>
+        <div class="absolute left-[12%] top-6 h-40 w-40 rounded-full bg-white/10 blur-3xl"></div>
+        <div class="absolute right-[18%] top-20 h-48 w-48 rounded-full bg-white/10 blur-[90px]"></div>
 
-    <!-- Search -->
-    <div class="mt-4 sm:mt-5 bg-white rounded-full flex items-center gap-2 px-4 py-3 sm:py-3.5 text-neutral-700 shadow">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 opacity-70" fill="currentColor" viewBox="0 0 256 256">
-        <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
-      </svg>
-      <input type="search"
-             placeholder="Zoek chat"
-             class="ml-1 flex-1 bg-transparent outline-none text-sm sm:text-base placeholder-neutral-400"
-             @bind="_searchTerm"
-             @bind:event="oninput" />
-    </div>
-  </header>
-
-  <!-- Content -->
-  <main class="mx-auto w-full max-w-screen-sm sm:max-w-screen-md lg:max-w-2xl px-4 sm:px-6 lg:px-8">
-    <section class="mt-5 sm:mt-6">
-      <div class="flex items-center justify-between mb-2 sm:mb-3 px-1">
-        <h2 class="text-base sm:text-lg font-semibold text-neutral-700">Chats</h2>
-        @if (!_isLoading && _chats.Count > 0)
-        {
-          <span class="text-xs sm:text-sm text-neutral-400">@_chats.Count gesprekken</span>
-        }
-      </div>
-
-      @if (_isLoading)
-      {
-        <p class="text-sm text-neutral-500 px-1">Chats laden…</p>
-      }
-      else if (!string.IsNullOrWhiteSpace(_loadError))
-      {
-        <p class="text-sm text-red-600 px-1">@_loadError</p>
-      }
-      else if (_filteredChats.Count == 0)
-      {
-        <p class="text-sm text-neutral-500 px-1">Er zijn nog geen chats.</p>
-      }
-      else
-      {
-        <!-- Chat list -->
-        <ul class="space-y-3 sm:space-y-4 pb-8">
-          @foreach (var chat in _filteredChats)
-          {
-            <li>
-              <button type="button"
-                      class="w-full text-left"
-                      @onclick="() => NavigateToChat(chat)">
-                <div class="bg-white rounded-3xl p-4 sm:p-5 shadow hover:shadow-md active:scale-[0.99] transition flex items-start gap-3 sm:gap-4">
-                  <!-- Avatar -->
-                  <div class="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-neutral-200 shrink-0"></div>
-
-                  <!-- Texts -->
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-baseline justify-between gap-2">
-                      <p class="font-semibold text-[15px] sm:text-base truncate">@GetChatTitle(chat)</p>
-                      <time class="text-[11px] sm:text-xs text-neutral-400 whitespace-nowrap">@GetLastActivity(chat)</time>
+        <header class="relative mx-auto w-full max-w-screen-lg px-5 pt-12 sm:px-6 lg:px-10">
+            <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                <div class="space-y-3 text-white">
+                    <p class="text-xs font-semibold uppercase tracking-[0.25em] text-white/70">Welkom terug</p>
+                    <div>
+                        <h1 class="text-3xl font-semibold leading-tight sm:text-4xl">Hallo @GetGreetingName()</h1>
+                        <p class="mt-2 max-w-2xl text-sm text-white/80 sm:text-base">Bekijk al je gesprekken in één overzicht, zie wie het laatst iets stuurde en start eenvoudig een nieuw gesprek.</p>
                     </div>
-                    <p class="mt-0.5 text-xs sm:text-sm text-neutral-500 truncate">@GetLastMessagePreview(chat)</p>
-                  </div>
                 </div>
-              </button>
-            </li>
-          }
-        </ul>
-      }
-    </section>
-  </main>
+
+                <div class="flex items-center gap-3 self-start sm:self-auto">
+                    <div class="hidden flex-col items-center sm:flex">
+                        <div class="h-20 w-20 overflow-hidden rounded-[28px] bg-white/10 ring-4 ring-white/30 shadow-lg">
+                            <img src="@GetCurrentUserAvatar()" alt="@CurrentUser?.Name" class="h-full w-full object-cover" />
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(CurrentUser?.Name))
+                        {
+                            <span class="mt-2 text-xs font-medium text-white/80">@CurrentUser!.Name</span>
+                        }
+                    </div>
+                    <div class="grid h-12 w-12 place-items-center rounded-2xl bg-white/20 text-white sm:hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 8h10M7 12h6m4 1.993C17 16.657 14.866 18 12 18c-2.866 0-5-1.343-5-4.007V8c0-2.664 2.134-4 5-4 2.866 0 5 1.336 5 4v5.993Z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 rounded-3xl bg-white/95 px-5 py-5 shadow-xl shadow-[#0f6a3f]/10 ring-1 ring-white/40 backdrop-blur">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
+                    <div class="flex items-center gap-3 text-neutral-600">
+                        <div class="grid h-12 w-12 place-items-center rounded-2xl bg-[#127646]/10 text-[#127646]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 8h10m-9 4h6m-7 6h6.2c2.52 0 3.78 0 4.74-.49a4 4 0 0 0 1.67-1.67c.49-.96.49-2.22.49-4.74V7.9c0-1.04 0-1.56-.2-1.96a2 2 0 0 0-.87-.87C16.16 5 15.64 5 14.6 5H9.4c-1.04 0-1.56 0-1.96.2a2 2 0 0 0-.87.87c-.2.4-.2.92-.2 1.96v7.2c0 1.04 0 1.56.2 1.96.17.34.53.7.87.87.4.2.92.2 1.96.2Z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-neutral-800">Zoek in je gesprekken</p>
+                            <p class="text-xs text-neutral-500">Gebruik een naam, onderwerp of trefwoord om snel verder te gaan.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex-1">
+                        <label for="chat-search" class="sr-only">Zoek chat</label>
+                        <div class="flex items-center gap-3 rounded-full border border-neutral-200 bg-white px-4 py-2.5 shadow-sm focus-within:ring-2 focus-within:ring-[#127646]/30">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-neutral-400" fill="currentColor" viewBox="0 0 256 256">
+                                <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+                            </svg>
+                            <input id="chat-search"
+                                   type="search"
+                                   placeholder="Zoek naar personen of berichten"
+                                   class="flex-1 bg-transparent text-sm outline-none placeholder-neutral-400 sm:text-base"
+                                   @bind="_searchTerm"
+                                   @bind:event="oninput" />
+                            @if (!string.IsNullOrWhiteSpace(_searchTerm))
+                            {
+                                <button type="button" class="text-xs font-medium text-[#127646] transition hover:text-[#0f5233]" @onclick="ClearSearch">Wissen</button>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="flex items-stretch gap-2">
+                        <button type="button" class="inline-flex items-center gap-2 rounded-full bg-[#0f6a3f] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-[#0f6a3f]/30 transition hover:bg-[#0d5a35]" @onclick="NavigateToFriends">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 5v14m7-7H5" />
+                            </svg>
+                            <span>Nieuwe chat</span>
+                        </button>
+                        <button type="button" class="hidden items-center gap-2 rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-600 transition hover:border-[#127646]/50 hover:text-[#127646] sm:inline-flex" @onclick="NavigateToFriends">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2m18 0v-2a4 4 0 0 0-3-3.87M12 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm6-1a3 3 0 1 0-3-3" />
+                            </svg>
+                            <span>Contacten</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex flex-wrap items-center gap-2 text-xs text-neutral-500 sm:text-sm">
+                    <span class="inline-flex items-center gap-2 rounded-full bg-neutral-100 px-3 py-1 font-medium text-neutral-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 8h10M7 12h6m5 6H6a2 2 0 0 1-2-2V7.9c0-1.04 0-1.56.2-1.96a2 2 0 0 1 .87-.87C5.47 5 5.99 5 7.03 5h9.94c1.04 0 1.56 0 1.96.2a2 2 0 0 1 .87.87c.2.4.2.92.2 1.96V16a2 2 0 0 1-2 2Z" />
+                        </svg>
+                        @GetChatStatisticLabel()
+                    </span>
+                    <span class="inline-flex items-center gap-2 rounded-full bg-neutral-100 px-3 py-1 font-medium text-neutral-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l2.5 2.5M12 22a10 10 0 1 1 10-10 10 10 0 0 1-10 10Z" />
+                        </svg>
+                        @GetLatestActivitySummary()
+                    </span>
+                    @{ var searchBadge = GetSearchBadgeText(); }
+                    @if (!string.IsNullOrEmpty(searchBadge))
+                    {
+                        <span class="inline-flex items-center gap-2 rounded-full bg-[#127646]/10 px-3 py-1 font-medium text-[#0f6a3f]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m19 5-7 7-3-3" />
+                            </svg>
+                            @searchBadge
+                        </span>
+                    }
+                </div>
+            </div>
+        </header>
+    </div>
+
+    <main class="relative -mt-20 pb-16">
+        <div class="mx-auto w-full max-w-screen-lg px-5 sm:px-6 lg:px-10">
+            <section class="space-y-6">
+                <div class="flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-semibold text-neutral-800 sm:text-2xl">Recente gesprekken</h2>
+                        <p class="text-sm text-neutral-500">Alle gesprekken op een rij. Tik op een kaart om verder te praten.</p>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-neutral-400 sm:text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9Z" />
+                        </svg>
+                        <span>@GetChatStatusMessage()</span>
+                    </div>
+                </div>
+
+                @if (_isLoading)
+                {
+                    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                        @foreach (var placeholder in LoadingPlaceholders)
+                        {
+                            <div class="animate-pulse rounded-3xl bg-white/80 p-5 shadow-sm ring-1 ring-neutral-200/60">
+                                <div class="flex items-start gap-4">
+                                    <div class="h-14 w-14 rounded-2xl bg-neutral-200"></div>
+                                    <div class="flex-1 space-y-3">
+                                        <div class="h-3.5 w-2/3 rounded-full bg-neutral-200"></div>
+                                        <div class="h-3 w-1/3 rounded-full bg-neutral-200/80"></div>
+                                        <div class="h-3.5 w-full rounded-full bg-neutral-200/80"></div>
+                                        <div class="h-3.5 w-4/5 rounded-full bg-neutral-200/70"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else if (!string.IsNullOrWhiteSpace(_loadError))
+                {
+                    <div class="rounded-3xl border border-red-200 bg-red-50 p-6 shadow-sm">
+                        <div class="flex items-start gap-3 text-red-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v4m0 4h.01M10.29 3.86 2.82 17a2 2 0 0 0 1.71 3h14.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+                            </svg>
+                            <div>
+                                <p class="text-sm font-semibold">Er ging iets mis</p>
+                                <p class="mt-1 text-sm">@_loadError</p>
+                                <button type="button" class="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-[#127646] transition hover:text-[#0f5233]" @onclick="ReloadChats">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.93 4.93a10 10 0 1 1 0 14.14M4 4v5h5" />
+                                    </svg>
+                                    <span>Probeer opnieuw</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (_filteredChats.Count == 0)
+                {
+                    <div class="rounded-3xl bg-white p-8 text-center shadow-md ring-1 ring-neutral-200/70">
+                        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#127646]/10 text-[#127646]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 11a3 3 0 0 0-3-3H4a3 3 0 0 0-3 3v4a3 3 0 0 0 3 3h4l4.22 3.16A1 1 0 0 0 13 20v-2.4a3 3 0 0 0 2-2.83Zm5-8h-6a2 2 0 0 0-2 2v3.34A4 4 0 0 1 15 12v1h2a3 3 0 0 0 3-3V5a2 2 0 0 0-2-2Z" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-lg font-semibold text-neutral-800">Nog niets gevonden</h3>
+                        <p class="mx-auto mt-2 max-w-md text-sm text-neutral-500">@GetEmptyStateDescription()</p>
+                        <div class="mt-6 flex justify-center">
+                            <button type="button" class="inline-flex items-center gap-2 rounded-full bg-[#127646] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-[#127646]/20 transition hover:bg-[#0f5233]" @onclick="NavigateToFriends">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 17l5-5-5-5M8 7l-5 5 5 5m7-10-5 10" />
+                                </svg>
+                                <span>Vind nieuwe connecties</span>
+                            </button>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <ul class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                        @foreach (var chat in _filteredChats)
+                        {
+                            <li>
+                                <button type="button" class="group relative w-full text-left" @onclick="() => NavigateToChat(chat)">
+                                    <div class="h-full rounded-3xl bg-white p-5 shadow-sm ring-1 ring-neutral-200/70 transition duration-200 ease-out hover:-translate-y-1 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#127646]" style="@GetAccentStyle(chat)">
+                                        <div class="flex flex-col gap-4">
+                                            <div class="flex items-start gap-3">
+                                                <div class="relative shrink-0">
+                                                    <div class="h-14 w-14 overflow-hidden rounded-2xl bg-neutral-200 ring-4 ring-white shadow-inner sm:h-16 sm:w-16">
+                                                        <img src="@GetChatAvatar(chat)" alt="@GetChatTitle(chat)" class="h-full w-full object-cover" />
+                                                    </div>
+                                                    <span class="absolute -bottom-1 -right-1 grid h-7 w-7 place-items-center rounded-full border-2 border-white text-[#0f5132]" style="background-color: var(--accent-color, #DCFCE7);">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M2 5a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v3.382a2 2 0 0 1-.684 1.5l-5.632 4.909a2 2 0 0 1-2.664 0L3.684 9.882A2 2 0 0 1 3 8.382V5Z" />
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <div class="flex items-baseline gap-2">
+                                                        <h3 class="flex-1 truncate text-base font-semibold text-neutral-800 sm:text-lg">@GetChatTitle(chat)</h3>
+                                                        <time class="text-xs text-neutral-400 sm:text-sm">@GetLastActivity(chat)</time>
+                                                    </div>
+                                                    <p class="mt-1 text-xs font-medium text-neutral-500">@GetParticipantsPreview(chat)</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex items-center justify-between gap-3">
+                                                <div class="flex flex-1 items-center gap-2 text-left text-sm text-neutral-600 chat-preview">
+                                                    <span class="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-neutral-100 text-neutral-400 transition group-hover:bg-[#127646]/10 group-hover:text-[#127646]">
+                                                        @if (HasAudioMessage(chat))
+                                                        {
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 18.5v2m-7-8.25a7 7 0 0 0 14 0m-7-8a2.5 2.5 0 0 1 2.5 2.5v3a2.5 2.5 0 0 1-5 0v-3A2.5 2.5 0 0 1 12 4.25Z" />
+                                                            </svg>
+                                                        }
+                                                        else
+                                                        {
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 9h8m-8 4h5m-4 6h3c3.771 0 5.657 0 6.828-1.172C19 16.657 19 14.771 19 11s0-5.657-1.172-6.828C16.657 3 14.771 3 11 3H9C5.229 3 3.343 3 2.172 4.172 1 5.343 1 7.229 1 11s0 5.657 1.172 6.828C3.343 19 5.229 19 9 19Z" />
+                                                            </svg>
+                                                        }
+                                                    </span>
+                                                    <span>@GetLastMessagePreview(chat)</span>
+                                                </div>
+                                                <span class="hidden h-10 w-10 items-center justify-center rounded-full bg-[#127646]/10 text-[#127646] transition group-hover:bg-[#127646]/20 sm:inline-flex">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m9 5 7 7-7 7" />
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+        </div>
+    </main>
 </div>
