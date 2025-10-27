@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Rise.Shared.Chats;
@@ -42,7 +44,7 @@ public partial class Homepage
         _isLoading = false;
     }
 
-    private void NavigateToChat(ChatDto.GetChats chat) 
+    private void NavigateToChat(ChatDto.GetChats chat)
         => NavigationManager.NavigateTo($"/chat/{chat.ChatId}");
 
     private string GetChatTitle(ChatDto.GetChats chat)
@@ -59,19 +61,64 @@ public partial class Homepage
     private static string GetLastMessagePreview(ChatDto.GetChats chat)
     {
         var last = chat.LastMessage;
-        if (last is null || string.IsNullOrWhiteSpace(last.Content)) 
+        if (last is null || string.IsNullOrWhiteSpace(last.Content))
             return "Nog geen berichten";
 
         var preview = last.Content;
 
-        return preview.Length <= 80 
-            ? preview : 
-            string.Concat(preview.AsSpan(0, 80), "…");
+        return preview.Length <= 80
+            ? preview
+            : $"{preview.AsSpan(0, 80)}...";
     }
 
     private static string GetLastActivity(ChatDto.GetChats chat)
     {
         var last = chat.LastMessage;
         return last?.Timestamp?.ToString("HH:mm") ?? "-";
+    }
+
+    private string GetGreeting()
+    {
+        var hour = DateTime.Now.Hour;
+        return hour switch
+        {
+            < 12 => "Goeiemorgen",
+            < 18 => "Goeiemiddag",
+            _ => "Goeieavond"
+        };
+    }
+
+    private ChatDto.GetChats? GetMostRecentChat()
+        => _chats
+            .OrderByDescending(c => c.LastMessage?.Timestamp ?? DateTime.MinValue)
+            .FirstOrDefault();
+
+    private string GetChatInitials(ChatDto.GetChats chat)
+    {
+        var title = GetChatTitle(chat);
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return "N";
+        }
+
+        var parts = title
+            .Split(new[] { ' ', ',', '|' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (parts.Length == 0)
+        {
+            return "N";
+        }
+
+        if (parts.Length == 1)
+        {
+            var snippet = new string(parts[0].Take(2).ToArray());
+            return snippet.ToUpperInvariant();
+        }
+
+        return new string(new[]
+        {
+            char.ToUpperInvariant(parts[0][0]),
+            char.ToUpperInvariant(parts[1][0])
+        });
     }
 }

@@ -1,5 +1,7 @@
 @page "/homepage"
 @attribute [Authorize]
+@using System
+@using System.Linq
 @using System.Security.Claims
 @using Rise.Client.Chats
 @using Rise.Shared.Chats
@@ -8,77 +10,215 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 
-<div class="min-h-dvh bg-neutral-100 overflow-x-hidden">
-  <!-- Header -->
-  <header class="bg-[#127646] text-white px-4 sm:px-6 lg:px-8 pt-6 pb-6 sm:pb-7 rounded-b-3xl shadow">
-    <h1 class="text-2xl sm:text-3xl text-center lg:text-4xl font-semibold leading-tight">
-      Goeiemorgen @CurrentUser?.Name
-    </h1>
+<div class="min-h-dvh bg-neutral-100 text-neutral-900 overflow-x-hidden">
+  <header class="relative isolate overflow-hidden bg-[#127646] text-white">
+    <div class="absolute inset-0 opacity-70">
+      <div class="absolute -left-24 top-10 h-56 w-56 rounded-full bg-emerald-400/40 blur-3xl"></div>
+      <div class="absolute -right-36 bottom-0 h-72 w-72 rounded-full bg-emerald-300/30 blur-3xl"></div>
+    </div>
+    <div class="relative mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pb-24 pt-10 sm:pt-16">
+      <p class="text-xs sm:text-sm uppercase tracking-[0.35em] text-emerald-100/80">Vandaag op Nodo</p>
+      <h1 class="mt-3 text-3xl sm:text-4xl lg:text-5xl font-semibold leading-tight">
+        @GetGreeting(), <span class="text-emerald-50">@CurrentUser?.Name</span>
+      </h1>
+      <p class="mt-4 max-w-2xl text-sm sm:text-base text-emerald-100/90">
+        Blijf in contact met je vrienden, ontdek nieuwe gesprekken en hou een vinger aan de pols van alles wat er speelt.
+      </p>
 
-    <!-- Search -->
-    <div class="mt-4 sm:mt-5 bg-white rounded-full flex items-center gap-2 px-4 py-3 sm:py-3.5 text-neutral-700 shadow">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 opacity-70" fill="currentColor" viewBox="0 0 256 256">
-        <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
-      </svg>
-      <input type="search"
-             placeholder="Zoek chat"
-             class="ml-1 flex-1 bg-transparent outline-none text-sm sm:text-base placeholder-neutral-400"
-             @bind="_searchTerm"
-             @bind:event="oninput" />
+      <div class="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="rounded-2xl bg-white/10 p-4 sm:p-5 shadow-sm ring-1 ring-white/10">
+          <p class="text-xs font-medium uppercase tracking-wide text-emerald-100/90">Actieve chats</p>
+          <p class="mt-2 text-2xl font-semibold">@(_isLoading ? "--" : _chats.Count.ToString())</p>
+          <p class="mt-1 text-xs text-emerald-100/70">Een snel overzicht van al je lopende gesprekken.</p>
+        </div>
+        <div class="rounded-2xl bg-white/10 p-4 sm:p-5 shadow-sm ring-1 ring-white/10">
+          <p class="text-xs font-medium uppercase tracking-wide text-emerald-100/90">Favoriete ijsbrekers</p>
+          <p class="mt-2 text-2xl font-semibold">@((CurrentUser?.DefaultChatLines?.Count ?? 0).ToString())</p>
+          <p class="mt-1 text-xs text-emerald-100/70">Gebruik je persoonlijke zinnen om gesprekken snel op gang te trekken.</p>
+        </div>
+        <div class="rounded-2xl bg-white/10 p-4 sm:p-5 shadow-sm ring-1 ring-white/10">
+          <p class="text-xs font-medium uppercase tracking-wide text-emerald-100/90">Welkom terug</p>
+          <p class="mt-2 text-2xl font-semibold">Nodo community</p>
+          <p class="mt-1 text-xs text-emerald-100/70">Bekijk wat je vrienden delen en sluit opnieuw aan bij je netwerk.</p>
+        </div>
+      </div>
     </div>
   </header>
 
-  <!-- Content -->
-  <main class="mx-auto w-full max-w-screen-sm sm:max-w-screen-md lg:max-w-2xl px-4 sm:px-6 lg:px-8">
-    <section class="mt-5 sm:mt-6">
-      <div class="flex items-center justify-between mb-2 sm:mb-3 px-1">
-        <h2 class="text-base sm:text-lg font-semibold text-neutral-700">Chats</h2>
-        @if (!_isLoading && _chats.Count > 0)
-        {
-          <span class="text-xs sm:text-sm text-neutral-400">@_chats.Count gesprekken</span>
-        }
+  <div class="relative z-10 -mt-12 px-4 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-screen-xl">
+      <label class="sr-only" for="homepage-search">Zoek chat</label>
+      <div class="flex items-center gap-3 rounded-3xl bg-white px-4 py-3 sm:px-6 sm:py-4 shadow-xl ring-1 ring-neutral-200/70">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 text-neutral-400" fill="currentColor" viewBox="0 0 256 256">
+          <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+        </svg>
+        <input id="homepage-search"
+               type="search"
+               placeholder="Zoek op naam, onderwerp of trefwoord"
+               class="flex-1 bg-transparent text-sm sm:text-base text-neutral-700 placeholder-neutral-400 outline-none"
+               @bind="_searchTerm"
+               @bind:event="oninput" />
+        <span class="hidden text-xs font-medium text-neutral-400 sm:block">@(_filteredChats.Count) resultaten</span>
       </div>
+    </div>
+  </div>
 
-      @if (_isLoading)
-      {
-        <p class="text-sm text-neutral-500 px-1">Chats laden…</p>
-      }
-      else if (!string.IsNullOrWhiteSpace(_loadError))
-      {
-        <p class="text-sm text-red-600 px-1">@_loadError</p>
-      }
-      else if (_filteredChats.Count == 0)
-      {
-        <p class="text-sm text-neutral-500 px-1">Er zijn nog geen chats.</p>
-      }
-      else
-      {
-        <!-- Chat list -->
-        <ul class="space-y-3 sm:space-y-4 pb-8">
-          @foreach (var chat in _filteredChats)
+  <main class="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pb-16 pt-16 lg:pt-20">
+    <div class="grid gap-6 lg:grid-cols-[minmax(0,2fr),minmax(280px,1fr)] xl:grid-cols-[minmax(0,3fr),minmax(320px,1fr)]">
+      <section class="rounded-3xl bg-white shadow-sm ring-1 ring-neutral-200">
+        <div class="flex flex-col gap-2 border-b border-neutral-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 class="text-lg font-semibold text-neutral-800">Jouw gesprekken</h2>
+            <p class="text-sm text-neutral-500">Bekijk recente chats en pak het gesprek opnieuw op.</p>
+          </div>
+          @if (!_isLoading && _chats.Count > 0)
           {
-            <li>
-              <button type="button"
-                      class="w-full text-left"
-                      @onclick="() => NavigateToChat(chat)">
-                <div class="bg-white rounded-3xl p-4 sm:p-5 shadow hover:shadow-md active:scale-[0.99] transition flex items-start gap-3 sm:gap-4">
-                  <!-- Avatar -->
-                  <div class="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-neutral-200 shrink-0"></div>
+            <span class="text-xs font-medium text-neutral-400 sm:text-right">@_chats.Count gesprekken totaal</span>
+          }
+        </div>
 
-                  <!-- Texts -->
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-baseline justify-between gap-2">
-                      <p class="font-semibold text-[15px] sm:text-base truncate">@GetChatTitle(chat)</p>
-                      <time class="text-[11px] sm:text-xs text-neutral-400 whitespace-nowrap">@GetLastActivity(chat)</time>
-                    </div>
-                    <p class="mt-0.5 text-xs sm:text-sm text-neutral-500 truncate">@GetLastMessagePreview(chat)</p>
+        @if (_isLoading)
+        {
+          <div class="space-y-4 px-5 py-6">
+            @for (var i = 0; i < 4; i++)
+            {
+              <div class="animate-pulse rounded-2xl bg-neutral-100/70 px-4 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="h-12 w-12 rounded-full bg-neutral-300"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-3 w-2/3 rounded-full bg-neutral-300"></div>
+                    <div class="h-3 w-1/2 rounded-full bg-neutral-200"></div>
                   </div>
                 </div>
+              </div>
+            }
+          </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(_loadError))
+        {
+          <div class="px-5 py-6">
+            <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-700">
+              @_loadError
+            </div>
+          </div>
+        }
+        else if (_filteredChats.Count == 0)
+        {
+          <div class="px-5 py-12 text-center">
+            <div class="mx-auto max-w-sm space-y-4">
+              <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100 text-[#127646]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 9.75h7.5m-7.5 3h4.5M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9Z" />
+                </svg>
+              </div>
+              <div class="space-y-2">
+                <h3 class="text-lg font-semibold text-neutral-800">Geen chats gevonden</h3>
+                <p class="text-sm text-neutral-500">Start een nieuw gesprek of voeg nieuwe vrienden toe om te beginnen met chatten.</p>
+              </div>
+              <NavLink class="inline-flex items-center justify-center rounded-full bg-[#127646] px-5 py-2.5 text-sm font-medium text-white shadow hover:bg-[#0f5c3d] transition" href="/friends">
+                Zoek nieuwe vrienden
+              </NavLink>
+            </div>
+          </div>
+        }
+        else
+        {
+          <ul role="list" class="divide-y divide-neutral-100">
+            @foreach (var chat in _filteredChats)
+            {
+              <li class="group">
+                <button type="button"
+                        class="flex w-full items-stretch text-left transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#127646]/60"
+                        @onclick="() => NavigateToChat(chat)">
+                  <article class="flex w-full items-center gap-3 px-5 py-4 sm:gap-4 sm:px-6">
+                    <div class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-base font-semibold text-[#127646]">
+                      @GetChatInitials(chat)
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-baseline justify-between gap-3">
+                        <p class="text-sm font-semibold text-neutral-800 sm:text-base truncate">@GetChatTitle(chat)</p>
+                        <time class="text-xs text-neutral-400 whitespace-nowrap">@GetLastActivity(chat)</time>
+                      </div>
+                      <p class="mt-1 text-xs sm:text-sm text-neutral-500 truncate">@GetLastMessagePreview(chat)</p>
+                    </div>
+                  </article>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <aside class="space-y-6">
+        <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-neutral-200">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-semibold text-neutral-800">Snelle acties</h2>
+              <p class="mt-1 text-sm text-neutral-500">Alles wat je nodig hebt om direct aan de slag te gaan.</p>
+            </div>
+          </div>
+          <div class="mt-5 space-y-3">
+            <NavLink class="block" href="/friends">
+              <span class="flex w-full items-center justify-between rounded-2xl border border-neutral-200 px-4 py-3 text-sm font-medium text-neutral-700 shadow-sm transition hover:border-[#127646]/40 hover:text-[#127646]">
+                Bekijk je vriendenlijst
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </NavLink>
+            <NavLink class="block" href="/profile">
+              <span class="flex w-full items-center justify-between rounded-2xl border border-neutral-200 px-4 py-3 text-sm font-medium text-neutral-700 shadow-sm transition hover:border-[#127646]/40 hover:text-[#127646]">
+                Werk je profiel bij
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652l-9.546 9.546a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897l7.859-7.86" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 9.75v7.875A1.875 1.875 0 0117.625 19.5H6.375A1.875 1.875 0 014.5 17.625V6.375A1.875 1.875 0 016.375 4.5h7.875" />
+                </svg>
+              </span>
+            </NavLink>
+            @{
+              var latestChat = GetMostRecentChat();
+            }
+            @if (latestChat is not null)
+            {
+              <button type="button"
+                      class="flex w-full items-center justify-between rounded-2xl bg-[#127646] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f5c3d]"
+                      @onclick="() => NavigateToChat(latestChat)">
+                Ga naar je nieuwste chat
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.5 4.5L21 12l-7.5 7.5M21 12H3" />
+                </svg>
               </button>
-            </li>
-          }
-        </ul>
-      }
-    </section>
+            }
+          </div>
+        </section>
+
+        @if (CurrentUser?.DefaultChatLines?.Any() == true)
+        {
+          <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-neutral-200">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-semibold text-neutral-800">Favoriete ijsbrekers</h2>
+                <p class="mt-1 text-sm text-neutral-500">Een selectie van je opgeslagen zinnen om meteen te gebruiken.</p>
+              </div>
+              <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-[#127646]">@CurrentUser.DefaultChatLines.Count</span>
+            </div>
+            <ul class="mt-5 space-y-3">
+              @foreach (var line in CurrentUser.DefaultChatLines.Take(4))
+              {
+                <li class="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
+                  “@line”
+                </li>
+              }
+            </ul>
+            <NavLink class="mt-5 inline-flex items-center gap-2 text-sm font-medium text-[#127646]" href="/profile">
+              Beheer je ijsbrekers
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7" />
+              </svg>
+            </NavLink>
+          </section>
+        }
+      </aside>
+    </div>
   </main>
 </div>
