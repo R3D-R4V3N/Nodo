@@ -193,6 +193,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private readonly Dictionary<string, string> _customChatLineOptions = new(StringComparer.OrdinalIgnoreCase);
 
     private bool _isEditing;
+    private bool _isSaving;
     private bool _isLoading = true;
     private string? _loadError;
 
@@ -482,14 +483,63 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
     private async Task SaveEdit()
     {
-        _model = _draft.ApplyTo(_model);
-        _initialHobbyIds = _selectedHobbyIds.ToHashSet();
-        _initialLikeIds = _selectedLikeIds.ToList();
-        _initialDislikeIds = _selectedDislikeIds.ToList();
-        _initialChatLineIds = _selectedChatLineIds.ToList();
-        _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
-        _isEditing = false;
-        await ShowToastAsync("Wijzigingen toegepast");
+        if (_isLoading || HasError || !_isEditing || _isSaving)
+        {
+            return;
+        }
+
+        var request = new UserRequest.UpdateCurrentUser
+        {
+            Name = _draft.Name ?? string.Empty,
+            Email = _draft.Email ?? string.Empty,
+            Biography = _draft.Bio ?? string.Empty,
+            AvatarUrl = _draft.AvatarUrl ?? string.Empty,
+            HobbyIds = _selectedHobbyIds
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .ToList(),
+            Likes = _selectedLikeIds
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .ToList(),
+            Dislikes = _selectedDislikeIds
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .ToList(),
+            DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds)
+                .Where(text => !string.IsNullOrWhiteSpace(text))
+                .ToList()
+        };
+
+        try
+        {
+            _isSaving = true;
+            var result = await UserContext.UpdateCurrentUserAsync(request);
+
+            if (result.IsSuccess && result.Value.User is not null)
+            {
+                var updatedUser = result.Value.User;
+                _currentUser = updatedUser;
+                var memberSince = FormatMemberSince(updatedUser.CreatedAt);
+                _model = ProfileModel.FromUser(updatedUser, memberSince);
+                _draft = ProfileDraft.FromModel(_model);
+                SyncSelectionFromModel();
+                _isEditing = false;
+                await ShowToastAsync("Wijzigingen opgeslagen");
+            }
+            else
+            {
+                var errorMessage = result.ValidationErrors.FirstOrDefault()?.ErrorMessage
+                    ?? result.Errors.FirstOrDefault()
+                    ?? "Opslaan is mislukt.";
+                await ShowToastAsync(errorMessage);
+            }
+        }
+        catch
+        {
+            await ShowToastAsync("Opslaan is mislukt.");
+        }
+        finally
+        {
+            _isSaving = false;
+        }
     }
 
     private async Task OnAvatarChanged(InputFileChangeEventArgs args)
