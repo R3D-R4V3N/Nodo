@@ -1,5 +1,7 @@
 @page "/FriendProfilePage/{id:guid}"
 @layout EmptyLayout
+@using System.Globalization
+@using System.Linq
 @using Rise.Client.UserConnections.Components.FriendProfile
 @using Rise.Shared.Assets
 @using Rise.Shared.Users
@@ -8,42 +10,140 @@
 
 @if (user is null)
 {
-    <!-- 👇 Loading state -->
-    <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600 animate-pulse">
+    <div class="flex min-h-screen items-center justify-center bg-neutral-50 text-neutral-600">
         <p>Profiel wordt geladen...</p>
     </div>
 }
 else if (user?.User is null)
 {
-    <!-- 👇 User not found -->
-    <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600">
+    <div class="flex min-h-screen items-center justify-center bg-neutral-50 text-neutral-600">
         <p>Gebruiker niet gevonden.</p>
     </div>
 }
 else
 {
-    <!-- 👇 Main content (alleen renderen als user is geladen) -->
-    <div class="relative flex min-h-screen flex-col bg-[#F2F2F2] text-neutral-900 antialiased md:flex-row animate-fade-in">
-        <EmojiComponent />
-        <BackButton />
+    var friend = user.User;
 
-        <header class="relative h-[65vh] md:h-auto md:w-1/2">
-            <ProfileImageComponent ImgSource="@user.User.AvatarUrl" />
-            <BlurComponent />
+    <div class="min-h-screen bg-neutral-50 text-neutral-900 antialiased">
+        <PageTitle>@friend.Name</PageTitle>
 
-            <div class="absolute inset-x-0 bottom-9 flex flex-col justify-end p-5 md:inset-y-0 md:left-0 md:justify-center md:p-10">
-                <NameAndBadgesComponent Name="@user.User.Name" Age="" />
+        <header class="bg-[#127646] text-white shadow">
+            <div class="mx-auto flex max-w-5xl items-center gap-3 px-4 py-4 sm:px-6">
+                <BackButton />
+                <h1 class="text-base font-semibold text-white/90 sm:text-lg">Profiel van @friend.FirstName</h1>
             </div>
         </header>
 
-        <!-- ✅ Geef de PageContext door aan de DescriptionComponent -->
-        <DescriptionComponent PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)" />
+        <main class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 pb-16 pt-6 sm:px-6">
+            <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-neutral-200">
+                <div class="flex flex-col gap-6 sm:flex-row sm:items-center">
+                    <img src="@GetAvatarUrl(friend)"
+                         alt="Profielfoto van @friend.Name"
+                         class="h-24 w-24 rounded-3xl object-cover shadow-lg ring-1 ring-neutral-200/70 sm:h-28 sm:w-28"
+                         loading="lazy" />
 
+                    <div class="flex-1">
+                        <NameAndBadgesComponent Name="@friend.Name"
+                                                Age="@GetAgeText(friend.BirthDay)"
+                                                Gender="@FormatGender(friend.Gender)"
+                                                MemberSince="@GetMemberSinceText(friend.CreatedAt)" />
+                    </div>
+                </div>
+
+                <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <button type="button"
+                            class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#127646] px-5 py-3 text-sm font-semibold text-white shadow transition hover:bg-[#0f6139] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#127646] sm:w-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                            <path d="M224,64H32A16,16,0,0,0,16,80V176a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V80A16,16,0,0,0,224,64Zm-8,24v4.87l-84,52.5L40,92.87V88Z" />
+                            <path d="M40,168.87V115.13l80,50a8,8,0,0,0,8.38,0l80-50v53.74Z" />
+                        </svg>
+                        <span>Bericht sturen</span>
+                    </button>
+
+                    @if (PageContext == UserConnectionTypeDto.AddFriends)
+                    {
+                        <button type="button"
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#127646] px-5 py-3 text-sm font-semibold text-[#127646] transition hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#127646] sm:w-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                                <path d="M248,144a12,12,0,0,1-12,12H208v28a12,12,0,0,1-24,0V156H156a12,12,0,0,1,0-24h28V104a12,12,0,0,1,24,0v28h28A12,12,0,0,1,248,144ZM146.34,218.92a12,12,0,0,1-22.68,0C116.19,200.86,97,188,76,188s-40.2,12.86-47.66,30.92a12,12,0,1,1-22.68-9.84C16.8,179.75,44.62,164,76,164s59.2,15.75,70.34,45.08ZM76,148A56,56,0,1,1,132,92,56,56,0,0,1,76,148Zm0-88A32,32,0,1,0,108,92,32,32,0,0,0,76,60Z" />
+                            </svg>
+                            <span>Vriendschapsverzoek</span>
+                        </button>
+                    }
+                </div>
+            </section>
+
+            <DescriptionComponent Title="@($"Over {friend.FirstName}")"
+                                   Description="@GetBiography(friend.Biography)"
+                                   PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
+                                   HighlightText="@($"{friend.FirstName} staat open voor nieuwe connecties.")" />
+
+            <EmojiComponent Hobbies="@friend.Hobbies" />
+
+            @if (friend.Interests?.Any() == true)
+            {
+                var likes = GetInterests(friend, SentimentTypeDto.Like);
+                var dislikes = GetInterests(friend, SentimentTypeDto.Dislike);
+
+                <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-neutral-200">
+                    <div class="flex flex-col gap-4">
+                        <h2 class="text-lg font-semibold text-neutral-900">Interesses</h2>
+
+                        @if (likes.Count > 0)
+                        {
+                            <div>
+                                <h3 class="text-sm font-medium text-neutral-500">Dit vindt @friend.FirstName leuk</h3>
+                                <div class="mt-3 flex flex-wrap gap-2">
+                                    @foreach (var interest in likes)
+                                    {
+                                        <span class="inline-flex items-center gap-2 rounded-2xl bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
+                                            <span aria-hidden="true">@interest.Emoji</span>
+                                            @interest.Text
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        @if (dislikes.Count > 0)
+                        {
+                            <div>
+                                <h3 class="text-sm font-medium text-neutral-500">Hier houdt @friend.FirstName minder van</h3>
+                                <div class="mt-3 flex flex-wrap gap-2">
+                                    @foreach (var interest in dislikes)
+                                    {
+                                        <span class="inline-flex items-center gap-2 rounded-2xl bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
+                                            <span aria-hidden="true">@interest.Emoji</span>
+                                            @interest.Text
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </section>
+            }
+
+            @if (friend.DefaultChatLines?.Any() == true)
+            {
+                <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-neutral-200">
+                    <div class="flex flex-col gap-4">
+                        <h2 class="text-lg font-semibold text-neutral-900">Favoriete openingszinnen</h2>
+                        <ul class="flex flex-col gap-3">
+                            @foreach (var line in friend.DefaultChatLines.Where(l => !string.IsNullOrWhiteSpace(l)))
+                            {
+                                <li class="rounded-2xl bg-neutral-50 px-4 py-3 text-sm font-medium text-neutral-800 sm:text-base">@line</li>
+                            }
+                        </ul>
+                    </div>
+                </section>
+            }
+        </main>
     </div>
 }
 
 @code {
-    [Parameter] public Guid id { get; set; } 
+    [Parameter] public Guid id { get; set; }
 
     [CascadingParameter] public UserDto.CurrentUser? CurrentUser { get; set; }
 
@@ -56,7 +156,6 @@ else
     {
         Console.WriteLine($"Ontvangen id: {id}");
 
-        // 🔹 Haal querystring op en parse 'context' handmatig
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
         var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
         if (query.TryGetValue("context", out var contextValue))
@@ -73,5 +172,75 @@ else
         {
             Console.WriteLine("Gebruiker niet gevonden!");
         }
+    }
+
+    private static string GetAgeText(DateOnly birthDay)
+    {
+        if (birthDay == default)
+        {
+            return string.Empty;
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var age = today.Year - birthDay.Year;
+
+        if (birthDay > today.AddYears(-age))
+        {
+            age--;
+        }
+
+        return age is > 0 and < 130 ? $"{age} jaar" : string.Empty;
+    }
+
+    private static string FormatGender(string? gender)
+    {
+        if (string.IsNullOrWhiteSpace(gender))
+        {
+            return string.Empty;
+        }
+
+        return gender.Trim().ToLowerInvariant() switch
+        {
+            "m" or "man" => "Man",
+            "f" or "v" or "vrouw" => "Vrouw",
+            "x" or "non-binair" or "non-binary" => "Non-binair",
+            _ => CultureInfo.GetCultureInfo("nl-NL").TextInfo.ToTitleCase(gender.Trim().ToLowerInvariant()),
+        };
+    }
+
+    private static string GetMemberSinceText(DateTime createdAt)
+    {
+        if (createdAt == default)
+        {
+            return string.Empty;
+        }
+
+        var dutch = CultureInfo.GetCultureInfo("nl-NL");
+        return $"Lid sinds {createdAt.ToString("MMMM yyyy", dutch)}";
+    }
+
+    private static string GetBiography(string biography)
+    {
+        if (!string.IsNullOrWhiteSpace(biography))
+        {
+            return biography.Trim();
+        }
+
+        return "Deze gebruiker heeft nog geen beschrijving toegevoegd.";
+    }
+
+    private static IReadOnlyList<SentimentDto.Get> GetInterests(UserDto.CurrentUser friend, SentimentTypeDto type)
+    {
+        return friend.Interests
+            .Where(interest => interest is not null && interest.Type == type)
+            .Take(8)
+            .ToList();
+    }
+
+    private static string GetAvatarUrl(UserDto.CurrentUser friend)
+    {
+        return string.IsNullOrWhiteSpace(friend.AvatarUrl)
+            ? DefaultImages.GetProfile(friend.AccountId)
+            : friend.AvatarUrl;
     }
 }

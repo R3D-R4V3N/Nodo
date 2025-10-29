@@ -1,41 +1,43 @@
- 
-    <div class="max-w-[90%] text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.4)] md:mt-10 md:max-w-md">
-        <!-- kleine marge toegevoegd -->
-        <h1 class="flex items-center gap-2 text-2xl font-bold sm:text-3xl">@Name</h1>
+<div class="flex flex-col gap-4 text-neutral-900">
+    <h1 class="text-2xl font-semibold sm:text-3xl">@Name</h1>
 
-        <!-- 3 badges -->
-        <div class="mt-3 flex flex-wrap gap-2 md:mt-5">
-          <span class="inline-flex items-center gap-1 rounded-full bg-[#FBF0DA] px-2.5 py-1 text-xs font-medium text-[#73510D] sm:text-base">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16">
-              <line x1="128" y1="72" x2="128" y2="96" />
-              <path d="M48,96H208a16,16,0,0,1,16,16v23.33c0,17.44-13.67,32.18-31.1,32.66A32,32,0,0,1,160,136a32,32,0,0,1-64,0,32,32,0,0,1-32.9,32C45.67,167.51,32,152.77,32,135.33V112A16,16,0,0,1,48,96Z" />
-              <path d="M216,156.9V200a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V156.9" />
-              <path d="M152,48a24,24,0,0,1-48,0c0-24,24-40,24-40S152,24,152,48Z" />
-            </svg>
-            @Age
-          </span>
+    <div class="flex flex-wrap gap-2 text-sm">
+        @if (!string.IsNullOrWhiteSpace(Age))
+        {
+            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-800">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 256 256" fill="currentColor">
+                    <path d="M128,12a8,8,0,0,1,8,8V40.49c23.61,3.56,40,16.55,40,31.51a8,8,0,0,1-16,0c0-8.28-12.67-16-32-16s-32,7.72-32,16c0,11.62,19.14,20.43,43.77,31.44C161.44,116.12,184,126.19,184,152c0,14.95-16.39,27.94-40,31.5V236a8,8,0,0,1-16,0V183.51c-23.61-3.56-40-16.55-40-31.51a8,8,0,0,1,16,0c0,8.28,12.67,16,32,16s32-7.72,32-16c0-11.62-19.14-20.43-43.77-31.44C94.56,115.88,72,105.81,72,80c0-14.95,16.39-27.94,40-31.5V20A8,8,0,0,1,128,12Z" />
+                </svg>
+                @Age
+            </span>
+        }
 
-          <span class="inline-flex items-center gap-1 rounded-full bg-[#EDD7D7] px-2.5 py-1 text-xs font-medium text-[#AF233A] sm:text-base">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
-              <circle cx="128" cy="96" r="72" />
-              <line x1="128" y1="168" x2="128" y2="240" />
-              <line x1="88" y1="208" x2="168" y2="208" />
-            </svg>
-            @Gender
-          </span>
+        @if (!string.IsNullOrWhiteSpace(Gender))
+        {
+            <span class="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-3 py-1 font-medium text-neutral-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 256 256" fill="currentColor">
+                    <path d="M200,96a72,72,0,1,0-80,71.28V200H96a8,8,0,0,0,0,16h24v24a8,8,0,0,0,16,0V216h24a8,8,0,0,0,0-16H136V167.28A72.11,72.11,0,0,0,200,96ZM80,96a48,48,0,1,1,48,48A48.05,48.05,0,0,1,80,96Z" />
+                </svg>
+                @Gender
+            </span>
+        }
 
-          <span class="inline-flex items-center gap-1 rounded-full bg-sky-100/90 px-2.5 py-1 text-xs font-medium text-sky-900 sm:text-base">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h3V5H5a2 2 0 00-2 2zm13-2v14h3a2 2 0 002-2V7a2 2 0 00-2-2h-3z" />
-            </svg>
-            @Organisation
-          </span>
-        </div>
-    </div>    
+        @if (!string.IsNullOrWhiteSpace(MemberSince))
+        {
+            <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 font-medium text-amber-800">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 256 256" fill="currentColor">
+                    <path d="M216,40H208V24a8,8,0,0,0-16,0V40H160V24a8,8,0,0,0-16,0V40H112V24a8,8,0,0,0-16,0V40H64V24a8,8,0,0,0-16,0V40H40A16,16,0,0,0,24,56V216a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,176H40V104H216Zm0-128H40V56H216Z" />
+                </svg>
+                @MemberSince
+            </span>
+        }
+    </div>
+</div>
 
-@code {
-  [Parameter] public string Name { get; set; } = "Test";
-  [Parameter] public string Age { get; set; } = "27 jaar";
-  [Parameter] public string Gender { get; set; } = "Vrouw";
-  [Parameter] public string Organisation { get; set; } = "OrganisatieTest";
+@code
+{
+    [Parameter] public string Name { get; set; } = string.Empty;
+    [Parameter] public string Age { get; set; } = string.Empty;
+    [Parameter] public string Gender { get; set; } = string.Empty;
+    [Parameter] public string MemberSince { get; set; } = string.Empty;
 }

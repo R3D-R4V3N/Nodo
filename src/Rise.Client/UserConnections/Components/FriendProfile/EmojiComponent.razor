@@ -1,32 +1,29 @@
+@using Rise.Shared.Users
 
-
-<div class="absolute top-[67%] left-1/2 z-[60] w-full max-w-[400px] -translate-x-1/2 -translate-y-1/2">
-    <div class="grid grid-cols-3 items-center justify-center gap-6 p-9">
-        <button type="button" class="group focus:outline-none">
-            <div class="flex h-24 flex-col items-center justify-center rounded-2xl bg-neutral-50 transition group-active:scale-[0.98]">
-                <div class="text-3xl leading-none">🏀</div>
-                <span class="mt-1 text-sm font-medium text-neutral-800">basketbal</span>
+@if (DisplayedHobbies.Count > 0)
+{
+    <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-neutral-200">
+        <div class="flex flex-col gap-4">
+            <h2 class="text-lg font-semibold text-neutral-900">Hobby's</h2>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                @foreach (var hobby in DisplayedHobbies)
+                {
+                    <div class="flex items-center gap-3 rounded-2xl bg-neutral-50 px-4 py-3 text-neutral-800">
+                        <span class="text-2xl" aria-hidden="true">@hobby.Emoji</span>
+                        <span class="text-sm font-medium sm:text-base">@hobby.Name</span>
+                    </div>
+                }
             </div>
-        </button>
+        </div>
+    </section>
+}
 
-        <button type="button" class="group focus:outline-none">
-            <div class="flex h-24 flex-col items-center justify-center rounded-2xl bg-neutral-50 transition group-active:scale-[0.98]">
-                <div class="text-3xl leading-none">🏈</div>
-                <span class="mt-1 text-sm font-medium text-neutral-800">Rugby</span>
-            </div>
-        </button>
+@code
+{
+    [Parameter] public IReadOnlyList<HobbyDto.Get> Hobbies { get; set; } = Array.Empty<HobbyDto.Get>();
 
-        <button type="button" class="group focus:outline-none">
-            <div class="flex h-24 flex-col items-center justify-center rounded-2xl bg-neutral-50 transition group-active:scale-[0.98]">
-                <div class="text-3xl leading-none">⚽</div>
-                <span class="mt-1 text-sm font-medium text-neutral-800">Voetbal</span>
-            </div>
-        </button>
-    </div>
-</div>
-
-@code {
-    [Parameter] public string Hobby1 { get; set; } = "🏀";
-    [Parameter] public string Hobby2 { get; set; } = "🏈";
-    [Parameter] public string Hobby3 { get; set; } = "⚽";
+    private IReadOnlyList<HobbyDto.Get> DisplayedHobbies => Hobbies
+        .Where(hobby => hobby is not null)
+        .Take(6)
+        .ToList();
 }
