@@ -1,3 +1,6 @@
+@using System
+@using Microsoft.AspNetCore.Components
+
 <section class="mt-5">
     <h3 class="mb-2 text-sm font-medium text-neutral-700">Persoonlijke gegevens</h3>
     <div class="space-y-3">
@@ -10,19 +13,19 @@
             </label>
             @if (IsEditing)
             {
-                <input 
-                    id="firstname-input" 
-                    type="text" 
-                    class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" 
-                    @bind="FirstName" 
-                    @bind:event="oninput" 
+                <input
+                    id="firstname-input"
+                    type="text"
+                    class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    value="@FirstName"
+                    @oninput="HandleFirstNameChanged"
                     autocomplete="name" />
-                <input 
-                    id="lastname-input" 
-                    type="text" 
-                    class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" 
-                    @bind="LastName" 
-                    @bind:event="oninput" 
+                <input
+                    id="lastname-input"
+                    type="text"
+                    class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    value="@LastName"
+                    @oninput="HandleLastNameChanged"
                     autocomplete="name" />
             }
             else
@@ -40,12 +43,12 @@
             </label>
             @if (IsEditing)
             {
-                <input 
-                    id="email-input" 
-                    type="email" 
-                    class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" 
-                    @bind="Email" 
-                    @bind:event="oninput" 
+                <input
+                    id="email-input"
+                    type="email"
+                    class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    value="@Email"
+                    @oninput="HandleEmailChanged"
                     autocomplete="email" />
             }
             else
@@ -64,15 +67,13 @@
             @if (IsEditing)
             {
                 <div class="mt-2">
-                    <textarea 
-                        id="bio-input" 
-                        class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" 
-                        rows="4" 
-                        maxlength="240" 
-                        placeholder="Schrijf een korte bio (max. 240 tekens)" 
-                        @bind="Bio" 
-                        @bind:event="oninput">
-                    </textarea>
+                    <textarea
+                        id="bio-input"
+                        class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        rows="4"
+                        maxlength="240"
+                        placeholder="Schrijf een korte bio (max. 240 tekens)"
+                        @oninput="HandleBioChanged">@_bio</textarea>
                     <div class="mt-1 text-xs text-neutral-500">@BioLength/240</div>
                 </div>
             }
@@ -91,10 +92,11 @@
             </label>
             @if (IsEditing)
             {
-                <select 
-                    id="gender-select" 
-                    class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" 
-                    @bind="Gender">
+                <select
+                    id="gender-select"
+                    class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    value="@Gender"
+                    @onchange="HandleGenderChanged">
                     <option value="man">Man</option>
                     <option value="vrouw">Vrouw</option>
                     <option value="x">X</option>
@@ -109,15 +111,55 @@
 </section>
 
 @code {
-    [Parameter] public string FirstName { get; set; } = string.Empty;
+    private string _firstName = string.Empty;
+    private string _lastName = string.Empty;
+    private string _email = string.Empty;
+    private string _bio = string.Empty;
+    private string _gender = "x";
+
+    [Parameter]
+    public string FirstName
+    {
+        get => _firstName;
+        set => _firstName = value ?? string.Empty;
+    }
+
     [Parameter] public EventCallback<string> FirstNameChanged { get; set; }
-    [Parameter] public string LastName { get; set; } = string.Empty;
+
+    [Parameter]
+    public string LastName
+    {
+        get => _lastName;
+        set => _lastName = value ?? string.Empty;
+    }
+
     [Parameter] public EventCallback<string> LastNameChanged { get; set; }
-    [Parameter] public string Email { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Email
+    {
+        get => _email;
+        set => _email = value ?? string.Empty;
+    }
+
     [Parameter] public EventCallback<string> EmailChanged { get; set; }
-    [Parameter] public string Bio { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Bio
+    {
+        get => _bio;
+        set => _bio = value ?? string.Empty;
+    }
+
     [Parameter] public EventCallback<string> BioChanged { get; set; }
-    [Parameter] public string Gender { get; set; } = "x";
+
+    [Parameter]
+    public string Gender
+    {
+        get => _gender;
+        set => _gender = string.IsNullOrWhiteSpace(value) ? "x" : value;
+    }
+
     [Parameter] public EventCallback<string> GenderChanged { get; set; }
     [Parameter] public bool IsEditing { get; set; }
 
@@ -133,4 +175,79 @@
         "x" => "X",
         _ => "–"
     };
+
+    private async Task HandleFirstNameChanged(ChangeEventArgs args)
+    {
+        var newValue = args.Value?.ToString() ?? string.Empty;
+        if (string.Equals(newValue, _firstName, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _firstName = newValue;
+        if (FirstNameChanged.HasDelegate)
+        {
+            await FirstNameChanged.InvokeAsync(newValue);
+        }
+    }
+
+    private async Task HandleLastNameChanged(ChangeEventArgs args)
+    {
+        var newValue = args.Value?.ToString() ?? string.Empty;
+        if (string.Equals(newValue, _lastName, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _lastName = newValue;
+        if (LastNameChanged.HasDelegate)
+        {
+            await LastNameChanged.InvokeAsync(newValue);
+        }
+    }
+
+    private async Task HandleEmailChanged(ChangeEventArgs args)
+    {
+        var newValue = args.Value?.ToString() ?? string.Empty;
+        if (string.Equals(newValue, _email, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _email = newValue;
+        if (EmailChanged.HasDelegate)
+        {
+            await EmailChanged.InvokeAsync(newValue);
+        }
+    }
+
+    private async Task HandleBioChanged(ChangeEventArgs args)
+    {
+        var newValue = args.Value?.ToString() ?? string.Empty;
+        if (string.Equals(newValue, _bio, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _bio = newValue;
+        if (BioChanged.HasDelegate)
+        {
+            await BioChanged.InvokeAsync(newValue);
+        }
+    }
+
+    private async Task HandleGenderChanged(ChangeEventArgs args)
+    {
+        var newValue = args.Value?.ToString() ?? "x";
+        if (string.Equals(newValue, _gender, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _gender = string.IsNullOrWhiteSpace(newValue) ? "x" : newValue;
+        if (GenderChanged.HasDelegate)
+        {
+            await GenderChanged.InvokeAsync(_gender);
+        }
+    }
 }

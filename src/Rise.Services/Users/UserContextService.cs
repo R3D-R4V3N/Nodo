@@ -67,6 +67,12 @@ public class UserContextService(
         currentUser.LastName = request.LastName;
         currentUser.Biography = request.Biography;
         currentUser.AvatarUrl = request.AvatarUrl;
+        var normalizedGender = (request.Gender ?? string.Empty).Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(normalizedGender))
+        {
+            normalizedGender = "x";
+        }
+        currentUser.Gender = normalizedGender;
 
         // can use IAsyncEnumerable but a pain to work with
         var hobbiesResult = await HobbyMapper.ToDomainAsync(request.Hobbies, _dbContext, cancellationToken);

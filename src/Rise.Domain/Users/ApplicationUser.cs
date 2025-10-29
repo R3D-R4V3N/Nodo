@@ -39,6 +39,12 @@ public class ApplicationUser : Entity
         get => _avatarUrl;
         set => _avatarUrl = Guard.Against.NullOrWhiteSpace(value);
     }
+    private string _gender = "x";
+    public required string Gender
+    {
+        get => _gender;
+        set => _gender = Guard.Against.NullOrWhiteSpace(value);
+    }
     public required DateOnly BirthDay { get; set; }
     public required UserType UserType { get; set; }
     
