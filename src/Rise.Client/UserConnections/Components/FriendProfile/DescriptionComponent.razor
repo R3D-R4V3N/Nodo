@@ -1,12 +1,12 @@
 
-<section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-neutral-200">
+<section class="rounded-3xl bg-neutral-50 p-6 shadow-inner ring-1 ring-white/60 sm:p-8">
     <div class="flex flex-col gap-4">
-        <h2 class="text-lg font-semibold text-neutral-900">@Title</h2>
+        <h2 class="text-lg font-semibold text-neutral-900 sm:text-xl">@Title</h2>
         <p class="text-base leading-relaxed text-neutral-700">@Description</p>
 
         @if (PlusKnop)
         {
-            <div class="rounded-2xl border border-dashed border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            <div class="rounded-2xl bg-gradient-to-r from-emerald-400/20 via-emerald-400/10 to-emerald-400/20 px-4 py-3 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-400/40">
                 @HighlightText
             </div>
         }

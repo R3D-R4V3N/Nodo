@@ -23,121 +23,143 @@ else if (user?.User is null)
 else
 {
     var friend = user.User;
+    var ageText = GetAgeText(friend.BirthDay);
+    var genderText = FormatGender(friend.Gender);
+    var organization = GetOrganizationName(friend);
+    var biography = GetBiography(friend.Biography);
+    var memberSince = GetMemberSinceText(friend.CreatedAt);
 
-    <div class="min-h-screen bg-neutral-50 text-neutral-900 antialiased">
+    <div class="min-h-screen bg-gradient-to-br from-rose-500 via-fuchsia-500 to-amber-400 text-neutral-900 antialiased">
         <PageTitle>@friend.Name</PageTitle>
 
-        <header class="bg-[#127646] text-white shadow">
-            <div class="mx-auto flex max-w-5xl items-center gap-3 px-4 py-4 sm:px-6">
-                <BackButton />
-                <h1 class="text-base font-semibold text-white/90 sm:text-lg">Profiel van @friend.FirstName</h1>
-            </div>
-        </header>
-
-        <main class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 pb-16 pt-6 sm:px-6">
-            <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-neutral-200">
-                <div class="flex flex-col gap-6 sm:flex-row sm:items-center">
+        <main class="mx-auto flex min-h-screen w-full max-w-5xl items-center justify-center px-4 py-10 sm:px-6">
+            <article class="w-full max-w-md overflow-hidden rounded-[32px] bg-white shadow-2xl ring-1 ring-black/5 sm:max-w-2xl">
+                <div class="relative aspect-[3/4] sm:aspect-[4/5]">
                     <img src="@GetAvatarUrl(friend)"
                          alt="Profielfoto van @friend.Name"
-                         class="h-24 w-24 rounded-3xl object-cover shadow-lg ring-1 ring-neutral-200/70 sm:h-28 sm:w-28"
+                         class="h-full w-full object-cover"
                          loading="lazy" />
 
-                    <div class="flex-1">
-                        <NameAndBadgesComponent Name="@friend.Name"
-                                                Age="@GetAgeText(friend.BirthDay)"
-                                                Gender="@FormatGender(friend.Gender)"
-                                                MemberSince="@GetMemberSinceText(friend.CreatedAt)" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+
+                    <div class="absolute inset-x-0 top-0 flex justify-between px-4 pt-4">
+                        <BackButton />
+                    </div>
+
+                    <div class="absolute inset-x-0 bottom-0 px-6 pb-6">
+                        <div class="flex flex-wrap items-end gap-2 text-white">
+                            <h1 class="text-4xl font-semibold leading-none sm:text-5xl">@friend.FirstName</h1>
+
+                            @if (!string.IsNullOrWhiteSpace(ageText))
+                            {
+                                <span class="text-3xl font-semibold text-white/90 sm:text-4xl">@ageText</span>
+                            }
+                        </div>
+
+                        <div class="mt-3 flex flex-wrap gap-2 text-sm font-medium text-white/90">
+                            @if (!string.IsNullOrWhiteSpace(genderText))
+                            {
+                                <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                                        <path d="M200,96a72,72,0,1,0-80,71.28V200H96a8,8,0,0,0,0,16h24v24a8,8,0,0,0,16,0V216h24a8,8,0,0,0,0-16H136V167.28A72.11,72.11,0,0,0,200,96ZM80,96a48,48,0,1,1,48,48A48.05,48.05,0,0,1,80,96Z" />
+                                    </svg>
+                                    @genderText
+                                </span>
+                            }
+
+                            <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+                                    <path d="M208,24H48A16,16,0,0,0,32,40V216a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V40A16,16,0,0,0,208,24Zm0,36V88H48V60ZM48,216V112H208V216Z" />
+                                </svg>
+                                @organization
+                            </span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div class="flex flex-col gap-6 p-6 sm:p-8">
+                    <NameAndBadgesComponent Name="@friend.Name"
+                                            Age="@ageText"
+                                            Gender="@genderText"
+                                            Organization="@organization"
+                                            MemberSince="@memberSince" />
+
+                    <DescriptionComponent Title="@($"Over {friend.FirstName}")"
+                                           Description="@biography"
+                                           PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
+                                           HighlightText="@($"{friend.FirstName} staat open voor nieuwe connecties.")" />
+
+                    <EmojiComponent Hobbies="@friend.Hobbies" />
+
+                    @if (friend.Interests?.Any() == true)
+                    {
+                        var likes = GetInterests(friend, SentimentTypeDto.Like);
+                        var dislikes = GetInterests(friend, SentimentTypeDto.Dislike);
+
+                        <section class="rounded-3xl bg-white/80 p-6 shadow-lg ring-1 ring-white/70 backdrop-blur-sm sm:p-8">
+                            <div class="flex flex-col gap-4">
+                                <h2 class="text-lg font-semibold text-neutral-900 sm:text-xl">Interesses</h2>
+
+                                @if (likes.Count > 0)
+                                {
+                                    <div>
+                                        <h3 class="text-sm font-medium text-neutral-500">Dit vindt @friend.FirstName leuk</h3>
+                                        <div class="mt-3 flex flex-wrap gap-2">
+                                            @foreach (var interest in likes)
+                                            {
+                                                <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-2 text-sm font-semibold text-emerald-800">
+                                                    <span aria-hidden="true">@interest.Emoji</span>
+                                                    @interest.Text
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (dislikes.Count > 0)
+                                {
+                                    <div>
+                                        <h3 class="text-sm font-medium text-neutral-500">Hier houdt @friend.FirstName minder van</h3>
+                                        <div class="mt-3 flex flex-wrap gap-2">
+                                            @foreach (var interest in dislikes)
+                                            {
+                                                <span class="inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-2 text-sm font-semibold text-rose-700">
+                                                    <span aria-hidden="true">@interest.Emoji</span>
+                                                    @interest.Text
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </section>
+                    }
+
+                    @if (friend.DefaultChatLines?.Any() == true)
+                    {
+                        <section class="rounded-3xl bg-white/80 p-6 shadow-lg ring-1 ring-white/70 backdrop-blur-sm sm:p-8">
+                            <div class="flex flex-col gap-4">
+                                <h2 class="text-lg font-semibold text-neutral-900 sm:text-xl">Favoriete openingszinnen</h2>
+                                <ul class="flex flex-col gap-3">
+                                    @foreach (var line in friend.DefaultChatLines.Where(l => !string.IsNullOrWhiteSpace(l)))
+                                    {
+                                        <li class="rounded-2xl bg-neutral-900/5 px-4 py-3 text-sm font-medium text-neutral-800 sm:text-base">@line</li>
+                                    }
+                                </ul>
+                            </div>
+                        </section>
+                    }
+
                     <button type="button"
-                            class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#127646] px-5 py-3 text-sm font-semibold text-white shadow transition hover:bg-[#0f6139] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#127646] sm:w-auto">
+                            class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-500 via-fuchsia-500 to-amber-400 px-5 py-3 text-base font-semibold text-white shadow-lg transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-300">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
                             <path d="M224,64H32A16,16,0,0,0,16,80V176a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V80A16,16,0,0,0,224,64Zm-8,24v4.87l-84,52.5L40,92.87V88Z" />
                             <path d="M40,168.87V115.13l80,50a8,8,0,0,0,8.38,0l80-50v53.74Z" />
                         </svg>
                         <span>Bericht sturen</span>
                     </button>
-
-                    @if (PageContext == UserConnectionTypeDto.AddFriends)
-                    {
-                        <button type="button"
-                                class="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#127646] px-5 py-3 text-sm font-semibold text-[#127646] transition hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#127646] sm:w-auto">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
-                                <path d="M248,144a12,12,0,0,1-12,12H208v28a12,12,0,0,1-24,0V156H156a12,12,0,0,1,0-24h28V104a12,12,0,0,1,24,0v28h28A12,12,0,0,1,248,144ZM146.34,218.92a12,12,0,0,1-22.68,0C116.19,200.86,97,188,76,188s-40.2,12.86-47.66,30.92a12,12,0,1,1-22.68-9.84C16.8,179.75,44.62,164,76,164s59.2,15.75,70.34,45.08ZM76,148A56,56,0,1,1,132,92,56,56,0,0,1,76,148Zm0-88A32,32,0,1,0,108,92,32,32,0,0,0,76,60Z" />
-                            </svg>
-                            <span>Vriendschapsverzoek</span>
-                        </button>
-                    }
                 </div>
-            </section>
-
-            <DescriptionComponent Title="@($"Over {friend.FirstName}")"
-                                   Description="@GetBiography(friend.Biography)"
-                                   PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
-                                   HighlightText="@($"{friend.FirstName} staat open voor nieuwe connecties.")" />
-
-            <EmojiComponent Hobbies="@friend.Hobbies" />
-
-            @if (friend.Interests?.Any() == true)
-            {
-                var likes = GetInterests(friend, SentimentTypeDto.Like);
-                var dislikes = GetInterests(friend, SentimentTypeDto.Dislike);
-
-                <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-neutral-200">
-                    <div class="flex flex-col gap-4">
-                        <h2 class="text-lg font-semibold text-neutral-900">Interesses</h2>
-
-                        @if (likes.Count > 0)
-                        {
-                            <div>
-                                <h3 class="text-sm font-medium text-neutral-500">Dit vindt @friend.FirstName leuk</h3>
-                                <div class="mt-3 flex flex-wrap gap-2">
-                                    @foreach (var interest in likes)
-                                    {
-                                        <span class="inline-flex items-center gap-2 rounded-2xl bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
-                                            <span aria-hidden="true">@interest.Emoji</span>
-                                            @interest.Text
-                                        </span>
-                                    }
-                                </div>
-                            </div>
-                        }
-
-                        @if (dislikes.Count > 0)
-                        {
-                            <div>
-                                <h3 class="text-sm font-medium text-neutral-500">Hier houdt @friend.FirstName minder van</h3>
-                                <div class="mt-3 flex flex-wrap gap-2">
-                                    @foreach (var interest in dislikes)
-                                    {
-                                        <span class="inline-flex items-center gap-2 rounded-2xl bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
-                                            <span aria-hidden="true">@interest.Emoji</span>
-                                            @interest.Text
-                                        </span>
-                                    }
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </section>
-            }
-
-            @if (friend.DefaultChatLines?.Any() == true)
-            {
-                <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-neutral-200">
-                    <div class="flex flex-col gap-4">
-                        <h2 class="text-lg font-semibold text-neutral-900">Favoriete openingszinnen</h2>
-                        <ul class="flex flex-col gap-3">
-                            @foreach (var line in friend.DefaultChatLines.Where(l => !string.IsNullOrWhiteSpace(l)))
-                            {
-                                <li class="rounded-2xl bg-neutral-50 px-4 py-3 text-sm font-medium text-neutral-800 sm:text-base">@line</li>
-                            }
-                        </ul>
-                    </div>
-                </section>
-            }
+            </article>
         </main>
     </div>
 }
@@ -189,7 +211,7 @@ else
             age--;
         }
 
-        return age is > 0 and < 130 ? $"{age} jaar" : string.Empty;
+        return age is > 0 and < 130 ? age.ToString(CultureInfo.InvariantCulture) : string.Empty;
     }
 
     private static string FormatGender(string? gender)
@@ -242,5 +264,11 @@ else
         return string.IsNullOrWhiteSpace(friend.AvatarUrl)
             ? DefaultImages.GetProfile(friend.AccountId)
             : friend.AvatarUrl;
+    }
+
+    private static string GetOrganizationName(UserDto.CurrentUser friend)
+    {
+        // Placeholder until organisatiegegevens beschikbaar zijn.
+        return "Rise Community";
     }
 }
