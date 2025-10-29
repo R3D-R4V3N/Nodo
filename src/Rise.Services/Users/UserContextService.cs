@@ -67,6 +67,7 @@ public class UserContextService(
         currentUser.LastName = request.LastName;
         currentUser.Biography = request.Biography;
         currentUser.AvatarUrl = request.AvatarUrl;
+        currentUser.Gender = request.Gender;
 
         // can use IAsyncEnumerable but a pain to work with
         var hobbiesResult = await HobbyMapper.ToDomainAsync(request.Hobbies, _dbContext, cancellationToken);

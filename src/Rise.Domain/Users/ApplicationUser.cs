@@ -39,6 +39,25 @@ public class ApplicationUser : Entity
         get => _avatarUrl;
         set => _avatarUrl = Guard.Against.NullOrWhiteSpace(value);
     }
+
+    private static readonly HashSet<string> _allowedGenders = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "man",
+        "vrouw",
+        "x"
+    };
+
+    private string _gender = "x";
+    public required string Gender
+    {
+        get => _gender;
+        set
+        {
+            var trimmed = Guard.Against.NullOrWhiteSpace(value).Trim();
+            Guard.Against.InvalidInput(trimmed, nameof(Gender), gender => _allowedGenders.Contains(gender));
+            _gender = trimmed.ToLowerInvariant();
+        }
+    }
     public required DateOnly BirthDay { get; set; }
     public required UserType UserType { get; set; }
     

@@ -33,6 +33,8 @@ namespace Rise.Persistence.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     BirthDay = table.Column<DateOnly>(type: "date", nullable: false),
                     UserType = table.Column<int>(type: "int", nullable: false),
+                    Gender = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false, defaultValue: "x")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
                     IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: false)

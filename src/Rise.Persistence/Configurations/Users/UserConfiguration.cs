@@ -21,6 +21,7 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
         builder.Property(x => x.LastName).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Biography).IsRequired().HasMaxLength(500);
         builder.Property(x => x.AvatarUrl).IsRequired().HasMaxLength(250);
+        builder.Property(x => x.Gender).IsRequired().HasMaxLength(20);
         builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.UserType).IsRequired();
 

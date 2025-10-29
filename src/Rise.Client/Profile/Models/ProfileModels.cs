@@ -54,7 +54,7 @@ public record ProfileModel
             LastName = user.LastName,
             Email = user.Email,
             Bio = user.Biography,
-            Gender = "x",
+            Gender = string.IsNullOrWhiteSpace(user.Gender) ? "x" : user.Gender,
             AvatarUrl = string.IsNullOrWhiteSpace(user.AvatarUrl) ? DefaultAvatar : user.AvatarUrl,
             MemberSince = memberSince,
             Interests = interests,

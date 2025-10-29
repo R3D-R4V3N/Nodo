@@ -365,6 +365,12 @@ namespace Rise.Persistence.Migrations
                     b.Property<DateOnly>("BirthDay")
                         .HasColumnType("date");
 
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("x");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")

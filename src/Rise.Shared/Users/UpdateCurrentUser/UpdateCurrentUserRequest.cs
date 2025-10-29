@@ -11,6 +11,7 @@ public static partial class UserRequest
         public string Email { get; set; } = string.Empty;
         public string Biography { get; set; } = string.Empty;
         public string AvatarUrl { get; set; } = string.Empty;
+        public string Gender { get; set; } = "x";
         public List<HobbyDto.EditProfile> Hobbies { get; set; } = [];
         public List<SentimentDto.EditProfile> Sentiments { get; set; } = [];
         public List<string> DefaultChatLines { get; set; } = [];
@@ -24,6 +25,12 @@ public static partial class UserRequest
         private const int MaxDefaultChatLines = 5;
         private const int MaxPreferences = 5;
         private const int MaxChatLineLength = 150;
+        private static readonly HashSet<string> AllowedGenders = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "man",
+            "vrouw",
+            "x"
+        };
 
         public UpdateCurrentUserValidator()
         {
@@ -54,6 +61,11 @@ public static partial class UserRequest
                 .MaximumLength(MaxAvatarLength)
                 .Must(url => !string.IsNullOrWhiteSpace(url))
                 .WithMessage("Avatar mag niet leeg zijn.");
+
+            RuleFor(x => x.Gender)
+                .NotEmpty()
+                .Must(gender => AllowedGenders.Contains(gender ?? string.Empty))
+                .WithMessage("Geslacht moet man, vrouw of x zijn.");
 
             RuleFor(x => x.Hobbies)
                 .Must(list => (list?.Select(x => x.Hobby) ?? []).Distinct().Count() <= UpdateCurrentUser.MaxHobbies)

@@ -146,6 +146,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             string avatarUrl,
             DateOnly birthDay,
             UserType userType,
+            string gender,
             IEnumerable<UserSentiment> interests,
             IEnumerable<UserHobby> hobbies)
         {
@@ -157,6 +158,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 AvatarUrl = avatarUrl,
                 BirthDay = birthDay,
                 UserType = userType,
+                Gender = gender,
                 UserSettings = new ApplicationUserSetting()
                 {
                     FontSize = 12,
@@ -211,6 +213,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-30)),
                     UserType.Supervisor,
+                    "man",
                     CreateInterests(),
                     CreateHobbies(dbContext, HobbyType.Hiking, HobbyType.Painting, HobbyType.Reading))),
             new(userAccount1, AppRoles.User,
@@ -222,6 +225,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
                     UserType.Regular,
+                    "man",
                     CreateInterests(),
                     CreateHobbies(dbContext, HobbyType.Gaming, HobbyType.BoardGames, HobbyType.ModelBuilding))),
             new(userAccount2, AppRoles.User,
@@ -233,6 +237,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-26)),
                     UserType.Regular,
+                    "vrouw",
                     CreateInterests(),
                     CreateHobbies(dbContext, HobbyType.Hiking, HobbyType.Photography, HobbyType.Birdwatching))),
             new(nodoAdmin, AppRoles.Administrator, null),
@@ -245,6 +250,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-35)),
                     UserType.Supervisor,
+                    "vrouw",
                     CreateInterests(),
                     CreateHobbies(dbContext, HobbyType.Gardening, HobbyType.Yoga, HobbyType.Painting))),
             new(supervisorJonas, AppRoles.Supervisor,
@@ -256,6 +262,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1531891437562-4301cf35b7e4?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-33)),
                     UserType.Supervisor,
+                    "man",
                     CreateInterests(),
                     CreateHobbies(dbContext, HobbyType.Football, HobbyType.Running, HobbyType.Hiking))),
             new(supervisorElla, AppRoles.Supervisor,
@@ -267,6 +274,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-31)),
                     UserType.Supervisor,
+                    "vrouw",
                     CreateInterests(),
                     CreateHobbies(dbContext, HobbyType.Crafting, HobbyType.Painting, HobbyType.MusicMaking))),
             new(chatterNoor, AppRoles.User,
@@ -278,6 +286,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
                     UserType.Regular,
+                    "vrouw",
                     CreateInterests(),
                     CreateHobbies(dbContext, HobbyType.MusicMaking, HobbyType.Gaming, HobbyType.Dancing))),
             new(chatterMilan, AppRoles.User,
@@ -289,6 +298,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
                     UserType.Regular,
+                    "man",
                     CreateInterests(),
                     CreateHobbies(dbContext, HobbyType.Gaming, HobbyType.Skating, HobbyType.BoardGames))),
             new(chatterLina, AppRoles.User,
@@ -300,6 +310,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = "https://images.unsplash.com/photo-1760733345250-6b2625fca116?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-22)),
                     UserType = UserType.Regular,
+                    Gender = "vrouw",
                     UserSettings = new ApplicationUserSetting()
                     {
                         FontSize = 12,
@@ -315,6 +326,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = "https://images.unsplash.com/photo-1760681555543-0a3c65fa10eb?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-25)),
                     UserType = UserType.Regular,
+                    Gender = "man",
                     UserSettings = new ApplicationUserSetting()
                     {
                         FontSize = 12,
@@ -330,6 +342,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = "https://images.unsplash.com/photo-1760625525477-f725e48f5a13?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
                     UserType = UserType.Regular,
+                    Gender = "man",
                     UserSettings = new ApplicationUserSetting()
                     {
                         FontSize = 12,
@@ -345,6 +358,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = "https://images.unsplash.com/photo-1749521166410-9031d6ded805?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-27)),
                     UserType = UserType.Regular,
+                    Gender = "man",
                     UserSettings = new ApplicationUserSetting()
                     {
                         FontSize = 12,
@@ -360,6 +374,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = "https://images.unsplash.com/photo-1760604278004-91a4d7b22447?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-21)),
                     UserType = UserType.Regular,
+                    Gender = "man",
                     UserSettings = new ApplicationUserSetting()
                     {
                         FontSize = 12,
@@ -375,6 +390,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = "https://images.unsplash.com/photo-1760497925596-a6462350c583?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
                     UserType = UserType.Regular,
+                    Gender = "vrouw",
                     UserSettings = new ApplicationUserSetting()
                     {
                         FontSize = 12,
@@ -390,6 +406,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = "https://images.unsplash.com/photo-1760411069721-60d7c378b697?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-25)),
                     UserType = UserType.Regular,
+                    Gender = "man",
                     UserSettings = new ApplicationUserSetting()
                     {
                         FontSize = 12,
@@ -405,6 +422,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = "https://images.unsplash.com/photo-1760086741328-c56df17e8272?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
                     UserType = UserType.Regular,
+                    Gender = "vrouw",
                     UserSettings = new ApplicationUserSetting()
                     {
                         FontSize = 12,
@@ -420,6 +438,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = "https://images.unsplash.com/photo-1739889399693-8a46b389473f?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-22)),
                     UserType = UserType.Regular,
+                    Gender = "vrouw",
                     UserSettings = new ApplicationUserSetting()
                     {
                         FontSize = 12,

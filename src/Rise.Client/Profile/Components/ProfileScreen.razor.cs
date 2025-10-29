@@ -415,9 +415,10 @@ public partial class ProfileScreen : ComponentBase, IDisposable
             Email = _draft.Email ?? string.Empty,
             Biography = _draft.Bio ?? string.Empty,
             AvatarUrl = _draft.AvatarUrl ?? string.Empty,
+            Gender = _draft.Gender ?? "x",
             Hobbies = _selectedHobbyIds
                         .Where(id => !string.IsNullOrWhiteSpace(id))
-                        .Select(x => new HobbyDto.EditProfile() 
+                        .Select(x => new HobbyDto.EditProfile()
                         { 
                             Hobby = Enum.Parse<HobbyTypeDto>(x)
                         })
