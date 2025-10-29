@@ -1,4 +1,3 @@
-using System.Linq;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
@@ -6,6 +5,9 @@ using Rise.Domain.Users;
 using Rise.Domain.Users.Hobbys;
 using Rise.Domain.Users.Sentiment;
 using Rise.Shared.Identity;
+using Rise.Shared.Users;
+using System;
+using System.Linq;
 
 namespace Rise.Persistence;
 
@@ -23,6 +25,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
     {
         await RolesAsync();
         await SentimentsAsync();
+        await HobbiesAsync();
         await UsersAsync();
         await ConnectionsAsync();
         await ChatsAsync();
@@ -75,6 +78,29 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         await dbContext.SaveChangesAsync();
     }
 
+    private async Task HobbiesAsync()
+    {
+        if (dbContext.Hobbies.Any())
+        {
+            return;
+        }
+
+        var hobbyList = new List<UserHobby>();
+
+        foreach (var hobby in Enum.GetValues<HobbyType>())
+        {
+            hobbyList.Add(
+                new UserHobby()
+                {
+                    Hobby = hobby,
+                }
+            );
+        }
+
+        dbContext.Hobbies.AddRange(hobbyList);
+        await dbContext.SaveChangesAsync();
+    }
+
     private async Task UsersAsync()
     {
         if (dbContext.Users.Any())
@@ -101,8 +127,16 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 .ToList();
         }
 
-        static IEnumerable<UserHobby> CreateHobbies(params HobbyType[] hobbies)
-            => hobbies.Select(x => new UserHobby { Hobby = x });
+        static IEnumerable<UserHobby> CreateHobbies(
+            ApplicationDbContext dbContext, 
+            params HobbyType[] hobbies)
+        {
+            var dbHobbies = dbContext.Hobbies
+                                     .Where(uh => hobbies.Contains(uh.Hobby))
+                                     .ToList();
+
+            return dbHobbies;
+        }
 
         static ApplicationUser CreateProfile(
             string accountId,
@@ -178,7 +212,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-30)),
                     UserType.Supervisor,
                     CreateInterests(),
-                    CreateHobbies(HobbyType.Hiking, HobbyType.Painting, HobbyType.Reading))),
+                    CreateHobbies(dbContext, HobbyType.Hiking, HobbyType.Painting, HobbyType.Reading))),
             new(userAccount1, AppRoles.User,
                 CreateProfile(
                     userAccount1.Id,
@@ -189,7 +223,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
                     UserType.Regular,
                     CreateInterests(),
-                    CreateHobbies(HobbyType.Gaming, HobbyType.BoardGames, HobbyType.ModelBuilding))),
+                    CreateHobbies(dbContext, HobbyType.Gaming, HobbyType.BoardGames, HobbyType.ModelBuilding))),
             new(userAccount2, AppRoles.User,
                 CreateProfile(
                     userAccount2.Id,
@@ -200,7 +234,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-26)),
                     UserType.Regular,
                     CreateInterests(),
-                    CreateHobbies(HobbyType.Hiking, HobbyType.Photography, HobbyType.Birdwatching))),
+                    CreateHobbies(dbContext, HobbyType.Hiking, HobbyType.Photography, HobbyType.Birdwatching))),
             new(nodoAdmin, AppRoles.Administrator, null),
             new(supervisorEmma, AppRoles.Supervisor,
                 CreateProfile(
@@ -212,7 +246,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-35)),
                     UserType.Supervisor,
                     CreateInterests(),
-                    CreateHobbies(HobbyType.Gardening, HobbyType.Yoga, HobbyType.Painting))),
+                    CreateHobbies(dbContext, HobbyType.Gardening, HobbyType.Yoga, HobbyType.Painting))),
             new(supervisorJonas, AppRoles.Supervisor,
                 CreateProfile(
                     supervisorJonas.Id,
@@ -223,7 +257,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-33)),
                     UserType.Supervisor,
                     CreateInterests(),
-                    CreateHobbies(HobbyType.Football, HobbyType.Running, HobbyType.Hiking))),
+                    CreateHobbies(dbContext, HobbyType.Football, HobbyType.Running, HobbyType.Hiking))),
             new(supervisorElla, AppRoles.Supervisor,
                 CreateProfile(
                     supervisorElla.Id,
@@ -234,7 +268,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-31)),
                     UserType.Supervisor,
                     CreateInterests(),
-                    CreateHobbies(HobbyType.Crafting, HobbyType.Painting, HobbyType.MusicMaking))),
+                    CreateHobbies(dbContext, HobbyType.Crafting, HobbyType.Painting, HobbyType.MusicMaking))),
             new(chatterNoor, AppRoles.User,
                 CreateProfile(
                     chatterNoor.Id,
@@ -245,7 +279,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
                     UserType.Regular,
                     CreateInterests(),
-                    CreateHobbies(HobbyType.MusicMaking, HobbyType.Gaming, HobbyType.Dancing))),
+                    CreateHobbies(dbContext, HobbyType.MusicMaking, HobbyType.Gaming, HobbyType.Dancing))),
             new(chatterMilan, AppRoles.User,
                 CreateProfile(
                     chatterMilan.Id,
@@ -256,7 +290,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
                     UserType.Regular,
                     CreateInterests(),
-                    CreateHobbies(HobbyType.Gaming, HobbyType.Skating, HobbyType.BoardGames))),
+                    CreateHobbies(dbContext, HobbyType.Gaming, HobbyType.Skating, HobbyType.BoardGames))),
             new(chatterLina, AppRoles.User,
                 new ApplicationUser(chatterLina.Id)
                 {
@@ -408,7 +442,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
 
             if (!profile.Hobbies.Any())
             {
-                profile.UpdateHobbies(CreateHobbies(HobbyType.Reading, HobbyType.BoardGames, HobbyType.Crafting));
+                profile.UpdateHobbies(CreateHobbies(dbContext, HobbyType.Reading, HobbyType.BoardGames, HobbyType.Crafting));
             }
         }
 

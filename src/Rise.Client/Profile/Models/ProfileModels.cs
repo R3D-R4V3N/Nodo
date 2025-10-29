@@ -19,7 +19,8 @@ public record PreferenceChip(string Id, string Label);
 
 public record ProfileModel
 {
-    public string Name { get; init; } = string.Empty;
+    public string FirstName { get; init; } = string.Empty;
+    public string LastName { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
     public string Bio { get; init; } = string.Empty;
     public string Gender { get; init; } = "x";
@@ -44,12 +45,13 @@ public record ProfileModel
             .ToList();
 
         var hobbies = user.Hobbies
-            .Select(h => new ProfileHobbyModel(h.Id, h.Name, h.Emoji))
+            .Select(h => new ProfileHobbyModel(h.Hobby.ToString(), h.Name, h.Emoji))
             .ToList();
 
         return new ProfileModel
         {
-            Name = user.Name,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
             Email = user.Email,
             Bio = user.Biography,
             Gender = "x",
@@ -66,7 +68,8 @@ public record ProfileModel
 
 public class ProfileDraft
 {
-    public string Name { get; set; } = string.Empty;
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Bio { get; set; } = string.Empty;
     public string Gender { get; set; } = "x";
@@ -75,7 +78,8 @@ public class ProfileDraft
 
     public static ProfileDraft FromModel(ProfileModel model) => new()
     {
-        Name = model.Name,
+        FirstName = model.FirstName,
+        LastName = model.LastName,
         Email = model.Email,
         Bio = model.Bio,
         Gender = model.Gender,
@@ -85,7 +89,8 @@ public class ProfileDraft
 
     public ProfileModel ApplyTo(ProfileModel original) => original with
     {
-        Name = Name,
+        FirstName = FirstName,
+        LastName = LastName,
         Email = Email,
         Bio = Bio,
         Gender = Gender,

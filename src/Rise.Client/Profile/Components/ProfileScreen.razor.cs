@@ -18,100 +18,20 @@ namespace Rise.Client.Profile.Components;
 [Authorize]
 public partial class ProfileScreen : ComponentBase, IDisposable
 {
-    private static readonly IReadOnlyList<HobbyOption> _hobbyOptions = new List<HobbyOption>
-    {
-        new("Swimming", "Zwemmen", "🏊"),
-        new("Football", "Voetbal", "⚽"),
-        new("Rugby", "Rugby", "🏉"),
-        new("Basketball", "Basketbal", "🏀"),
-        new("Gaming", "Gamen", "🎮"),
-        new("Cooking", "Koken", "🍳"),
-        new("Baking", "Bakken", "🧁"),
-        new("Hiking", "Wandelen in de natuur", "🥾"),
-        new("Cycling", "Fietsen", "🚴"),
-        new("Drawing", "Tekenen", "✏️"),
-        new("Painting", "Schilderen", "🎨"),
-        new("MusicMaking", "Muziek maken", "🎶"),
-        new("Singing", "Zingen", "🎤"),
-        new("Dancing", "Dansen", "💃"),
-        new("Reading", "Lezen", "📚"),
-        new("Gardening", "Tuinieren", "🌱"),
-        new("Fishing", "Vissen", "🎣"),
-        new("Camping", "Kamperen", "🏕️"),
-        new("Photography", "Fotografie", "📸"),
-        new("Crafting", "Knutselen", "✂️"),
-        new("Sewing", "Naaien", "🧵"),
-        new("Knitting", "Breien", "🧶"),
-        new("Woodworking", "Houtbewerking", "🪚"),
-        new("Pottery", "Keramiek", "🏺"),
-        new("Writing", "Verhalen schrijven", "✍️"),
-        new("Birdwatching", "Vogels spotten", "🐦"),
-        new("ModelBuilding", "Modelbouw", "🧱"),
-        new("Chess", "Schaken", "♟️"),
-        new("BoardGames", "Bordspellen", "🎲"),
-        new("Puzzles", "Puzzels leggen", "🧩"),
-        new("CardGames", "Kaartspellen", "🃏"),
-        new("Running", "Hardlopen", "🏃"),
-        new("Yoga", "Yoga", "🧘"),
-        new("Pilates", "Pilates", "🤸"),
-        new("Skating", "Skeeleren", "⛸️"),
-        new("Bouldering", "Boulderen", "🧗"),
-    };
+    private static readonly IReadOnlyList<HobbyOption> _hobbyOptions = Enum.GetValues<HobbyTypeDto>()
+        .Select(x =>
+        {
+            var (Name, Emoji) = HobbyDto.TranslateEnumToText(x);
+            return new HobbyOption(x.ToString(), Name, Emoji);
+        }).ToList();
 
-    private static readonly IReadOnlyList<PreferenceOption> _preferenceOptions = new List<PreferenceOption>
-    {
-        new("travel-adventures", "Reizen", "✈️"),
-        new("city-trips", "Stedentrips", "🏙️"),
-        new("beach-days", "Stranddagen", "🏖️"),
-        new("mountain-views", "Bergen bewonderen", "🏔️"),
-        new("shopping-sprees", "Shoppen", "🛍️"),
-        new("market-visits", "Markten bezoeken", "🛒"),
-        new("cozy-cafes", "Gezellige cafeetjes", "☕"),
-        new("dining-out", "Uit eten gaan", "🍽️"),
-        new("street-food", "Straatvoedsel proeven", "🌮"),
-        new("new-flavours", "Nieuwe smaken proberen", "🧂"),
-        new("sweet-treats", "Zoete desserts", "🍰"),
-        new("savoury-snacks", "Hartige snacks", "🥨"),
-        new("spicy-dishes", "Pittig eten", "🌶️"),
-        new("fresh-salads", "Frisse salades", "🥗"),
-        new("seasonal-soups", "Seizoenssoepen", "🍲"),
-        new("fruity-moments", "Vers fruit", "🍓"),
-        new("chocolate-moments", "Chocolade", "🍫"),
-        new("cheese-boards", "Kaasplankjes", "🧀"),
-        new("coffee-breaks", "Koffie momenten", "☕"),
-        new("tea-time", "Theepauzes", "🍵"),
-        new("smoothie-bar", "Smoothies", "🥤"),
-        new("juice-stands", "Verse sappen", "🧃"),
-        new("breakfast-dates", "Uitgebreide ontbijtjes", "🥐"),
-        new("brunch-plans", "Weekendbrunch", "🥞"),
-        new("picnic-plans", "Picknicken", "🧺"),
-        new("food-trucks", "Foodtrucks", "🚚"),
-        new("farmers-markets", "Boerenmarkten", "🌻"),
-        new("road-trips", "Roadtrips", "🚗"),
-        new("train-journeys", "Treinreizen", "🚆"),
-        new("ferry-rides", "Boottochtjes", "⛴️"),
-        new("wellness-days", "Wellness dagen", "💆"),
-        new("spa-relax", "Spa bezoeken", "🧖"),
-        new("sauna-evenings", "Saunabezoek", "🧖‍♂️"),
-        new("cinema-nights", "Bioscoopavonden", "🎬"),
-        new("series-marathons", "Series bingewatchen", "📺"),
-        new("romantic-movies", "Romantische films", "💞"),
-        new("action-movies", "Actiefilms", "💥"),
-        new("horror-movies", "Horrorfilms", "👻"),
-        new("documentaries", "Documentaires", "🎥"),
-        new("podcasts", "Podcasts luisteren", "🎧"),
-        new("radio-hits", "Radiohits", "📻"),
-        new("live-concerts", "Live concerten", "🎶"),
-        new("music-festivals", "Muziekfestivals", "🎉"),
-        new("dance-parties", "Dansfeestjes", "🪩"),
-        new("quiet-evenings", "Rustige avonden thuis", "🛋️"),
-        new("candlelight-dinners", "Diner bij kaarslicht", "🕯️"),
-        new("sunset-watching", "Zonsondergangen", "🌅"),
-        new("rainy-days", "Regenachtige dagen", "🌧️"),
-        new("snowy-days", "Sneeuwdagen", "❄️"),
-        new("amusement-parks", "Pretparken", "🎢"),
-    };
-
+    private static readonly IReadOnlyList<PreferenceOption> _preferenceOptions = Enum.GetValues<SentimentCategoryTypeDto>()
+        .Select(x =>
+        {
+            var (Name, Emoji) = SentimentDto.TranslateEnumToText(x);
+            return new PreferenceOption(x.ToString(), Name, Emoji);
+        }).ToList();
+        
     private static readonly IReadOnlyDictionary<string, PreferenceOption> _preferenceOptionsById =
         _preferenceOptions.ToDictionary(option => option.Id, option => option, StringComparer.OrdinalIgnoreCase);
 
@@ -175,7 +95,6 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
     private ProfileModel _model = new();
     private ProfileDraft _draft;
-    private UserDto.CurrentUser? _currentUser;
 
     private readonly HashSet<string> _selectedHobbyIds = new();
     private HashSet<string> _initialHobbyIds = new();
@@ -193,6 +112,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private readonly Dictionary<string, string> _customChatLineOptions = new(StringComparer.OrdinalIgnoreCase);
 
     private bool _isEditing;
+    private bool _isSaving;
     private bool _isLoading = true;
     private string? _loadError;
 
@@ -295,7 +215,9 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _ => "Zoek..."
     };
     private string DisplayName => string.IsNullOrWhiteSpace(CurrentName) ? "Jouw Naam" : CurrentName;
-    private string CurrentName => _isEditing ? _draft.Name : _model.Name;
+    private string CurrentName => _isEditing 
+        ? $"{_draft.FirstName} {_draft.LastName}" 
+        : $"{_model.FirstName} {_model.LastName}";
 
     protected override async Task OnInitializedAsync()
     {
@@ -309,7 +231,6 @@ public partial class ProfileScreen : ComponentBase, IDisposable
             }
 
             var memberSince = FormatMemberSince(currentUser.CreatedAt);
-            _currentUser = currentUser;
             _model = ProfileModel.FromUser(currentUser, memberSince);
             _draft = ProfileDraft.FromModel(_model);
             SyncSelectionFromModel();
@@ -482,14 +403,76 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
     private async Task SaveEdit()
     {
-        _model = _draft.ApplyTo(_model);
-        _initialHobbyIds = _selectedHobbyIds.ToHashSet();
-        _initialLikeIds = _selectedLikeIds.ToList();
-        _initialDislikeIds = _selectedDislikeIds.ToList();
-        _initialChatLineIds = _selectedChatLineIds.ToList();
-        _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
-        _isEditing = false;
-        await ShowToastAsync("Wijzigingen toegepast");
+        if (_isLoading || HasError || !_isEditing || _isSaving)
+        {
+            return;
+        }
+
+        var request = new UserRequest.UpdateCurrentUser
+        {
+            FirstName = _draft.FirstName ?? string.Empty,
+            LastName = _draft.LastName ?? string.Empty,
+            Email = _draft.Email ?? string.Empty,
+            Biography = _draft.Bio ?? string.Empty,
+            AvatarUrl = _draft.AvatarUrl ?? string.Empty,
+            Hobbies = _selectedHobbyIds
+                        .Where(id => !string.IsNullOrWhiteSpace(id))
+                        .Select(x => new HobbyDto.EditProfile() 
+                        { 
+                            Hobby = Enum.Parse<HobbyTypeDto>(x)
+                        })
+                        .ToList(),
+            Sentiments = (_selectedLikeIds ?? Enumerable.Empty<string>())
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Select(x => new SentimentDto.EditProfile
+                {
+                    Type = SentimentTypeDto.Like,
+                    Category = Enum.Parse<SentimentCategoryTypeDto>(x)
+                })
+                .Concat((_selectedDislikeIds ?? Enumerable.Empty<string>())
+                    .Where(id => !string.IsNullOrWhiteSpace(id))
+                    .Select(x => new SentimentDto.EditProfile
+                    {
+                        Type = SentimentTypeDto.Dislike,
+                        Category = Enum.Parse<SentimentCategoryTypeDto>(x)
+                    })
+                ).ToList(),
+            DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds)
+                .Where(text => !string.IsNullOrWhiteSpace(text))
+                .ToList()
+        };
+
+        try
+        {
+            _isSaving = true;
+            var result = await UserContext.UpdateCurrentUserAsync(request);
+
+            if (result.IsSuccess && result.Value.User is not null)
+            {
+                var updatedUser = result.Value.User;
+                var memberSince = FormatMemberSince(updatedUser.CreatedAt);
+                _model = ProfileModel.FromUser(updatedUser, memberSince);
+                _draft = ProfileDraft.FromModel(_model);
+                SyncSelectionFromModel();
+                _isEditing = false;
+                await ShowToastAsync("Wijzigingen opgeslagen");
+            }
+            else
+            {
+                var errorMessage = result.ValidationErrors.FirstOrDefault()?.ErrorMessage
+                    ?? result.Errors.FirstOrDefault()
+                    ?? "Opslaan is mislukt.";
+                await ShowToastAsync(errorMessage);
+            }
+        }
+        catch
+        {
+            await ShowToastAsync("Opslaan is mislukt.");
+        }
+        finally
+        {
+            _isSaving = false;
+        }
     }
 
     private async Task OnAvatarChanged(InputFileChangeEventArgs args)
@@ -502,6 +485,8 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
         try
         {
+            //todo: rename avatar url to bytes tream
+            //when it reaches endpoint, upload to file server and map that url to user
             using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
             using var memory = new MemoryStream();
             await stream.CopyToAsync(memory);
@@ -1166,6 +1151,8 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         return option is null ? null : new ProfileHobbyModel(option.Id, option.Name, option.Emoji);
     }
 
+    // todo: export it to a helper function
+    // work like a lib/framework
     private async Task ShowToastAsync(string message)
     {
         _toastCts?.Cancel();

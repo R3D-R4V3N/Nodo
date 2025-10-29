@@ -2,7 +2,7 @@
     <h3 class="mb-2 text-sm font-medium text-neutral-700">Persoonlijke gegevens</h3>
     <div class="space-y-3">
         <div class="rounded-2xl border border-neutral-200 bg-white px-3 py-2.5">
-            <label class="flex items-center gap-2 text-xs text-neutral-500" for="name-input">
+            <label class="flex items-center gap-2 text-xs text-neutral-500" for="firstname-input">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 256 256">
                     <path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"></path>
                 </svg>
@@ -10,7 +10,20 @@
             </label>
             @if (IsEditing)
             {
-                <input id="name-input" type="text" class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" @bind="Name" @bind:event="oninput" autocomplete="name" />
+                <input 
+                    id="firstname-input" 
+                    type="text" 
+                    class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" 
+                    @bind="FirstName" 
+                    @bind:event="oninput" 
+                    autocomplete="name" />
+                <input 
+                    id="lastname-input" 
+                    type="text" 
+                    class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" 
+                    @bind="LastName" 
+                    @bind:event="oninput" 
+                    autocomplete="name" />
             }
             else
             {
@@ -27,7 +40,13 @@
             </label>
             @if (IsEditing)
             {
-                <input id="email-input" type="email" class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" @bind="Email" @bind:event="oninput" autocomplete="email" />
+                <input 
+                    id="email-input" 
+                    type="email" 
+                    class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" 
+                    @bind="Email" 
+                    @bind:event="oninput" 
+                    autocomplete="email" />
             }
             else
             {
@@ -45,7 +64,15 @@
             @if (IsEditing)
             {
                 <div class="mt-2">
-                    <textarea id="bio-input" class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" rows="4" maxlength="240" placeholder="Schrijf een korte bio (max. 240 tekens)" @bind="Bio" @bind:event="oninput"></textarea>
+                    <textarea 
+                        id="bio-input" 
+                        class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" 
+                        rows="4" 
+                        maxlength="240" 
+                        placeholder="Schrijf een korte bio (max. 240 tekens)" 
+                        @bind="Bio" 
+                        @bind:event="oninput">
+                    </textarea>
                     <div class="mt-1 text-xs text-neutral-500">@BioLength/240</div>
                 </div>
             }
@@ -64,7 +91,10 @@
             </label>
             @if (IsEditing)
             {
-                <select id="gender-select" class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" @bind="Gender">
+                <select 
+                    id="gender-select" 
+                    class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" 
+                    @bind="Gender">
                     <option value="man">Man</option>
                     <option value="vrouw">Vrouw</option>
                     <option value="x">X</option>
@@ -79,8 +109,10 @@
 </section>
 
 @code {
-    [Parameter] public string Name { get; set; } = string.Empty;
-    [Parameter] public EventCallback<string> NameChanged { get; set; }
+    [Parameter] public string FirstName { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> FirstNameChanged { get; set; }
+    [Parameter] public string LastName { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> LastNameChanged { get; set; }
     [Parameter] public string Email { get; set; } = string.Empty;
     [Parameter] public EventCallback<string> EmailChanged { get; set; }
     [Parameter] public string Bio { get; set; } = string.Empty;
@@ -89,7 +121,7 @@
     [Parameter] public EventCallback<string> GenderChanged { get; set; }
     [Parameter] public bool IsEditing { get; set; }
 
-    private string NameOrPlaceholder => string.IsNullOrWhiteSpace(Name) ? "–" : Name;
+    private string NameOrPlaceholder => string.IsNullOrWhiteSpace(FirstName) ? "–" : $"{FirstName} {LastName}";
     private string EmailOrPlaceholder => string.IsNullOrWhiteSpace(Email) ? "–" : Email;
     private string BioOrPlaceholder => string.IsNullOrWhiteSpace(Bio) ? "–" : Bio;
     private int BioLength => Bio?.Length ?? 0;

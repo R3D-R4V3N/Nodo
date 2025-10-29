@@ -46,9 +46,21 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
 
         // hobbies
         builder.HasMany(u => u.Hobbies)
-            .WithOne()
-            .HasForeignKey("UserId")
-            .OnDelete(DeleteBehavior.Cascade);
+               .WithMany()
+               .UsingEntity<UserHobbyJoin>(
+                   j => j
+                       .HasOne(js => js.Hobby)
+                       .WithMany()
+                       .HasForeignKey(js => js.HobbyId),
+                   j => j
+                       .HasOne(js => js.User)
+                       .WithMany()
+                       .HasForeignKey(js => js.UserId),
+                   j =>
+                   {
+                       j.ToTable("UserHobbies");
+                       j.HasKey(x => new { x.UserId, x.HobbyId });
+                   });
 
         builder.Navigation(u => u.Hobbies)
             .UsePropertyAccessMode(PropertyAccessMode.Field);

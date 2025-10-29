@@ -21,7 +21,8 @@ internal static class UserMapper
         new UserDto.CurrentUser
         {
             Id = user.Id,
-            Name = $"{user.FirstName} {user.LastName}",
+            FirstName = user.FirstName,
+            LastName = user.LastName,
             AccountId = user.AccountId,
             AvatarUrl = user.AvatarUrl,
             Email = email,
@@ -29,10 +30,10 @@ internal static class UserMapper
             BirthDay = user.BirthDay,
             CreatedAt = user.CreatedAt,
             Interests = user.Sentiments
-                .Select(SentimentMapper.ToDto)
+                .Select(SentimentMapper.ToGetDto)
                 .ToList(),
             Hobbies = user.Hobbies
-                .Select(HobbyMapper.ToDto)
+                .Select(HobbyMapper.ToGetDto)
                 .ToList(),
             DefaultChatLines = user
                 .UserSettings

@@ -47,6 +47,11 @@ public class ApplicationUserSetting : ValueObject
 
     public Result AddChatTextLine(string line, int rank = -1)
     {
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return Result.Conflict($"standaardzin is leeg");
+        }
+
         string cleanedUpLine = line.Trim();
 
         if (_chatTextLineSuggestions.Any(s => s.Text == cleanedUpLine))
@@ -101,6 +106,11 @@ public class ApplicationUserSetting : ValueObject
         }
 
         return Result.Success();
+    }
+
+    public void RemoveChatTextLines()
+    {
+        _chatTextLineSuggestions.Clear();
     }
 
     protected override IEnumerable<object> GetEqualityComponents()

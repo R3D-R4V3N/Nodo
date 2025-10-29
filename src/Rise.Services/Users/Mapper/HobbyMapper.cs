@@ -1,61 +1,74 @@
-using System;
+using Ardalis.Result;
+using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Users.Hobbys;
+using Rise.Persistence;
 using Rise.Shared.Users;
+using System;
 
 namespace Rise.Services.Users.Mapper;
 
 internal static class HobbyMapper
 {
-    public static UserHobbyDto ToDto(UserHobby hobby)
+    public static HobbyDto.Get ToGetDto(UserHobby hobby)
     {
-        var (name, emoji) = Translate(hobby.Hobby);
-
-        return new UserHobbyDto
+        return new HobbyDto.Get
         {
-            Id = hobby.Hobby.ToString(),
-            Name = name,
-            Emoji = emoji,
+            Hobby = hobby.Hobby.ToDto(),
         };
     }
 
-    private static (string Name, string Emoji) Translate(HobbyType hobby) => hobby switch
+    public static async Task<Result<UserHobby>> ToDomainAsync(
+        HobbyDto.EditProfile hobbyDto, 
+        ApplicationDbContext dbContext, 
+        CancellationToken ct)
     {
-        HobbyType.Swimming => ("Zwemmen", "🏊"),
-        HobbyType.Football => ("Voetbal", "⚽"),
-        HobbyType.Rugby => ("Rugby", "🏉"),
-        HobbyType.Basketball => ("Basketbal", "🏀"),
-        HobbyType.Gaming => ("Gamen", "🎮"),
-        HobbyType.Cooking => ("Koken", "🍳"),
-        HobbyType.Baking => ("Bakken", "🧁"),
-        HobbyType.Hiking => ("Wandelen in de natuur", "🥾"),
-        HobbyType.Cycling => ("Fietsen", "🚴"),
-        HobbyType.Drawing => ("Tekenen", "✏️"),
-        HobbyType.Painting => ("Schilderen", "🎨"),
-        HobbyType.MusicMaking => ("Muziek maken", "🎶"),
-        HobbyType.Singing => ("Zingen", "🎤"),
-        HobbyType.Dancing => ("Dansen", "💃"),
-        HobbyType.Reading => ("Lezen", "📚"),
-        HobbyType.Gardening => ("Tuinieren", "🌱"),
-        HobbyType.Fishing => ("Vissen", "🎣"),
-        HobbyType.Camping => ("Kamperen", "🏕️"),
-        HobbyType.Photography => ("Fotografie", "📸"),
-        HobbyType.Crafting => ("Knutselen", "✂️"),
-        HobbyType.Sewing => ("Naaien", "🧵"),
-        HobbyType.Knitting => ("Breien", "🧶"),
-        HobbyType.Woodworking => ("Houtbewerking", "🪚"),
-        HobbyType.Pottery => ("Keramiek", "🏺"),
-        HobbyType.Writing => ("Verhalen schrijven", "✍️"),
-        HobbyType.Birdwatching => ("Vogels spotten", "🐦"),
-        HobbyType.ModelBuilding => ("Modelbouw", "🧱"),
-        HobbyType.Chess => ("Schaken", "♟️"),
-        HobbyType.BoardGames => ("Bordspellen", "🎲"),
-        HobbyType.Puzzles => ("Puzzels leggen", "🧩"),
-        HobbyType.CardGames => ("Kaartspellen", "🃏"),
-        HobbyType.Running => ("Hardlopen", "🏃"),
-        HobbyType.Yoga => ("Yoga", "🧘"),
-        HobbyType.Pilates => ("Pilates", "🤸"),
-        HobbyType.Skating => ("Skeeleren", "⛸️"),
-        HobbyType.Bouldering => ("Boulderen", "🧗"),
-        _ => throw new ArgumentOutOfRangeException(nameof(hobby), hobby, "No descriptor configured for hobby type."),
-    };
+        if (hobbyDto is null)
+        {
+            return Result.Invalid(new ValidationError(nameof(HobbyDto), $"Lege hobby meegegeven."));
+        }
+
+        HobbyType hobby = hobbyDto.Hobby.ToDomain();
+
+        var userHobby = await dbContext
+            .Hobbies
+            .FirstOrDefaultAsync(x => x.Hobby.Equals(hobby), ct);
+
+        if (userHobby is null)
+        {
+            return Result.Conflict($"Onbekende hobby {hobby}");
+        }
+
+        return Result.Success(userHobby);
+    }
+
+    public static async Task<Result<List<UserHobby>>> ToDomainAsync(
+        IEnumerable<HobbyDto.EditProfile> hobbyDtos, 
+        ApplicationDbContext dbContext, 
+        CancellationToken ct)
+    {
+        if (hobbyDtos is null)
+        {
+            return Result.Success(new List<UserHobby>());
+        }
+
+        var results = new List<UserHobby>();
+
+        foreach (var hobbyDto in hobbyDtos)
+        {
+            var result = await ToDomainAsync(hobbyDto, dbContext, ct);
+
+            if (!result.IsSuccess)
+            {
+                if (result.ValidationErrors.Any())
+                { 
+                    return Result.Invalid(result.ValidationErrors);
+                }
+                return Result.Conflict(result.Errors.ToArray());
+            }
+
+            results.Add(result.Value);
+        }
+
+        return Result.Success(results);
+    }
 }

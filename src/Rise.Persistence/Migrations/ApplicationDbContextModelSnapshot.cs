@@ -398,6 +398,42 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("ApplicationUser", (string)null);
                 });
 
+            modelBuilder.Entity("Rise.Domain.Users.Hobbys.UserHobby", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.Property<string>("Hobby")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Hobby")
+                        .IsUnique();
+
+                    b.ToTable("Hobbies", (string)null);
+                });
+
             modelBuilder.Entity("Rise.Domain.Users.Sentiment.UserSentiment", b =>
                 {
                     b.Property<int>("Id")
@@ -435,6 +471,21 @@ namespace Rise.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Sentiments", (string)null);
+                });
+
+            modelBuilder.Entity("Rise.Persistence.Configurations.Users.UserHobbyJoin", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HobbyId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "HobbyId");
+
+                    b.HasIndex("HobbyId");
+
+                    b.ToTable("UserHobbies", (string)null);
                 });
 
             modelBuilder.Entity("Rise.Persistence.Configurations.Users.UserSentimentJoin", b =>
@@ -603,41 +654,6 @@ namespace Rise.Persistence.Migrations
                             b1.Navigation("User");
                         });
 
-                    b.OwnsMany("Rise.Domain.Users.Hobbys.UserHobby", "_hobbies", b1 =>
-                        {
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
-
-                            b1.Property<DateTime>("CreatedAt")
-                                .HasColumnType("datetime(6)");
-
-                            b1.Property<string>("Hobby")
-                                .IsRequired()
-                                .HasMaxLength(100)
-                                .HasColumnType("varchar(100)");
-
-                            b1.Property<bool>("IsDeleted")
-                                .HasColumnType("tinyint(1)");
-
-                            b1.Property<DateTime>("UpdatedAt")
-                                .HasColumnType("datetime(6)");
-
-                            b1.Property<int>("UserId")
-                                .HasColumnType("int");
-
-                            b1.HasKey("Id");
-
-                            b1.HasIndex("UserId");
-
-                            b1.ToTable("UserHobbies", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("UserId");
-                        });
-
                     b.OwnsMany("Rise.Domain.Users.UserConnection", "_connections", b1 =>
                         {
                             b1.Property<int>("Id")
@@ -681,9 +697,26 @@ namespace Rise.Persistence.Migrations
 
                     b.Navigation("_connections");
 
-                    b.Navigation("_hobbies");
-
                     b.Navigation("_userSettings");
+                });
+
+            modelBuilder.Entity("Rise.Persistence.Configurations.Users.UserHobbyJoin", b =>
+                {
+                    b.HasOne("Rise.Domain.Users.Hobbys.UserHobby", "Hobby")
+                        .WithMany()
+                        .HasForeignKey("HobbyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Rise.Domain.Users.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Hobby");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Rise.Persistence.Configurations.Users.UserSentimentJoin", b =>
