@@ -38,9 +38,14 @@ public class UserService(
 
         Console.ForegroundColor = previous; // restore
 
+        var email = (await _dbContext.Users
+            .SingleOrDefaultAsync(u => u.Id == accountId, cancellationToken)
+            )?.Email
+            ?? string.Empty;
+
         return Result.Success(new UserResponse.CurrentUser
         {
-            User = UserMapper.ToCurrentUserDto(currentUser)
+            User = UserMapper.ToCurrentUserDto(currentUser, email)
         });
     }
 }
