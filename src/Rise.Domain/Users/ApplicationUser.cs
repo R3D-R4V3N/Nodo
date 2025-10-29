@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Ardalis.GuardClauses;
 using Ardalis.Result;
 using Rise.Domain.Chats;
+using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Hobbys;
 using Rise.Domain.Users.Sentiment;
 
@@ -113,7 +114,7 @@ public class ApplicationUser : Entity
     }
 
     //// connections
-    private readonly HashSet<UserConnection> _connections = [];
+    private readonly HashSet<UserConnection> _connections = new();
     public IReadOnlyCollection<UserConnection> Connections => _connections;
     public IEnumerable<UserConnection> Friends => _connections
         .Where(x => x.ConnectionType.Equals(UserConnectionType.Friend));
@@ -147,6 +148,7 @@ public class ApplicationUser : Entity
 
     public ApplicationUser()
     {
+        
     }
 
     public ApplicationUser(string accountId)
@@ -159,13 +161,21 @@ public class ApplicationUser : Entity
 
     public Result<string> AddFriend(ApplicationUser friend)
     {
-        bool isAdded = Friends
-            .Any(x => x.Connection.Equals(friend));
+        
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine(friend.AccountId);
+        Console.ResetColor();
+        
+        bool isAdded = Friends.Any(x => x.Connection != null && x.Connection.Equals(friend));
 
         if (isAdded)
-        { 
+        {
             return Result.Conflict($"Gebruiker is al bevriend met {friend}");
         }
+        
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine(friend.AccountId);
+        Console.ResetColor();
 
         UserConnection? friendRequest = FriendRequests
             .FirstOrDefault(x => x.Connection.Equals(friend));
@@ -179,6 +189,9 @@ public class ApplicationUser : Entity
                     ConnectionType = UserConnectionType.RequestOutgoing
                 }
             );
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(friend.AccountId);
+            Console.ResetColor();
 
             friend._connections.Add(
                 new UserConnection() 
@@ -275,6 +288,38 @@ public class ApplicationUser : Entity
         chat.RemoveUser(this);
 
         return Result.Success();
+    }
+    
+    public Result<string> AcceptFriendRequest(ApplicationUser friend)
+    {
+        var incomingRequest = FriendRequests
+            .FirstOrDefault(x => 
+                x.Connection.Equals(friend) && 
+                x.ConnectionType == UserConnectionType.RequestIncoming);
+
+        if (incomingRequest is null)
+        {
+            return Result.NotFound($"Er is geen vriendschapsverzoek van {friend.FirstName} om te accepteren.");
+        }
+
+        _connections.Remove(incomingRequest);
+
+        _connections.Add(new UserConnection
+        {
+            Connection = friend,
+            ConnectionType = UserConnectionType.Friend
+        });
+
+        friend._connections.RemoveWhere(x =>
+            x.Connection.Equals(this) && x.ConnectionType == UserConnectionType.RequestOutgoing);
+
+        friend._connections.Add(new UserConnection
+        {
+            Connection = this,
+            ConnectionType = UserConnectionType.Friend
+        });
+
+        return Result.Success($"{FirstName} en {friend.FirstName} zijn nu vrienden.");
     }
 }
 

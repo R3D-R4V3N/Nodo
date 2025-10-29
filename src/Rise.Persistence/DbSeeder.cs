@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
 using Rise.Domain.Users;
+using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Hobbys;
 using Rise.Domain.Users.Sentiment;
 using Rise.Shared.Identity;
@@ -490,7 +491,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             return;
 
         var hasConnections = await dbContext.ApplicationUsers
-            .SelectMany(u => EF.Property<IEnumerable<UserConnection>>(u, "_connections"))
+            .SelectMany(u => u.Connections)
             .AnyAsync();
 
         if (hasConnections)
@@ -499,7 +500,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         foreach (var user in users)
         {
             await dbContext.Entry(user)
-                .Collection<UserConnection>("_connections")
+                .Collection<UserConnection>("Connections")
                 .LoadAsync();
         }
 
@@ -573,6 +574,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(), // Vrijdagavond groep
             new(), // Creatieve hoek
             new(), // Technische hulplijn
+            new(), // profielKlikTest
+            new(), //profielklikgrouptest
         };
 
         dbContext.Chats.AddRange(chatsToCreate);
@@ -601,6 +604,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         var vrijdagGroep = chats[1];
         var creatieveHoek = chats[2];
         var technischeHulp = chats[3];
+        var profielKliktest = chats[4];
+        var profielKlikGroupTest = chats[5];
 
         var noor = users["Noor"];
         var emma = users["Emma"];
@@ -646,6 +651,22 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         technischeHulp.AddTextMessage("Ja, maar ik twijfel of ik iets fout doe.", users["Jasper"]);
         technischeHulp.AddTextMessage("Ik kijk straks met je mee en stuur een korte handleiding door.", users["Bjorn"]);
 
+        profielKliktest.AddUser(users["Thibo"]);
+        profielKliktest.AddUser(users["Kyandro"]);
+        
+        profielKliktest.AddTextMessage("Klik op mijn profiel!", users["Kyandro"]);
+        profielKliktest.AddTextMessage("Doe het", users["Kyandro"]);
+        
+        profielKlikGroupTest.AddUser(users["Thibo"]);
+        profielKlikGroupTest.AddUser(users["Kyandro"]);
+        profielKlikGroupTest.AddUser(users["Bjorn"]);
+        profielKlikGroupTest.AddUser(users["Jasper"]);
+        
+        profielKlikGroupTest.AddTextMessage("Dit is een groupschat", users["Kyandro"]);
+        profielKlikGroupTest.AddTextMessage("Met alle 4", users["Thibo"]);
+        profielKlikGroupTest.AddTextMessage("Iedereen kan hier een bericht in sturen.", users["Bjorn"]);
+        profielKlikGroupTest.AddTextMessage("Iedereen kan hier een bericht in sturen.", users["Jasper"]);
+        
         await dbContext.SaveChangesAsync();
     }
 

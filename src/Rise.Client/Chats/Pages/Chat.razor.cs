@@ -401,4 +401,19 @@ public partial class Chat
             }
         }
     }
+    private void NavigateToFriendProfileFromChat()
+    {
+        if (_chat is null || _chat.Users is null || CurrentUser is null)
+            return;
+
+        var otherUser = _chat.Users
+            .FirstOrDefault(u => !string.Equals(u.AccountId, CurrentUser.AccountId, StringComparison.OrdinalIgnoreCase));
+
+        if (otherUser is null)
+            return;
+
+        NavigationManager.NavigateTo($"/FriendProfilePage/{otherUser.AccountId}");
+    }
+
+
 }

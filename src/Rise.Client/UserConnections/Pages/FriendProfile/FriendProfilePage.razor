@@ -1,0 +1,77 @@
+@page "/FriendProfilePage/{id:guid}"
+@layout EmptyLayout
+@using Rise.Client.UserConnections.Components.FriendProfile
+@using Rise.Shared.Assets
+@using Rise.Shared.Users
+@using Rise.Shared.UserConnections
+@inject NavigationManager NavigationManager
+
+@if (user is null)
+{
+    <!-- 👇 Loading state -->
+    <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600 animate-pulse">
+        <p>Profiel wordt geladen...</p>
+    </div>
+}
+else if (user?.User is null)
+{
+    <!-- 👇 User not found -->
+    <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600">
+        <p>Gebruiker niet gevonden.</p>
+    </div>
+}
+else
+{
+    <!-- 👇 Main content (alleen renderen als user is geladen) -->
+    <div class="relative flex min-h-screen flex-col bg-[#F2F2F2] text-neutral-900 antialiased md:flex-row animate-fade-in">
+        <EmojiComponent />
+        <BackButton />
+
+        <header class="relative h-[65vh] md:h-auto md:w-1/2">
+            <ProfileImageComponent ImgSource="@user.User.AvatarUrl" />
+            <BlurComponent />
+
+            <div class="absolute inset-x-0 bottom-9 flex flex-col justify-end p-5 md:inset-y-0 md:left-0 md:justify-center md:p-10">
+                <NameAndBadgesComponent Name="@user.User.Name" Age="" />
+            </div>
+        </header>
+
+        <!-- ✅ Geef de PageContext door aan de DescriptionComponent -->
+        <DescriptionComponent PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)" />
+
+    </div>
+}
+
+@code {
+    [Parameter] public Guid id { get; set; } 
+
+    [CascadingParameter] public UserDto.CurrentUser? CurrentUser { get; set; }
+
+    [Inject] private IUserService UserService { get; set; } = default!;
+
+    private UserResponse.CurrentUser? user;
+    private UserConnectionTypeDto PageContext = UserConnectionTypeDto.Friend;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine($"Ontvangen id: {id}");
+
+        // 🔹 Haal querystring op en parse 'context' handmatig
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+        if (query.TryGetValue("context", out var contextValue))
+        {
+            if (Enum.TryParse<UserConnectionTypeDto>(contextValue, true, out var result))
+            {
+                PageContext = result;
+            }
+        }
+
+        user = await UserService.GetUserAsync(id.ToString());
+
+        if (user is null)
+        {
+            Console.WriteLine("Gebruiker niet gevonden!");
+        }
+    }
+}

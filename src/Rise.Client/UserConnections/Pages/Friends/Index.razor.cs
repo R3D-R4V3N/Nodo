@@ -6,8 +6,9 @@ namespace Rise.Client.UserConnections.Pages.Friends;
 
 public partial class Index
 {
-    private IEnumerable<UserConnectionDto.GetFriends>? _connections;
-    private List<UserConnectionDto.GetFriends> _filteredConnections = [];
+    private IEnumerable<UserConnectionDto.Get> _connections = [];
+    private IEnumerable<UserConnectionDto.Get> _suggestions = [];
+    private List<UserConnectionDto.Get> _filteredConnections = [];
     private UserConnectionTypeDto _selectedTab = UserConnectionTypeDto.Friend;
     [Inject] private NavigationManager Nav { get; set; } = default!;
     [Inject] public required IUserConnectionService ConnectionService { get; set; }
@@ -20,8 +21,11 @@ public partial class Index
             Take = int.MaxValue,
         };
 
-        var result = await ConnectionService.GetFriendIndexAsync(request);
-        _connections = result.Value.Connections;
+        var getFriendsResult = await ConnectionService.GetFriendIndexAsync(request);
+        var getSuggestionResult = await ConnectionService.GetSuggestedFriendsAsync(request);
+
+        _connections = getFriendsResult.Value.Connections;
+        _suggestions = getSuggestionResult.Value.Users;
         ApplyFilter();
     }
 
@@ -38,16 +42,18 @@ public partial class Index
     }
     private void ApplyFilter()
     {
-        IEnumerable<UserConnectionDto.GetFriends> q = _connections?.ToList() ?? [];
-
-        q = _selectedTab switch
+        var q = _selectedTab switch
         {
-            UserConnectionTypeDto.Friend => q.Where(x => x.State == UserConnectionTypeDto.Friend).OrderBy(x => x.User.Name),
-            UserConnectionTypeDto.Request => q.Where(x =>
-                x.State == UserConnectionTypeDto.IncomingFriendRequest
-                || x.State == UserConnectionTypeDto.OutgoingFriendRequest).OrderBy(x => x.User.Name),
-            UserConnectionTypeDto.AddFriends => q.Where(x => x.State == UserConnectionTypeDto.AddFriends).OrderBy(x => x.User.Name),
-            _ => q.OrderBy(x => x.User.Name),
+            UserConnectionTypeDto.Friend => _connections
+                .Where(x => x.State == UserConnectionTypeDto.Friend)
+                .OrderBy(x => x.User.Name),
+            UserConnectionTypeDto.Request => _connections
+                .Where(x => x.State == UserConnectionTypeDto.IncomingFriendRequest
+                || x.State == UserConnectionTypeDto.OutgoingFriendRequest)
+                .OrderBy(x => x.User.Name),
+            UserConnectionTypeDto.AddFriends => _suggestions!,
+
+            _ => throw new NotImplementedException($"{_selectedTab} not impl"),
         };
         
         // better to query db
@@ -57,34 +63,34 @@ public partial class Index
         _filteredConnections = q.ToList();
         StateHasChanged();
     }
-    private void OpenChat(UserConnectionDto.GetFriends f) => Nav.NavigateTo("/chat"); // TODO: use chat id
+    private void OpenChat(UserConnectionDto.Get f) => Nav.NavigateTo("/chat"); // TODO: use chat id
     private void GoBack() => Nav.NavigateTo("/"); // TODO: maybe callback
-    private void AcceptFriendRequest(UserConnectionDto.GetFriends f)
+    private void AcceptFriendRequest(UserConnectionDto.Get f)
     {
         //TODO: link websocket to every friend request method
         //f.State = UserConnectionTypeDto.Friend;
         ApplyFilter();
     }
 
-    private void RejectFriendRequest(UserConnectionDto.GetFriends f)
+    private void RejectFriendRequest(UserConnectionDto.Get f)
     {
         //_all.Remove(f);
         ApplyFilter();
     }
-    private void CancelFriendRequest(UserConnectionDto.GetFriends f)
+    private void CancelFriendRequest(UserConnectionDto.Get f)
     {
         //TODO: link websocket to every friend request method
         //f.State = UserConnectionTypeDto.Friend;
         ApplyFilter();
     }
 
-    private void AddFriend(UserConnectionDto.GetFriends f)
+    private void AddFriend(UserConnectionDto.Get f)
     {
         //f.State = UserConnectionTypeDto.Friend;
         ApplyFilter();
     }
 
-    private void RemoveFriend(UserConnectionDto.GetFriends f)
+    private void RemoveFriend(UserConnectionDto.Get f)
     {
         //_all.Remove(f);
         ApplyFilter();

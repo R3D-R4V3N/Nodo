@@ -1,3 +1,30 @@
+
+.mask-to-t {
+    /* Voor Chrome, Safari, Edge */
+    -webkit-mask: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 1) 0%,      /* Vol blur onderaan */
+            rgba(0, 0, 0, 1) 25%,     /* Hou het wat langer sterk */
+            rgba(0, 0, 0, 0.7) 55%,   /* Begin af te nemen */
+            rgba(0, 0, 0, 0.3) 80%,   /* Nog zachter */
+            rgba(0, 0, 0, 0) 100%     /* Volledig weg bovenaan */
+    );
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: cover;
+
+    /* Standaard property voor andere browsers */
+    mask: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 1) 0%,
+            rgba(0, 0, 0, 1) 25%,
+            rgba(0, 0, 0, 0.7) 55%,
+            rgba(0, 0, 0, 0.3) 80%,
+            rgba(0, 0, 0, 0) 100%
+    );
+    mask-repeat: no-repeat;
+    mask-size: cover;
+}
+
 #blazor-error-ui {
     color-scheme: light only;
     background: lightyellow;

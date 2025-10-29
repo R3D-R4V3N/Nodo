@@ -1,10 +1,11 @@
 ﻿namespace Rise.Shared.UserConnections;
 
+
 public static partial class UserConnectionResponse
-{
-    public class GetFriends
+{   
+    public class GetSuggestions
     {
-        public IEnumerable<UserConnectionDto.Get> Connections { get; set; } = [];
+        public IEnumerable<UserConnectionDto.Get> Users { get; set; } = [];
         public int TotalCount { get; set; }
     }
 }

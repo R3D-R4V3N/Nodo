@@ -22,12 +22,14 @@
 <div class="flex flex-col h-screen max-h-screen overflow-hidden bg-neutral-100 text-neutral-900">
 
     <!-- Header -->
-    <ChatHeader DisplayName="@GetChatTitle()"
-                AvatarUrl="@GetChatImage()"
-                StatusText="@GetChatStatusText()"
-                OnBack="NavigateBack"
-                OnAlert="TriggerAlert" />
-
+    <button class="p-0 border-none bg-transparent" @onclick="NavigateToFriendProfileFromChat">
+        <ChatHeader DisplayName="@GetChatTitle()"
+                    AvatarUrl="@GetChatImage()"
+                    StatusText="@GetChatStatusText()"
+                    OnBack="NavigateBack"
+                    OnAlert="TriggerAlert"
+                   />
+    </button>
     @if (_isLoading)
     {
         <div class="flex-1 grid place-items-center">

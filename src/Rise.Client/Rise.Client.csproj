@@ -40,5 +40,10 @@
     <ItemGroup>
       <ProjectReference Include="..\Rise.Shared\Rise.Shared.csproj" />
     </ItemGroup>
+    
+    <ItemGroup>
+      <Folder Include="censoring\" />
+      <Folder Include="Components\FriendsProfile\" />
+    </ItemGroup>
 
 </Project>

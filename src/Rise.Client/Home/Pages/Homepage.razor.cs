@@ -1,12 +1,18 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Rise.Shared.Chats;
+using System.Security.Claims;
+using Rise.Shared.Assets;
 using Rise.Shared.Users;
 
 namespace Rise.Client.Home.Pages;
+
 public partial class Homepage
 {
-    [CascadingParameter] public UserDto.CurrentUser? CurrentUser { get; set; }
+    [CascadingParameter]
+    public UserDto.CurrentUser? CurrentUser { get; set; }
+    
     private readonly List<ChatDto.GetChats> _chats = new();
     private List<ChatDto.GetChats> _filteredChats => string.IsNullOrWhiteSpace(_searchTerm)
         ? _chats
@@ -66,12 +72,56 @@ public partial class Homepage
 
         return preview.Length <= 80 
             ? preview : 
-            string.Concat(preview.AsSpan(0, 80), "…");
+            string.Concat(preview.AsSpan(0, 80), "ï¿½");
     }
 
     private static string GetLastActivity(ChatDto.GetChats chat)
     {
         var last = chat.LastMessage;
         return last?.Timestamp?.ToString("HH:mm") ?? "-";
+    }
+
+    private string DetermineGreetingNameFromIdentity()
+    {
+        return CurrentUser!.Name;
+    }
+
+   private string GetAvatarUrl(ChatDto.GetChats chat)
+   {
+       // Zoek de eerste gebruiker die niet de huidige gebruiker is
+       var otherUser = chat?
+           .Users?
+           .FirstOrDefault(u => u.Id != CurrentUser.Id);
+
+       return otherUser?.AvatarUrl ?? DefaultImages.Profile;
+   }
+
+
+    private static string GetAvatarKey(MessageDto.Chat dto)
+    {
+        if (!string.IsNullOrWhiteSpace(dto.User.AccountId))
+            return dto.User.AccountId;
+
+        if (dto.User.Id != 0)
+            return dto.User.Id.ToString(CultureInfo.InvariantCulture);
+
+        return dto.User.Name ?? string.Empty;
+    }
+    private bool IsGroupChat(ChatDto.GetChats chat)
+    {
+        return chat.Users.Count > 2;
+    }
+
+    private void NavigateToFriendProfile(ChatDto.GetChats chat)
+    {
+        var otherParticipant = chat.Users
+            .Where(m => !string.Equals(m.AccountId, CurrentUser.AccountId, StringComparison.Ordinal))
+            .FirstOrDefault();
+
+        if (otherParticipant is not null)
+        {
+            var accountId = otherParticipant.AccountId; // Dit is dus ApplicationUser.AccountId
+            NavigationManager.NavigateTo($"/FriendProfilePage/{accountId}");
+        }
     }
 }

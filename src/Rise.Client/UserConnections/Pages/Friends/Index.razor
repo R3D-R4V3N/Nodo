@@ -10,6 +10,7 @@
 </section>
 
 <FriendList Items="@_filteredConnections"
+            PageContext="@_selectedTab"
             OnAccept="AcceptFriendRequest"
             OnReject="RejectFriendRequest"
             OnCancel="CancelFriendRequest"

@@ -9,6 +9,7 @@ using Rise.Client.Users;
 using Rise.Shared.Chats;
 using Rise.Shared.UserConnections;
 using Rise.Shared.Users;
+using UserService = Rise.Client.Users.UserService;
 
 try
 {
@@ -56,8 +57,12 @@ try
         client.BaseAddress = backendUri;
     });
 
-    // current user
     builder.Services.AddHttpClient<UserContextService>(client =>
+    {
+        client.BaseAddress = backendUri;
+    });
+
+    builder.Services.AddHttpClient<IUserService, UserService>(client =>
     {
         client.BaseAddress = backendUri;
     });

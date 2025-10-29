@@ -46,4 +46,9 @@ public static class UserDto
         public string AccountId { get; init; } = string.Empty;
         public string AvatarUrl { get; init; } = string.Empty;
     }
+    public record ConnectionProfile
+    {
+        
+      
+    }
 }

@@ -7,9 +7,9 @@ namespace Rise.Shared.UserConnections;
 /// </summary>
 public static class UserConnectionDto
 {
-    public record GetFriends 
+    public record Get 
     {
         public UserDto.Connection User { get; set; }
-        public UserConnectionTypeDto State { get; set; } = UserConnectionTypeDto.Friend;
+        public UserConnectionTypeDto State { get; set; }
     }
 }

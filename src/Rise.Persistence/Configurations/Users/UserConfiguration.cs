@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rise.Domain.Users;
+using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Hobbys;
 using Rise.Domain.Users.Sentiment;
 
@@ -67,12 +68,11 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         // connections
-        builder.Ignore(u => u.Connections);
         builder.Ignore(u => u.Friends);
         builder.Ignore(u => u.FriendRequests);
         builder.Ignore(u => u.BlockedUsers);
 
-        builder.OwnsMany<UserConnection>("_connections", connections =>
+        builder.OwnsMany(u => u.Connections, connections =>
         {
             connections.WithOwner()
                         .HasForeignKey("UserId");

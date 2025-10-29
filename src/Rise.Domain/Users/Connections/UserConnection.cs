@@ -1,4 +1,4 @@
-﻿namespace Rise.Domain.Users;
+﻿namespace Rise.Domain.Users.Connections;
 public class UserConnection : ValueObject
 {
     public UserConnection()
@@ -14,12 +14,4 @@ public class UserConnection : ValueObject
         yield return Connection;
         yield return ConnectionType;
     }
-}
-
-public enum UserConnectionType
-{ 
-    Friend,
-    RequestIncoming,
-    RequestOutgoing,
-    Blocked,
 }

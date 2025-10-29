@@ -3,10 +3,14 @@
 @using System.Security.Claims
 @using Rise.Client.Chats
 @using Rise.Shared.Chats
+@using Microsoft.AspNetCore.Components
+@using Rise.Shared.Assets
+
 @layout MainLayout
 @inject IChatService ChatService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+
 
 <div class="min-h-dvh bg-neutral-100 overflow-x-hidden">
   <!-- Header -->
@@ -63,8 +67,20 @@
                       @onclick="() => NavigateToChat(chat)">
                 <div class="bg-white rounded-3xl p-4 sm:p-5 shadow hover:shadow-md active:scale-[0.99] transition flex items-start gap-3 sm:gap-4">
                   <!-- Avatar -->
-                  <div class="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-neutral-200 shrink-0"></div>
-
+                  @if (IsGroupChat(chat))
+                  {
+                    <img src="@DefaultImages.Group"
+                         alt="Profielfoto"
+                         class="h-12 w-12 sm:h-14 sm:w-14 rounded-full object-cover border border-neutral-200 bg-[#729788] shrink-0"/>
+                  }
+                  else
+                  {
+                    <img src="@GetAvatarUrl(chat)"
+                         alt="Profielfoto"
+                         class="h-12 w-12 sm:h-14 sm:w-14 rounded-full object-cover border border-neutral-200 shrink-0 cursor-pointer hover:scale-105 transition"
+                         @onclick="() => NavigateToFriendProfile(chat)" />
+                  }  
+                  
                   <!-- Texts -->
                   <div class="min-w-0 flex-1">
                     <div class="flex items-baseline justify-between gap-2">

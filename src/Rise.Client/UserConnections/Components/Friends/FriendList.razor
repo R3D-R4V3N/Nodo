@@ -4,6 +4,7 @@
         @foreach (var f in Items)
         {
             <FriendCard Friend="f"
+                        PageContext="@PageContext"
                         OnAccept="OnAccept"
                         OnReject="OnReject"
                         OnCancel="OnCancel"
@@ -19,11 +20,13 @@
 </section>
 
 @code {
-    [Parameter] public IReadOnlyList<UserConnectionDto.GetFriends> Items { get; set; } = [];
-    [Parameter] public EventCallback<UserConnectionDto.GetFriends> OnAccept { get; set; }
-    [Parameter] public EventCallback<UserConnectionDto.GetFriends> OnReject { get; set; }
-    [Parameter] public EventCallback<UserConnectionDto.GetFriends> OnCancel { get; set; }
-    [Parameter] public EventCallback<UserConnectionDto.GetFriends> OnAdd { get; set; }
-    [Parameter] public EventCallback<UserConnectionDto.GetFriends> OnOpenChat { get; set; }
-    [Parameter] public EventCallback<UserConnectionDto.GetFriends> OnRemove { get; set; }
+    [Parameter] public IReadOnlyList<UserConnectionDto.Get> Items { get; set; } = [];
+    [Parameter] public EventCallback<UserConnectionDto.Get> OnAccept { get; set; }
+    [Parameter] public EventCallback<UserConnectionDto.Get> OnReject { get; set; }
+    [Parameter] public EventCallback<UserConnectionDto.Get> OnCancel { get; set; }
+    [Parameter] public EventCallback<UserConnectionDto.Get> OnAdd { get; set; }
+    [Parameter] public EventCallback<UserConnectionDto.Get> OnOpenChat { get; set; }
+    [Parameter] public EventCallback<UserConnectionDto.Get> OnRemove { get; set; }
+    [Parameter] public UserConnectionTypeDto PageContext { get; set; } = UserConnectionTypeDto.Friend;
+
 }

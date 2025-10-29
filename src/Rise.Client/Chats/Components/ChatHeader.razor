@@ -1,4 +1,7 @@
 @using Rise.Shared.Assets
+@using Rise.Shared.Assets
+
+@inject NavigationManager NavigationManager
 
 @* Header met terugknop, avatar, titel en alarmknop *@
 <div class="relative flex items-center gap-3 bg-[#127646] rounded-b-3xl text-white px-4 pb-4 pt-8">
@@ -8,7 +11,10 @@
         </svg>
     </button>
 
-    <img src="@AvatarUrl" alt="@DisplayName" class="h-9 w-9 rounded-full ring-2 ring-white/30" />
+    <img src="@AvatarUrl" 
+         alt="@DisplayName" 
+         class="h-9 w-9 rounded-full ring-2 ring-white/30"
+          />
 
     <div class="flex-1 min-w-0">
         <h1 class="text-base font-semibold leading-5 truncate">@DisplayName</h1>

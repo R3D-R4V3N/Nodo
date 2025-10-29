@@ -1,13 +1,19 @@
+using System.Globalization;
 using System.Security.Claims;
 using Ardalis.Result;
+using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Components.Authorization;
 using NSubstitute;
 using Rise.Shared.Chats;
 using Xunit.Abstractions;
 using Rise.Client.Home.Pages;
+using Rise.Shared.Assets;
 
 public class HomepageShould : TestContext
 {
+   
     public HomepageShould(ITestOutputHelper outputHelper)
     {
         Services.AddXunitLogger(outputHelper);
@@ -110,4 +116,6 @@ public class HomepageShould : TestContext
         Assert.Contains("Hallo, testbericht", chatItems[0].TextContent);
         Assert.Contains("Kyandro", chatItems[0].TextContent);
     }
+
+    
 }

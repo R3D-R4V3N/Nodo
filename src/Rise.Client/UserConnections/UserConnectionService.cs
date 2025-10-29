@@ -20,4 +20,16 @@ public class UserConnectionService(HttpClient httpClient) : IUserConnectionServi
     {
         throw new NotImplementedException();
     }
+
+    public Task<Result<string>> AcceptFriendAsync(string requesterAccountId, CancellationToken ctx = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<Result<UserConnectionResponse.GetSuggestions>> GetSuggestedFriendsAsync(QueryRequest.SkipTake req, CancellationToken ct)
+    {
+        var result = await httpClient
+            .GetFromJsonAsync<Result<UserConnectionResponse.GetSuggestions>>("/api/connections/suggested", cancellationToken: ct);
+        return result!;
+    }
 }
