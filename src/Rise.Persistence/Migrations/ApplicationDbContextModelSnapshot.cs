@@ -359,6 +359,11 @@ namespace Rise.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
 
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
+
                     b.Property<DateOnly>("BirthDay")
                         .HasColumnType("date");
 

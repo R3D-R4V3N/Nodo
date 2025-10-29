@@ -48,13 +48,17 @@ public record ProfileModel
             .Select(h => new ProfileHobbyModel(h.Hobby.ToString(), h.Name, h.Emoji))
             .ToList();
 
+        var gender = string.IsNullOrWhiteSpace(user.Gender)
+            ? "x"
+            : user.Gender.Trim().ToLowerInvariant();
+
         return new ProfileModel
         {
             FirstName = user.FirstName,
             LastName = user.LastName,
             Email = user.Email,
             Bio = user.Biography,
-            Gender = "x",
+            Gender = gender,
             AvatarUrl = string.IsNullOrWhiteSpace(user.AvatarUrl) ? DefaultAvatar : user.AvatarUrl,
             MemberSince = memberSince,
             Interests = interests,

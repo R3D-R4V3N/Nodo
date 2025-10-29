@@ -31,6 +31,8 @@ namespace Rise.Persistence.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     AvatarUrl = table.Column<string>(type: "varchar(250)", maxLength: 250, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    Gender = table.Column<string>(type: "varchar(10)", maxLength: 10, nullable: false, defaultValue: "x")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     BirthDay = table.Column<DateOnly>(type: "date", nullable: false),
                     UserType = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
