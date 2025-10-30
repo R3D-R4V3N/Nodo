@@ -1,5 +1,6 @@
 @page "/FriendProfilePage/{id:guid}"
 @layout EmptyLayout
+@using Rise.Client.Profile.Models
 @using Rise.Client.UserConnections.Components.FriendProfile
 @using Rise.Shared.Assets
 @using Rise.Shared.Users
@@ -8,52 +9,44 @@
 
 @if (user is null)
 {
-    <!-- 👇 Loading state -->
-    <div class="flex min-h-screen items-center justify-center bg-neutral-100 text-neutral-600 animate-pulse">
+    <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600 animate-pulse">
         <p>Profiel wordt geladen...</p>
     </div>
 }
 else if (user?.User is null)
 {
-    <!-- 👇 User not found -->
-    <div class="flex min-h-screen items-center justify-center bg-neutral-100 text-neutral-600">
+    <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600">
         <p>Gebruiker niet gevonden.</p>
     </div>
 }
 else
 {
-    <!-- 👇 Main content (alleen renderen als user is geladen) -->
-    <main class="relative flex min-h-screen flex-col bg-gradient-to-br from-emerald-50 via-white to-neutral-100 text-neutral-900">
+    <div class="relative flex min-h-screen flex-col bg-[#F2F2F2] text-neutral-900 antialiased md:flex-row animate-fade-in">
+        <EmojiComponent Hobbies="@ProfileHobbies"/>
         <BackButton />
 
-        <div class="relative mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 pb-8 pt-24 sm:px-6 lg:flex-row lg:gap-10 lg:px-10">
-            <section class="relative flex-1 overflow-hidden rounded-3xl bg-neutral-900 shadow-xl">
-                <ProfileImageComponent ImgSource="@user.User.AvatarUrl" />
-                <BlurComponent />
+        <header class="relative h-[65vh] md:h-auto md:w-1/2">
+            <ProfileImageComponent ImgSource="@user.User.AvatarUrl" />
+            <BlurComponent />
 
-                <div class="absolute inset-x-0 bottom-0 space-y-4 p-6 sm:p-8">
-                    <NameAndBadgesComponent
-                        Name="@user.User.Name"
-                        Age="@DisplayAge"
-                        Gender="@DisplayGender"
-                        Organisation="@DisplayOrganisation" />
-                </div>
-            </section>
+            <div class="absolute inset-x-0 bottom-9 flex flex-col justify-end p-5 md:inset-y-0 md:left-0 md:justify-center md:p-10">
+                <NameAndBadgesComponent Name="@user.User.Name" 
+                                        Age="@user.User.BirthDay.ToString()"
+                                        Gender="@user.User.Gender"/>
+                                        
+            </div>
+        </header>
 
-            <section class="flex flex-1 flex-col gap-6 pb-10">
-                <DescriptionComponent Description="@ProfileDescription" PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)" />
+        <!-- ✅ Geef de PageContext door aan de DescriptionComponent -->
+        <DescriptionComponent PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
+                              Description="@user.User.Biography"/>
 
-                @if (DisplayHobbies.Count > 0)
-                {
-                    <EmojiComponent Hobbies="@DisplayHobbies" />
-                }
-            </section>
-        </div>
-    </main>
+    </div>
+    
 }
 
 @code {
-    [Parameter] public Guid id { get; set; }
+    [Parameter] public Guid id { get; set; } 
 
     [CascadingParameter] public UserDto.CurrentUser? CurrentUser { get; set; }
 
@@ -62,8 +55,7 @@ else
     private UserResponse.CurrentUser? user;
     private UserConnectionTypeDto PageContext = UserConnectionTypeDto.Friend;
 
-    private static readonly string DefaultDescription = "Lief, eerlijk en altijd mezelf 💛 Heb een mentale beperking, maar een groot hart en een brede glimlach 🙂";
-    private const string DefaultOrganisation = "Organisatie";
+    private IReadOnlyList<ProfileHobbyModel> ProfileHobbies { get; set; } = Array.Empty<ProfileHobbyModel>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -86,39 +78,15 @@ else
         {
             Console.WriteLine("Gebruiker niet gevonden!");
         }
-    }
-
-    private string ProfileDescription
-        => string.IsNullOrWhiteSpace(user?.User?.Biography) ? DefaultDescription : user!.User.Biography;
-
-    private IReadOnlyList<HobbyDto.Get> DisplayHobbies
-        => user?.User?.Hobbies?.Count > 0 ? user.User.Hobbies : DefaultHobbies;
-
-    private static readonly IReadOnlyList<HobbyDto.Get> DefaultHobbies =
-        new List<HobbyDto.Get>
+        ProfileHobbies = user.User.Hobbies
+            .Select(h => new ProfileHobbyModel(h.Hobby.ToString(), h.Name, h.Emoji))
+            .ToList();
+        
+        Console.WriteLine($"Aantal hobby's: {user.User.Hobbies.Count}");
+        foreach (var h in user.User.Hobbies)
         {
-            new() { Hobby = HobbyTypeDto.Basketball },
-            new() { Hobby = HobbyTypeDto.Rugby },
-            new() { Hobby = HobbyTypeDto.Football },
-        };
-
-    private string? DisplayAge
-    {
-        get
-        {
-            if (user?.User is not { BirthDay: var birthDay })
-            {
-                return null;
-            }
-
-            var today = DateOnly.FromDateTime(DateTime.Today);
-            var age = today.Year - birthDay.Year - (today.DayOfYear < birthDay.DayOfYear ? 1 : 0);
-            return age > 0 ? $"{age} jaar" : null;
+            Console.WriteLine($"Hobby: {h.Name}, Emoji: {h.Emoji}, Id: {h.Hobby.ToString()}");
         }
+
     }
-
-    private string? DisplayGender
-        => string.IsNullOrWhiteSpace(user?.User?.Gender) ? null : user.User.Gender;
-
-    private string? DisplayOrganisation => DefaultOrganisation;
 }

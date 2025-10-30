@@ -48,7 +48,16 @@ public static class UserDto
     }
     public record ConnectionProfile
     {
-        
-      
+        public int Id { get; init; }
+        public string FirstName { get; init; } = string.Empty;
+        public string LastName { get; init; } = string.Empty;
+        public string Name => $"{FirstName} {LastName}";
+        public string AccountId { get; init; } = string.Empty;
+        public string AvatarUrl { get; init; } = string.Empty;
+        public string Email { get; init; } = string.Empty;
+        public string Biography { get; init; } = string.Empty;
+        public string Gender { get; init; } = "x";
+        public DateOnly BirthDay { get; init; }
+        public List<HobbyDto.Get> Hobbies { get; init; } = [];
     }
 }
