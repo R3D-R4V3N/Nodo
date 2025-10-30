@@ -40,8 +40,8 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
             query = query.Where(p => 
-                p.Connection.FirstName.Contains(request.SearchTerm) 
-                || p.Connection.LastName.Contains(request.SearchTerm));
+                p.Connection.FirstName.Value.Contains(request.SearchTerm) 
+                || p.Connection.LastName.Value.Contains(request.SearchTerm));
         }
 
         var totalCount = await query.CountAsync(ctx);
@@ -121,10 +121,10 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
             return Result.NotFound("User not found.");
 
         // Domeinlogica hergebruiken
-        var result = currentUser.AcceptFriendRequest(requesterUser);
+        //var result = currentUser.AcceptFriendRequest(requesterUser);
 
-        if (!result.IsSuccess)
-            return result; // bijv. conflict of invalid state
+        //if (!result.IsSuccess)
+        //    return result; // bijv. conflict of invalid state
 
         await dbContext.SaveChangesAsync(ct);
         return Result.Success();
@@ -167,6 +167,25 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
             Users = suggestedFriends.Select(UserConnectionMapper.ToGetDto),
             TotalCount = totalCount
         });
+    }
+
+    public async Task<Result<string>> RejectFriendAsync(string reqRequesterAccountId, CancellationToken ct)
+    {
+        var userId = sessionContextProvider.User!.GetUserId();
+
+        var loggedInUser = await dbContext.ApplicationUsers
+            .SingleOrDefaultAsync(x => x.AccountId == sessionContextProvider.User!.GetUserId(), ct);
+        var reqRequesterAccount = await dbContext.ApplicationUsers
+            .SingleOrDefaultAsync(x => x.AccountId == reqRequesterAccountId, ct);
+        
+        if (loggedInUser is null)
+            return Result.Unauthorized("You are not authorized to reject friend requests.");
+        
+        if (reqRequesterAccount is null)
+            return Result.NotFound("The requester account was not found.");
+        
+        return loggedInUser.RejectFriendRequest(reqRequesterAccount);
+
     }
 }
 

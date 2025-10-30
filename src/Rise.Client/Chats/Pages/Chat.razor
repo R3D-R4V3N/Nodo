@@ -12,7 +12,6 @@
 @using Rise.Shared.Assets
 
 @layout EmptyLayout
-@implements IAsyncDisposable
 @inject IChatService ChatService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
@@ -70,7 +69,7 @@
         <!-- Fixed input bar -->
         <div class="fixed bottom-0 left-0 right-0 bg-white" @ref="_footerHost">
             <div class="mx-auto px-3">
-                <SuggestionChips Suggestions="CurrentUser!.DefaultChatLines" OnPick="ApplySuggestion" />
+                <SuggestionChips Suggestions="UserState.User!.DefaultChatLines" OnPick="ApplySuggestion" />
                 <ChatInput @bind-Value="_draft"
                            OnSend="HandleTextMessageAsync"
                            OnSendVoice="HandleVoiceMessageAsync" />

@@ -40,7 +40,7 @@ internal static class UserMapper
             DefaultChatLines = user
                 .UserSettings
                 .ChatTextLineSuggestions
-                .Select(x => x.Text)
+                .Select(x => x.Sentence.Value)
                 .ToList(),
         };
     public static UserDto.ConnectionProfile ToConnectionProfileDto(this ApplicationUser user) =>

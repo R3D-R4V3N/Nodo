@@ -1,14 +1,12 @@
 @page "/homepage"
 @attribute [Authorize]
-@using System.Security.Claims
 @using Rise.Client.Chats
-@using Rise.Shared.Chats
-@using Microsoft.AspNetCore.Components
 @using Rise.Shared.Assets
+@using Rise.Shared.Chats
+
 
 @layout MainLayout
 @inject IChatService ChatService
-@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 
 
@@ -16,7 +14,7 @@
   <!-- Header -->
   <header class="bg-[#127646] text-white px-4 sm:px-6 lg:px-8 pt-6 pb-6 sm:pb-7 rounded-b-3xl shadow">
     <h1 class="text-2xl sm:text-3xl text-center lg:text-4xl font-semibold leading-tight">
-      Goeiemorgen @CurrentUser?.Name
+      Goeiemorgen @UserState.User?.Name
     </h1>
 
     <!-- Search -->

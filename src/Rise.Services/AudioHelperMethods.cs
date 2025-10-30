@@ -1,4 +1,4 @@
-﻿using Rise.Domain.Chats;
+﻿using Rise.Domain.Messages;
 
 namespace Rise.Services;
 

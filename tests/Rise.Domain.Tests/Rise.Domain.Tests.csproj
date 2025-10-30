@@ -13,6 +13,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+        <PackageReference Include="NSubstitute" Version="5.3.0" />
         <PackageReference Include="Shouldly" Version="4.3.0" />
         <PackageReference Include="xunit" Version="2.9.3" />
         <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4">
@@ -22,12 +23,17 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="Xunit"/>
-        <Using Include="Shouldly"/>
+        <Using Include="Xunit" />
+        <Using Include="Shouldly" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\Rise.Domain\Rise.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Common\" />
+      <Folder Include="Messages\" />
     </ItemGroup>
 
 </Project>

@@ -1,12 +1,13 @@
 using Ardalis.Result;
+using Rise.Domain.Users.Properties;
+using Rise.Domain.Users.Settings.Properties;
 
-namespace Rise.Domain.Users;
+namespace Rise.Domain.Users.Settings;
 
 public class ApplicationUserSetting : ValueObject
 {
-    private const int MIN_LETTER_SIZE = 10,
-        MAX_LETTER_SIZE = 30,
-        MAX_DEFAULT_CHAT_LINE_COUNT = 5;
+    public ApplicationUserSetting() { }
+    public const int MAX_DEFAULT_CHAT_LINE_COUNT = 5;
 
     private ApplicationUser _user;
     public ApplicationUser User
@@ -24,22 +25,7 @@ public class ApplicationUserSetting : ValueObject
         }
     }
     public bool IsDarkMode { get; set; } = false;
-    public int _fontSize;
-    public required int FontSize 
-    { 
-        get => _fontSize;
-        set
-        {
-            if (value < MIN_LETTER_SIZE || value > MAX_LETTER_SIZE)
-            {
-                throw new ArgumentException(
-                    $"Lettergrootte moet tussen {MIN_LETTER_SIZE} en {MAX_LETTER_SIZE} zijn"
-                );
-            }
-
-            _fontSize = value;
-        }
-    }
+    public required FontSize FontSize { get; set; }
 
     private readonly List<UserSettingChatTextLineSuggestion> _chatTextLineSuggestions = [];
     public IReadOnlyList<UserSettingChatTextLineSuggestion> ChatTextLineSuggestions 
@@ -54,7 +40,7 @@ public class ApplicationUserSetting : ValueObject
 
         string cleanedUpLine = line.Trim();
 
-        if (_chatTextLineSuggestions.Any(s => s.Text == cleanedUpLine))
+        if (_chatTextLineSuggestions.Any(s => s.Sentence == cleanedUpLine))
         { 
             return Result.Conflict($"{cleanedUpLine} zit al tussen de standaardzinnen");
         }
@@ -69,7 +55,7 @@ public class ApplicationUserSetting : ValueObject
         var newSuggestion = new UserSettingChatTextLineSuggestion()
         {
             Rank = rank,
-            Text = cleanedUpLine
+            Sentence = DefaultSentence.Create(cleanedUpLine),
         };
 
         _chatTextLineSuggestions.Insert(
@@ -90,7 +76,7 @@ public class ApplicationUserSetting : ValueObject
         string cleanedUpLine = line.Trim();
 
         var suggestionToRemove = _chatTextLineSuggestions
-            .FirstOrDefault(s => s.Text == cleanedUpLine);
+            .FirstOrDefault(s => s.Sentence == cleanedUpLine);
 
         if (suggestionToRemove is null)
         {
@@ -116,9 +102,5 @@ public class ApplicationUserSetting : ValueObject
     protected override IEnumerable<object> GetEqualityComponents()
     {
         yield return User;
-    }
-
-    public ApplicationUserSetting()
-    {
     }
 }

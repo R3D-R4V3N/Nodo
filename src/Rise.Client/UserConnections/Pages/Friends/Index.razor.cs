@@ -40,8 +40,9 @@ public partial class Index
         // call db
         ApplyFilter();
     }
-    private void ApplyFilter()
+    private async void ApplyFilter()
     {
+        await ReloadDataAsync();
         var q = _selectedTab switch
         {
             UserConnectionTypeDto.Friend => _connections
@@ -65,28 +66,29 @@ public partial class Index
     }
     private void OpenChat(UserConnectionDto.Get f) => Nav.NavigateTo("/chat"); // TODO: use chat id
     private void GoBack() => Nav.NavigateTo("/"); // TODO: maybe callback
-    private void AcceptFriendRequest(UserConnectionDto.Get f)
+    private async void AcceptFriendRequest(UserConnectionDto.Get f)
     {
-        //TODO: link websocket to every friend request method
-        //f.State = UserConnectionTypeDto.Friend;
+        ConnectionService.AcceptFriendAsync( f.User.AccountId);
         ApplyFilter();
     }
 
     private void RejectFriendRequest(UserConnectionDto.Get f)
     {
         //_all.Remove(f);
+        ConnectionService.RejectFriendAsync(f.User.AccountId, CancellationToken.None);
         ApplyFilter();
     }
-    private void CancelFriendRequest(UserConnectionDto.Get f)
+    private async void CancelFriendRequest(UserConnectionDto.Get f)
     {
         //TODO: link websocket to every friend request method
         //f.State = UserConnectionTypeDto.Friend;
         ApplyFilter();
     }
 
-    private void AddFriend(UserConnectionDto.Get f)
+    private async void AddFriend(UserConnectionDto.Get f)
     {
         //f.State = UserConnectionTypeDto.Friend;
+        ConnectionService.AddFriendAsync(f.User.AccountId);
         ApplyFilter();
     }
 
@@ -94,5 +96,22 @@ public partial class Index
     {
         //_all.Remove(f);
         ApplyFilter();
+    }
+    
+    private async Task ReloadDataAsync()
+    {
+        var request = new QueryRequest.SkipTake
+        {
+            Skip = 0,
+            Take = int.MaxValue,
+        };
+
+        var getFriendsResult = await ConnectionService.GetFriendIndexAsync(request);
+        var getSuggestionResult = await ConnectionService.GetSuggestedFriendsAsync(request);
+
+        _connections = getFriendsResult.Value.Connections;
+        _suggestions = getSuggestionResult.Value.Users;
+
+        //ApplyFilter();
     }
 }

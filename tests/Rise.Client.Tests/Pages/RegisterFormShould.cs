@@ -1,7 +1,7 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Rise.Client.Components.Auth;
+using Rise.Client.Identity.Components;
 using Rise.Shared.Identity.Accounts;
 using Xunit;
 

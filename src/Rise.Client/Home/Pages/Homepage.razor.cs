@@ -1,18 +1,14 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
-using Rise.Shared.Chats;
-using System.Security.Claims;
+using Rise.Client.State;
 using Rise.Shared.Assets;
-using Rise.Shared.Users;
+using Rise.Shared.Chats;
 
 namespace Rise.Client.Home.Pages;
 
 public partial class Homepage
 {
-    [CascadingParameter]
-    public UserDto.CurrentUser? CurrentUser { get; set; }
-    
+    [Inject] public UserState UserState { get; set; }
     private readonly List<ChatDto.GetChats> _chats = new();
     private List<ChatDto.GetChats> _filteredChats => string.IsNullOrWhiteSpace(_searchTerm)
         ? _chats
@@ -26,14 +22,6 @@ public partial class Homepage
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        if (user?.Identity?.IsAuthenticated != true)
-        {
-            NavigationManager.NavigateTo("/login", true);
-            return;
-        }
-
         var result = await ChatService.GetAllAsync();
         if (result.IsSuccess && result.Value is not null)
         {
@@ -55,7 +43,7 @@ public partial class Homepage
     {
         var chatUserNames = chat?
             .Users
-            .Where(x => x.AccountId != CurrentUser!.AccountId)
+            .Where(x => x.Id != UserState.User!.Id)
             .Select(x => x.Name)
             .ToList() ?? [$"Chat {chat?.ChatId}"];
 
@@ -83,7 +71,7 @@ public partial class Homepage
 
     private string DetermineGreetingNameFromIdentity()
     {
-        return CurrentUser!.Name;
+        return UserState.User!.Name;
     }
 
    private string GetAvatarUrl(ChatDto.GetChats chat)
@@ -91,7 +79,7 @@ public partial class Homepage
        // Zoek de eerste gebruiker die niet de huidige gebruiker is
        var otherUser = chat?
            .Users?
-           .FirstOrDefault(u => u.Id != CurrentUser.Id);
+           .FirstOrDefault(u => u.Id != UserState.User.Id);
 
        return otherUser?.AvatarUrl ?? DefaultImages.Profile;
    }
@@ -115,7 +103,7 @@ public partial class Homepage
     private void NavigateToFriendProfile(ChatDto.GetChats chat)
     {
         var otherParticipant = chat.Users
-            .Where(m => !string.Equals(m.AccountId, CurrentUser.AccountId, StringComparison.Ordinal))
+            .Where(m => !string.Equals(m.AccountId, UserState.User.AccountId, StringComparison.Ordinal))
             .FirstOrDefault();
 
         if (otherParticipant is not null)

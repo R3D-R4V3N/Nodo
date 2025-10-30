@@ -2,16 +2,17 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
 using Rise.Client.Chats.Components;
+using Rise.Client.State;
 using Rise.Shared.Assets;
 using Rise.Shared.Chats;
 using Rise.Shared.Users;
 using System.Globalization;
 
 namespace Rise.Client.Chats.Pages;
-public partial class Chat
+public partial class Chat : IAsyncDisposable
 {
     [Parameter] public int ChatId { get; set; }
-    [CascadingParameter] public UserDto.CurrentUser? CurrentUser { get; set; }
+    [Inject] public UserState UserState { get; set; }
 
     private ChatDto.GetChat? _chat;
     private readonly SemaphoreSlim _hubConnectionLock = new(1, 1);
@@ -310,7 +311,7 @@ public partial class Chat
     {
         var participantNames = _chat?
             .Users
-            .Where(x => x.Id != CurrentUser!.Id)
+            .Where(x => x.Id != UserState.User!.Id)
             .Select(x => x.Name)
             .ToList() ?? ["Unknown"];
 
@@ -321,7 +322,7 @@ public partial class Chat
     {
         return _chat?
             .Users
-            .FirstOrDefault(x => x.Id != CurrentUser!.Id)
+            .FirstOrDefault(x => x.Id != UserState.User!.Id)
             ?.AvatarUrl ?? DefaultImages.Profile;
     }
 
@@ -403,11 +404,11 @@ public partial class Chat
     }
     private void NavigateToFriendProfileFromChat()
     {
-        if (_chat is null || _chat.Users is null || CurrentUser is null)
+        if (_chat is null || _chat.Users is null || UserState.User is null)
             return;
 
         var otherUser = _chat.Users
-            .FirstOrDefault(u => !string.Equals(u.AccountId, CurrentUser.AccountId, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(u => !string.Equals(u.AccountId, UserState.User.AccountId, StringComparison.OrdinalIgnoreCase));
 
         if (otherUser is null)
             return;

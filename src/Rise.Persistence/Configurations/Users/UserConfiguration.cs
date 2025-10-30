@@ -1,10 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Rise.Domain.Common;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Hobbys;
 using Rise.Domain.Users.Sentiment;
+using Rise.Domain.Users.Properties;
+using Rise.Domain.Users.Settings;
+using Rise.Domain.Users.Settings.Properties;
 
 
 namespace Rise.Persistence.Configurations.Users;
@@ -18,11 +22,30 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
         builder.Property(x => x.AccountId).IsRequired().HasMaxLength(36);
         builder.HasIndex(x => x.AccountId).IsUnique();
 
-        builder.Property(x => x.FirstName).IsRequired().HasMaxLength(100);
-        builder.Property(x => x.LastName).IsRequired().HasMaxLength(100);
-        builder.Property(x => x.Biography).IsRequired().HasMaxLength(500);
-        builder.Property(x => x.AvatarUrl).IsRequired().HasMaxLength(250);
-        builder.Property(x => x.Gender).IsRequired().HasMaxLength(10);
+        builder.Property(x => x.FirstName)
+            .HasConversion(
+                new ValueObjectConverter<FirstName, string>()
+            ).IsRequired()
+            .HasMaxLength(FirstName.MAX_LENGTH);
+
+        builder.Property(x => x.LastName)
+            .HasConversion(
+                new ValueObjectConverter<LastName, string>()
+            ).IsRequired()
+            .HasMaxLength(LastName.MAX_LENGTH);
+
+        builder.Property(x => x.Biography)
+            .HasConversion(
+                new ValueObjectConverter<Biography, string>()
+            ).IsRequired()
+            .HasMaxLength(Biography.MAX_LENGTH);
+
+        builder.Property(x => x.AvatarUrl)
+            .HasConversion(
+                new ValueObjectConverter<AvatarUrl, string>()
+            ).IsRequired()
+            .HasMaxLength(AvatarUrl.MAX_LENGTH);
+
         builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.UserType).IsRequired();
 
@@ -115,7 +138,10 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
                 .HasDefaultValue(false);
 
             userSettings.Property(s => s.FontSize)
-                .HasDefaultValue(12);
+                .HasConversion(
+                    new ValueObjectConverter<FontSize, int>()
+                )
+                .HasDefaultValue(FontSize.Create(12).Value);
 
             userSettings.OwnsMany(s => s.ChatTextLineSuggestions, nav =>
             {
@@ -123,9 +149,12 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
                 nav.WithOwner()
                     .HasForeignKey("UserSettingsId");
 
-                nav.Property(p => p.Text)
-                   .HasColumnName("TextSuggestion")
-                   .IsRequired();
+                nav.Property(p => p.Sentence)
+                    .HasConversion(
+                        new ValueObjectConverter<DefaultSentence, string>()
+                    ).IsRequired()
+                    .HasMaxLength(DefaultSentence.MAX_LENGTH)
+                    .HasColumnName("TextSuggestion");
 
                 nav.Property(p => p.Rank)
                    .IsRequired();

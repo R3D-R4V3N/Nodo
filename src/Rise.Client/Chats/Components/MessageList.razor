@@ -12,7 +12,7 @@
         var message = Messages[i];
         var previous = i > 0 ? Messages[i - 1] : null;
         var isContinuation = ShouldGroupWithPrevious(message, previous);
-        var isOutgoing = message.User.AccountId.Equals(CurrentUser.AccountId);
+        var isOutgoing = message.User.Id.Equals(UserState.User!.Id);
         var showSender = !isOutgoing
             && !string.IsNullOrWhiteSpace(message.User.Name)
             && !isContinuation;

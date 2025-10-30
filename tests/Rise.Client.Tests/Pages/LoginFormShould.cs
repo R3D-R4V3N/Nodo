@@ -2,10 +2,10 @@ using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using NSubstitute;
-using Rise.Client.Components.Auth;
 using Rise.Shared.Identity.Accounts;
 using Rise.Client.Pages;
 using Xunit.Abstractions;
+using Rise.Client.Identity.Components;
 
 namespace Rise.Client.Pages;
 

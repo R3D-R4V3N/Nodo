@@ -7,4 +7,5 @@ public interface IUserConnectionService
     Task<Result<string>> AddFriendAsync(string targetAccountId, CancellationToken ctx = default);
     Task<Result<string>> AcceptFriendAsync(string requesterAccountId, CancellationToken ctx = default);
     Task<Result<UserConnectionResponse.GetSuggestions>> GetSuggestedFriendsAsync(QueryRequest.SkipTake req, CancellationToken ct = default);
+    Task<Result<string>> RejectFriendAsync(string reqRequesterAccountId, CancellationToken ct);
 }

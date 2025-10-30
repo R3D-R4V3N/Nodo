@@ -36,7 +36,7 @@ public class UserContextService(
 
     public async Task<UserDto.CurrentUser?> InitializeAsync(CancellationToken ctx = default)
     {
-        if (CurrentUser is not null) 
+        if (CurrentUser is not null)
             return CurrentUser;
 
         var authState = await _authProvider.GetAuthenticationStateAsync();

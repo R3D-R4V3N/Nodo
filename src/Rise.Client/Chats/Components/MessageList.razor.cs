@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using Rise.Client.State;
 using Rise.Shared.Chats;
-using Rise.Shared.Users;
 
 namespace Rise.Client.Chats.Components;
 public partial class MessageList
 {
     [Parameter] public IReadOnlyList<MessageDto.Chat> Messages { get; set; } = [];
     [Parameter] public string? TimestampText { get; set; } = "Nov 30, 2023, 9:41 AM";
-    [CascadingParameter] public UserDto.CurrentUser CurrentUser { get; set; }
+    [Inject] public UserState UserState { get; set; }
 
     private ElementReference _scrollHost;
 

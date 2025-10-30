@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
+using Rise.Domain.Messages;
+using Rise.Domain.Messages.Properties;
 using Rise.Persistence;
 using Rise.Services.Chats.Mapper;
 using Rise.Services.Identity;
@@ -154,7 +156,7 @@ public class ChatService(
         {
             Chat = chat,
             Sender = sender,
-            Text = trimmedContent,
+            Text = Text.Create(trimmedContent!),
             AudioContentType = audioContentType,
             AudioData = audioBytes,
             AudioDurationSeconds = audioDurationSeconds

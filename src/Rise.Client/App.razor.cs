@@ -1,40 +1,48 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Rise.Client.State;
 using Rise.Client.Users;
-using Rise.Shared.Users;
 
 namespace Rise.Client;
-public partial class App
+public partial class App : IDisposable
 {
     [Inject] public AuthenticationStateProvider AuthStateProvider { get; set; }
     [Inject] public UserContextService UserContext { get; set; }
-    private UserDto.CurrentUser? _currentUser;
+    [Inject] public UserState UserState { get; set; } = default!;
+    private bool _isLoading;
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            AuthStateProvider.AuthenticationStateChanged += OnAuthStateChanged;
-            _currentUser = await UserContext.InitializeAsync();
-        }
-        catch (Exception)
-        {
-            _currentUser = null;
-        }
+        AuthStateProvider.AuthenticationStateChanged += OnAuthStateChanged;
+        await UpdateCurrentUserAsync();
     }
+
     private async void OnAuthStateChanged(Task<AuthenticationState> task)
     {
+        await UpdateCurrentUserAsync();
+        StateHasChanged();
+    }
+
+    private async Task UpdateCurrentUserAsync()
+    {
+        _isLoading = true;
         try
         {
-            _currentUser = await UserContext.InitializeAsync();
+            var currentUser = await UserContext.InitializeAsync();
+            UserState.User = currentUser;
         }
-        catch (Exception)
+        catch
         {
-            _currentUser = null;
+            UserState.User = null;
         }
         finally
         {
-            StateHasChanged();
+            _isLoading = false;
         }
+    }
+
+    public void Dispose()
+    {
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthStateChanged;
     }
 }

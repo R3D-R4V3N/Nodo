@@ -6,11 +6,16 @@ using Rise.Domain.Chats;
 using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Hobbys;
 using Rise.Domain.Users.Sentiment;
+using Rise.Domain.Users.Properties;
+using Rise.Domain.Users.Settings;
 
 namespace Rise.Domain.Users;
 
 public class ApplicationUser : Entity
 {
+    // ef
+    public ApplicationUser() { }
+
     /// <summary>
     /// Link to the <see cref="IdentityUser"/> account so chatprofielen gekoppeld blijven aan hun login.
     /// </summary>
@@ -114,7 +119,7 @@ public class ApplicationUser : Entity
     }
 
     //// connections
-    private readonly HashSet<UserConnection> _connections = new();
+    private readonly List<UserConnection> _connections = new();
     public IReadOnlyCollection<UserConnection> Connections => _connections;
     public IEnumerable<UserConnection> Friends => _connections
         .Where(x => x.ConnectionType.Equals(UserConnectionType.Friend));
@@ -146,37 +151,54 @@ public class ApplicationUser : Entity
         }
     }
 
-    public ApplicationUser()
-    {
-        
-    }
-
     public ApplicationUser(string accountId)
     {
         AccountId = Guard.Against.NullOrEmpty(accountId);
     }
+    public bool IsSupervisor()
+        => this.UserType.Equals(UserType.Supervisor);
 
     public bool HasFriend(ApplicationUser friend) 
         => _connections.Contains(new UserConnection() { Connection = friend, ConnectionType = UserConnectionType.Friend});
 
-    public Result<string> AddFriend(ApplicationUser friend)
+    public Result<string> RejectFriendRequest(ApplicationUser requester)
     {
-        
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine(friend.AccountId);
-        Console.ResetColor();
-        
-        bool isAdded = Friends.Any(x => x.Connection != null && x.Connection.Equals(friend));
+        UserConnection? friendRequest = FriendRequests
+            .FirstOrDefault(x => x.Connection.Equals(requester));
+
+        if (friendRequest is null)
+        {
+            return Result.NotFound($"Er is geen vriendschapsverzoek van {requester} gevonden");
+        }
+
+        _connections.Remove(
+            new UserConnection()
+            {
+                Connection = requester,
+                ConnectionType = UserConnectionType.RequestIncoming
+            }
+        );
+
+        requester._connections.Remove(
+            new UserConnection()
+            {
+                Connection = this,
+                ConnectionType = UserConnectionType.RequestOutgoing
+            }
+        );
+
+        return Result.Success($"Gebruiker weigert vriendschapsverzoek van {requester}");
+    }
+    
+    public Result<string> AddFriend(ApplicationUser friend)
+    {       
+        bool isAdded = Friends.Any(x => x.Connection?.Equals(friend) ?? false);
 
         if (isAdded)
         {
             return Result.Conflict($"Gebruiker is al bevriend met {friend}");
         }
         
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine(friend.AccountId);
-        Console.ResetColor();
-
         UserConnection? friendRequest = FriendRequests
             .FirstOrDefault(x => x.Connection.Equals(friend));
 
@@ -189,9 +211,6 @@ public class ApplicationUser : Entity
                     ConnectionType = UserConnectionType.RequestOutgoing
                 }
             );
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(friend.AccountId);
-            Console.ResetColor();
 
             friend._connections.Add(
                 new UserConnection() 
@@ -208,27 +227,19 @@ public class ApplicationUser : Entity
         {
             return Result.Conflict($"Gebruiker heeft al een vriendschapsverzoek naar {friend} verstuurd");
         }
-
-        _connections.Add(new 
-            UserConnection() 
-            { 
-                Connection = friend, 
-                ConnectionType = UserConnectionType.Friend 
-            }
-        );
-
+        
         _connections.Remove(
             new UserConnection()
-            { 
-                Connection = friend, 
-                ConnectionType = UserConnectionType.RequestIncoming 
+            {
+                Connection = friend,
+                ConnectionType = UserConnectionType.RequestIncoming
             }
         );
 
-        friend._connections.Add(new
-            UserConnection()
+        _connections.Add(
+            new UserConnection()
             {
-                Connection = this,
+                Connection = friend,
                 ConnectionType = UserConnectionType.Friend
             }
         );
@@ -241,20 +252,7 @@ public class ApplicationUser : Entity
             }
         );
 
-        return Result.Success($"Gebruiker voegt {friend} toe");
-    }
-
-    public Result RemoveFriend(ApplicationUser friend)
-    {
-        _connections.Remove(
-            new UserConnection()
-            {
-                Connection = friend,
-                ConnectionType = UserConnectionType.Friend,
-            }
-        );
-
-        friend._connections.Remove(
+        friend._connections.Add(
             new UserConnection()
             {
                 Connection = this,
@@ -262,64 +260,110 @@ public class ApplicationUser : Entity
             }
         );
 
+        return Result.Success($"Gebruiker voegt {friend} toe");
+    }
+
+    public Result RemoveFriend(ApplicationUser friend)
+    {
+        Span<ApplicationUser> span =
+        [
+            this, friend
+        ];
+
+        for (int i = 0; i < span.Length; i++)
+        {
+            var current = span[i];
+            var opposite = span[(i + 1) % span.Length];
+            current._connections.Remove(
+                new UserConnection()
+                {
+                    Connection = opposite,
+                    ConnectionType = UserConnectionType.Friend,
+                }
+            );
+        }
+
         return Result.Success();
     }
 
-    public Result AddChat(Chat chat)
+    public Result RemoveFriendRequest(ApplicationUser friend)
+    {
+        Span<ApplicationUser> span =
+        [
+            this, friend
+        ];
+
+        for (int i = 0; i < span.Length; i++)
+        {
+            var current = span[i];
+            var opposite = span[(i + 1) % span.Length];
+            current._connections.Remove(
+                new UserConnection()
+                {
+                    Connection = opposite,
+                    ConnectionType = UserConnectionType.RequestIncoming,
+                }
+            );
+            current._connections.Remove(
+                new UserConnection()
+                {
+                    Connection = opposite,
+                    ConnectionType = UserConnectionType.RequestOutgoing,
+                }
+            );
+        }
+
+        return Result.Success();
+    }
+
+    public Result AddChat(ApplicationUser chatOwner, Chat chat)
     {
         if (_chats.Contains(chat))
         {
             return Result.Conflict($"Gebruiker is al lid van chat {chat}");
         }
+        if (!this.IsSupervisor() && !chatOwner.HasFriend(this))
+        {
+            return Result.Conflict($"Chat eigenaar is niet bevriendt met {this}");
+        }
 
         _chats.Add(chat);
-        chat.AddUser(this);
+        if (!chat.Users.Contains(this))
+        { 
+            var res = chat.AddUser(chatOwner, this);
+            if (!res.IsSuccess)
+            {
+                _chats.Remove(chat);
+                return res;
+            }
+        }
 
         return Result.Success();
     }
-    public Result RemoveChat(Chat chat)
+    public Result RemoveChat(ApplicationUser chatOwner, Chat chat)
     {
-        if (!_chats.Contains(chat))
+        if (!chatOwner.IsSupervisor() && !_chats.Contains(chat))
         {
             return Result.Conflict($"Gebruiker is geen lid van chat {chat}");
         }
 
         _chats.Remove(chat);
-        chat.RemoveUser(this);
+        if (chat.Users.Contains(this))
+        {
+            var res = chat.RemoveUser(chatOwner, this);
+            if (!res.IsSuccess)
+            {
+                _chats.Add(chat);
+                return res;
+            }
+        }
 
         return Result.Success();
     }
-    
-    public Result<string> AcceptFriendRequest(ApplicationUser friend)
+
+    public override string ToString()
     {
-        var incomingRequest = FriendRequests
-            .FirstOrDefault(x => 
-                x.Connection.Equals(friend) && 
-                x.ConnectionType == UserConnectionType.RequestIncoming);
-
-        if (incomingRequest is null)
-        {
-            return Result.NotFound($"Er is geen vriendschapsverzoek van {friend.FirstName} om te accepteren.");
-        }
-
-        _connections.Remove(incomingRequest);
-
-        _connections.Add(new UserConnection
-        {
-            Connection = friend,
-            ConnectionType = UserConnectionType.Friend
-        });
-
-        friend._connections.RemoveWhere(x =>
-            x.Connection.Equals(this) && x.ConnectionType == UserConnectionType.RequestOutgoing);
-
-        friend._connections.Add(new UserConnection
-        {
-            Connection = this,
-            ConnectionType = UserConnectionType.Friend
-        });
-
-        return Result.Success($"{FirstName} en {friend.FirstName} zijn nu vrienden.");
+        return $"{FirstName} {LastName}";
     }
 }
 

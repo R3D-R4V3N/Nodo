@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Connections;
+using Rise.Domain.Users.Properties;
+using Rise.Domain.Users.Settings;
 using Rise.Domain.Users.Hobbys;
 using Rise.Domain.Users.Sentiment;
 using Rise.Shared.Identity;
@@ -314,7 +316,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = 12,
+                        FontSize = FontSize.Create(12),
                         IsDarkMode = false,
                     }
                 }),
@@ -330,7 +332,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = 12,
+                        FontSize = FontSize.Create(12),
                         IsDarkMode = false,
                     }
                 }),
@@ -346,7 +348,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = 12,
+                        FontSize = FontSize.Create(12),
                         IsDarkMode = false,
                     }
                 }),
@@ -362,7 +364,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = 12,
+                        FontSize = FontSize.Create(12),
                         IsDarkMode = false,
                     }
                 }),
@@ -378,7 +380,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = 12,
+                        FontSize = FontSize.Create(12),
                         IsDarkMode = false,
                     }
                 }),
@@ -394,7 +396,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = 12,
+                        FontSize = FontSize.Create(12),
                         IsDarkMode = false,
                     }
                 }),
@@ -410,7 +412,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = 12,
+                        FontSize = FontSize.Create(12),
                         IsDarkMode = false,
                     }
                 }),
@@ -426,7 +428,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = 12,
+                        FontSize = FontSize.Create(12),
                         IsDarkMode = false,
                     }
                 }),
@@ -442,7 +444,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = 12,
+                        FontSize = FontSize.Create(12),
                         IsDarkMode = false,
                     }
                 }),
@@ -500,25 +502,23 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         foreach (var user in users)
         {
             await dbContext.Entry(user)
-                .Collection<UserConnection>("Connections")
+                .Collection(u => u.Connections)
                 .LoadAsync();
         }
 
-        ApplicationUser GetUser(string firstName) => users.Single(u => u.FirstName.Equals(firstName, StringComparison.Ordinal));
-
-        var noor = GetUser("Noor");
-        var milan = GetUser("Milan");
-        var lina = GetUser("Lina");
-        var kyandro = GetUser("Kyandro");
-        var jasper = GetUser("Jasper");
-        var bjorn = GetUser("Bjorn");
-        var thibo = GetUser("Thibo");
-        var saar = GetUser("Saar");
-        var yassin = GetUser("Yassin");
-        var lotte = GetUser("Lotte");
-        var amina = GetUser("Amina");
-        var john = GetUser("John");
-        var stacey = GetUser("Stacey");
+        var noor = users.GetUser("Noor");
+        var milan = users.GetUser("Milan");
+        var lina = users.GetUser("Lina");
+        var kyandro = users.GetUser("Kyandro");
+        var jasper = users.GetUser("Jasper");
+        var bjorn = users.GetUser("Bjorn");
+        var thibo = users.GetUser("Thibo");
+        var saar = users.GetUser("Saar");
+        var yassin = users.GetUser("Yassin");
+        var lotte = users.GetUser("Lotte");
+        var amina = users.GetUser("Amina");
+        var john = users.GetUser("John");
+        var stacey = users.GetUser("Stacey");
 
         // Bevestigde vriendschappen
         MakeFriends(noor, milan);
@@ -555,27 +555,39 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             return;
         }
 
-        var supervisors = await dbContext.ApplicationUsers
-            .Where(u => u.UserType == UserType.Supervisor)
+        var users = await dbContext.ApplicationUsers
             .ToListAsync();
 
-        var chatUsers = await dbContext.ApplicationUsers
-            .Where(u => u.UserType == UserType.Regular)
-            .ToListAsync();
-
-        if (supervisors.Count == 0 || chatUsers.Count < 3)
-        {
+        if (users.Count == 0)
             return;
+
+        foreach (var user in users)
+        {
+            await dbContext.Entry(user)
+                .Collection(u => u.Connections)
+                .LoadAsync();
         }
+
+        var noor = users.GetUser("Noor");
+        var milan = users.GetUser("Milan");
+        var lina = users.GetUser("Lina");
+        var kyandro = users.GetUser("Kyandro");
+        var jasper = users.GetUser("Jasper");
+        var bjorn = users.GetUser("Bjorn");
+        var thibo = users.GetUser("Thibo");
+        var saar = users.GetUser("Saar");
+        var yassin = users.GetUser("Yassin");
+        var lotte = users.GetUser("Lotte");
+        var amina = users.GetUser("Amina");
+        var john = users.GetUser("John");
+        var stacey = users.GetUser("Stacey");
 
         var chatsToCreate = new List<Chat>
         {
-            new(), // Individuele check-in
-            new(), // Vrijdagavond groep
-            new(), // Creatieve hoek
-            new(), // Technische hulplijn
-            new(), // profielKlikTest
-            new(), //profielklikgrouptest
+            Chat.CreateChat(noor, milan), // individueleCheckIn
+            Chat.CreateChat(kyandro, jasper), // vrijdagGroep
+            Chat.CreateChat(bjorn, thibo), // creatieveHoek
+            Chat.CreateChat(lotte, amina), // technischeHulp
         };
 
         dbContext.Chats.AddRange(chatsToCreate);
@@ -597,78 +609,44 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         {
             return;
         }
-        var users = await dbContext.ApplicationUsers
-            .ToDictionaryAsync(u => u.FirstName, StringComparer.Ordinal);
 
         var individueleCheckIn = chats[0];
         var vrijdagGroep = chats[1];
         var creatieveHoek = chats[2];
         var technischeHulp = chats[3];
-        var profielKliktest = chats[4];
-        var profielKlikGroupTest = chats[5];
 
-        var noor = users["Noor"];
-        var emma = users["Emma"];
+        individueleCheckIn.AddTextMessage("Hoi Emma, ik ben een beetje zenuwachtig voor morgen.", individueleCheckIn.RandomUser());
+        individueleCheckIn.AddTextMessage("Dat begrijp ik Noor, we bekijken samen hoe je het rustig kunt aanpakken.", individueleCheckIn.RandomUser());
+        individueleCheckIn.AddTextMessage("Zal ik straks mijn checklist nog eens doornemen?", individueleCheckIn.RandomUser());
+        individueleCheckIn.AddTextMessage("Ja, en ik stuur je zo meteen een ademhalingsoefening.", individueleCheckIn.RandomUser());
 
-        var milan = users["Milan"];
-        var saar = users["Saar"];
-        var yassin = users["Yassin"];
-        var jonas = users["Jonas"];
+        vrijdagGroep.AddTextMessage("Wie doet er vrijdag mee met de online game-avond?", vrijdagGroep.RandomUser());
+        vrijdagGroep.AddTextMessage("Ik! Zal ik snacks klaarzetten?", vrijdagGroep.RandomUser());
+        vrijdagGroep.AddTextMessage("Wie doet er vrijdag mee met de online game-avond?", vrijdagGroep.RandomUser());
+        vrijdagGroep.AddTextMessage("Ik plan een korte check-in zodat iedereen zich welkom voelt.", vrijdagGroep.RandomUser());
 
-        individueleCheckIn.AddUser(noor);
-        individueleCheckIn.AddUser(emma);
+        creatieveHoek.AddTextMessage("Ik heb een nieuw schilderij gemaakt met felle kleuren!", creatieveHoek.RandomUser());
+        creatieveHoek.AddTextMessage("Oh wauw, kan je een foto delen?", creatieveHoek.RandomUser());
+        creatieveHoek.AddTextMessage("Zeker! En misschien kunnen we volgende keer een collagemiddag houden?", creatieveHoek.RandomUser());
+        creatieveHoek.AddTextMessage("Topidee, ik zorg voor een stappenplan met eenvoudige materialen.", creatieveHoek.RandomUser());
 
-        individueleCheckIn.AddTextMessage("Hoi Emma, ik ben een beetje zenuwachtig voor morgen.", noor);
-        individueleCheckIn.AddTextMessage("Dat begrijp ik Noor, we bekijken samen hoe je het rustig kunt aanpakken.", emma);
-        individueleCheckIn.AddTextMessage("Zal ik straks mijn checklist nog eens doornemen?", noor);
-        individueleCheckIn.AddTextMessage("Ja, en ik stuur je zo meteen een ademhalingsoefening.", emma);
+        technischeHulp.AddTextMessage("Mijn tablet doet raar wanneer ik de spraakopnames open.", technischeHulp.RandomUser());
+        technischeHulp.AddTextMessage("Heb je al geprobeerd om de app even opnieuw te starten?", technischeHulp.RandomUser());
+        technischeHulp.AddTextMessage("Ja, maar ik twijfel of ik iets fout doe.", technischeHulp.RandomUser());
+        technischeHulp.AddTextMessage("Ik kijk straks met je mee en stuur een korte handleiding door.", technischeHulp.RandomUser());
 
-        vrijdagGroep.AddUser(milan);
-        vrijdagGroep.AddUser(saar);
-        vrijdagGroep.AddUser(yassin);
-        vrijdagGroep.AddUser(jonas);
 
-        vrijdagGroep.AddTextMessage("Wie doet er vrijdag mee met de online game-avond?", milan);
-        vrijdagGroep.AddTextMessage("Ik! Zal ik snacks klaarzetten?", saar);
-        vrijdagGroep.AddTextMessage("Wie doet er vrijdag mee met de online game-avond?", yassin);
-        vrijdagGroep.AddTextMessage("Ik plan een korte check-in zodat iedereen zich welkom voelt.", jonas);
-
-        creatieveHoek.AddUser(users["Lotte"]);
-        creatieveHoek.AddUser(users["Amina"]);
-        creatieveHoek.AddUser(users["Ella"]);
-
-        creatieveHoek.AddTextMessage("Ik heb een nieuw schilderij gemaakt met felle kleuren!", users["Lotte"]);
-        creatieveHoek.AddTextMessage("Oh wauw, kan je een foto delen?", users["Amina"]);
-        creatieveHoek.AddTextMessage("Zeker! En misschien kunnen we volgende keer een collagemiddag houden?", users["Lotte"]);
-        creatieveHoek.AddTextMessage("Topidee, ik zorg voor een stappenplan met eenvoudige materialen.", users["Ella"]);
-
-        technischeHulp.AddUser(users["Jasper"]);
-        technischeHulp.AddUser(users["Kyandro"]);
-        technischeHulp.AddUser(users["Bjorn"]);
-
-        technischeHulp.AddTextMessage("Mijn tablet doet raar wanneer ik de spraakopnames open.", users["Jasper"]);
-        technischeHulp.AddTextMessage("Heb je al geprobeerd om de app even opnieuw te starten?", users["Kyandro"]);
-        technischeHulp.AddTextMessage("Ja, maar ik twijfel of ik iets fout doe.", users["Jasper"]);
-        technischeHulp.AddTextMessage("Ik kijk straks met je mee en stuur een korte handleiding door.", users["Bjorn"]);
-
-        profielKliktest.AddUser(users["Thibo"]);
-        profielKliktest.AddUser(users["Kyandro"]);
-        
-        profielKliktest.AddTextMessage("Klik op mijn profiel!", users["Kyandro"]);
-        profielKliktest.AddTextMessage("Doe het", users["Kyandro"]);
-        
-        profielKlikGroupTest.AddUser(users["Thibo"]);
-        profielKlikGroupTest.AddUser(users["Kyandro"]);
-        profielKlikGroupTest.AddUser(users["Bjorn"]);
-        profielKlikGroupTest.AddUser(users["Jasper"]);
-        
-        profielKlikGroupTest.AddTextMessage("Dit is een groupschat", users["Kyandro"]);
-        profielKlikGroupTest.AddTextMessage("Met alle 4", users["Thibo"]);
-        profielKlikGroupTest.AddTextMessage("Iedereen kan hier een bericht in sturen.", users["Bjorn"]);
-        profielKlikGroupTest.AddTextMessage("Iedereen kan hier een bericht in sturen.", users["Jasper"]);
-        
         await dbContext.SaveChangesAsync();
     }
 
     private sealed record SeedAccount(IdentityUser Identity, string Role, ApplicationUser? Profile);
+}
+
+internal static class DbSeederExtensions
+{
+    public static ApplicationUser RandomUser(this Chat chat) => chat.Users.Count == 0
+        ? throw new Exception()
+        : chat.Users[new Random().Next(0, chat.Users.Count)];
+    public static ApplicationUser GetUser(this List<ApplicationUser> users, string firstName)
+        => users.Single(u => u.FirstName.Value.Equals(firstName, StringComparison.Ordinal));
 }

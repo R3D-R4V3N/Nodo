@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Rise.Domain.Chats;
+using Rise.Domain.Messages;
 
-namespace Rise.Persistence.Configurations.Chats;
+namespace Rise.Persistence.Configurations.Messages;
 
 internal class MessageConfiguration : EntityConfiguration<Message>
 {
@@ -25,7 +25,10 @@ internal class MessageConfiguration : EntityConfiguration<Message>
 
         // Extra properties configureren (optioneel)
         builder.Property(m => m.Text)
-            .HasMaxLength(2000);
+            .HasConversion(
+                new ValueObjectConverter<Domain.Messages.Properties.Text, string>()
+            )
+            .HasMaxLength(Domain.Messages.Properties.Text.MAX_LENGTH);
 
         builder.Property(m => m.AudioContentType)
             .HasMaxLength(128);

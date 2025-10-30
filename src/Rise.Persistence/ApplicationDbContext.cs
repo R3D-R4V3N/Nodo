@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
+using Rise.Domain.Messages;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Hobbys;
 using Rise.Domain.Users.Sentiment;

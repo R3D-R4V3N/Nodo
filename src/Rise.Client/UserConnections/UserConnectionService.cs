@@ -16,14 +16,38 @@ public class UserConnectionService(HttpClient httpClient) : IUserConnectionServi
         return result!;
     }
 
-    public Task<Result<string>> AddFriendAsync(string targetAccountId, CancellationToken ctx = default)
+    public async Task<Result<string>> AddFriendAsync(string targetAccountId, CancellationToken ctx = default)
     {
-        throw new NotImplementedException();
+        var body = new { targetAccountId = targetAccountId };
+    
+        var response = await httpClient.PostAsJsonAsync("/api/connections/add", body, ctx);
+
+        // checken of de API een geldige response gaf
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            return Result.Error($"Fout bij het accepteren van vriendschap: {error}");
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<Result<string>>(cancellationToken: ctx);
+        return result!;
     }
 
-    public Task<Result<string>> AcceptFriendAsync(string requesterAccountId, CancellationToken ctx = default)
+    public async Task<Result<string>> AcceptFriendAsync(string requesterAccountId, CancellationToken ctx = default)
     {
-        throw new NotImplementedException();
+        var body = new { targetAccountId = requesterAccountId };
+    
+        var response = await httpClient.PostAsJsonAsync("/api/connections/add", body, ctx);
+
+        // checken of de API een geldige response gaf
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            return Result.Error($"Fout bij het accepteren van vriendschap: {error}");
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<Result<string>>(cancellationToken: ctx);
+        return result!;
     }
 
     public async Task<Result<UserConnectionResponse.GetSuggestions>> GetSuggestedFriendsAsync(QueryRequest.SkipTake req, CancellationToken ct)
@@ -31,5 +55,22 @@ public class UserConnectionService(HttpClient httpClient) : IUserConnectionServi
         var result = await httpClient
             .GetFromJsonAsync<Result<UserConnectionResponse.GetSuggestions>>("/api/connections/suggested", cancellationToken: ct);
         return result!;
+    }
+
+    public async Task<Result<string>> RejectFriendAsync(string reqRequesterAccountId, CancellationToken ct = default)
+    {
+        var body = new { RequesterAccountId = reqRequesterAccountId };
+    
+        var response = await httpClient.PostAsJsonAsync("/api/connections/reject", body, ct);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            return Result.Error($"Fout bij het afwijzen van vriendschap: {error}");
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<Result<string>>(cancellationToken: ct);
+        return result!;
+        
     }
 }

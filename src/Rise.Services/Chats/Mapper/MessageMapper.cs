@@ -1,4 +1,4 @@
-using Rise.Domain.Chats;
+using Rise.Domain.Messages;
 using Rise.Services.Users.Mapper;
 using Rise.Shared.Chats;
 
