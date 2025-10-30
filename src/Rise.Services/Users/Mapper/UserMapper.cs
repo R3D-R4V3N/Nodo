@@ -17,7 +17,7 @@ internal static class UserMapper
             AvatarUrl = user.AvatarUrl,
         };
 
-    public static UserDto.CurrentUser ToCurrentUserDto(this ApplicationUser user) =>
+    public static UserDto.CurrentUser ToCurrentUserDto(this ApplicationUser user, string email = "") =>
         new UserDto.CurrentUser
         {
             Id = user.Id,
@@ -25,7 +25,8 @@ internal static class UserMapper
             LastName = user.LastName,
             AccountId = user.AccountId,
             AvatarUrl = user.AvatarUrl,
-           
+            Email = email,
+
             Biography = user.Biography,
             Gender = user.Gender,
             BirthDay = user.BirthDay,

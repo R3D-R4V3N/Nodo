@@ -39,7 +39,7 @@ public class UserContextService(
 
         return Result.Success(new UserResponse.CurrentUser
         {
-            User = UserMapper.ToCurrentUserDto(currentUser)
+            User = UserMapper.ToCurrentUserDto(currentUser, email)
         });
     }
 
@@ -148,7 +148,7 @@ public class UserContextService(
 
         return Result.Success(new UserResponse.CurrentUser
         {
-            User = UserMapper.ToCurrentUserDto(currentUser)
+            User = UserMapper.ToCurrentUserDto(currentUser, email)
         });
     }
 }
