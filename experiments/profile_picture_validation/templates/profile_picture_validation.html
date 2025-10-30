@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile picture validation demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem auto; max-width: 600px; }
+        h1 { text-align: center; }
+        form { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+        input[type="file"] { padding: 0.5rem; }
+        button { padding: 0.75rem 1rem; font-size: 1rem; cursor: pointer; }
+        .alert { padding: 1rem; border-radius: 0.5rem; margin-top: 2rem; }
+        .alert.success { background-color: #e6f9ed; border: 1px solid #1e9b52; color: #1e9b52; }
+        .alert.error { background-color: #fdecea; border: 1px solid #d93025; color: #d93025; }
+        .alert strong { display: block; margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <h1>Validatie van profielfoto</h1>
+    <p>Upload een afbeelding om te testen of deze door de NudeNet moderatie komt.</p>
+    <form action="/profilepicturevalidation" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" required>
+        <button type="submit">Controleer afbeelding</button>
+    </form>
+
+    {% if result %}
+        <div class="alert {{ result.status }}">
+            <strong>{{ result.verdict }}</strong>
+            <span>{{ result.message }}</span>
+        </div>
+    {% endif %}
+</body>
+</html>
