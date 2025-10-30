@@ -1,7 +1,4 @@
 @using Rise.Shared.Assets
-@using Microsoft.AspNetCore.Components.Routing
-@inject NavigationManager NavigationManager
-@implements IDisposable
 
 <div class="fixed bottom-6 left-1/2 -translate-x-1/2 
             bg-[#127646] rounded-full shadow-lg 
@@ -9,153 +6,27 @@
              py-2 space-x-5 w-[90%] max-w-sm">
   
   <!-- Instellingen -->
-  <NavLink href="/settings" class='@GetNavLinkClasses("/settings")'>
-    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="26" height="26" viewBox="0 0 256 256"><path d="M237.94,107.21a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A111.92,111.92,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.63a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"></path></svg>
+  <NavLink href="/settings" class="p-2.5 rounded-full hover:bg-white/20 transition">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="white" width="26" height="26"viewBox="0 0 256 256"><path d="M237.94,107.21a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A111.92,111.92,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.63a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"></path></svg>
   </NavLink>
   <!-- Kalender -->
-  <NavLink href="/events" class='@GetNavLinkClasses("/events")'>
-    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="26" height="26" viewBox="0 0 256 256"><path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM84,184a12,12,0,1,1,12-12A12,12,0,0,1,84,184Zm44,0a12,12,0,1,1,12-12A12,12,0,0,1,128,184Zm0-40a12,12,0,1,1,12-12A12,12,0,0,1,128,144Zm44,40a12,12,0,1,1,12-12A12,12,0,0,1,172,184Zm0-40a12,12,0,1,1,12-12A12,12,0,0,1,172,144Zm36-64H48V48H72v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24Z"></path></svg>
+  <NavLink href="/events" class="p-2.5 rounded-full hover:bg-white/20 transition">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="white" width="26" height="26" viewBox="0 0 256 256"><path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM84,184a12,12,0,1,1,12-12A12,12,0,0,1,84,184Zm44,0a12,12,0,1,1,12-12A12,12,0,0,1,128,184Zm0-40a12,12,0,1,1,12-12A12,12,0,0,1,128,144Zm44,40a12,12,0,1,1,12-12A12,12,0,0,1,172,184Zm0-40a12,12,0,1,1,12-12A12,12,0,0,1,172,144Zm36-64H48V48H72v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24Z"></path></svg>
   </NavLink>
-
+  
   <!-- Chats -->
-  <NavLink href="/homepage" class='@GetNavLinkClasses("/homepage", exact: true, "/")'>
-    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="26" viewBox="0 0 256 256">
+  <NavLink href="/homepage" class="p-2.5 rounded-full hover:bg-white/20 transition" Match="NavLinkMatch.All">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="white" width="26" viewBox="0 0 256 256">
       <path d="M232,64V192a16,16,0,0,1-16,16H83l-32.6,28.16-.09.07A15.89,15.89,0,0,1,40,240a16.05,16.05,0,0,1-6.79-1.52A15.84,15.84,0,0,1,24,224V64A16,16,0,0,1,40,48H216A16,16,0,0,1,232,64Z"></path>
     </svg>
   </NavLink>
   <!-- Vrienden -->
-  <NavLink href="/friends" class='@GetNavLinkClasses("/friends")'>
-    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="26" height="26" viewBox="0 0 256 256"><path d="M64.12,147.8a4,4,0,0,1-4,4.2H16a8,8,0,0,1-7.8-6.17,8.35,8.35,0,0,1,1.62-6.93A67.79,67.79,0,0,1,37,117.51a40,40,0,1,1,66.46-35.8,3.94,3.94,0,0,1-2.27,4.18A64.08,64.08,0,0,0,64,144C64,145.28,64,146.54,64.12,147.8Zm182-8.91A67.76,67.76,0,0,0,219,117.51a40,40,0,1,0-66.46-35.8,3.94,3.94,0,0,0,2.27,4.18A64.08,64.08,0,0,1,192,144c0,1.28,0,2.54-.12,3.8a4,4,0,0,0,4,4.2H240a8,8,0,0,0,7.8-6.17A8.33,8.33,0,0,0,246.17,138.89Zm-89,43.18a48,48,0,1,0-58.37,0A72.13,72.13,0,0,0,65.07,212,8,8,0,0,0,72,224H184a8,8,0,0,0,6.93-12A72.15,72.15,0,0,0,157.19,182.07Z"></path></svg>
+  <NavLink href="/friends" class="p-2.5 rounded-full hover:bg-white/20 transition">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="white" width="26" height="26" viewBox="0 0 256 256"><path d="M64.12,147.8a4,4,0,0,1-4,4.2H16a8,8,0,0,1-7.8-6.17,8.35,8.35,0,0,1,1.62-6.93A67.79,67.79,0,0,1,37,117.51a40,40,0,1,1,66.46-35.8,3.94,3.94,0,0,1-2.27,4.18A64.08,64.08,0,0,0,64,144C64,145.28,64,146.54,64.12,147.8Zm182-8.91A67.76,67.76,0,0,0,219,117.51a40,40,0,1,0-66.46-35.8,3.94,3.94,0,0,0,2.27,4.18A64.08,64.08,0,0,1,192,144c0,1.28,0,2.54-.12,3.8a4,4,0,0,0,4,4.2H240a8,8,0,0,0,7.8-6.17A8.33,8.33,0,0,0,246.17,138.89Zm-89,43.18a48,48,0,1,0-58.37,0A72.13,72.13,0,0,0,65.07,212,8,8,0,0,0,72,224H184a8,8,0,0,0,6.93-12A72.15,72.15,0,0,0,157.19,182.07Z"></path></svg>
   </NavLink>
 
   <!-- Profiel -->
-  <NavLink href="/profile" class='@GetProfileClasses()'>
+  <NavLink href="/profile" class="w-10 h-10 rounded-full overflow-hidden border-2 border-white hover:scale-110 transition">
     <img src="@CurrentUser?.AvatarUrl ?? @DefaultImages.GetProfile("current-user")" alt="Profiel" class="w-full h-full object-cover">
   </NavLink>
 </div>
-
-@code {
-    private static readonly string NavLinkBaseClasses = "p-2.5 rounded-full hover:bg-white/20 transition text-white transform hover:scale-110";
-
-    protected override void OnInitialized()
-    {
-        NavigationManager.LocationChanged += HandleLocationChanged;
-    }
-
-    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        _ = InvokeAsync(StateHasChanged);
-    }
-
-    private string GetNavLinkClasses(string href, bool exact = false, params string[] additionalActivePaths)
-    {
-        var classes = NavLinkBaseClasses;
-
-        if (IsActive(href, exact, additionalActivePaths))
-        {
-            classes += " bg-white text-[#127646]";
-        }
-
-        return classes;
-    }
-
-    private string GetProfileClasses()
-    {
-        const string baseClasses = "w-10 h-10 rounded-full overflow-hidden border-2 border-white hover:scale-110 transition";
-
-        return IsActive("/profile")
-            ? baseClasses + " scale-110 ring-4 ring-white ring-offset-2 ring-offset-[#127646]"
-            : baseClasses;
-    }
-
-    private bool IsActive(string href, bool exact = false, params string[] additionalActivePaths)
-    {
-        var currentPath = GetCurrentPath();
-
-        if (IsMatch(currentPath, href, exact))
-        {
-            return true;
-        }
-
-        foreach (var path in additionalActivePaths)
-        {
-            if (IsMatch(currentPath, path, exact))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private bool IsMatch(string currentPath, string candidate, bool exact)
-    {
-        var normalizedCandidate = NormalizePath(candidate);
-
-        if (normalizedCandidate == "/")
-        {
-            return currentPath == "/";
-        }
-
-        if (exact)
-        {
-            return string.Equals(currentPath, normalizedCandidate, StringComparison.OrdinalIgnoreCase);
-        }
-
-        if (string.Equals(currentPath, normalizedCandidate, StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        return currentPath.StartsWith(normalizedCandidate + "/", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private string GetCurrentPath()
-    {
-        var relative = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-
-        if (string.IsNullOrEmpty(relative))
-        {
-            return "/";
-        }
-
-        var trimmed = TrimQueryAndFragment("/" + relative);
-
-        return trimmed.Length > 1 ? trimmed.TrimEnd('/') : trimmed;
-    }
-
-    private static string NormalizePath(string href)
-    {
-        if (string.IsNullOrWhiteSpace(href))
-        {
-            return "/";
-        }
-
-        var path = href.StartsWith('/') ? href : "/" + href;
-        path = TrimQueryAndFragment(path);
-
-        return path.Length > 1 ? path.TrimEnd('/') : path;
-    }
-
-    private static string TrimQueryAndFragment(string path)
-    {
-        var queryIndex = path.IndexOf('?', StringComparison.Ordinal);
-        if (queryIndex >= 0)
-        {
-            path = path[..queryIndex];
-        }
-
-        var fragmentIndex = path.IndexOf('#', StringComparison.Ordinal);
-        if (fragmentIndex >= 0)
-        {
-            path = path[..fragmentIndex];
-        }
-
-        return path;
-    }
-
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= HandleLocationChanged;
-    }
-}
