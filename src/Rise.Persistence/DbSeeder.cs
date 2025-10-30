@@ -1,12 +1,13 @@
+using Ardalis.Result;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Connections;
-using Rise.Domain.Users.Properties;
-using Rise.Domain.Users.Settings;
 using Rise.Domain.Users.Hobbys;
+using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Sentiment;
+using Rise.Domain.Users.Settings;
 using Rise.Shared.Identity;
 using Rise.Shared.Users;
 using System;
@@ -153,18 +154,33 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             IEnumerable<UserSentiment> interests,
             IEnumerable<UserHobby> hobbies)
         {
+            static T Ensure<T>(Result<T> result, string property)
+            {
+                if (!result.IsSuccess)
+                {
+                    var message = string.Join(", ", result.Errors);
+                    throw new InvalidOperationException($"Kon seedwaarde voor {property} niet aanmaken: {message}");
+                }
+
+                return result.Value;
+            }
+
+            var normalizedGender = string.IsNullOrWhiteSpace(gender)
+                ? "x"
+                : gender.Trim().ToLowerInvariant();
+
             var profile = new ApplicationUser(accountId)
             {
-                FirstName = firstName,
-                LastName = lastName,
-                Biography = biography,
-                AvatarUrl = avatarUrl,
-                Gender = gender,
+                FirstName = Ensure(FirstName.Create(firstName), nameof(firstName)),
+                LastName = Ensure(LastName.Create(lastName), nameof(lastName)),
+                Biography = Ensure(Biography.Create(biography), nameof(biography)),
+                AvatarUrl = Ensure(AvatarUrl.Create(avatarUrl), nameof(avatarUrl)),
+                Gender = normalizedGender,
                 BirthDay = birthDay,
                 UserType = userType,
                 UserSettings = new ApplicationUserSetting()
                 {
-                    FontSize = 12,
+                    FontSize = Ensure(FontSize.Create(12), nameof(ApplicationUserSetting.FontSize)),
                     IsDarkMode = false,
                 }
             };
@@ -307,144 +323,144 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(chatterLina, AppRoles.User,
                 new ApplicationUser(chatterLina.Id)
                 {
-                    FirstName = "Lina",
-                    LastName = "Jacobs",
-                    Biography = "Vindt het fijn om vragen te kunnen stellen in een veilige omgeving.",
-                    AvatarUrl = "https://plus.unsplash.com/premium_photo-1687832254672-bf177d8819df?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774",
+                    FirstName = FirstName.Create("Lina").Value,
+                    LastName = LastName.Create("Jacobs").Value,
+                    Biography = Biography.Create("Vindt het fijn om vragen te kunnen stellen in een veilige omgeving.").Value,
+                    AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1687832254672-bf177d8819df?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774").Value,
                     Gender = "vrouw",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-22)),
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = FontSize.Create(12),
+                        FontSize = FontSize.Create(12).Value,
                         IsDarkMode = false,
                     }
                 }),
             new(chatterKyandro, AppRoles.User,
                 new ApplicationUser(chatterKyandro.Id)
                 {
-                    FirstName = "Kyandro",
-                    LastName = "Voet",
-                    Biography = "Helpt vaak bij technische vragen en deelt programmeertips.",
-                    AvatarUrl = "https://plus.unsplash.com/premium_photo-1664536392896-cd1743f9c02c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774",
+                    FirstName = FirstName.Create("Kyandro").Value,
+                    LastName = LastName.Create("Voet").Value,
+                    Biography = Biography.Create("Helpt vaak bij technische vragen en deelt programmeertips.").Value,
+                    AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1664536392896-cd1743f9c02c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774").Value,
                     Gender = "man",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-25)),
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = FontSize.Create(12),
+                        FontSize = FontSize.Create(12).Value,
                         IsDarkMode = false,
                     }
                 }),
             new(chatterJasper, AppRoles.User,
                 new ApplicationUser(chatterJasper.Id)
                 {
-                    FirstName = "Jasper",
-                    LastName = "Vermeersch",
-                    Biography = "Vindt het leuk om te discussiëren over technologie en innovatie.",
-                    AvatarUrl = "https://plus.unsplash.com/premium_photo-1671656349218-5218444643d8?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774",
+                    FirstName = FirstName.Create("Jasper").Value,
+                    LastName = LastName.Create("Vermeersch").Value,
+                    Biography = Biography.Create("Vindt het leuk om te discussiëren over technologie en innovatie.").Value,
+                    AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1671656349218-5218444643d8?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774").Value,
                     Gender = "man",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = FontSize.Create(12),
+                        FontSize = FontSize.Create(12).Value,
                         IsDarkMode = false,
                     }
                 }),
             new(chatterBjorn, AppRoles.User,
                 new ApplicationUser(chatterBjorn.Id)
                 {
-                    FirstName = "Bjorn",
-                    LastName = "Van Damme",
-                    Biography = "Praat graag over sport en houdt van teamwork.",
-                    AvatarUrl = "https://images.unsplash.com/photo-1704726135027-9c6f034cfa41?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=770",
+                    FirstName = FirstName.Create("Bjorn").Value,
+                    LastName = LastName.Create("Van Damme").Value,
+                    Biography = Biography.Create("Praat graag over sport en houdt van teamwork.").Value,
+                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1704726135027-9c6f034cfa41?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=770").Value,
                     Gender = "man",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-27)),
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = FontSize.Create(12),
+                        FontSize = FontSize.Create(12).Value,
                         IsDarkMode = false,
                     }
                 }),
             new(chatterThibo, AppRoles.User,
                 new ApplicationUser(chatterThibo.Id)
                 {
-                    FirstName = "Thibo",
-                    LastName = "De Smet",
-                    Biography = "Is nieuwsgierig en stelt vaak interessante vragen.",
-                    AvatarUrl = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774",
+                    FirstName = FirstName.Create("Thibo").Value,
+                    LastName = LastName.Create("De Smet").Value,
+                    Biography = Biography.Create("Is nieuwsgierig en stelt vaak interessante vragen.").Value,
+                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774").Value,
                     Gender = "man",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-21)),
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = FontSize.Create(12),
+                        FontSize = FontSize.Create(12).Value,
                         IsDarkMode = false,
                     }
                 }),
             new(chatterSaar, AppRoles.User,
                 new ApplicationUser(chatterSaar.Id)
                 {
-                    FirstName = "Saar",
-                    LastName = "Vandenberg",
-                    Biography = "Deelt graag foto's van haar tekeningen.",
-                    AvatarUrl = "https://images.unsplash.com/photo-1760497925596-a6462350c583?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    FirstName = FirstName.Create("Saar").Value,
+                    LastName = LastName.Create("Vandenberg").Value,
+                    Biography = Biography.Create("Deelt graag foto's van haar tekeningen.").Value,
+                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1760497925596-a6462350c583?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80").Value,
                     Gender = "vrouw",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = FontSize.Create(12),
+                        FontSize = FontSize.Create(12).Value,
                         IsDarkMode = false,
                     }
                 }),
             new(chatterYassin, AppRoles.User,
                 new ApplicationUser(chatterYassin.Id)
                 {
-                    FirstName = "Yassin",
-                    LastName = "El Amrani",
-                    Biography = "Leert zelfstandig koken en zoekt tips van vrienden.",
-                    AvatarUrl = "https://images.unsplash.com/photo-1704726135027-9c6f034cfa41?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=770",
+                    FirstName = FirstName.Create("Yassin").Value,
+                    LastName = LastName.Create("El Amrani").Value,
+                    Biography = Biography.Create("Leert zelfstandig koken en zoekt tips van vrienden.").Value,
+                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1704726135027-9c6f034cfa41?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=770").Value,
                     Gender = "man",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-25)),
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = FontSize.Create(12),
+                        FontSize = FontSize.Create(12).Value,
                         IsDarkMode = false,
                     }
                 }),
             new(chatterLotte, AppRoles.User,
                 new ApplicationUser(chatterLotte.Id)
                 {
-                    FirstName = "Lotte",
-                    LastName = "De Wilde",
-                    Biography = "Wordt blij van dansen en deelt positieve boodschappen.",
-                    AvatarUrl = "https://plus.unsplash.com/premium_photo-1690587673708-d6ba8a1579a5?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=758",
+                    FirstName = FirstName.Create("Lotte").Value,
+                    LastName = LastName.Create("De Wilde").Value,
+                    Biography = Biography.Create("Wordt blij van dansen en deelt positieve boodschappen.").Value,
+                    AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1690587673708-d6ba8a1579a5?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=758").Value,
                     Gender = "vrouw",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = FontSize.Create(12),
+                        FontSize = FontSize.Create(12).Value,
                         IsDarkMode = false,
                     }
                 }),
             new(chatterAmina, AppRoles.User,
                 new ApplicationUser(chatterAmina.Id)
                 {
-                    FirstName = "Amina",
-                    LastName = "Karim",
-                    Biography = "Houdt van creatieve projecten en begeleidt graag groepsspelletjes.",
-                    AvatarUrl = "https://plus.unsplash.com/premium_photo-1708271598591-4a84ef3b8dde?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870",
+                    FirstName = FirstName.Create("Amina").Value,
+                    LastName = LastName.Create("Karim").Value,
+                    Biography = Biography.Create("Houdt van creatieve projecten en begeleidt graag groepsspelletjes.").Value,
+                    AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1708271598591-4a84ef3b8dde?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870").Value,
                     Gender = "vrouw",
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-22)),
                     UserType = UserType.Regular,
                     UserSettings = new ApplicationUserSetting()
                     {
-                        FontSize = FontSize.Create(12),
+                        FontSize = FontSize.Create(12).Value,
                         IsDarkMode = false,
                     }
                 }),
@@ -475,8 +491,24 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
 
             if (profile is not null)
             {
-                profile.UserSettings.AddChatTextLine("Kowabunga!");
-                profile.UserSettings.AddChatTextLine("Hallo hoe gaat het?");
+                var defaultChatLines = new[]
+                {
+                    "Kowabunga!",
+                    "Hallo hoe gaat het?",
+                    "Laat het me weten als ik kan helpen.",
+                    "Wat was jouw hoogtepunt van de week?",
+                    "Zullen we straks bijpraten?"
+                };
+
+                foreach (var line in defaultChatLines)
+                {
+                    var addResult = profile.UserSettings.AddChatTextLine(line);
+                    if (!addResult.IsSuccess)
+                    {
+                        throw new InvalidOperationException($"Kon standaardzin '{line}' niet toevoegen: {string.Join(", ", addResult.Errors)}");
+                    }
+                }
+
                 dbContext.ApplicationUsers.Add(profile);
             }
         }
@@ -526,6 +558,9 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         MakeFriends(bjorn, thibo);
         MakeFriends(saar, yassin);
         MakeFriends(lotte, amina);
+        MakeFriends(noor, jasper);
+        MakeFriends(lina, lotte);
+        MakeFriends(john, kyandro);
 
         // Openstaande verzoeken voor verschillende scenario's
         SendFriendRequest(noor, lina); // Noor wacht op antwoord van Lina
@@ -533,18 +568,33 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         SendFriendRequest(john, bjorn); // John zoekt een sportbuddy
         SendFriendRequest(stacey, noor); // Stacey wil Noor beter leren kennen
         SendFriendRequest(amina, kyandro); // Amina zoekt tips voor een programmeerclub
+        SendFriendRequest(jasper, lotte); // Jasper wil mee brainstormen over creatieve projecten
+        SendFriendRequest(bjorn, yassin); // Bjorn wil samen sporten met Yassin
 
         await dbContext.SaveChangesAsync();
 
         static void MakeFriends(ApplicationUser userA, ApplicationUser userB)
         {
-            userA.AddFriend(userB);
-            userB.AddFriend(userA);
+            var requestResult = userA.AddFriend(userB);
+            if (!requestResult.IsSuccess)
+            {
+                throw new InvalidOperationException($"Kon vriendschap starten tussen {userA} en {userB}: {string.Join(", ", requestResult.Errors)}");
+            }
+
+            var acceptResult = userB.AddFriend(userA);
+            if (!acceptResult.IsSuccess)
+            {
+                throw new InvalidOperationException($"Kon vriendschap afronden tussen {userA} en {userB}: {string.Join(", ", acceptResult.Errors)}");
+            }
         }
 
         static void SendFriendRequest(ApplicationUser requester, ApplicationUser receiver)
         {
-            requester.AddFriend(receiver);
+            var result = requester.AddFriend(receiver);
+            if (!result.IsSuccess)
+            {
+                throw new InvalidOperationException($"Kon vriendverzoek verzenden tussen {requester} en {receiver}: {string.Join(", ", result.Errors)}");
+            }
         }
     }
 
@@ -582,12 +632,23 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         var john = users.GetUser("John");
         var stacey = users.GetUser("Stacey");
 
+        static Chat EnsureChat(Result<Chat> result, string scenario)
+        {
+            if (!result.IsSuccess)
+            {
+                throw new InvalidOperationException($"Kon chat '{scenario}' niet maken: {string.Join(", ", result.Errors)}");
+            }
+
+            return result.Value;
+        }
+
         var chatsToCreate = new List<Chat>
         {
-            Chat.CreateChat(noor, milan), // individueleCheckIn
-            Chat.CreateChat(kyandro, jasper), // vrijdagGroep
-            Chat.CreateChat(bjorn, thibo), // creatieveHoek
-            Chat.CreateChat(lotte, amina), // technischeHulp
+            EnsureChat(Chat.CreateChat(noor, milan), "individueleCheckIn"),
+            EnsureChat(Chat.CreateChat(kyandro, jasper), "vrijdagGroep"),
+            EnsureChat(Chat.CreateChat(bjorn, thibo), "creatieveHoek"),
+            EnsureChat(Chat.CreateChat(lotte, amina), "technischeHulp"),
+            EnsureChat(Chat.CreateChat(noor, jasper), "technologieDiscussie"),
         };
 
         dbContext.Chats.AddRange(chatsToCreate);
@@ -605,7 +666,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             .OrderBy(c => c.Id)
             .ToListAsync();
 
-        if (chats.Count < 4)
+        if (chats.Count < 5)
         {
             return;
         }
@@ -614,6 +675,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         var vrijdagGroep = chats[1];
         var creatieveHoek = chats[2];
         var technischeHulp = chats[3];
+        var technologieDiscussie = chats[4];
 
         individueleCheckIn.AddTextMessage("Hoi Emma, ik ben een beetje zenuwachtig voor morgen.", individueleCheckIn.RandomUser());
         individueleCheckIn.AddTextMessage("Dat begrijp ik Noor, we bekijken samen hoe je het rustig kunt aanpakken.", individueleCheckIn.RandomUser());
@@ -634,6 +696,11 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         technischeHulp.AddTextMessage("Heb je al geprobeerd om de app even opnieuw te starten?", technischeHulp.RandomUser());
         technischeHulp.AddTextMessage("Ja, maar ik twijfel of ik iets fout doe.", technischeHulp.RandomUser());
         technischeHulp.AddTextMessage("Ik kijk straks met je mee en stuur een korte handleiding door.", technischeHulp.RandomUser());
+
+        technologieDiscussie.AddTextMessage("Hebben jullie de nieuwe update van de app al getest?", technologieDiscussie.RandomUser());
+        technologieDiscussie.AddTextMessage("Ja! De notificaties werken nu veel sneller.", technologieDiscussie.RandomUser());
+        technologieDiscussie.AddTextMessage("Zullen we een feedbacklijstje maken voor de volgende sprint?", technologieDiscussie.RandomUser());
+        technologieDiscussie.AddTextMessage("Goed idee, ik zet alvast een document klaar.", technologieDiscussie.RandomUser());
 
 
         await dbContext.SaveChangesAsync();

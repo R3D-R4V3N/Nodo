@@ -17,7 +17,7 @@ public static class TestData
         => DefaultSentence.Create($"Valid Sentence {idx}.");
 
     public static FontSize ValidFontSize()
-        => FontSize.Create(new Random().Next(FontSize.MIN_FONT_SIZE, FontSize.MAX_FONT_SIZE));
+        => FontSize.Create(new Random().Next(FontSize.MIN_FONT_SIZE, FontSize.MAX_FONT_SIZE)).Value;
 
     public static ApplicationUserSetting ValidUserSettings() =>
         new ApplicationUserSetting
@@ -25,10 +25,10 @@ public static class TestData
             FontSize = ValidFontSize()
         };
 
-    public static FirstName ValidFirstName() => FirstName.Create($"John");
-    public static LastName ValidLastName() => LastName.Create($"Doe");
-    public static Biography ValidBiography() => Biography.Create($"Dit is een bio.");
-    public static AvatarUrl ValidAvatarUrl() => AvatarUrl.Create($"Dit is een img.");
+    public static FirstName ValidFirstName() => FirstName.Create($"John").Value;
+    public static LastName ValidLastName() => LastName.Create($"Doe").Value;
+    public static Biography ValidBiography() => Biography.Create($"Dit is een bio.").Value;
+    public static AvatarUrl ValidAvatarUrl() => AvatarUrl.Create($"Dit is een img.").Value;
     public static ApplicationUser ValidUser(int id) =>
         new ApplicationUser("valid-id-1")
         {

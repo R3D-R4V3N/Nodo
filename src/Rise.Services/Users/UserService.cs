@@ -1,51 +1,42 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Rise.Persistence;
-using Rise.Services.Identity;
 using Rise.Services.Users.Mapper;
 using Rise.Shared.Users;
 
 namespace Rise.Services.Users;
 
 public class UserService(
-    ApplicationDbContext dbContext,
-    ISessionContextProvider sessionContextProvider) : IUserService
+    ApplicationDbContext dbContext) : IUserService
 {
 
     private readonly ApplicationDbContext _dbContext = dbContext;
-    private readonly ISessionContextProvider _sessionContextProvider = sessionContextProvider;
 
     public async Task<Result<UserResponse.CurrentUser>> GetUserAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        // if (string.IsNullOrWhiteSpace(accountId))
-        // {
-        //     return Result.Unauthorized();
-        // }
-
-        var previous = Console.ForegroundColor;
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("AccountId: " + accountId);
-
-
-        var currentUser = await _dbContext.ApplicationUsers.Include(u => u.Hobbies)
-            .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
-
-        Console.WriteLine("Account" + currentUser);
-
-        if (currentUser is null)
+        if (string.IsNullOrWhiteSpace(accountId))
         {
-            return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
+            return Result.Error<UserResponse.CurrentUser>("Ongeldig account ID.");
         }
 
-        Console.ForegroundColor = previous; // restore
+        var userProfile = await _dbContext.ApplicationUsers
+            .Include(u => u.Sentiments)
+            .Include(u => u.Hobbies)
+            .Include(u => u.UserSettings.ChatTextLineSuggestions)
+            .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+
+        if (userProfile is null)
+        {
+            return Result.NotFound("Gebruiker niet gevonden.");
+        }
 
         var email = (await _dbContext.Users
-                        .SingleOrDefaultAsync(u => u.Id == accountId, cancellationToken)
-                    )?.Email
-                    ?? string.Empty;
+                .SingleOrDefaultAsync(u => u.Id == accountId, cancellationToken)
+            )?.Email
+            ?? string.Empty;
 
         return Result.Success(new UserResponse.CurrentUser
         {
-            User = UserMapper.ToCurrentUserDto(currentUser, email)
+            User = UserMapper.ToCurrentUserDto(userProfile, email)
         });
     }
 }

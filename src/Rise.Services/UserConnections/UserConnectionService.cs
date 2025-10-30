@@ -1,4 +1,4 @@
-
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Users.Connections;
 using Rise.Persistence;
@@ -9,7 +9,6 @@ using Rise.Shared.Common;
 using Rise.Shared.Identity;
 using Rise.Shared.UserConnections;
 using Rise.Shared.Users;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Rise.Services.UserConnections;
 /// <summary>
@@ -39,8 +38,8 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-            query = query.Where(p => 
-                p.Connection.FirstName.Value.Contains(request.SearchTerm) 
+            query = query.Where(p =>
+                p.Connection.FirstName.Value.Contains(request.SearchTerm)
                 || p.Connection.LastName.Value.Contains(request.SearchTerm));
         }
 
@@ -58,13 +57,14 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
             // Default order
             query = query
                 .OrderByDescending(p => p.Connection.CreatedAt)
-                .ThenBy(p => p.Connection.FirstName);
+                .ThenBy(p => p.Connection.FirstName.Value);
         }
 
-        var connections = await query.AsNoTracking()
+        var connections = await query
+            .Include(x => x.Connection)
+            .AsNoTracking()
             .Skip(request.Skip)
             .Take(request.Take)
-            .Include(x => x.Connection)
             .ToListAsync(ctx);
 
         return Result.Success(new UserConnectionResponse.GetFriends
@@ -82,9 +82,9 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
         // Huidige gebruiker ophalen
         var currentUser = await dbContext.ApplicationUsers
             .Include(u => u.Connections)
-            .ThenInclude(uc => uc.Connection) // <-- dit laadt de ApplicationUser waar UserConnection naar verwijst
+            .ThenInclude(uc => uc.Connection)
             .SingleOrDefaultAsync(u => u.AccountId == currentUserId, ctx);
-        // Doelgebruiker ophalen
+
         var targetUser = await dbContext.ApplicationUsers
             .Include(u => u.Connections)
             .ThenInclude(uc => uc.Connection)
@@ -110,24 +110,34 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
         // Huidige gebruiker ophalen
         var currentUser = await dbContext.ApplicationUsers
             .Include(u => u.Connections)
+            .ThenInclude(uc => uc.Connection)
             .SingleOrDefaultAsync(u => u.AccountId == currentUserId, ct);
 
-        // Aanvrager ophalen
         var requesterUser = await dbContext.ApplicationUsers
             .Include(u => u.Connections)
+            .ThenInclude(uc => uc.Connection)
             .SingleOrDefaultAsync(u => u.AccountId == requesterAccountId, ct);
 
         if (currentUser is null || requesterUser is null)
             return Result.NotFound("User not found.");
 
-        // Domeinlogica hergebruiken
-        //var result = currentUser.AcceptFriendRequest(requesterUser);
+        var hasIncomingRequest = currentUser.FriendRequests
+            .Any(connection =>
+                connection.Connection.AccountId == requesterAccountId
+                && connection.ConnectionType == UserConnectionType.RequestIncoming);
 
-        //if (!result.IsSuccess)
-        //    return result; // bijv. conflict of invalid state
+        if (!hasIncomingRequest)
+        {
+            return Result.Conflict("No pending friend request found.");
+        }
+
+        var result = currentUser.AddFriend(requesterUser);
+
+        if (!result.IsSuccess)
+            return result;
 
         await dbContext.SaveChangesAsync(ct);
-        return Result.Success();
+        return result;
     }
 
     public async Task<Result<UserConnectionResponse.GetSuggestions>> GetSuggestedFriendsAsync(QueryRequest.SkipTake request, CancellationToken ctx)
@@ -142,15 +152,15 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
             return Result.Unauthorized("You are not authorized to fetch user connections.");
         }
         
-        var existingConnectionIds = dbContext.ApplicationUsers
-                .Where(u => u.AccountId == userId)
-                .SelectMany(u => u.Connections)
-                .Where(c =>
-                    c.ConnectionType.Equals(UserConnectionType.Friend)
-                    || c.ConnectionType.Equals(UserConnectionType.RequestIncoming)
-                    || c.ConnectionType.Equals(UserConnectionType.RequestOutgoing))
-                .Select(c => c.Connection.AccountId)
-                .ToList();
+        var existingConnectionIds = await dbContext.ApplicationUsers
+            .Where(u => u.AccountId == userId)
+            .SelectMany(u => u.Connections)
+            .Where(c =>
+                c.ConnectionType.Equals(UserConnectionType.Friend)
+                || c.ConnectionType.Equals(UserConnectionType.RequestIncoming)
+                || c.ConnectionType.Equals(UserConnectionType.RequestOutgoing))
+            .Select(c => c.Connection.AccountId)
+            .ToListAsync(ctx);
         
         var query = dbContext.ApplicationUsers
             .Where(u => u.AccountId != userId && !existingConnectionIds.Contains(u.AccountId));
@@ -158,6 +168,7 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
         var totalCount = await query.CountAsync(ctx);
 
         var suggestedFriends = await query
+            .AsNoTracking()
             .Skip(request.Skip)
             .Take(request.Take)
             .ToListAsync(ctx);
@@ -184,7 +195,16 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
         if (reqRequesterAccount is null)
             return Result.NotFound("The requester account was not found.");
         
-        return loggedInUser.RejectFriendRequest(reqRequesterAccount);
+        var rejectionResult = loggedInUser.RejectFriendRequest(reqRequesterAccount);
+
+        if (!rejectionResult.IsSuccess)
+        {
+            return rejectionResult;
+        }
+
+        await dbContext.SaveChangesAsync(ct);
+
+        return rejectionResult;
 
     }
 }

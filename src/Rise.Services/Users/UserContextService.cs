@@ -1,4 +1,6 @@
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Rise.Domain.Users.Properties;
 using Rise.Persistence;
 using Rise.Services.Identity;
 using Rise.Services.Users.Mapper;
@@ -25,6 +27,7 @@ public class UserContextService(
         var currentUser = await _dbContext.ApplicationUsers
             .Include(u => u.Sentiments)
             .Include(u => u.Hobbies)
+            .Include(u => u.UserSettings.ChatTextLineSuggestions)
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
 
         if (currentUser is null)
@@ -56,6 +59,7 @@ public class UserContextService(
         var currentUser = await _dbContext.ApplicationUsers
             .Include(u => u.Sentiments)
             .Include(u => u.Hobbies)
+            .Include(u => u.UserSettings.ChatTextLineSuggestions)
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
 
         if (currentUser is null)
@@ -63,10 +67,45 @@ public class UserContextService(
             return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
         }
 
-        currentUser.FirstName = request.FirstName;
-        currentUser.LastName = request.LastName;
-        currentUser.Biography = request.Biography;
-        currentUser.AvatarUrl = request.AvatarUrl;
+        static Result<UserResponse.CurrentUser> HandleDomainFailure<T>(Result<T> result, string propertyName)
+        {
+            if (result.ValidationErrors.Any())
+            {
+                return Result.Invalid(result.ValidationErrors);
+            }
+
+            var message = result.Errors.FirstOrDefault() ?? "Ongeldige waarde.";
+            return Result.Invalid(new ValidationError(propertyName, message));
+        }
+
+        var firstNameResult = FirstName.Create(request.FirstName);
+        if (!firstNameResult.IsSuccess)
+        {
+            return HandleDomainFailure(firstNameResult, nameof(request.FirstName));
+        }
+
+        var lastNameResult = LastName.Create(request.LastName);
+        if (!lastNameResult.IsSuccess)
+        {
+            return HandleDomainFailure(lastNameResult, nameof(request.LastName));
+        }
+
+        var biographyResult = Biography.Create(request.Biography);
+        if (!biographyResult.IsSuccess)
+        {
+            return HandleDomainFailure(biographyResult, nameof(request.Biography));
+        }
+
+        var avatarResult = AvatarUrl.Create(request.AvatarUrl);
+        if (!avatarResult.IsSuccess)
+        {
+            return HandleDomainFailure(avatarResult, nameof(request.AvatarUrl));
+        }
+
+        currentUser.FirstName = firstNameResult.Value;
+        currentUser.LastName = lastNameResult.Value;
+        currentUser.Biography = biographyResult.Value;
+        currentUser.AvatarUrl = avatarResult.Value;
         var normalizedGender = (request.Gender ?? string.Empty).Trim().ToLowerInvariant();
         if (string.IsNullOrWhiteSpace(normalizedGender))
         {

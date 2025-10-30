@@ -21,29 +21,32 @@ public class ApplicationUser : Entity
     /// </summary>
     public string AccountId { get; private set; }
 
-    private string _firstName = string.Empty;
-    public required string FirstName
+    private FirstName _firstName = null!;
+    public required FirstName FirstName
     {
         get => _firstName;
-        set => _firstName = Guard.Against.NullOrWhiteSpace(value);
+        set => _firstName = Guard.Against.Null(value);
     }
-    private string _lastName = string.Empty;
-    public required string LastName
+
+    private LastName _lastName = null!;
+    public required LastName LastName
     {
         get => _lastName;
-        set => _lastName = Guard.Against.NullOrWhiteSpace(value);
+        set => _lastName = Guard.Against.Null(value);
     }
-    private string _biography = string.Empty;
-    public required string Biography
+
+    private Biography _biography = null!;
+    public required Biography Biography
     {
         get => _biography;
-        set => _biography = Guard.Against.NullOrWhiteSpace(value);
+        set => _biography = Guard.Against.Null(value);
     }
-    private string _avatarUrl = string.Empty;
-    public required string AvatarUrl
+
+    private AvatarUrl _avatarUrl = null!;
+    public required AvatarUrl AvatarUrl
     {
         get => _avatarUrl;
-        set => _avatarUrl = Guard.Against.NullOrWhiteSpace(value);
+        set => _avatarUrl = Guard.Against.Null(value);
     }
     private string _gender = "x";
     public required string Gender
