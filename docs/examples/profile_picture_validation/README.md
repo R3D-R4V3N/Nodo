@@ -33,3 +33,12 @@ uvicorn app:app --reload
 Daarna is de demo bereikbaar op [http://localhost:8000/profilepicturevalidation](http://localhost:8000/profilepicturevalidation).
 
 Upload een afbeelding om de validatie te testen. Je krijgt een melding of de afbeelding is toegestaan, of geweigerd met de reden(en).
+
+### Strengere detectie in de demo
+
+De demo combineert zowel object-detectie als classificatie:
+
+- Afbeeldingen worden in de oorspronkelijke en horizontaal gespiegeld vorm geanalyseerd om gemiste treffers te beperken.
+- De `NudeClassifier` wordt gebruikt als extra veiligheidsnet. Als deze classificatie aangeeft dat de inhoud expliciet of seksueel is, wordt de upload geweigerd.
+
+Wanneer het classificatiemodel niet beschikbaar is (bijvoorbeeld als de download mislukt), blijft de object-detectie actief zodat de demo bruikbaar blijft.

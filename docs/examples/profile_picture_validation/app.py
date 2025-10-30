@@ -1,5 +1,6 @@
 import io
-from typing import List
+import tempfile
+from typing import Dict, List, Tuple
 
 import numpy as np
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -7,9 +8,15 @@ from fastapi.responses import HTMLResponse
 from nudenet import NudeDetector
 from PIL import Image, UnidentifiedImageError
 
+try:
+    from nudenet import NudeClassifier
+except ImportError:  # pragma: no cover - optional dependency in demo context
+    NudeClassifier = None  # type: ignore[assignment]
+
 app = FastAPI(title="Profile Picture Validation Demo")
 
 detector = NudeDetector()
+classifier = NudeClassifier() if NudeClassifier is not None else None
 
 BLOCK_LABELS = {
     "EXPOSED_ANUS",
@@ -37,7 +44,21 @@ LABEL_DESCRIPTIONS = {
     "COVERED_BREAST_F": "Bikini/ondergoed - vrouwelijke borst bedekt",
 }
 
-THRESHOLD = 0.7
+THRESHOLD = 0.6
+CLASSIFIER_THRESHOLD = 0.6
+CLASSIFIER_BLOCK_PATTERNS: Tuple[str, ...] = (
+    "explicit",
+    "nudity",
+    "porn",
+    "sexual",
+    "breast",
+    "buttock",
+    "genital",
+    "crotch",
+    "lingerie",
+    "underwear",
+    "hentai",
+)
 
 
 def _format_reasons(hits: List[dict]) -> List[str]:
@@ -46,8 +67,63 @@ def _format_reasons(hits: List[dict]) -> List[str]:
         label = hit.get("label", "Onbekend label")
         score = hit.get("score", 0.0)
         human_readable = LABEL_DESCRIPTIONS.get(label, label)
-        reasons.append(f"{human_readable} (score: {score:.2f})")
+        source = hit.get("source")
+        if source and source != "origineel":
+            reasons.append(
+                f"{human_readable} (score: {score:.2f}) — gevonden via {source}"
+            )
+        else:
+            reasons.append(f"{human_readable} (score: {score:.2f})")
     return reasons
+
+
+def _detect_blocking_content(image: Image.Image) -> List[Dict[str, object]]:
+    width, _ = image.size
+    variants: List[Tuple[str, Image.Image]] = [("origineel", image)]
+
+    if width >= 128:
+        variants.append(("gespiegeld", image.transpose(Image.FLIP_LEFT_RIGHT)))
+
+    hits: List[Dict[str, object]] = []
+
+    for variant_name, variant_image in variants:
+        predictions = detector.detect(np.array(variant_image))
+        for prediction in predictions:
+            label = prediction.get("label")
+            score = prediction.get("score", 0.0)
+            if label in BLOCK_LABELS and score >= THRESHOLD:
+                hit = dict(prediction)
+                hit["source"] = variant_name
+                if variant_name == "gespiegeld" and hit.get("box"):
+                    left, top, right, bottom = hit["box"]
+                    hit["box"] = [width - right, top, width - left, bottom]
+                hits.append(hit)
+
+    return hits
+
+
+def _classify_blocking_content(image: Image.Image) -> List[Tuple[str, float]]:
+    if classifier is None:
+        return []
+
+    with tempfile.NamedTemporaryFile(suffix=".jpg") as tmp:
+        image.save(tmp, format="JPEG")
+        tmp.flush()
+        results = classifier.classify(tmp.name)
+
+    if not results:
+        return []
+
+    class_scores = next(iter(results.values()))
+    flagged: List[Tuple[str, float]] = []
+    for label, score in class_scores.items():
+        normalized = label.lower()
+        if score >= CLASSIFIER_THRESHOLD and any(
+            pattern in normalized for pattern in CLASSIFIER_BLOCK_PATTERNS
+        ):
+            flagged.append((label, float(score)))
+
+    return flagged
 
 
 @app.get("/profilepicturevalidation", response_class=HTMLResponse)
@@ -132,9 +208,16 @@ async def moderate(file: UploadFile = File(...)):
     except UnidentifiedImageError as exc:
         raise HTTPException(status_code=400, detail="Kon de afbeelding niet openen") from exc
 
-    predictions = detector.detect(np.array(image))
-    hits = [p for p in predictions if p.get("label") in BLOCK_LABELS and p.get("score", 0.0) >= THRESHOLD]
+    hits = _detect_blocking_content(image)
+    classifier_hits = _classify_blocking_content(image)
 
     reasons = _format_reasons(hits)
+    for label, score in classifier_hits:
+        reasons.append(f"Classifier: {label} (score: {score:.2f})")
 
-    return {"reject": len(hits) > 0, "hits": hits, "reasons": reasons}
+    return {
+        "reject": bool(hits or classifier_hits),
+        "hits": hits,
+        "classifier_hits": classifier_hits,
+        "reasons": reasons,
+    }
