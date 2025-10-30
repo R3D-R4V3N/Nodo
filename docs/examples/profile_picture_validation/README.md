@@ -2,7 +2,19 @@
 
 Deze map bevat een minimale FastAPI-demo waarmee je het Nudity-detectiemodel van [NudeNet](https://github.com/notAI-tech/NudeNet) kunt testen voor profielfoto-validatie.
 
-## Vereisten
+## Stap 1: naar de juiste map gaan
+
+Open een terminal in de root van de repository en navigeer vervolgens naar de map met de demo:
+
+```bash
+cd docs/examples/profile_picture_validation
+```
+
+Alle onderstaande commando's gaan ervan uit dat je je in deze map bevindt.
+
+## Stap 2: vereisten installeren
+
+Installeer de afhankelijkheden (bij voorkeur in een virtuele omgeving) met:
 
 ```bash
 pip install fastapi uvicorn pillow nudenet
@@ -10,7 +22,9 @@ pip install fastapi uvicorn pillow nudenet
 
 Het NudeNet-modelbestand wordt automatisch gedownload bij de eerste start.
 
-## Applicatie starten
+## Stap 3: applicatie starten
+
+Start daarna de ontwikkelserver:
 
 ```bash
 uvicorn app:app --reload
