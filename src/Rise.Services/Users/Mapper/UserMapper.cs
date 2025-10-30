@@ -17,7 +17,7 @@ internal static class UserMapper
             AvatarUrl = user.AvatarUrl,
         };
 
-    public static UserDto.CurrentUser ToCurrentUserDto(this ApplicationUser user, string email) =>
+    public static UserDto.CurrentUser ToCurrentUserDto(this ApplicationUser user) =>
         new UserDto.CurrentUser
         {
             Id = user.Id,
@@ -25,7 +25,7 @@ internal static class UserMapper
             LastName = user.LastName,
             AccountId = user.AccountId,
             AvatarUrl = user.AvatarUrl,
-            Email = email,
+           
             Biography = user.Biography,
             Gender = user.Gender,
             BirthDay = user.BirthDay,
@@ -40,6 +40,23 @@ internal static class UserMapper
                 .UserSettings
                 .ChatTextLineSuggestions
                 .Select(x => x.Text)
+                .ToList(),
+        };
+    public static UserDto.ConnectionProfile ToConnectionProfileDto(this ApplicationUser user) =>
+        new UserDto.ConnectionProfile
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            AccountId = user.AccountId,
+            AvatarUrl = user.AvatarUrl,
+           
+            Biography = user.Biography,
+            Gender = user.Gender,
+            BirthDay = user.BirthDay,
+            
+            Hobbies = user.Hobbies
+                .Select(HobbyMapper.ToGetDto)
                 .ToList(),
         };
 
@@ -60,6 +77,7 @@ internal static class UserMapper
             AccountId = user.AccountId,
             AvatarUrl = user.AvatarUrl
         };
+
 
     private static int CalculateAge(DateOnly birthDay)
     {

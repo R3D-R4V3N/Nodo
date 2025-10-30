@@ -1,5 +1,6 @@
 @page "/FriendProfilePage/{id:guid}"
 @layout EmptyLayout
+@using Rise.Client.Profile.Models
 @using Rise.Client.UserConnections.Components.FriendProfile
 @using Rise.Shared.Assets
 @using Rise.Shared.Users
@@ -8,23 +9,20 @@
 
 @if (user is null)
 {
-    <!-- 👇 Loading state -->
     <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600 animate-pulse">
         <p>Profiel wordt geladen...</p>
     </div>
 }
 else if (user?.User is null)
 {
-    <!-- 👇 User not found -->
     <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600">
         <p>Gebruiker niet gevonden.</p>
     </div>
 }
 else
 {
-    <!-- 👇 Main content (alleen renderen als user is geladen) -->
     <div class="relative flex min-h-screen flex-col bg-[#F2F2F2] text-neutral-900 antialiased md:flex-row animate-fade-in">
-        <EmojiComponent />
+        <EmojiComponent Hobbies="@ProfileHobbies"/>
         <BackButton />
 
         <header class="relative h-[65vh] md:h-auto md:w-1/2">
@@ -32,14 +30,19 @@ else
             <BlurComponent />
 
             <div class="absolute inset-x-0 bottom-9 flex flex-col justify-end p-5 md:inset-y-0 md:left-0 md:justify-center md:p-10">
-                <NameAndBadgesComponent Name="@user.User.Name" Age="" />
+                <NameAndBadgesComponent Name="@user.User.Name" 
+                                        Age="@user.User.BirthDay.ToString()"
+                                        Gender="@user.User.Gender"/>
+                                        
             </div>
         </header>
 
         <!-- ✅ Geef de PageContext door aan de DescriptionComponent -->
-        <DescriptionComponent PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)" />
+        <DescriptionComponent PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
+                              Description="@user.User.Biography"/>
 
     </div>
+    
 }
 
 @code {
@@ -51,6 +54,8 @@ else
 
     private UserResponse.CurrentUser? user;
     private UserConnectionTypeDto PageContext = UserConnectionTypeDto.Friend;
+
+    private IReadOnlyList<ProfileHobbyModel> ProfileHobbies { get; set; } = Array.Empty<ProfileHobbyModel>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -73,5 +78,15 @@ else
         {
             Console.WriteLine("Gebruiker niet gevonden!");
         }
+        ProfileHobbies = user.User.Hobbies
+            .Select(h => new ProfileHobbyModel(h.Hobby.ToString(), h.Name, h.Emoji))
+            .ToList();
+        
+        Console.WriteLine($"Aantal hobby's: {user.User.Hobbies.Count}");
+        foreach (var h in user.User.Hobbies)
+        {
+            Console.WriteLine($"Hobby: {h.Name}, Emoji: {h.Emoji}, Id: {h.Hobby.ToString()}");
+        }
+
     }
 }

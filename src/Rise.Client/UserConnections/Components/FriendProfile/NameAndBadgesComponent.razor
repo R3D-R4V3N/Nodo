@@ -14,15 +14,40 @@
             </svg>
             @Age
           </span>
-
-          <span class="inline-flex items-center gap-1 rounded-full bg-[#EDD7D7] px-2.5 py-1 text-xs font-medium text-[#AF233A] sm:text-base">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
-              <circle cx="128" cy="96" r="72" />
-              <line x1="128" y1="168" x2="128" y2="240" />
-              <line x1="88" y1="208" x2="168" y2="208" />
-            </svg>
-            @Gender
-          </span>
+          @if (Gender is "vrouw")
+          {
+            <span class="inline-flex items-center gap-1 rounded-full bg-[#EDD7D7] px-2.5 py-1 text-xs font-medium text-[#AF233A] sm:text-base">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+                <circle cx="128" cy="96" r="72" />
+                <line x1="128" y1="168" x2="128" y2="240" />
+                <line x1="88" y1="208" x2="168" y2="208" />
+              </svg>
+              @Gender
+            </span>
+          }
+          else if(Gender is "man")
+          {
+            <span class="inline-flex items-center gap-1 rounded-full bg-sky-100/90 px-2.5 py-1 text-xs font-medium text-sky-900 sm:text-base">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+                <circle cx="128" cy="96" r="72" />
+                <line x1="128" y1="168" x2="128" y2="240" />
+                <line x1="88" y1="208" x2="168" y2="208" />
+              </svg>
+              @Gender
+            </span>
+          }
+          else
+          {
+            <span class="inline-flex items-center gap-1 rounded-full bg-[#D6F0E0] px-2.5 py-1 text-xs font-medium text-[#0D6832] sm:text-base">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+                <circle cx="128" cy="96" r="72" />
+                <line x1="128" y1="168" x2="128" y2="240" />
+                <line x1="88" y1="208" x2="168" y2="208" />
+              </svg>
+              @Gender
+            </span>
+          }
+          
 
           <span class="inline-flex items-center gap-1 rounded-full bg-sky-100/90 px-2.5 py-1 text-xs font-medium text-sky-900 sm:text-base">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -37,5 +62,5 @@
   [Parameter] public string Name { get; set; } = "Test";
   [Parameter] public string Age { get; set; } = "27 jaar";
   [Parameter] public string Gender { get; set; } = "Vrouw";
-  [Parameter] public string Organisation { get; set; } = "OrganisatieTest";
+  [Parameter] public string Organisation { get; set; } = "Organisatie";
 }

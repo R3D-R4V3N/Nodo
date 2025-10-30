@@ -39,9 +39,9 @@ public class UserService(
         Console.ForegroundColor = previous; // restore
 
         var email = (await _dbContext.Users
-            .SingleOrDefaultAsync(u => u.Id == accountId, cancellationToken)
-            )?.Email
-            ?? string.Empty;
+                        .SingleOrDefaultAsync(u => u.Id == accountId, cancellationToken)
+                    )?.Email
+                    ?? string.Empty;
 
         return Result.Success(new UserResponse.CurrentUser
         {
