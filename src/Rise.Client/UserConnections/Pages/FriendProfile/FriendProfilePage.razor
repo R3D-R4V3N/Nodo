@@ -22,8 +22,7 @@ else if (user?.User is null)
 }
 else
 {
-    <div class="relative flex min-h-screen flex-col bg-gradient-to-br from-neutral-50 via-neutral-100 to-emerald-50/30 text-neutral-900 antialiased md:flex-row md:items-stretch md:gap-8 animate-fade-in">
-        <EmojiComponent Hobbies="@ProfileHobbies" />
+    <div class="relative flex min-h-screen flex-col gap-6 bg-gradient-to-br from-neutral-50 via-neutral-100 to-emerald-50/30 pb-12 text-neutral-900 antialiased md:flex-row md:items-stretch md:gap-10 md:pb-0 animate-fade-in">
         <BackButton />
 
         <header class="relative h-[65vh] overflow-hidden md:h-auto md:flex-1">
@@ -38,6 +37,8 @@ else
 
             </div>
         </header>
+
+        <EmojiComponent Hobbies="@ProfileHobbies" />
 
         <!-- ✅ Geef de PageContext door aan de DescriptionComponent -->
         <DescriptionComponent PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
