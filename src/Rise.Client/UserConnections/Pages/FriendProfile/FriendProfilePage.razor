@@ -1,5 +1,7 @@
 @page "/FriendProfilePage/{id:guid}"
 @layout EmptyLayout
+@using System
+@using System.Linq
 @using Rise.Client.Profile.Models
 @using Rise.Client.UserConnections.Components.FriendProfile
 @using Rise.Shared.Assets
@@ -21,32 +23,65 @@ else if (user?.User is null)
 }
 else
 {
-    <div class="relative flex min-h-screen flex-col bg-[#F2F2F2] text-neutral-900 antialiased md:flex-row animate-fade-in">
-        <EmojiComponent Hobbies="@ProfileHobbies"/>
-        <BackButton />
+    <div class="min-h-screen bg-[#F2F2F2] text-neutral-900 antialiased">
+        <div class="relative">
+            <header class="relative h-[65vh] overflow-hidden rounded-b-[32px] bg-neutral-900 sm:h-[400px] md:h-[440px]">
+                <div class="absolute inset-0">
+                    <ProfileImageComponent ImgSource="@user.User.AvatarUrl" />
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-b from-black/25 via-black/45 to-neutral-900/95"></div>
+                <BackButton />
+                <div class="absolute inset-x-0 bottom-6 px-5 sm:bottom-10 sm:px-8">
+                    <NameAndBadgesComponent Name="@user.User.Name"
+                                            AgeInYears="@FriendAge"
+                                            Gender="@FormatGender(user.User.Gender)"
+                                            FirstName="@user.User.FirstName" />
+                </div>
+            </header>
 
-        <header class="relative h-[65vh] md:h-auto md:w-1/2">
-            <ProfileImageComponent ImgSource="@user.User.AvatarUrl" />
-            <BlurComponent />
+            <main class="relative z-10 mx-auto mt-6 w-full max-w-4xl px-4 pb-16 sm:mt-10 sm:px-6 lg:px-8">
+                <div class="space-y-6 sm:space-y-8">
+                    <DescriptionComponent ShowAddButton="@(PageContext == UserConnectionTypeDto.AddFriends)"
+                                          Description="@user.User.Biography"
+                                          FirstName="@user.User.FirstName" />
 
-            <div class="absolute inset-x-0 bottom-9 flex flex-col justify-end p-5 md:inset-y-0 md:left-0 md:justify-center md:p-10">
-                <NameAndBadgesComponent Name="@user.User.Name" 
-                                        Age="@user.User.BirthDay.ToString()"
-                                        Gender="@user.User.Gender.ToString()"/>
-                                        
-            </div>
-        </header>
+                    <section class="rounded-3xl bg-white p-5 shadow-md ring-1 ring-black/5 sm:p-6">
+                        <header class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">Hobby's van @user.User.FirstName</p>
+                                <h2 class="text-xl font-semibold text-neutral-900 sm:text-2xl">Dit doet @user.User.FirstName graag</h2>
+                            </div>
+                        </header>
 
-        <!-- ✅ Geef de PageContext door aan de DescriptionComponent -->
-        <DescriptionComponent PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
-                              Description="@user.User.Biography"/>
-
+                        <div class="mt-5 flex flex-wrap gap-2">
+                            @if (ProfileHobbies.Any())
+                            {
+                                @foreach (var hobby in ProfileHobbies)
+                                {
+                                    <span class="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-1 text-sm font-medium text-neutral-700 shadow-sm">
+                                        @if (!string.IsNullOrWhiteSpace(hobby.Emoji))
+                                        {
+                                            <span class="text-base">@hobby.Emoji</span>
+                                        }
+                                        <span>@hobby.Name</span>
+                                    </span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-sm text-neutral-500">@user.User.FirstName heeft nog geen hobby's gedeeld.</span>
+                            }
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
     </div>
-    
+
 }
 
 @code {
-    [Parameter] public Guid id { get; set; } 
+    [Parameter] public Guid id { get; set; }
 
     [CascadingParameter] public UserDto.CurrentUser? CurrentUser { get; set; }
 
@@ -56,6 +91,7 @@ else
     private UserConnectionTypeDto PageContext = UserConnectionTypeDto.Friend;
 
     private IReadOnlyList<ProfileHobbyModel> ProfileHobbies { get; set; } = Array.Empty<ProfileHobbyModel>();
+    private int? FriendAge { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -74,14 +110,20 @@ else
 
         user = await UserService.GetUserAsync(id.ToString());
 
-        if (user is null)
+        if (user?.User is null)
         {
             Console.WriteLine("Gebruiker niet gevonden!");
+            ProfileHobbies = Array.Empty<ProfileHobbyModel>();
+            FriendAge = null;
+            return;
         }
+
         ProfileHobbies = user.User.Hobbies
             .Select(h => new ProfileHobbyModel(h.Hobby.ToString(), h.Name, h.Emoji))
             .ToList();
-        
+
+        FriendAge = CalculateAge(user.User.BirthDay);
+
         Console.WriteLine($"Aantal hobby's: {user.User.Hobbies.Count}");
         foreach (var h in user.User.Hobbies)
         {
@@ -89,4 +131,29 @@ else
         }
 
     }
+
+    private static int? CalculateAge(DateOnly birthDay)
+    {
+        if (birthDay == default)
+        {
+            return null;
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var age = today.Year - birthDay.Year;
+
+        if (today < birthDay.AddYears(age))
+        {
+            age--;
+        }
+
+        return Math.Max(age, 0);
+    }
+
+    private static string FormatGender(GenderTypeDto gender) => gender switch
+    {
+        GenderTypeDto.Man => "Man",
+        GenderTypeDto.Woman => "Vrouw",
+        _ => "X",
+    };
 }

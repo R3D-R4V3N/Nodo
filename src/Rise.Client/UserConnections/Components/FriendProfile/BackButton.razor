@@ -1,14 +1,9 @@
-
-
-<div class="absolute z-40 mt-3 ml-3">
-    <button type="button" onclick="history.back()" class="h-15 w-15 rounded-2xl bg-[#127646] px-5 py-3 text-base font-semibold text-white shadow-md transition" aria-label="Terug">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
-            <rect width="256" height="256" fill="none" />
-            <polyline points="160 208 80 128 160 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24" />
-        </svg>
-    </button>
-</div>
+<button type="button"
+        onclick="history.back()"
+        class="absolute left-4 top-4 z-20 h-12 w-12 z-50 grid place-items-center rounded-xl text-white bg-[#127646] hover:bg-[#0f613a]">
+    <span class="sr-only">Terug</span>
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 256 256"><path d="M168.49,199.51a12,12,0,0,1-17,17l-80-80a12,12,0,0,1,0-17l80-80a12,12,0,0,1,17,17L97,128Z"></path></svg>
+</button>
 
 @code {
-    
 }
