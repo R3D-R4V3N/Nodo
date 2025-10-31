@@ -1,4 +1,4 @@
-<div class="rounded-3xl border border-white/15 bg-white/10 p-5 text-white shadow-xl backdrop-blur-md sm:p-6">
+<div class="rounded-3xl bg-white/10 p-5 text-white shadow-[0_18px_45px_-25px_rgba(15,23,42,0.55)] backdrop-blur-2xl sm:p-6">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div class="space-y-2">
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/80">Vriendprofiel</p>
@@ -13,7 +13,7 @@
     <div class="mt-4 flex flex-wrap gap-2">
         @if (AgeInYears is not null)
         {
-            <span class="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-sm font-semibold text-emerald-700 shadow-sm">
+            <span class="inline-flex items-center gap-2 rounded-full bg-emerald-400/20 px-3 py-1 text-sm font-semibold text-emerald-50 shadow-[0_8px_20px_-12px_rgba(16,185,129,0.65)] ring-1 ring-emerald-300/30 backdrop-blur">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 256 256" fill="currentColor">
                     <path d="M216,48H200V32a12,12,0,0,0-24,0V48H80V32A12,12,0,0,0,56,32V48H40A16,16,0,0,0,24,64V216a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V64A16,16,0,0,0,216,48Zm-4,164H44V92H212ZM92,132a12,12,0,0,1,12-12h8V112a12,12,0,0,1,24,0v8h8a12,12,0,0,1,0,24h-8v8a12,12,0,0,1-24,0v-8H104A12,12,0,0,1,92,132Z" />
                 </svg>
@@ -22,7 +22,7 @@
         }
         @if (!string.IsNullOrWhiteSpace(Gender))
         {
-            <span class="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white">
+            <span class="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white ring-1 ring-white/25 backdrop-blur">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="18">
                     <circle cx="128" cy="96" r="60" />
                     <line x1="128" y1="156" x2="128" y2="224" />
