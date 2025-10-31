@@ -1,21 +1,28 @@
+@using System.Linq
 @using Rise.Client.Profile.Models
 
 
-<div class="absolute top-[67%] left-1/2 z-[60] w-full max-w-[400px] -translate-x-1/2 -translate-y-1/2">
-    <div class="grid grid-cols-3 items-center justify-center gap-6 p-9">
-        @foreach (var hobby in Hobbies.Take(3))
+<div class="absolute left-1/2 top-[67%] z-[60] w-full max-w-[360px] -translate-x-1/2 -translate-y-1/2 px-5 md:left-10 md:top-auto md:max-w-sm md:-translate-x-0 md:-translate-y-0 md:px-0 md:pb-10 md:pt-0">
+    <div class="rounded-3xl border border-emerald-100/80 bg-white/90 p-5 shadow-2xl shadow-emerald-500/20 backdrop-blur">
+        <p class="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">Hobby highlights</p>
+
+        @if (Hobbies.Any())
         {
-            <button type="button" class="group focus:outline-none">
-                <div class="flex h-24 flex-col items-center justify-center rounded-2xl bg-neutral-50 transition group-active:scale-[0.98]">
-                    <div class="text-3xl leading-none">@hobby.Emoji</div>
-                    <span class="mt-1 text-sm font-medium text-neutral-800">@hobby.Name</span>
-                </div>
-            </button>
+            <div class="grid grid-cols-3 items-center justify-center gap-3 sm:gap-4">
+                @foreach (var hobby in Hobbies.Take(3))
+                {
+                    <div class="group flex h-24 flex-col items-center justify-center rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-emerald-50 text-emerald-700 shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-lg">
+                        <div class="text-3xl leading-none">@(!string.IsNullOrWhiteSpace(hobby.Emoji) ? hobby.Emoji : "✨")</div>
+                        <span class="mt-1 text-center text-xs font-semibold sm:text-sm">@hobby.Name</span>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-sm font-medium text-neutral-600">Nog geen hobby's geselecteerd.</p>
         }
     </div>
-
-   
-
 </div>
 
 @code {
