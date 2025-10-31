@@ -24,9 +24,9 @@ else
     <div class="relative min-h-screen bg-neutral-50 text-neutral-900 antialiased">
         <BackButton />
 
-        <section class="relative h-[320px] w-full overflow-hidden sm:h-[380px] md:h-[460px]">
+        <section class="relative h-[360px] w-full overflow-hidden rounded-b-3xl sm:h-[420px] md:h-[520px]">
             <ProfileImageComponent ImgSource="@user.User.AvatarUrl" />
-            <div class="absolute inset-0 bg-gradient-to-b from-neutral-950/15 via-neutral-950/35 to-neutral-950/55 md:bg-gradient-to-r md:from-neutral-950/20 md:via-neutral-950/35 md:to-neutral-900/10"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-neutral-950/10 via-neutral-950/18 to-neutral-950/35 md:bg-gradient-to-r md:from-neutral-950/12 md:via-neutral-950/22 md:to-neutral-950/18"></div>
 
             <div class="absolute inset-x-0 bottom-0 px-4 pb-10 sm:px-6 md:inset-y-0 md:flex md:items-center md:px-12">
                 <NameAndBadgesComponent
@@ -36,7 +36,7 @@ else
             </div>
         </section>
 
-        <main class="relative z-10 mx-auto -mt-10 w-full max-w-3xl space-y-8 px-4 pb-16 sm:-mt-12 sm:px-6 md:-mt-16">
+        <main class="relative z-10 mx-auto -mt-8 w-full max-w-3xl space-y-8 px-4 pb-16 pt-8 sm:-mt-10 sm:px-6 sm:pt-10 md:-mt-12 md:px-8">
             <DescriptionComponent
                 FirstName="@user.User.FirstName"
                 PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
