@@ -1,34 +1,43 @@
 
-@if (plusknop)
-{
-    <section class="relative z-10 flex flex-1 flex-col justify-center overflow-y-auto p-5 sm:p-8 md:w-1/2">
-        <p class="mt-9 rounded-2xl bg-neutral-50 p-4 text-[14px] leading-relaxed text-neutral-800 sm:text-[15px]">@Description</p>
+<section class="relative z-10 flex flex-1 flex-col justify-center px-4 pb-16 pt-24 sm:px-8 md:w-1/2 md:pb-20 md:pt-16">
+    <div class="mx-auto w-full max-w-xl">
+        <p class="rounded-3xl border border-neutral-200 bg-white p-5 text-sm leading-relaxed text-neutral-700 shadow-sm sm:text-base">
+            @if (!string.IsNullOrWhiteSpace(Description))
+            {
+                @Description
+            }
+            else
+            {
+                <span class="text-neutral-500">Deze persoon heeft nog geen beschrijving gedeeld.</span>
+            }
+        </p>
 
-        <div class="mt-5">
-            <button type="button"
-                    class="w-full flex justify-center items-center rounded-2xl bg-[#127646] px-5 py-3 text-xl font-bold text-white shadow-md transition focus:ring-2 focus:ring-emerald-300 focus:outline-none active:scale-[0.99]"
-                    aria-label="Vriend toevoegen">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="#ffffff" viewBox="0 0 256 256">
-                    <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path>
-                </svg>
+        <div class="mt-6">
+            <button
+                type="button"
+                class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#127646] px-5 py-3 text-base font-semibold text-white shadow transition hover:bg-[#0f663c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#127646] active:scale-[0.99]"
+                aria-label="@(PlusKnop ? "Vriend toevoegen" : "Bericht sturen")">
+                @if (PlusKnop)
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path>
+                    </svg>
+                    <span>Vriend toevoegen</span>
+                }
+                else
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm-8.41,32L136,128.57,40.41,80ZM32,96.92l97.29,49.57a8,8,0,0,0,7.42,0L224,96.92V192H32Z"></path>
+                    </svg>
+                    <span>Bericht sturen</span>
+                }
             </button>
         </div>
-    </section>
-
-}
-else
-{
-    <section class="relative z-10 flex flex-1 flex-col justify-center overflow-y-auto p-5 sm:p-8 md:w-1/2">
-        <p class="mt-9 rounded-2xl bg-neutral-50 p-4 text-[14px] leading-relaxed text-neutral-800 sm:text-[15px]">@Description</p>
-
-        <div class="mt-5">
-            <button type="button" class="w-full rounded-2xl bg-[#127646] px-5 py-3 text-base font-semibold text-white shadow-md transition focus:ring-2 focus:ring-emerald-300 focus:outline-none active:scale-[0.99]" aria-label="Bericht sturen naar Emma De Vries">Bericht sturen</button>
-        </div>
-    </section>
-}
+    </div>
+</section>
 
 
 @code {
     [Parameter] public string Description { get; set; } = "Lief, eerlijk en altijd mezelf 💛 Heb een mentale beperking, maar een groot hart en een brede glimlach 🙂";
-    [Parameter] public Boolean plusknop { get; set; } = false;
+    [Parameter] public bool PlusKnop { get; set; }
 }

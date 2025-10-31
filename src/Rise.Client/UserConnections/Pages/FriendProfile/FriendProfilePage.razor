@@ -9,40 +9,38 @@
 
 @if (user is null)
 {
-    <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600 animate-pulse">
+    <div class="flex h-screen items-center justify-center bg-neutral-50 text-neutral-600 animate-pulse">
         <p>Profiel wordt geladen...</p>
     </div>
 }
 else if (user?.User is null)
 {
-    <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600">
+    <div class="flex h-screen items-center justify-center bg-neutral-50 text-neutral-600">
         <p>Gebruiker niet gevonden.</p>
     </div>
 }
 else
 {
-    <div class="relative flex min-h-screen flex-col bg-[#F2F2F2] text-neutral-900 antialiased md:flex-row animate-fade-in">
-        <EmojiComponent Hobbies="@ProfileHobbies"/>
+    <div class="relative flex min-h-screen flex-col bg-neutral-50 text-neutral-900 antialiased md:flex-row md:items-stretch animate-fade-in">
+        <EmojiComponent Hobbies="@ProfileHobbies" />
         <BackButton />
 
-        <header class="relative h-[65vh] md:h-auto md:w-1/2">
+        <header class="relative flex h-[70vh] flex-col overflow-hidden md:h-auto md:min-h-screen md:w-1/2">
             <ProfileImageComponent ImgSource="@user.User.AvatarUrl" />
             <BlurComponent />
 
-            <div class="absolute inset-x-0 bottom-9 flex flex-col justify-end p-5 md:inset-y-0 md:left-0 md:justify-center md:p-10">
-                <NameAndBadgesComponent Name="@user.User.Name" 
-                                        Age="@user.User.BirthDay.ToString()"
-                                        Gender="@user.User.Gender.ToString()"/>
-                                        
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col justify-end bg-gradient-to-t from-neutral-950/70 via-neutral-950/20 to-transparent px-5 pb-8 pt-24 md:inset-y-0 md:left-0 md:justify-center md:bg-gradient-to-r md:px-12 md:py-0">
+                <NameAndBadgesComponent
+                    Name="@user.User.Name"
+                    Age="@AgeLabel"
+                    Gender="@user.User.Gender.ToString()" />
             </div>
         </header>
 
-        <!-- ✅ Geef de PageContext door aan de DescriptionComponent -->
-        <DescriptionComponent PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
-                              Description="@user.User.Biography"/>
-
+        <DescriptionComponent
+            PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
+            Description="@user.User.Biography" />
     </div>
-    
 }
 
 @code {
@@ -56,6 +54,8 @@ else
     private UserConnectionTypeDto PageContext = UserConnectionTypeDto.Friend;
 
     private IReadOnlyList<ProfileHobbyModel> ProfileHobbies { get; set; } = Array.Empty<ProfileHobbyModel>();
+
+    private string AgeLabel => user?.User is null ? string.Empty : $"{CalculateAge(user.User.BirthDay)} jaar";
 
     protected override async Task OnInitializedAsync()
     {
@@ -88,5 +88,18 @@ else
             Console.WriteLine($"Hobby: {h.Name}, Emoji: {h.Emoji}, Id: {h.Hobby.ToString()}");
         }
 
+    }
+
+    private static int CalculateAge(System.DateOnly birthDay)
+    {
+        var today = System.DateOnly.FromDateTime(System.DateTime.Today);
+        var age = today.Year - birthDay.Year;
+
+        if (today < birthDay.AddYears(age))
+        {
+            age--;
+        }
+
+        return age;
     }
 }
