@@ -1,5 +1,8 @@
 @page "/FriendProfilePage/{id:guid}"
 @layout EmptyLayout
+@using System.Collections.Generic
+@using System.Globalization
+@using System.Linq
 @using Rise.Client.Profile.Models
 @using Rise.Client.UserConnections.Components.FriendProfile
 @using Rise.Shared.Assets
@@ -21,28 +24,34 @@ else if (user?.User is null)
 }
 else
 {
-    <div class="relative flex min-h-screen flex-col bg-[#F2F2F2] text-neutral-900 antialiased md:flex-row animate-fade-in">
-        <EmojiComponent Hobbies="@ProfileHobbies"/>
+    <div class="relative flex min-h-screen flex-col gap-6 bg-gradient-to-br from-neutral-50 via-neutral-100 to-emerald-50/30 pb-12 text-neutral-900 antialiased md:flex-row md:items-stretch md:gap-10 md:pb-0 animate-fade-in">
         <BackButton />
 
-        <header class="relative h-[65vh] md:h-auto md:w-1/2">
+        <header class="relative h-[65vh] overflow-hidden md:h-auto md:flex-1">
             <ProfileImageComponent ImgSource="@user.User.AvatarUrl" />
             <BlurComponent />
 
-            <div class="absolute inset-x-0 bottom-9 flex flex-col justify-end p-5 md:inset-y-0 md:left-0 md:justify-center md:p-10">
-                <NameAndBadgesComponent Name="@user.User.Name" 
-                                        Age="@user.User.BirthDay.ToString()"
-                                        Gender="@user.User.Gender.ToString()"/>
-                                        
+            <div class="absolute inset-x-0 bottom-9 flex flex-col justify-end p-5 md:inset-y-0 md:left-0 md:justify-center md:p-12">
+                <NameAndBadgesComponent Name="@user.User.Name"
+                                        Age="@AgeDisplay"
+                                        Gender="@user.User.Gender.ToString()"
+                                        MemberSince="@MemberSinceDisplay" />
+
             </div>
         </header>
 
+        <EmojiComponent Hobbies="@ProfileHobbies" />
+
         <!-- ✅ Geef de PageContext door aan de DescriptionComponent -->
         <DescriptionComponent PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
-                              Description="@user.User.Biography"/>
+                              Description="@user.User.Biography"
+                              Name="@user.User.FirstName"
+                              Hobbies="@ProfileHobbies"
+                              Likes="@LikeInterests"
+                              Dislikes="@DislikeInterests" />
 
     </div>
-    
+
 }
 
 @code {
@@ -56,6 +65,12 @@ else
     private UserConnectionTypeDto PageContext = UserConnectionTypeDto.Friend;
 
     private IReadOnlyList<ProfileHobbyModel> ProfileHobbies { get; set; } = Array.Empty<ProfileHobbyModel>();
+    private IReadOnlyList<SentimentDto.Get> LikeInterests { get; set; } = Array.Empty<SentimentDto.Get>();
+    private IReadOnlyList<SentimentDto.Get> DislikeInterests { get; set; } = Array.Empty<SentimentDto.Get>();
+    private string AgeDisplay => user is null ? string.Empty : $"{CalculateAge(user.User.BirthDay)} jaar";
+    private string MemberSinceDisplay => user is null
+        ? string.Empty
+        : user.User.CreatedAt.ToString("MMMM yyyy", new CultureInfo("nl-NL"));
 
     protected override async Task OnInitializedAsync()
     {
@@ -81,6 +96,14 @@ else
         ProfileHobbies = user.User.Hobbies
             .Select(h => new ProfileHobbyModel(h.Hobby.ToString(), h.Name, h.Emoji))
             .ToList();
+
+        var interests = user.User.Interests ?? new List<SentimentDto.Get>();
+        LikeInterests = interests
+            .Where(i => i.Type == SentimentTypeDto.Like)
+            .ToList();
+        DislikeInterests = interests
+            .Where(i => i.Type == SentimentTypeDto.Dislike)
+            .ToList();
         
         Console.WriteLine($"Aantal hobby's: {user.User.Hobbies.Count}");
         foreach (var h in user.User.Hobbies)
@@ -88,5 +111,18 @@ else
             Console.WriteLine($"Hobby: {h.Name}, Emoji: {h.Emoji}, Id: {h.Hobby.ToString()}");
         }
 
+    }
+
+    private static int CalculateAge(DateOnly birthDay)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var age = today.Year - birthDay.Year;
+
+        if (today < birthDay.AddYears(age))
+        {
+            age--;
+        }
+
+        return age;
     }
 }
