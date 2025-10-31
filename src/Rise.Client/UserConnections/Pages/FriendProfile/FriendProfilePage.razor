@@ -97,7 +97,7 @@ else
                                     {
                                         @foreach (var like in ProfileLikes)
                                         {
-                                            <span class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-sm font-medium text-emerald-800 shadow-sm">
+                                            <span class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-0.5 text-sm font-medium text-emerald-800 shadow-sm">
                                                 @if (!string.IsNullOrWhiteSpace(like.Emoji))
                                                 {
                                                     <span class="text-base">@like.Emoji</span>
@@ -126,7 +126,7 @@ else
                                     {
                                         @foreach (var dislike in ProfileDislikes)
                                         {
-                                            <span class="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-1 text-sm font-medium text-rose-700 shadow-sm">
+                                            <span class="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-0.5 text-sm font-medium text-rose-700 shadow-sm">
                                                 @if (!string.IsNullOrWhiteSpace(dislike.Emoji))
                                                 {
                                                     <span class="text-base">@dislike.Emoji</span>
