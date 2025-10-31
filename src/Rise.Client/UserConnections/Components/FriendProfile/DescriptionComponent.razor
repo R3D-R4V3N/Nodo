@@ -1,4 +1,4 @@
-<section class="rounded-3xl bg-white p-5 shadow-lg ring-1 ring-black/5 sm:p-6">
+<section class="rounded-3xl bg-white p-5 shadow-md ring-1 ring-black/5 sm:p-6">
     <header class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">Over @SafeNameCapitalized</p>
@@ -11,25 +11,25 @@
     <div class="mt-6 flex flex-col gap-3 sm:flex-row">
         @if (ShowAddButton)
         {
-            <button type="button"
-                    class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#127646] px-5 py-3 text-base font-semibold text-white shadow-md transition hover:bg-[#0f663c] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f663c] active:scale-[0.99] sm:w-auto"
-                    aria-label="Voeg @SafeName toe als vriend">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="#ffffff" viewBox="0 0 256 256">
-                    <path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"></path>
-                </svg>
+            <button type="button" 
+                    class="mt-3 w-full rounded-xl bg-[#127646] px-4 py-3 text-sm font-medium text-white shadow hover:bg-[#0f663c] active:scale-[0.99] inline-flex items-center justify-center gap-2"
+                    aria-label="Voeg @SafeName toe als vriend"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 256 256"><path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"></path></svg>
                 <span>Vriend toevoegen</span>
             </button>
+
         }
         else
         {
-            <button type="button"
-                    class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-base font-semibold text-white shadow-md transition hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 active:scale-[0.99] sm:w-auto"
-                    aria-label="Stuur een bericht naar @SafeName">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.068 1.916l-7.5 4.5a2.25 2.25 0 0 1-2.25 0l-7.5-4.5A2.25 2.25 0 0 1 2.25 6.993V6.75" />
-                </svg>
+            <button type="button" 
+                    class="mt-3 w-full rounded-xl bg-[#127646] px-4 py-3 text-sm font-medium text-white shadow hover:bg-[#0f663c] active:scale-[0.99] inline-flex items-center justify-center gap-2"
+                    aria-label="Stuur een bericht naar @SafeName"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 256 256"><path d="M224,48H32a8,8,0,0,0-8,8V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A8,8,0,0,0,224,48ZM98.71,128,40,181.81V74.19Zm11.84,10.85,12,11.05a8,8,0,0,0,10.82,0l12-11.05,58,53.15H52.57ZM157.29,128,216,74.18V181.82Z"></path></svg>
                 <span>Bericht sturen</span>
             </button>
+
         }
     </div>
 </section>
