@@ -14,15 +14,32 @@ namespace Rise.Persistence.Migrations
                 """
                 UPDATE `ApplicationUser`
                 SET `Gender` = '0'
-                WHERE LOWER(`Gender`) = 'x';
+                WHERE LOWER(TRIM(`Gender`)) = 'x';
 
                 UPDATE `ApplicationUser`
                 SET `Gender` = '1'
-                WHERE LOWER(`Gender`) IN ('man', 'm', 'male');
+                WHERE LOWER(TRIM(`Gender`)) IN ('man', 'm', 'male');
 
                 UPDATE `ApplicationUser`
                 SET `Gender` = '2'
-                WHERE LOWER(`Gender`) IN ('woman', 'vrouw', 'female', 'f');
+                WHERE LOWER(TRIM(`Gender`)) IN ('woman', 'vrouw', 'female', 'f');
+
+                UPDATE `ApplicationUser`
+                SET `Gender` = '0'
+                WHERE `Gender` IS NULL
+                   OR TRIM(`Gender`) = ''
+                   OR `Gender` NOT IN ('0', '1', '2');
+                """);
+
+            migrationBuilder.Sql(
+                """
+                UPDATE `ApplicationUser`
+                SET `AvatarUrl` = LEFT(`AvatarUrl`, 150)
+                WHERE CHAR_LENGTH(`AvatarUrl`) > 150;
+
+                UPDATE `UserSettingChatTextLineSuggestions`
+                SET `TextSuggestion` = LEFT(`TextSuggestion`, 150)
+                WHERE CHAR_LENGTH(`TextSuggestion`) > 150;
                 """);
 
             migrationBuilder.AlterColumn<string>(
