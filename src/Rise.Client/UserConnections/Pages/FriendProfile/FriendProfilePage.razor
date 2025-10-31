@@ -7,16 +7,10 @@
 @using Rise.Shared.UserConnections
 @inject NavigationManager NavigationManager
 
-@if (isLoading)
+@if (user is null)
 {
     <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600 animate-pulse">
         <p>Profiel wordt geladen...</p>
-    </div>
-}
-else if (!string.IsNullOrWhiteSpace(errorMessage))
-{
-    <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600">
-        <p>@errorMessage</p>
     </div>
 }
 else if (user?.User is null)
@@ -59,8 +53,6 @@ else
     [Inject] private IUserService UserService { get; set; } = default!;
 
     private UserResponse.CurrentUser? user;
-    private bool isLoading = true;
-    private string? errorMessage;
     private UserConnectionTypeDto PageContext = UserConnectionTypeDto.Friend;
 
     private IReadOnlyList<ProfileHobbyModel> ProfileHobbies { get; set; } = Array.Empty<ProfileHobbyModel>();
@@ -80,31 +72,21 @@ else
             }
         }
 
-        try
-        {
-            var result = await UserService.GetUserAsync(id.ToString());
+        user = await UserService.GetUserAsync(id.ToString());
 
-            if (result.IsSuccess && result.Value.User is not null)
-            {
-                user = result.Value;
+        if (user is null)
+        {
+            Console.WriteLine("Gebruiker niet gevonden!");
+        }
+        ProfileHobbies = user.User.Hobbies
+            .Select(h => new ProfileHobbyModel(h.Hobby.ToString(), h.Name, h.Emoji))
+            .ToList();
+        
+        Console.WriteLine($"Aantal hobby's: {user.User.Hobbies.Count}");
+        foreach (var h in user.User.Hobbies)
+        {
+            Console.WriteLine($"Hobby: {h.Name}, Emoji: {h.Emoji}, Id: {h.Hobby.ToString()}");
+        }
 
-                ProfileHobbies = user.User.Hobbies
-                    .Select(h => new ProfileHobbyModel(h.Hobby.ToString(), h.Name, h.Emoji))
-                    .ToList();
-            }
-            else
-            {
-                var validationError = result.ValidationErrors.FirstOrDefault()?.ErrorMessage;
-                errorMessage = validationError ?? result.Errors.FirstOrDefault() ?? "Kon het profiel niet laden.";
-            }
-        }
-        catch
-        {
-            errorMessage = "Kon het profiel niet laden.";
-        }
-        finally
-        {
-            isLoading = false;
-        }
     }
 }
