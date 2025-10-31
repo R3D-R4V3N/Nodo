@@ -23,13 +23,13 @@ else if (user?.User is null)
 }
 else
 {
-    <div class="min-h-screen bg-gradient-to-b from-[#0f2f21] via-[#0f2f21] to-[#f4f6f2] text-neutral-900 antialiased">
+    <div class="min-h-screen bg-[#F2F2F2] text-neutral-900 antialiased">
         <div class="relative">
-            <header class="relative h-[260px] overflow-hidden rounded-b-[32px] bg-neutral-900 sm:h-[320px] md:h-[360px]">
+            <header class="relative h-[65vh] overflow-hidden rounded-b-[32px] bg-neutral-900 sm:h-[400px] md:h-[440px]">
                 <div class="absolute inset-0">
                     <ProfileImageComponent ImgSource="@user.User.AvatarUrl" />
                 </div>
-                <div class="absolute inset-0 bg-gradient-to-b from-black/25 via-black/45 to-[#0f2f21]/95"></div>
+                <div class="absolute inset-0 bg-gradient-to-b from-black/25 via-black/45 to-neutral-900/95"></div>
                 <BackButton />
                 <div class="absolute inset-x-0 bottom-6 px-5 sm:bottom-10 sm:px-8">
                     <NameAndBadgesComponent Name="@user.User.Name"
