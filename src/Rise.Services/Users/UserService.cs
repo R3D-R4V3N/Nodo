@@ -29,7 +29,9 @@ public class UserService(
         Console.WriteLine("AccountId: " + accountId);
 
 
-        var currentUser = await _dbContext.ApplicationUsers.Include(u => u.Hobbies)
+        var currentUser = await _dbContext.ApplicationUsers
+            .Include(u => u.Sentiments)
+            .Include(u => u.Hobbies)
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
 
         Console.WriteLine("Account" + currentUser);
