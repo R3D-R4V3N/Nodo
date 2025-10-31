@@ -10,6 +10,21 @@ namespace Rise.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql(
+                """
+                UPDATE `ApplicationUser`
+                SET `Gender` = '0'
+                WHERE LOWER(`Gender`) = 'x';
+
+                UPDATE `ApplicationUser`
+                SET `Gender` = '1'
+                WHERE LOWER(`Gender`) IN ('man', 'm', 'male');
+
+                UPDATE `ApplicationUser`
+                SET `Gender` = '2'
+                WHERE LOWER(`Gender`) IN ('woman', 'vrouw', 'female', 'f');
+                """);
+
             migrationBuilder.AlterColumn<string>(
                 name: "TextSuggestion",
                 table: "UserSettingChatTextLineSuggestions",
@@ -71,6 +86,21 @@ namespace Rise.Persistence.Migrations
                 oldType: "int",
                 oldMaxLength: 10)
                 .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.Sql(
+                """
+                UPDATE `ApplicationUser`
+                SET `Gender` = 'x'
+                WHERE `Gender` = '0';
+
+                UPDATE `ApplicationUser`
+                SET `Gender` = 'man'
+                WHERE `Gender` = '1';
+
+                UPDATE `ApplicationUser`
+                SET `Gender` = 'vrouw'
+                WHERE `Gender` = '2';
+                """);
 
             migrationBuilder.AlterColumn<string>(
                 name: "AvatarUrl",
