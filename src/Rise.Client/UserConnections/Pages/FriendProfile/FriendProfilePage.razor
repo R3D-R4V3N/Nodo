@@ -24,11 +24,11 @@ else
     <div class="relative min-h-screen bg-neutral-50 text-neutral-900 antialiased">
         <BackButton />
 
-        <section class="relative h-[360px] w-full overflow-hidden sm:h-[420px] md:h-[480px]">
+        <section class="relative h-[320px] w-full overflow-hidden sm:h-[380px] md:h-[460px]">
             <ProfileImageComponent ImgSource="@user.User.AvatarUrl" />
-            <div class="absolute inset-0 bg-gradient-to-b from-neutral-900/30 via-neutral-900/60 to-neutral-900/80 md:bg-gradient-to-r md:from-neutral-950/75 md:via-neutral-950/55 md:to-neutral-900/30"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-neutral-950/15 via-neutral-950/35 to-neutral-950/55 md:bg-gradient-to-r md:from-neutral-950/20 md:via-neutral-950/35 md:to-neutral-900/10"></div>
 
-            <div class="absolute inset-x-0 bottom-0 px-4 pb-10 md:inset-y-0 md:flex md:items-center md:px-12">
+            <div class="absolute inset-x-0 bottom-0 px-4 pb-10 sm:px-6 md:inset-y-0 md:flex md:items-center md:px-12">
                 <NameAndBadgesComponent
                     Name="@user.User.Name"
                     Age="@AgeLabel"
@@ -36,7 +36,7 @@ else
             </div>
         </section>
 
-        <main class="relative z-10 mx-auto -mt-10 w-full max-w-3xl space-y-8 px-4 pb-16 sm:px-6 md:-mt-16">
+        <main class="relative z-10 mx-auto -mt-10 w-full max-w-3xl space-y-8 px-4 pb-16 sm:-mt-12 sm:px-6 md:-mt-16">
             <DescriptionComponent
                 FirstName="@user.User.FirstName"
                 PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
