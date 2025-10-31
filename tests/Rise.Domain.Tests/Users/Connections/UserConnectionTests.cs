@@ -1,4 +1,5 @@
 ﻿using Rise.Domain.Users;
+using Rise.Domain.Users.Connections;
 using System;
 using System.Collections.Generic;
 using System.Linq;

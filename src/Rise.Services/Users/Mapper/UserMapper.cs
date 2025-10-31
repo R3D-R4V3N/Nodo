@@ -26,9 +26,8 @@ internal static class UserMapper
             AccountId = user.AccountId,
             AvatarUrl = user.AvatarUrl,
             Email = email,
-
             Biography = user.Biography,
-            Gender = user.Gender,
+            Gender = user.Gender.ToDto(),
             BirthDay = user.BirthDay,
             CreatedAt = user.CreatedAt,
             Interests = user.Sentiments
@@ -53,7 +52,7 @@ internal static class UserMapper
             AvatarUrl = user.AvatarUrl,
            
             Biography = user.Biography,
-            Gender = user.Gender,
+            Gender = user.Gender.ToDto(),
             BirthDay = user.BirthDay,
             
             Hobbies = user.Hobbies

@@ -38,6 +38,7 @@ public static class TestData
             AvatarUrl = ValidAvatarUrl(),
             BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
             UserType = UserType.Regular,
+            Gender = GenderType.X,
             UserSettings = ValidUserSettings()
         }.WithId(id);
 
@@ -50,6 +51,7 @@ public static class TestData
             AvatarUrl = ValidAvatarUrl(),
             BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-40)),
             UserType = UserType.Supervisor,
+            Gender = GenderType.X,
             UserSettings = ValidUserSettings()
         }.WithId(id);
 

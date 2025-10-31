@@ -23,7 +23,7 @@ public record ProfileModel
     public string LastName { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
     public string Bio { get; init; } = string.Empty;
-    public string Gender { get; init; } = "x";
+    public GenderTypeDto Gender { get; init; }
     public string AvatarUrl { get; init; } = DefaultAvatar;
     public string MemberSince { get; init; } = string.Empty;
     public IReadOnlyList<ProfileInterestModel> Interests { get; init; } = Array.Empty<ProfileInterestModel>();
@@ -48,17 +48,13 @@ public record ProfileModel
             .Select(h => new ProfileHobbyModel(h.Hobby.ToString(), h.Name, h.Emoji))
             .ToList();
 
-        var gender = string.IsNullOrWhiteSpace(user.Gender)
-            ? "x"
-            : user.Gender.Trim().ToLowerInvariant();
-
         return new ProfileModel
         {
             FirstName = user.FirstName,
             LastName = user.LastName,
             Email = user.Email,
             Bio = user.Biography,
-            Gender = gender,
+            Gender = user.Gender,
             AvatarUrl = string.IsNullOrWhiteSpace(user.AvatarUrl) ? DefaultAvatar : user.AvatarUrl,
             MemberSince = memberSince,
             Interests = interests,
@@ -76,7 +72,7 @@ public class ProfileDraft
     public string LastName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Bio { get; set; } = string.Empty;
-    public string Gender { get; set; } = "x";
+    public GenderTypeDto Gender { get; set; }
     public string AvatarUrl { get; set; } = ProfileModel.DefaultAvatar;
     public string MemberSince { get; set; } = string.Empty;
 

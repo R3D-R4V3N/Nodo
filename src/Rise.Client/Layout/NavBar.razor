@@ -28,6 +28,6 @@
 
   <!-- Profiel -->
   <NavLink href="/profile" class='@GetNavItemClasses("/profile", NavLinkMatch.All, isProfile: true)'>
-    <img src="@CurrentUser?.AvatarUrl ?? @DefaultImages.GetProfile("current-user")" alt="Profiel" class="w-full h-full object-cover">
+    <img src="@UserState?.User!.AvatarUrl ?? @DefaultImages.GetProfile("current-user")" alt="Profiel" class="w-full h-full object-cover">
   </NavLink>
 </div>

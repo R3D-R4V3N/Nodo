@@ -1,5 +1,6 @@
 @using System
 @using Microsoft.AspNetCore.Components
+@using Rise.Shared.Users
 
 <section class="mt-5">
     <h3 class="mb-2 text-sm font-medium text-neutral-700">Persoonlijke gegevens</h3>
@@ -97,14 +98,15 @@
                     class="w-full rounded-lg border border-neutral-200 bg-white mt-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
                     value="@Gender"
                     @onchange="HandleGenderChanged">
-                    <option value="man">Man</option>
-                    <option value="vrouw">Vrouw</option>
-                    <option value="x">X</option>
+                    @foreach (var gender in Enum.GetValues<GenderTypeDto>())
+                    {
+                        <option value="@gender">@GenderDisplay(gender)</option>
+                    }
                 </select>
             }
             else
             {
-                <p class="mt-1 text-sm">@GenderDisplay</p>
+                <p class="mt-1 text-sm">@GenderDisplay(Gender)</p>
             }
         </div>
     </div>
@@ -115,7 +117,6 @@
     private string _lastName = string.Empty;
     private string _email = string.Empty;
     private string _bio = string.Empty;
-    private string _gender = "x";
 
     [Parameter]
     public string FirstName
@@ -154,13 +155,9 @@
     [Parameter] public EventCallback<string> BioChanged { get; set; }
 
     [Parameter]
-    public string Gender
-    {
-        get => _gender;
-        set => _gender = string.IsNullOrWhiteSpace(value) ? "x" : value;
-    }
+    public GenderTypeDto Gender { get; set; }
 
-    [Parameter] public EventCallback<string> GenderChanged { get; set; }
+    [Parameter] public EventCallback<GenderTypeDto> GenderChanged { get; set; }
     [Parameter] public bool IsEditing { get; set; }
 
     private string NameOrPlaceholder => string.IsNullOrWhiteSpace(FirstName) ? "–" : $"{FirstName} {LastName}";
@@ -168,12 +165,12 @@
     private string BioOrPlaceholder => string.IsNullOrWhiteSpace(Bio) ? "–" : Bio;
     private int BioLength => Bio?.Length ?? 0;
 
-    private string GenderDisplay => Gender?.ToLowerInvariant() switch
+    private string GenderDisplay(GenderTypeDto gender) => gender switch
     {
-        "man" => "Man",
-        "vrouw" => "Vrouw",
-        "x" => "X",
-        _ => "–"
+        GenderTypeDto.Man   => "Man",
+        GenderTypeDto.Woman => "Vrouw",
+        GenderTypeDto.X     => "X",
+        _ => "X"
     };
 
     private async Task HandleFirstNameChanged(ChangeEventArgs args)
@@ -238,16 +235,13 @@
 
     private async Task HandleGenderChanged(ChangeEventArgs args)
     {
-        var newValue = args.Value?.ToString() ?? "x";
-        if (string.Equals(newValue, _gender, StringComparison.Ordinal))
-        {
-            return;
-        }
+        Enum.TryParse(args.Value?.ToString() ?? string.Empty, out GenderTypeDto gender);
 
-        _gender = string.IsNullOrWhiteSpace(newValue) ? "x" : newValue;
+        Gender = gender;
+
         if (GenderChanged.HasDelegate)
         {
-            await GenderChanged.InvokeAsync(_gender);
+            await GenderChanged.InvokeAsync(gender);
         }
     }
 }

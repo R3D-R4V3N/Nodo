@@ -1,6 +1,10 @@
 @page "/friends"
-@layout MainLayout
+@attribute [Authorize]
 @using Rise.Client.UserConnections.Components.Friends
+
+@layout MainLayout
+
+
 <FriendsHeader OnBack="GoBack" />
 
 <section class="bg-neutral-100 px-4 pt-4 pb-2">
