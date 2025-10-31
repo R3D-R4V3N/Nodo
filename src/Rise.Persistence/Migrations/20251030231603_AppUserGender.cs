@@ -10,6 +10,38 @@ namespace Rise.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql(
+                """
+                UPDATE `ApplicationUser`
+                SET `Gender` = '0'
+                WHERE LOWER(TRIM(`Gender`)) = 'x';
+
+                UPDATE `ApplicationUser`
+                SET `Gender` = '1'
+                WHERE LOWER(TRIM(`Gender`)) IN ('man', 'm', 'male');
+
+                UPDATE `ApplicationUser`
+                SET `Gender` = '2'
+                WHERE LOWER(TRIM(`Gender`)) IN ('woman', 'vrouw', 'female', 'f');
+
+                UPDATE `ApplicationUser`
+                SET `Gender` = '0'
+                WHERE `Gender` IS NULL
+                   OR TRIM(`Gender`) = ''
+                   OR `Gender` NOT IN ('0', '1', '2');
+                """);
+
+            migrationBuilder.Sql(
+                """
+                UPDATE `ApplicationUser`
+                SET `AvatarUrl` = LEFT(`AvatarUrl`, 150)
+                WHERE CHAR_LENGTH(`AvatarUrl`) > 150;
+
+                UPDATE `UserSettingChatTextLineSuggestions`
+                SET `TextSuggestion` = LEFT(`TextSuggestion`, 150)
+                WHERE CHAR_LENGTH(`TextSuggestion`) > 150;
+                """);
+
             migrationBuilder.AlterColumn<string>(
                 name: "TextSuggestion",
                 table: "UserSettingChatTextLineSuggestions",
@@ -71,6 +103,21 @@ namespace Rise.Persistence.Migrations
                 oldType: "int",
                 oldMaxLength: 10)
                 .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.Sql(
+                """
+                UPDATE `ApplicationUser`
+                SET `Gender` = 'x'
+                WHERE `Gender` = '0';
+
+                UPDATE `ApplicationUser`
+                SET `Gender` = 'man'
+                WHERE `Gender` = '1';
+
+                UPDATE `ApplicationUser`
+                SET `Gender` = 'vrouw'
+                WHERE `Gender` = '2';
+                """);
 
             migrationBuilder.AlterColumn<string>(
                 name: "AvatarUrl",
