@@ -14,7 +14,7 @@ public class Accept(IUserConnectionService connectionService)
 
     public override async Task<Result<string>> ExecuteAsync(FriendRequestAction req, CancellationToken ct)
     {
-        return await connectionService.AcceptFriendAsync(req.RequesterAccountId, ct);
+        return await connectionService.AddFriendAsync(req.RequesterAccountId, ct);
     }
 }
 

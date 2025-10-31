@@ -12,8 +12,8 @@ using Rise.Persistence;
 namespace Rise.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251029085120_EigenProfile")]
-    partial class EigenProfile
+    [Migration("20251030231603_AppUserGender")]
+    partial class AppUserGender
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -287,7 +287,7 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("Chat", (string)null);
                 });
 
-            modelBuilder.Entity("Rise.Domain.Chats.Message", b =>
+            modelBuilder.Entity("Rise.Domain.Messages.Message", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -354,8 +354,8 @@ namespace Rise.Persistence.Migrations
 
                     b.Property<string>("AvatarUrl")
                         .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
 
                     b.Property<string>("Biography")
                         .IsRequired()
@@ -375,10 +375,9 @@ namespace Rise.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<string>("Gender")
-                        .IsRequired()
+                    b.Property<int>("Gender")
                         .HasMaxLength(10)
-                        .HasColumnType("varchar(10)");
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -577,7 +576,7 @@ namespace Rise.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Rise.Domain.Chats.Message", b =>
+            modelBuilder.Entity("Rise.Domain.Messages.Message", b =>
                 {
                     b.HasOne("Rise.Domain.Chats.Chat", "Chat")
                         .WithMany("Messages")
@@ -598,71 +597,7 @@ namespace Rise.Persistence.Migrations
 
             modelBuilder.Entity("Rise.Domain.Users.ApplicationUser", b =>
                 {
-                    b.OwnsOne("Rise.Domain.Users.ApplicationUserSetting", "_userSettings", b1 =>
-                        {
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
-
-                            b1.Property<int>("FontSize")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int")
-                                .HasDefaultValue(12);
-
-                            b1.Property<bool>("IsDarkMode")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("tinyint(1)")
-                                .HasDefaultValue(false);
-
-                            b1.Property<int>("UserId")
-                                .HasColumnType("int");
-
-                            b1.HasKey("Id");
-
-                            b1.HasIndex("UserId")
-                                .IsUnique();
-
-                            b1.ToTable("UserSetting", (string)null);
-
-                            b1.WithOwner("User")
-                                .HasForeignKey("UserId");
-
-                            b1.OwnsMany("Rise.Domain.Users.UserSettingChatTextLineSuggestion", "ChatTextLineSuggestions", b2 =>
-                                {
-                                    b2.Property<int>("UserSettingsId")
-                                        .HasColumnType("int");
-
-                                    b2.Property<int>("Id")
-                                        .ValueGeneratedOnAdd()
-                                        .HasColumnType("int");
-
-                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<int>("Id"));
-
-                                    b2.Property<int>("Rank")
-                                        .HasColumnType("int");
-
-                                    b2.Property<string>("Text")
-                                        .IsRequired()
-                                        .HasMaxLength(200)
-                                        .HasColumnType("varchar(200)")
-                                        .HasColumnName("TextSuggestion");
-
-                                    b2.HasKey("UserSettingsId", "Id");
-
-                                    b2.ToTable("UserSettingChatTextLineSuggestions", (string)null);
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("UserSettingsId");
-                                });
-
-                            b1.Navigation("ChatTextLineSuggestions");
-
-                            b1.Navigation("User");
-                        });
-
-                    b.OwnsMany("Rise.Domain.Users.UserConnection", "_connections", b1 =>
+                    b.OwnsMany("Rise.Domain.Users.Connections.UserConnection", "Connections", b1 =>
                         {
                             b1.Property<int>("Id")
                                 .ValueGeneratedOnAdd()
@@ -703,7 +638,71 @@ namespace Rise.Persistence.Migrations
                             b1.Navigation("Connection");
                         });
 
-                    b.Navigation("_connections");
+                    b.OwnsOne("Rise.Domain.Users.Settings.ApplicationUserSetting", "_userSettings", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<int>("FontSize")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasDefaultValue(12);
+
+                            b1.Property<bool>("IsDarkMode")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("tinyint(1)")
+                                .HasDefaultValue(false);
+
+                            b1.Property<int>("UserId")
+                                .HasColumnType("int");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("UserId")
+                                .IsUnique();
+
+                            b1.ToTable("UserSetting", (string)null);
+
+                            b1.WithOwner("User")
+                                .HasForeignKey("UserId");
+
+                            b1.OwnsMany("Rise.Domain.Users.Settings.UserSettingChatTextLineSuggestion", "ChatTextLineSuggestions", b2 =>
+                                {
+                                    b2.Property<int>("UserSettingsId")
+                                        .HasColumnType("int");
+
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("int");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<int>("Id"));
+
+                                    b2.Property<int>("Rank")
+                                        .HasColumnType("int");
+
+                                    b2.Property<string>("Sentence")
+                                        .IsRequired()
+                                        .HasMaxLength(150)
+                                        .HasColumnType("varchar(150)")
+                                        .HasColumnName("TextSuggestion");
+
+                                    b2.HasKey("UserSettingsId", "Id");
+
+                                    b2.ToTable("UserSettingChatTextLineSuggestions", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("UserSettingsId");
+                                });
+
+                            b1.Navigation("ChatTextLineSuggestions");
+
+                            b1.Navigation("User");
+                        });
+
+                    b.Navigation("Connections");
 
                     b.Navigation("_userSettings");
                 });

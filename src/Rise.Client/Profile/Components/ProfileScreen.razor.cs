@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Rise.Client.Profile.Models;
+using Rise.Client.State;
 using Rise.Client.Users;
 using Rise.Shared.Common;
 using Rise.Shared.Users;
@@ -148,7 +149,8 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     }
 
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
-    [Inject] private UserContextService UserContext { get; set; } = default!;
+    [Inject] private IUserService UserService { get; set; } = default!;
+    [Inject] private UserState UserState { get; set; } = default!;
 
     private bool IsEditing => _isEditing;
     private bool IsLoading => _isLoading;
@@ -223,12 +225,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     {
         try
         {
-            var currentUser = await UserContext.InitializeAsync();
-            if (currentUser is null)
-            {
-                _loadError = "Je bent niet aangemeld. Log opnieuw in om je profiel te bekijken.";
-                return;
-            }
+            var currentUser = UserState.User!;
 
             var memberSince = FormatMemberSince(currentUser.CreatedAt);
             _model = ProfileModel.FromUser(currentUser, memberSince);
@@ -415,7 +412,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
             Email = _draft.Email ?? string.Empty,
             Biography = _draft.Bio ?? string.Empty,
             AvatarUrl = _draft.AvatarUrl ?? string.Empty,
-            Gender = _draft.Gender ?? "x",
+            Gender = _draft.Gender,
             Hobbies = _selectedHobbyIds
                         .Where(id => !string.IsNullOrWhiteSpace(id))
                         .Select(x => new HobbyDto.EditProfile() 
@@ -446,7 +443,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         try
         {
             _isSaving = true;
-            var result = await UserContext.UpdateCurrentUserAsync(request);
+            var result = await UserService.UpdateCurrentUserAsync(request);
 
             if (result.IsSuccess && result.Value.User is not null)
             {
@@ -463,10 +460,11 @@ public partial class ProfileScreen : ComponentBase, IDisposable
                 var errorMessage = result.ValidationErrors.FirstOrDefault()?.ErrorMessage
                     ?? result.Errors.FirstOrDefault()
                     ?? "Opslaan is mislukt.";
+
                 await ShowToastAsync(errorMessage);
             }
         }
-        catch
+        catch (Exception ex)
         {
             await ShowToastAsync("Opslaan is mislukt.");
         }
@@ -747,15 +745,13 @@ public partial class ProfileScreen : ComponentBase, IDisposable
             return Task.CompletedTask;
         }
 
-        var censored = WordFilter.Censor(input).Trim();
-
-        if (string.IsNullOrWhiteSpace(censored))
+        if (string.IsNullOrWhiteSpace(input))
         {
             _newChatLineError = "Deze zin kan niet worden gebruikt.";
             return Task.CompletedTask;
         }
 
-        var id = ResolveChatLineId(censored);
+        var id = ResolveChatLineId(input);
 
         if (string.IsNullOrWhiteSpace(id))
         {

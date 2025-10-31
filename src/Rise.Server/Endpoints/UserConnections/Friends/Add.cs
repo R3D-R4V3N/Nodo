@@ -13,7 +13,6 @@ public class Add(IUserConnectionService connectionService)
     public override void Configure()
     {
         Post("/api/connections/add");
-        Roles(AppRoles.User, AppRoles.Supervisor, AppRoles.Administrator);
     }
 
     public override async Task<Result<string>> ExecuteAsync(AddFriendRequest req, CancellationToken ct)

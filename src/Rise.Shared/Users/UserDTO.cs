@@ -14,7 +14,7 @@ public static class UserDto
         public string AvatarUrl { get; init; } = string.Empty;
         public string Email { get; init; } = string.Empty;
         public string Biography { get; init; } = string.Empty;
-        public string Gender { get; init; } = "x";
+        public GenderTypeDto Gender { get; init; }
         public DateOnly BirthDay { get; init; }
         public DateTime CreatedAt { get; init; }
         public List<SentimentDto.Get> Interests { get; init; } = [];
@@ -56,7 +56,7 @@ public static class UserDto
         public string AvatarUrl { get; init; } = string.Empty;
         public string Email { get; init; } = string.Empty;
         public string Biography { get; init; } = string.Empty;
-        public string Gender { get; init; } = "x";
+        public GenderTypeDto Gender { get; init; }
         public DateOnly BirthDay { get; init; }
         public List<HobbyDto.Get> Hobbies { get; init; } = [];
     }

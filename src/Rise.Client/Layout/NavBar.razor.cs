@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using Rise.Client.State;
 using Rise.Shared.Users;
 
 namespace Rise.Client.Layout;
@@ -10,8 +11,8 @@ public partial class NavBar : IDisposable
 {
     private string _currentPath = "/";
 
-    [CascadingParameter]
-    public UserDto.CurrentUser? CurrentUser { get; set; }
+    [Inject]
+    public UserState UserState { get; set; }
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;

@@ -14,21 +14,20 @@ internal static class UserMapper
             Name = $"{user.FirstName} {user.LastName}",
             AccountId = user.AccountId,
             Age = CalculateAge(user.BirthDay),
-            AvatarUrl = user.AvatarUrl.Value,
+            AvatarUrl = user.AvatarUrl,
         };
 
     public static UserDto.CurrentUser ToCurrentUserDto(this ApplicationUser user, string email = "") =>
         new UserDto.CurrentUser
         {
             Id = user.Id,
-            FirstName = user.FirstName.Value,
-            LastName = user.LastName.Value,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
             AccountId = user.AccountId,
-            AvatarUrl = user.AvatarUrl.Value,
+            AvatarUrl = user.AvatarUrl,
             Email = email,
-
-            Biography = user.Biography.Value,
-            Gender = user.Gender,
+            Biography = user.Biography,
+            Gender = user.Gender.ToDto(),
             BirthDay = user.BirthDay,
             CreatedAt = user.CreatedAt,
             Interests = user.Sentiments
@@ -47,15 +46,15 @@ internal static class UserMapper
         new UserDto.ConnectionProfile
         {
             Id = user.Id,
-            FirstName = user.FirstName.Value,
-            LastName = user.LastName.Value,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
             AccountId = user.AccountId,
-            AvatarUrl = user.AvatarUrl.Value,
-
-            Biography = user.Biography.Value,
-            Gender = user.Gender,
+            AvatarUrl = user.AvatarUrl,
+           
+            Biography = user.Biography,
+            Gender = user.Gender.ToDto(),
             BirthDay = user.BirthDay,
-
+            
             Hobbies = user.Hobbies
                 .Select(HobbyMapper.ToGetDto)
                 .ToList(),

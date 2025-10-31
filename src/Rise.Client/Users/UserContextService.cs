@@ -16,23 +16,6 @@ public class UserContextService(
     public async Task<Result<UserResponse.CurrentUser>> GetCurrentUserAsync(CancellationToken ctx = default)
         => await _http.GetFromJsonAsync<Result<UserResponse.CurrentUser>>($"/api/users/current", cancellationToken: ctx)!;
 
-    public async Task<Result<UserResponse.CurrentUser>> UpdateCurrentUserAsync(UserRequest.UpdateCurrentUser request, CancellationToken ctx = default)
-    {
-        var response = await _http.PutAsJsonAsync("/api/users/current", request, ctx);
-        var result = await response.Content.ReadFromJsonAsync<Result<UserResponse.CurrentUser>>(cancellationToken: ctx);
-
-        if (result is null)
-        {
-            return Result.Error("Kon het serverantwoord niet verwerken.");
-        }
-
-        if (result is { IsSuccess: true, Value.User: not null })
-        {
-            CurrentUser = result.Value.User;
-        }
-
-        return result;
-    }
 
     public async Task<UserDto.CurrentUser?> InitializeAsync(CancellationToken ctx = default)
     {

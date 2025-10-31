@@ -3,9 +3,6 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rise.Domain.Common;
 using Rise.Domain.Users;
-using Rise.Domain.Users.Connections;
-using Rise.Domain.Users.Hobbys;
-using Rise.Domain.Users.Sentiment;
 using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Settings;
 using Rise.Domain.Users.Settings.Properties;
@@ -48,6 +45,7 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
 
         builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.UserType).IsRequired();
+        builder.Property(x => x.Gender).IsRequired().HasMaxLength(10);
 
         // sentiments
         builder.Ignore(u => u.Likes);

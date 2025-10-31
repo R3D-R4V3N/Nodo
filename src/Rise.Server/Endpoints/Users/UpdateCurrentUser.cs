@@ -3,7 +3,7 @@ using Rise.Shared.Users;
 
 namespace Rise.Server.Endpoints.Users;
 
-public class UpdateCurrentUser(IUserContextService userService)
+public class UpdateCurrentUser(IUserService userService)
     : Endpoint<UserRequest.UpdateCurrentUser, Result<UserResponse.CurrentUser>>
 {
     public override void Configure()
