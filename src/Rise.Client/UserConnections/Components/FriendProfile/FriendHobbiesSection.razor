@@ -1,23 +1,23 @@
 @using Rise.Client.Profile.Models
 
-<section class="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8">
-    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm font-semibold text-neutral-700">
+<section class="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm sm:p-6">
+    <div class="mb-3 flex items-center justify-between gap-2 text-sm font-semibold text-neutral-700">
         <div class="flex items-center gap-2">
-            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="h-4 w-4" viewBox="0 0 256 256">
                     <path d="M234.29,114.85l-45,38.83L203,211.75a16.4,16.4,0,0,1-24.5,17.82L128,198.49,77.47,229.57A16.4,16.4,0,0,1,53,211.75l13.76-58.07-45-38.83A16.46,16.46,0,0,1,31.08,86l59-4.76,22.76-55.08a16.36,16.36,0,0,1,30.27,0l22.75,55.08,59,4.76a16.46,16.46,0,0,1,9.37,28.86Z"></path>
                 </svg>
             </span>
-            <span class="text-base sm:text-lg">Hobby's van @FirstName</span>
+            <span>Hobby's van @FirstName</span>
         </div>
     </div>
 
-    <div class="min-h-[42px] flex flex-wrap gap-2">
+    <div class="min-h-[36px] flex flex-wrap gap-2">
         @if (Hobbies.Any())
         {
             @foreach (var hobby in Hobbies)
             {
-                <span class="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-sm text-neutral-700 shadow-sm">
+                <span class="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-3 py-1 text-sm text-neutral-700 shadow-sm">
                     @if (!string.IsNullOrWhiteSpace(hobby.Emoji))
                     {
                         <span class="text-base">@hobby.Emoji</span>
