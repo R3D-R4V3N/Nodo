@@ -1,41 +1,43 @@
  
-<div class="max-w-full text-white drop-shadow-[0_6px_24px_rgba(0,0,0,0.35)] md:max-w-md">
-    <h1 class="text-3xl font-semibold sm:text-4xl">@Name</h1>
+<div class="max-w-3xl text-white md:max-w-xl">
+    <div class="rounded-3xl bg-neutral-950/70 p-6 backdrop-blur-lg ring-1 ring-white/15">
+        <h1 class="text-3xl font-semibold sm:text-4xl">@Name</h1>
 
-    <div class="mt-4 flex flex-wrap gap-2">
-        @if (!string.IsNullOrWhiteSpace(Age))
-        {
-            <span class="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/90 px-3 py-1.5 text-xs font-medium text-[#127646] shadow-sm sm:text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 256 256" fill="currentColor">
-                    <path d="M152,40a24,24,0,0,1-48,0c0-24,24-40,24-40S152,16,152,40Z"></path>
-                    <path d="M208,96H48A16,16,0,0,0,32,112v23.33c0,17.44,13.67,32.18,31.1,32.66A32,32,0,0,0,96,136a32,32,0,0,0,64,0,32,32,0,0,0,32.9,32C210.33,167.51,224,152.77,224,135.33V112A16,16,0,0,0,208,96Z"></path>
-                    <path d="M200,156.9V200a16,16,0,0,1-16,16H72a16,16,0,0,1-16-16V156.9"></path>
-                </svg>
-                @Age
-            </span>
-        }
+        <div class="mt-4 flex flex-wrap gap-2">
+            @if (!string.IsNullOrWhiteSpace(Age))
+            {
+                <span class="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/95 px-3 py-1.5 text-xs font-medium text-emerald-700 shadow-sm sm:text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 256 256" fill="currentColor">
+                        <path d="M152,40a24,24,0,0,1-48,0c0-24,24-40,24-40S152,16,152,40Z"></path>
+                        <path d="M208,96H48A16,16,0,0,0,32,112v23.33c0,17.44,13.67,32.18,31.1,32.66A32,32,0,0,0,96,136a32,32,0,0,0,64,0,32,32,0,0,0,32.9,32C210.33,167.51,224,152.77,224,135.33V112A16,16,0,0,0,208,96Z"></path>
+                        <path d="M200,156.9V200a16,16,0,0,1-16,16H72a16,16,0,0,1-16-16V156.9"></path>
+                    </svg>
+                    @Age
+                </span>
+            }
 
-        @if (!string.IsNullOrWhiteSpace(Gender))
-        {
-            <span class="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/80 px-3 py-1.5 text-xs font-medium text-[#0f663c] shadow-sm sm:text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 256 256" fill="currentColor">
-                    <circle cx="128" cy="96" r="64"></circle>
-                    <path d="M120,232V192h16v40a8,8,0,0,1-16,0Z"></path>
-                    <path d="M152,216H104a8,8,0,0,1,0-16h48a8,8,0,0,1,0,16Z"></path>
-                </svg>
-                @Gender
-            </span>
-        }
+            @if (!string.IsNullOrWhiteSpace(Gender))
+            {
+                <span class="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/90 px-3 py-1.5 text-xs font-medium text-emerald-700 shadow-sm sm:text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 256 256" fill="currentColor">
+                        <circle cx="128" cy="96" r="64"></circle>
+                        <path d="M120,232V192h16v40a8,8,0,0,1-16,0Z"></path>
+                        <path d="M152,216H104a8,8,0,0,1,0-16h48a8,8,0,0,1,0,16Z"></path>
+                    </svg>
+                    @Gender
+                </span>
+            }
 
-        @if (!string.IsNullOrWhiteSpace(Organisation))
-        {
-            <span class="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/80 px-3 py-1.5 text-xs font-medium text-[#0f663c] shadow-sm sm:text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h3V5H5a2 2 0 00-2 2zm13-2v14h3a2 2 0 002-2V7a2 2 0 00-2-2h-3z" />
-                </svg>
-                @Organisation
-            </span>
-        }
+            @if (!string.IsNullOrWhiteSpace(Organisation))
+            {
+                <span class="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/90 px-3 py-1.5 text-xs font-medium text-emerald-700 shadow-sm sm:text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h3V5H5a2 2 0 00-2 2zm13-2v14h3a2 2 0 002-2V7a2 2 0 00-2-2h-3z" />
+                    </svg>
+                    @Organisation
+                </span>
+            }
+        </div>
     </div>
 </div>
 

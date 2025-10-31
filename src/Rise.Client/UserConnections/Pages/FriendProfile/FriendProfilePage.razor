@@ -21,25 +21,31 @@ else if (user?.User is null)
 }
 else
 {
-    <div class="relative flex min-h-screen flex-col bg-neutral-50 text-neutral-900 antialiased md:flex-row md:items-stretch animate-fade-in">
-        <EmojiComponent Hobbies="@ProfileHobbies" />
+    <div class="relative min-h-screen bg-neutral-50 text-neutral-900 antialiased">
         <BackButton />
 
-        <header class="relative flex h-[70vh] flex-col overflow-hidden md:h-auto md:min-h-screen md:w-1/2">
+        <section class="relative h-[360px] w-full overflow-hidden sm:h-[420px] md:h-[480px]">
             <ProfileImageComponent ImgSource="@user.User.AvatarUrl" />
-            <BlurComponent />
+            <div class="absolute inset-0 bg-gradient-to-b from-neutral-900/30 via-neutral-900/60 to-neutral-900/80 md:bg-gradient-to-r md:from-neutral-950/75 md:via-neutral-950/55 md:to-neutral-900/30"></div>
 
-            <div class="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col justify-end bg-gradient-to-t from-neutral-950/70 via-neutral-950/20 to-transparent px-5 pb-8 pt-24 md:inset-y-0 md:left-0 md:justify-center md:bg-gradient-to-r md:px-12 md:py-0">
+            <div class="absolute inset-x-0 bottom-0 px-4 pb-10 md:inset-y-0 md:flex md:items-center md:px-12">
                 <NameAndBadgesComponent
                     Name="@user.User.Name"
                     Age="@AgeLabel"
                     Gender="@user.User.Gender.ToString()" />
             </div>
-        </header>
+        </section>
 
-        <DescriptionComponent
-            PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
-            Description="@user.User.Biography" />
+        <main class="relative z-10 mx-auto -mt-10 w-full max-w-3xl space-y-8 px-4 pb-16 sm:px-6 md:-mt-16">
+            <DescriptionComponent
+                FirstName="@user.User.FirstName"
+                PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
+                Description="@user.User.Biography" />
+
+            <FriendHobbiesSection
+                FirstName="@user.User.FirstName"
+                Hobbies="@ProfileHobbies" />
+        </main>
     </div>
 }
 

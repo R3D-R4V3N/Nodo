@@ -1,14 +1,19 @@
 
-<section class="relative z-10 flex flex-1 flex-col justify-center px-4 pb-16 pt-24 sm:px-8 md:w-1/2 md:pb-20 md:pt-16">
-    <div class="mx-auto w-full max-w-xl">
-        <p class="rounded-3xl border border-neutral-200 bg-white p-5 text-sm leading-relaxed text-neutral-700 shadow-sm sm:text-base">
+<section class="w-full">
+    <div class="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8">
+        <header>
+            <p class="text-sm font-semibold uppercase tracking-wide text-emerald-600">Over @FirstName</p>
+            <h2 class="mt-1 text-xl font-semibold text-neutral-900 sm:text-2xl">Leer @FirstName beter kennen</h2>
+        </header>
+
+        <p class="mt-4 text-sm leading-relaxed text-neutral-700 sm:text-base">
             @if (!string.IsNullOrWhiteSpace(Description))
             {
                 @Description
             }
             else
             {
-                <span class="text-neutral-500">Deze persoon heeft nog geen beschrijving gedeeld.</span>
+                <span class="text-neutral-500">@FirstName heeft nog geen beschrijving gedeeld.</span>
             }
         </p>
 
@@ -39,5 +44,6 @@
 
 @code {
     [Parameter] public string Description { get; set; } = "Lief, eerlijk en altijd mezelf 💛 Heb een mentale beperking, maar een groot hart en een brede glimlach 🙂";
+    [Parameter] public string FirstName { get; set; } = "";
     [Parameter] public bool PlusKnop { get; set; }
 }
