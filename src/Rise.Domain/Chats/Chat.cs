@@ -10,32 +10,38 @@ public class Chat : Entity
     // ef
     private Chat() { }
 
-    private readonly List<ApplicationUser> _users = [];
-    public IReadOnlyList<ApplicationUser> Users => _users.AsReadOnly();
+    private readonly List<BaseUser> _users = [];
+    public IReadOnlyList<BaseUser> Users => _users.AsReadOnly();
     
     private readonly List<Message> _messages = [];
     public IReadOnlyList<Message> Messages => _messages.AsReadOnly();
 
-    public static Result<Chat> CreateChat(ApplicationUser user1, ApplicationUser user2)
+    public static Result<Chat> CreateChat(BaseUser baseUser1, BaseUser baseUser2)
     {
-        if (!user1.HasFriend(user2) || !user2.HasFriend(user1))
+        if (baseUser1 is User user1 && baseUser2 is User user2)
         {
-            return Result.Conflict($"Chat kan niet worden gemaakt omdat {user1} en {user2} elkaar niet bevriend zijn");
+            if (!user1.HasFriend(user2) || !user2.HasFriend(user1))
+            {
+                return Result.Conflict(
+                    $"Chat kan niet worden gemaakt omdat {user1} en {user2} elkaar niet bevriend zijn"
+                );
+            }
         }
+
         Chat chat = new Chat();
 
-        chat._users.Add(user1);
-        chat._users.Add(user2);
+        chat._users.Add(baseUser1);
+        chat._users.Add(baseUser2);
 
-        user1.AddChat(user2, chat);
-        user2.AddChat(user1, chat);
+        baseUser1.AddChat(baseUser2, chat);
+        baseUser2.AddChat(baseUser1, chat);
 
         return Result.Success(chat);
     }
 
-    public Result AddUser(ApplicationUser chatOwner, ApplicationUser user)
+    public Result AddUser(BaseUser chatOwner, BaseUser user)
     {
-        if (!chatOwner.IsSupervisor() && !_users.Contains(chatOwner))
+        if (chatOwner is not Supervisor && !_users.Contains(chatOwner))
         {
             return Result.Conflict($"Meegegeven gebruiker: {chatOwner} is geen chat eigenaar");
         }
@@ -58,9 +64,9 @@ public class Chat : Entity
         return Result.Success();
     }
 
-    public Result RemoveUser(ApplicationUser chatOwner, ApplicationUser user)
+    public Result RemoveUser(BaseUser chatOwner, BaseUser user)
     {
-        if (!chatOwner.IsSupervisor() && !_users.Contains(chatOwner))
+        if (chatOwner is not Supervisor && !_users.Contains(chatOwner))
         {
             return Result.Conflict($"Meegegeven gebruiker: {chatOwner} is geen chat eigenaar");
         }
@@ -83,7 +89,7 @@ public class Chat : Entity
         return Result.Success();
     }
 
-    public Result AddTextMessage(string text, ApplicationUser user)
+    public Result AddTextMessage(string text, BaseUser user)
     {
         if (string.IsNullOrWhiteSpace(text))
         {

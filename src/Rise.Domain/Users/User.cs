@@ -1,28 +1,11 @@
 using Ardalis.Result;
 using Rise.Domain.Chats;
 using Rise.Domain.Users.Connections;
-using Rise.Domain.Users.Properties;
-using Rise.Domain.Users.Settings;
 
 namespace Rise.Domain.Users;
 
-public class ApplicationUser : Entity
+public class User : BaseUser
 {
-    // ef
-    public ApplicationUser() { }
-
-    /// <summary>
-    /// Link to the <see cref="IdentityUser"/> account so chatprofielen gekoppeld blijven aan hun login.
-    /// </summary>
-    public string AccountId { get; private set; }
-    public required FirstName FirstName { get; set; }
-    public required LastName LastName { get; set; }
-    public required Biography Biography { get; set; }
-    public required AvatarUrl AvatarUrl { get; set; }
-    public required DateOnly BirthDay { get; set; }
-    public required UserType UserType { get; set; }
-    
-
     //// connections
     private readonly List<UserConnection> _connections = new();
     public IReadOnlyCollection<UserConnection> Connections => _connections;
@@ -35,38 +18,10 @@ public class ApplicationUser : Entity
     public IEnumerable<UserConnection> BlockedUsers => _connections
         .Where(x => x.ConnectionType.Equals(UserConnectionType.Blocked));
 
-    // chats
-    private readonly List<Chat> _chats = [];
-    public IReadOnlyList<Chat> Chats => _chats.AsReadOnly();
-
-    // settings
-    private ApplicationUserSetting _userSettings;
-    public required ApplicationUserSetting UserSettings
-    {
-        get => _userSettings;
-        set
-        {
-            if (_userSettings == value) return;
-
-            _userSettings = Guard.Against.Null(value);
-            if (_userSettings.User != this)
-            {
-                _userSettings.User = this;
-            }
-        }
-    }
-
-    public ApplicationUser(string accountId)
-    {
-        AccountId = Guard.Against.NullOrEmpty(accountId);
-    }
-    public bool IsSupervisor()
-        => this.UserType.Equals(UserType.Supervisor);
-
-    public bool HasFriend(ApplicationUser friend) 
+    public bool HasFriend(User friend) 
         => _connections.Contains(new UserConnection() { Connection = friend, ConnectionType = UserConnectionType.Friend});
 
-    public Result<string> RejectFriendRequest(ApplicationUser requester)
+    public Result<string> RejectFriendRequest(User requester)
     {
         UserConnection? friendRequest = FriendRequests
             .FirstOrDefault(x => x.Connection.Equals(requester));
@@ -95,7 +50,7 @@ public class ApplicationUser : Entity
         return Result.Success($"Gebruiker weigert vriendschapsverzoek van {requester}");
     }
     
-    public Result<string> AddFriend(ApplicationUser friend)
+    public Result<string> AddFriend(User friend)
     {       
         bool isAdded = Friends.Any(x => x.Connection?.Equals(friend) ?? false);
 
@@ -168,9 +123,9 @@ public class ApplicationUser : Entity
         return Result.Success($"Gebruiker voegt {friend} toe");
     }
 
-    public Result RemoveFriend(ApplicationUser friend)
+    public Result RemoveFriend(User friend)
     {
-        Span<ApplicationUser> span =
+        Span<User> span =
         [
             this, friend
         ];
@@ -191,9 +146,9 @@ public class ApplicationUser : Entity
         return Result.Success();
     }
 
-    public Result RemoveFriendRequest(ApplicationUser friend)
+    public Result RemoveFriendRequest(User friend)
     {
-        Span<ApplicationUser> span =
+        Span<User> span =
         [
             this, friend
         ];
@@ -216,51 +171,6 @@ public class ApplicationUser : Entity
                     ConnectionType = UserConnectionType.RequestOutgoing,
                 }
             );
-        }
-
-        return Result.Success();
-    }
-
-    public Result AddChat(ApplicationUser chatOwner, Chat chat)
-    {
-        if (_chats.Contains(chat))
-        {
-            return Result.Conflict($"Gebruiker is al lid van chat {chat}");
-        }
-        if (!this.IsSupervisor() && !chatOwner.HasFriend(this))
-        {
-            return Result.Conflict($"Chat eigenaar is niet bevriendt met {this}");
-        }
-
-        _chats.Add(chat);
-        if (!chat.Users.Contains(this))
-        { 
-            var res = chat.AddUser(chatOwner, this);
-            if (!res.IsSuccess)
-            {
-                _chats.Remove(chat);
-                return res;
-            }
-        }
-
-        return Result.Success();
-    }
-    public Result RemoveChat(ApplicationUser chatOwner, Chat chat)
-    {
-        if (!chatOwner.IsSupervisor() && !_chats.Contains(chat))
-        {
-            return Result.Conflict($"Gebruiker is geen lid van chat {chat}");
-        }
-
-        _chats.Remove(chat);
-        if (chat.Users.Contains(this))
-        {
-            var res = chat.RemoveUser(chatOwner, this);
-            if (!res.IsSuccess)
-            {
-                _chats.Add(chat);
-                return res;
-            }
         }
 
         return Result.Success();

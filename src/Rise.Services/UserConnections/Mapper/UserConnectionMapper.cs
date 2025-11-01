@@ -13,7 +13,7 @@ public static class UserConnectionMapper
             State = user.ConnectionType.MapToDto(),
         };
 
-    public static UserConnectionDto.Get ToGetDto(this ApplicationUser user) =>
+    public static UserConnectionDto.Get ToGetDto(this User user) =>
         new UserConnectionDto.Get
         {
             User = user.ToConnectionDto(),

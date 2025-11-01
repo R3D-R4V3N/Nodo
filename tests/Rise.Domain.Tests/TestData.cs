@@ -19,8 +19,8 @@ public static class TestData
     public static FontSize ValidFontSize()
         => FontSize.Create(new Random().Next(FontSize.MIN_FONT_SIZE, FontSize.MAX_FONT_SIZE));
 
-    public static ApplicationUserSetting ValidUserSettings() =>
-        new ApplicationUserSetting
+    public static UserSetting ValidUserSettings() =>
+        new UserSetting
         {
             FontSize = ValidFontSize()
         };
@@ -29,34 +29,34 @@ public static class TestData
     public static LastName ValidLastName() => LastName.Create($"Doe");
     public static Biography ValidBiography() => Biography.Create($"Dit is een bio.");
     public static AvatarUrl ValidAvatarUrl() => AvatarUrl.Create($"Dit is een img.");
-    public static ApplicationUser ValidUser(int id) =>
-        new ApplicationUser("valid-id-1")
+    public static User ValidUser(int id) =>
+        (User) new User()
         {
+            AccountId = "valid-id-" + id,
             FirstName = ValidFirstName(),
             LastName = ValidLastName(),
             Biography = ValidBiography(),
             AvatarUrl = ValidAvatarUrl(),
             BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
-            UserType = UserType.Regular,
             UserSettings = ValidUserSettings()
         }.WithId(id);
 
-    public static ApplicationUser ValidSupervisor(int id) =>
-        new ApplicationUser("valid-id-2")
+    public static Supervisor ValidSupervisor(int id) =>
+        (Supervisor) new Supervisor()
         {
+            AccountId = "valid-id-" + id,
             FirstName = ValidFirstName(),
             LastName = ValidLastName(),
             Biography = ValidBiography(),
             AvatarUrl = ValidAvatarUrl(),
             BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-40)),
-            UserType = UserType.Supervisor,
             UserSettings = ValidUserSettings()
         }.WithId(id);
 
-    private static ApplicationUser WithId(this ApplicationUser user, int id)
+    private static BaseUser WithId(this BaseUser user, int id)
     {
-        typeof(ApplicationUser)
-            .GetProperty(nameof(ApplicationUser.Id))!
+        typeof(BaseUser)
+            .GetProperty(nameof(BaseUser.Id))!
             .SetValue(user, id);
 
         return user;

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rise.Persistence;
 
@@ -11,9 +12,11 @@ using Rise.Persistence;
 namespace Rise.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251101154654_SplitApplicationUserIntoUserAndSupervisor")]
+    partial class SplitApplicationUserIntoUserAndSupervisor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -401,7 +404,7 @@ namespace Rise.Persistence.Migrations
                 {
                     b.HasBaseType("Rise.Domain.Users.BaseUser");
 
-                    b.ToTable("Supervisors", (string)null);
+                    b.ToTable("Supervisor", (string)null);
                 });
 
             modelBuilder.Entity("Rise.Domain.Users.User", b =>

@@ -22,7 +22,7 @@ public class UserContextService(
             return Result.Unauthorized();
         }
 
-        var currentUser = await _dbContext.ApplicationUsers
+        var currentUser = await _dbContext.Users
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
 
         if (currentUser is null)

@@ -4,7 +4,7 @@ using Rise.Shared.Users;
 namespace Rise.Services.Users.Mapper;
 internal static class UserMapper
 {
-    public static UserDto.Connection ToConnectionDto(this ApplicationUser user) =>
+    public static UserDto.Connection ToConnectionDto(this BaseUser user) =>
         new UserDto.Connection
         {
             Id = user.Id,
@@ -13,7 +13,7 @@ internal static class UserMapper
             Age = CalculateAge(user.BirthDay),
             AvatarUrl = user.AvatarUrl,
         };
-    public static UserDto.CurrentUser ToCurrentUserDto(this ApplicationUser user) =>
+    public static UserDto.CurrentUser ToCurrentUserDto(this BaseUser user) =>
         new UserDto.CurrentUser
         {
             Id = user.Id,
@@ -27,7 +27,7 @@ internal static class UserMapper
                 .ToList(),
         };
 
-    public static UserDto.Chat ToChatDto(this ApplicationUser user) =>
+    public static UserDto.Chat ToChatDto(this BaseUser user) =>
         new UserDto.Chat
         {
             Id = user.Id,
@@ -36,7 +36,7 @@ internal static class UserMapper
             AvatarUrl = user.AvatarUrl
         };
 
-    public static UserDto.Message ToMessageDto(this ApplicationUser user) =>
+    public static UserDto.Message ToMessageDto(this BaseUser user) =>
         new UserDto.Message
         {
             Id = user.Id,

@@ -23,13 +23,13 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
     {
         var userId = sessionContextProvider.User!.GetUserId();
 
-        var loggedInUser = await dbContext.ApplicationUsers
+        var loggedInUser = await dbContext.Users
             .SingleOrDefaultAsync(x => x.AccountId == sessionContextProvider.User!.GetUserId(), ctx);
 
         if (loggedInUser is null)
             return Result.Unauthorized("You are not authorized to fetch user connections.");
 
-        var query = dbContext.ApplicationUsers
+        var query = dbContext.Users
             .Where(u => u.AccountId == userId)
             .SelectMany(u => u.Connections)
             .Where(c =>
@@ -80,12 +80,12 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
         var currentUserId = sessionContextProvider.User!.GetUserId();
 
         // Huidige gebruiker ophalen
-        var currentUser = await dbContext.ApplicationUsers
+        var currentUser = await dbContext.Users
             .Include(u => u.Connections)
             .ThenInclude(uc => uc.Connection) // <-- dit laadt de ApplicationUser waar UserConnection naar verwijst
             .SingleOrDefaultAsync(u => u.AccountId == currentUserId, ctx);
         // Doelgebruiker ophalen
-        var targetUser = await dbContext.ApplicationUsers
+        var targetUser = await dbContext.Users
             .Include(u => u.Connections)
             .ThenInclude(uc => uc.Connection)
             .SingleOrDefaultAsync(u => u.AccountId == targetAccountId, ctx);
@@ -108,12 +108,12 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
         var currentUserId = sessionContextProvider.User!.GetUserId();
 
         // Huidige gebruiker ophalen
-        var currentUser = await dbContext.ApplicationUsers
+        var currentUser = await dbContext.Users
             .Include(u => u.Connections)
             .SingleOrDefaultAsync(u => u.AccountId == currentUserId, ct);
 
         // Aanvrager ophalen
-        var requesterUser = await dbContext.ApplicationUsers
+        var requesterUser = await dbContext.Users
             .Include(u => u.Connections)
             .SingleOrDefaultAsync(u => u.AccountId == requesterAccountId, ct);
 
@@ -134,7 +134,7 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
     {
         var userId = sessionContextProvider.User!.GetUserId();
 
-        var loggedInUser = await dbContext.ApplicationUsers
+        var loggedInUser = await dbContext.Users
             .SingleOrDefaultAsync(x => x.AccountId == sessionContextProvider.User!.GetUserId(), ctx);
 
         if (loggedInUser is null)
@@ -142,7 +142,7 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
             return Result.Unauthorized("You are not authorized to fetch user connections.");
         }
         
-        var existingConnectionIds = dbContext.ApplicationUsers
+        var existingConnectionIds = dbContext.Users
                 .Where(u => u.AccountId == userId)
                 .SelectMany(u => u.Connections)
                 .Where(c =>
@@ -152,7 +152,7 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
                 .Select(c => c.Connection.AccountId)
                 .ToList();
         
-        var query = dbContext.ApplicationUsers
+        var query = dbContext.Users
             .Where(u => u.AccountId != userId && !existingConnectionIds.Contains(u.AccountId));
 
         var totalCount = await query.CountAsync(ctx);
@@ -173,9 +173,9 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
     {
         var userId = sessionContextProvider.User!.GetUserId();
 
-        var loggedInUser = await dbContext.ApplicationUsers
+        var loggedInUser = await dbContext.Users
             .SingleOrDefaultAsync(x => x.AccountId == sessionContextProvider.User!.GetUserId(), ct);
-        var reqRequesterAccount = await dbContext.ApplicationUsers
+        var reqRequesterAccount = await dbContext.Users
             .SingleOrDefaultAsync(x => x.AccountId == reqRequesterAccountId, ct);
         
         if (loggedInUser is null)

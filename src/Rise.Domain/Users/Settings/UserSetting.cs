@@ -4,13 +4,13 @@ using Rise.Domain.Users.Settings.Properties;
 
 namespace Rise.Domain.Users.Settings;
 
-public class ApplicationUserSetting : ValueObject
+public class UserSetting : ValueObject
 {
-    public ApplicationUserSetting() { }
+    public UserSetting() { }
     public const int MAX_DEFAULT_CHAT_LINE_COUNT = 5;
 
-    private ApplicationUser _user;
-    public ApplicationUser User
+    private BaseUser _user;
+    public BaseUser User
     {
         get => _user;
         set

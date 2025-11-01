@@ -9,48 +9,32 @@ public class ApplicationUserTests
     [Fact]
     public void Constructor_ShouldSetPropertiesCorrectly()
     {
+        var accountId = "id";
         var firstName = TestData.ValidFirstName();
         var lastName = TestData.ValidLastName();
         var biography = TestData.ValidBiography();
         var avatarUrl = TestData.ValidAvatarUrl();
         var birthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28));
-        var userType = UserType.Regular;
         var userSettings = TestData.ValidUserSettings();
 
-        var user = new ApplicationUser("id")
+        var user = new User()
         {
+            AccountId = accountId,
             FirstName = firstName,
             LastName = lastName,
             Biography = biography,
             AvatarUrl = avatarUrl,
             BirthDay = birthDay,
-            UserType = userType,
             UserSettings = userSettings
         };
 
+        user.AccountId.ShouldBe(accountId);
         user.FirstName.ShouldBe(firstName);
         user.LastName.ShouldBe(lastName);
         user.Biography.ShouldBe(biography);
         user.AvatarUrl.ShouldBe(avatarUrl);
         user.BirthDay.ShouldBe(birthDay);
-        user.UserType.ShouldBe(userType);
         user.UserSettings.ShouldBe(userSettings);
-    }
-
-    [Fact]
-    public void IsSuperVisor_ShouldReturnTrue_WhenUserIsSupervisor()
-    {
-        var user = TestData.ValidSupervisor(1);
-
-        user.IsSupervisor().ShouldBeTrue();
-    }
-
-    [Fact]
-    public void IsSuperVisor_ShouldReturnFalse_WhenUserIsRegular()
-    {
-        var user = TestData.ValidUser(1);
-
-        user.IsSupervisor().ShouldBeFalse();
     }
 
     [Fact]
@@ -209,7 +193,7 @@ public class ApplicationUserTests
         Chat chat = Chat.CreateChat(user1, user2);
 
         var supervisor = TestData.ValidSupervisor(3);
-        var owner = isSelfOwner ? supervisor: user1;
+        BaseUser owner = isSelfOwner ? supervisor : user1;
 
         var result = supervisor.AddChat(owner, chat);
 
@@ -257,7 +241,7 @@ public class ApplicationUserTests
         var result = newUser.AddChat(user1, chat);
 
         result.Status.ShouldBe(ResultStatus.Conflict);
-        result.Errors.ShouldBe([$"Chat eigenaar is niet bevriendt met {user1}"]);
+        result.Errors.ShouldBe([$"{user1} is niet bevriendt met {newUser}"]);
     }
 
     [Fact]
@@ -286,7 +270,7 @@ public class ApplicationUserTests
 
     [Theory]
     [MemberData(nameof(RemoveChat_ShouldRemoveUserAndChatLink_MemberData))]
-    public void RemoveChat_ShouldRemoveUserAndChatLink(ApplicationUser user1, ApplicationUser user2, ApplicationUser owner)
+    public void RemoveChat_ShouldRemoveUserAndChatLink(User user1, User user2, User owner)
     {
         user1.AddFriend(user2);
         user2.AddFriend(user1);
@@ -308,7 +292,7 @@ public class ApplicationUserTests
 
     [Theory]
     [MemberData(nameof(RemoveChat_SupervisorCanRemove_WhenNotInChat_MemberData))]
-    public void RemoveChat_SupervisorCanRemove_WhenNotInChat(ApplicationUser user1, ApplicationUser user2, ApplicationUser removedUser)
+    public void RemoveChat_SupervisorCanRemove_WhenNotInChat(User user1, User user2, User removedUser)
     {
         user1.AddFriend(user2);
         user2.AddFriend(user1);

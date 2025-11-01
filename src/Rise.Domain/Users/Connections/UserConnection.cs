@@ -2,7 +2,7 @@
 namespace Rise.Domain.Users.Connections;
 public class UserConnection : ValueObject
 {
-    public required ApplicationUser Connection { get; set; }
+    public required User Connection { get; set; }
     public required UserConnectionType ConnectionType { get; set; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 

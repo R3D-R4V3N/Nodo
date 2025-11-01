@@ -46,7 +46,7 @@ public class ApplicationUserSettingTests
     public void AddChatTextLine_ShouldReturnConflict_WhenExceedingMax()
     {
         var setting = TestData.ValidUserSettings();
-        int n = ApplicationUserSetting.MAX_DEFAULT_CHAT_LINE_COUNT;
+        int n = UserSetting.MAX_DEFAULT_CHAT_LINE_COUNT;
 
         for (int i = 0; i < n; i++)
         {

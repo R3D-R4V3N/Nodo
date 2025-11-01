@@ -26,7 +26,7 @@ public class UserService(
         Console.WriteLine("AccountId: " + accountId);
 
 
-        var currentUser = await _dbContext.ApplicationUsers
+        var currentUser = await _dbContext.Users
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
 
         Console.WriteLine("Account" + currentUser);
