@@ -5,6 +5,7 @@ using Rise.Domain.Chats;
 using Rise.Domain.Locations;
 using Rise.Domain.Messages;
 using Rise.Domain.Organizations;
+using Rise.Domain.Registrations;
 using Rise.Domain.Users;
 
 namespace Rise.Persistence;
@@ -26,6 +27,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> opts) :
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Supervisor> Supervisors => Set<Supervisor>();
+    public DbSet<RegistrationRequest> RegistrationRequests => Set<RegistrationRequest>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
