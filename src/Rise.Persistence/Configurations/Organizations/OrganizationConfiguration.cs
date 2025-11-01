@@ -31,5 +31,7 @@ internal sealed class OrganizationConfiguration : EntityConfiguration<Organizati
         builder.Navigation(organization => organization.Members)
             .HasField("_members")
             .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Ignore(organization => organization.Supervisors);
     }
 }
