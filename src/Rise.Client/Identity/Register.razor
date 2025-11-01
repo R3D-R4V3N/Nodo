@@ -1,6 +1,5 @@
 @page "/register"
 @using Rise.Client.Identity.Components
-@using Rise.Client.Home.Components
 @layout EmptyLayout
 
 <PageTitle>Register</PageTitle>
@@ -8,40 +7,28 @@
 <AuthorizeView Context="authContext">
     <Authorized>
         <AuthLayout>
-            <HeaderContent>
-                <HomeLogo />
-                <HomeHeading />
-            </HeaderContent>
-            <ChildContent>
-                <div class="space-y-4 rounded-3xl bg-white/70 p-6 text-center shadow-xl backdrop-blur">
-                    <p class="text-lg font-semibold text-[#04320C]">You're already logged in as @authContext.User.Identity?.Name.</p>
-                </div>
-            </ChildContent>
+            <div class="space-y-4 rounded-3xl bg-white/70 p-6 text-center shadow-xl backdrop-blur">
+                <p class="text-lg font-semibold text-[#04320C]">You're already logged in as @authContext.User.Identity?.Name.</p>
+            </div>
         </AuthLayout>
     </Authorized>
     <NotAuthorized>
         <AuthLayout>
-            <HeaderContent>
-                <HomeLogo />
-                <HomeHeading />
-            </HeaderContent>
-            <ChildContent>
-                @if (_result?.IsSuccess == true)
-                {
-                    <div class="space-y-4 rounded-3xl bg-white/70 p-6 text-center shadow-xl backdrop-blur">
-                        <p class="text-lg font-semibold text-[#04320C]">Je registratie is geslaagd!</p>
-                        <p class="text-sm text-zinc-600">Je kan nu inloggen om verder te gaan.</p>
-                        <a href="/login" class="inline-flex w-full items-center justify-center rounded-full bg-[#0B6532] py-3 text-lg font-semibold text-white shadow-md transition hover:bg-[#0a572b]">
-                            Ga naar login
-                        </a>
-                    </div>
-                }
-                else
-                {
-                    <AuthErrorList Errors="_result?.Errors as IReadOnlyCollection<string>" />
-                    <RegisterForm Model="Model" OnSubmit="RegisterUserAsync" />
-                }
-            </ChildContent>
+            @if (_result?.IsSuccess == true)
+            {
+                <div class="space-y-4 rounded-3xl bg-white/70 p-6 text-center shadow-xl backdrop-blur">
+                    <p class="text-lg font-semibold text-[#04320C]">Je registratie is geslaagd!</p>
+                    <p class="text-sm text-zinc-600">Je kan nu inloggen om verder te gaan.</p>
+                    <a href="/login" class="inline-flex w-full items-center justify-center rounded-full bg-[#0B6532] py-3 text-lg font-semibold text-white shadow-md transition hover:bg-[#0a572b]">
+                        Ga naar login
+                    </a>
+                </div>
+            }
+            else
+            {
+                <AuthErrorList Errors="_result?.Errors as IReadOnlyCollection<string>" />
+                <RegisterForm Model="Model" OnSubmit="RegisterUserAsync" />
+            }
         </AuthLayout>
     </NotAuthorized>
 </AuthorizeView>

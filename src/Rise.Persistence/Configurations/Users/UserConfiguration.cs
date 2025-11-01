@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rise.Domain.Common;
 using Rise.Domain.Users;
@@ -45,48 +44,6 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
 
         builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.UserType).IsRequired();
-        builder.Property(x => x.Gender).IsRequired().HasMaxLength(10);
-
-        // sentiments
-        builder.Ignore(u => u.Likes);
-        builder.Ignore(u => u.Dislikes);
-        builder.HasMany(u => u.Sentiments)
-               .WithMany()
-               .UsingEntity<UserSentimentJoin>(
-                   j => j
-                       .HasOne(js => js.Sentiment)
-                       .WithMany()
-                       .HasForeignKey(js => js.SentimentId),
-                   j => j
-                       .HasOne(js => js.User)
-                       .WithMany()
-                       .HasForeignKey(js => js.UserId),
-                   j =>
-                   {
-                       j.ToTable("UserSentiments");
-                       j.HasKey(x => new { x.UserId, x.SentimentId });
-                   });
-
-        // hobbies
-        builder.HasMany(u => u.Hobbies)
-               .WithMany()
-               .UsingEntity<UserHobbyJoin>(
-                   j => j
-                       .HasOne(js => js.Hobby)
-                       .WithMany()
-                       .HasForeignKey(js => js.HobbyId),
-                   j => j
-                       .HasOne(js => js.User)
-                       .WithMany()
-                       .HasForeignKey(js => js.UserId),
-                   j =>
-                   {
-                       j.ToTable("UserHobbies");
-                       j.HasKey(x => new { x.UserId, x.HobbyId });
-                   });
-
-        builder.Navigation(u => u.Hobbies)
-            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         // connections
         builder.Ignore(u => u.Friends);
@@ -160,6 +117,5 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
 
             userSettings.ToTable("UserSetting");
         });
-}
-
+    }
 }

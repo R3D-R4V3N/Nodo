@@ -1,9 +1,7 @@
 <div class="flex flex-col min-h-screen bg-[#F5F4F0] justify-between">
     <div class="flex flex-col items-center justify-center flex-grow px-6 py-10 sm:px-8 md:px-12 lg:px-16">
-        @if (HeaderContent is not null)
-        {
-            @HeaderContent
-        }
+        <HomeLogo />
+        <HomeHeading />
         <div class="mt-10 w-full max-w-sm space-y-6">
             @ChildContent
         </div>
@@ -13,7 +11,4 @@
 @code {
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
-
-    [Parameter]
-    public RenderFragment? HeaderContent { get; set; }
 }

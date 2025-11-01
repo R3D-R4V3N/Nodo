@@ -19,5 +19,4 @@ public static class UserConnectionMapper
             User = user.ToConnectionDto(),
             State = UserConnectionTypeDto.None,
         };
-    
 }

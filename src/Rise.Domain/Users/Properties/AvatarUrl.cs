@@ -6,7 +6,7 @@ public class AvatarUrl : ValueObject, IProperty<AvatarUrl, string>
 {
     // EF
     private AvatarUrl() { }
-    public const int MAX_LENGTH = 255;
+    public const int MAX_LENGTH = 150;
 
     public string Value { get; private set; }
     public static Result<AvatarUrl> Create(string value)

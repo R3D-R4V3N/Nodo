@@ -7,12 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="Friends\**" />
-      <EmbeddedResource Remove="Friends\**" />
-      <None Remove="Friends\**" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Using Include="Ardalis.Result" />
         <Using Include="Serilog" />
     </ItemGroup>
@@ -21,6 +15,10 @@
       <ProjectReference Include="..\Rise.Domain\Rise.Domain.csproj" />
       <ProjectReference Include="..\Rise.Persistence\Rise.Persistence.csproj" />
       <ProjectReference Include="..\Rise.Shared\Rise.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Friends\" />
     </ItemGroup>
 
 </Project>

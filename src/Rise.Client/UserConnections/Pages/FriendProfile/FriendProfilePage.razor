@@ -1,9 +1,5 @@
 @page "/FriendProfilePage/{id:guid}"
 @layout EmptyLayout
-@using System
-@using System.Collections.Generic
-@using System.Linq
-@using Rise.Client.Profile.Models
 @using Rise.Client.UserConnections.Components.FriendProfile
 @using Rise.Shared.Assets
 @using Rise.Shared.Users
@@ -12,146 +8,42 @@
 
 @if (user is null)
 {
+    <!-- 👇 Loading state -->
     <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600 animate-pulse">
         <p>Profiel wordt geladen...</p>
     </div>
 }
 else if (user?.User is null)
 {
+    <!-- 👇 User not found -->
     <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600">
         <p>Gebruiker niet gevonden.</p>
     </div>
 }
 else
 {
-    <div class="min-h-screen bg-[#F2F2F2] text-neutral-900 antialiased">
-        <div class="relative">
-            <header class="relative h-[65vh] overflow-hidden rounded-b-[32px] bg-neutral-900 sm:h-[400px] md:h-[440px]">
-                <div class="absolute inset-0">
-                    <ProfileImageComponent ImgSource="@user.User.AvatarUrl" />
-                </div>
-                <div class="absolute inset-0 bg-gradient-to-b from-black/25 via-black/45 to-neutral-900/95"></div>
-                <BackButton />
-                <div class="absolute inset-x-0 bottom-6 px-5 sm:bottom-10 sm:px-8">
-                    <NameAndBadgesComponent Name="@user.User.Name"
-                                            AgeInYears="@FriendAge"
-                                            Gender="@FormatGender(user.User.Gender)"
-                                            FirstName="@user.User.FirstName" />
-                </div>
-            </header>
+    <!-- 👇 Main content (alleen renderen als user is geladen) -->
+    <div class="relative flex min-h-screen flex-col bg-[#F2F2F2] text-neutral-900 antialiased md:flex-row animate-fade-in">
+        <EmojiComponent />
+        <BackButton />
 
-            <main class="relative z-10 mx-auto mt-6 w-full max-w-4xl px-4 pb-16 sm:mt-10 sm:px-6 lg:px-8">
-                <div class="space-y-6 sm:space-y-8">
-                    <DescriptionComponent ShowAddButton="@(PageContext == UserConnectionTypeDto.AddFriends)"
-                                          Description="@user.User.Biography"
-                                          FirstName="@user.User.FirstName" />
+        <header class="relative h-[65vh] md:h-auto md:w-1/2">
+            <ProfileImageComponent ImgSource="@user.User.AvatarUrl" />
+            <BlurComponent />
 
-                    <section class="rounded-3xl bg-white p-5 shadow-md ring-1 ring-black/5 sm:p-6">
-                        <header class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">Hobby's van @user.User.FirstName</p>
-                                <h2 class="text-xl font-semibold text-neutral-900 sm:text-2xl">Dit doet @user.User.FirstName graag</h2>
-                            </div>
-                        </header>
+            <div class="absolute inset-x-0 bottom-9 flex flex-col justify-end p-5 md:inset-y-0 md:left-0 md:justify-center md:p-10">
+                <NameAndBadgesComponent Name="@user.User.Name" Age="" />
+            </div>
+        </header>
 
-                        <div class="mt-5 flex flex-wrap gap-2">
-                            @if (ProfileHobbies.Any())
-                            {
-                                @foreach (var hobby in ProfileHobbies)
-                                {
-                                    <span class="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-1 text-sm font-medium text-neutral-700 shadow-sm">
-                                        @if (!string.IsNullOrWhiteSpace(hobby.Emoji))
-                                        {
-                                            <span class="text-base">@hobby.Emoji</span>
-                                        }
-                                        <span>@hobby.Name</span>
-                                    </span>
-                                }
-                            }
-                            else
-                            {
-                                <span class="text-sm text-neutral-500">@user.User.FirstName heeft nog geen hobby's gedeeld.</span>
-                            }
-                        </div>
-                    </section>
+        <!-- ✅ Geef de PageContext door aan de DescriptionComponent -->
+        <DescriptionComponent PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)" />
 
-                    <section class="rounded-3xl bg-white p-5 shadow-md ring-1 ring-black/5 sm:p-6">
-                        <header class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">Interesses van @user.User.FirstName</p>
-                                <h2 class="text-xl font-semibold text-neutral-900 sm:text-2xl">Wat @user.User.FirstName leuk en minder leuk vindt</h2>
-                            </div>
-                        </header>
-
-                        <div class="mt-5 grid gap-4 md:grid-cols-2">
-                            <article class="rounded-2xl border border-emerald-100 bg-emerald-50/80 p-4">
-                                <header class="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-700">
-                                    <span class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="h-4 w-4" viewBox="0 0 256 256"><path d="M234,80.12A24,24,0,0,0,216,72H160V56a40,40,0,0,0-40-40,8,8,0,0,0-7.16,4.42L75.06,96H32a16,16,0,0,0-16,16v88a16,16,0,0,0,16,16H204a24,24,0,0,0,23.82-21l12-96A24,24,0,0,0,234,80.12ZM32,112H72v88H32Z"></path></svg>
-                                    </span>
-                                    <span>Dit vindt @user.User.FirstName leuk</span>
-                                </header>
-
-                                <div class="min-h-[48px] flex flex-wrap gap-2">
-                                    @if (ProfileLikes.Any())
-                                    {
-                                        @foreach (var like in ProfileLikes)
-                                        {
-                                            <span class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-sm font-medium text-emerald-800 shadow-sm">
-                                                @if (!string.IsNullOrWhiteSpace(like.Emoji))
-                                                {
-                                                    <span class="text-base">@like.Emoji</span>
-                                                }
-                                                <span>@like.Text</span>
-                                            </span>
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <span class="text-sm text-emerald-700/80">@user.User.FirstName heeft nog geen favorieten gedeeld.</span>
-                                    }
-                                </div>
-                            </article>
-
-                            <article class="rounded-2xl border border-rose-100 bg-rose-50/80 p-4">
-                                <header class="mb-3 flex items-center gap-2 text-sm font-semibold text-rose-600">
-                                    <span class="flex h-7 w-7 items-center justify-center rounded-full bg-rose-100 text-rose-500">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="h-4 w-4" viewBox="0 0 256 256"><path d="M239.82,157l-12-96A24,24,0,0,0,204,40H32A16,16,0,0,0,16,56v88a16,16,0,0,0,16,16H75.06l37.78,75.58A8,8,0,0,0,120,240a40,40,0,0,0,40-40V184h56a24,24,0,0,0,23.82-27ZM72,144H32V56H72Z"></path></svg>
-                                    </span>
-                                    <span>Dit vindt @user.User.FirstName minder leuk</span>
-                                </header>
-
-                                <div class="min-h-[48px] flex flex-wrap gap-2">
-                                    @if (ProfileDislikes.Any())
-                                    {
-                                        @foreach (var dislike in ProfileDislikes)
-                                        {
-                                            <span class="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-1 text-sm font-medium text-rose-700 shadow-sm">
-                                                @if (!string.IsNullOrWhiteSpace(dislike.Emoji))
-                                                {
-                                                    <span class="text-base">@dislike.Emoji</span>
-                                                }
-                                                <span>@dislike.Text</span>
-                                            </span>
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <span class="text-sm text-rose-600/80">@user.User.FirstName heeft nog geen dingen gedeeld die minder leuk zijn.</span>
-                                    }
-                                </div>
-                            </article>
-                        </div>
-                    </section>
-                </div>
-            </main>
-        </div>
     </div>
-
 }
 
 @code {
-    [Parameter] public Guid id { get; set; }
+    [Parameter] public Guid id { get; set; } 
 
     [CascadingParameter] public UserDto.CurrentUser? CurrentUser { get; set; }
 
@@ -159,11 +51,6 @@ else
 
     private UserResponse.CurrentUser? user;
     private UserConnectionTypeDto PageContext = UserConnectionTypeDto.Friend;
-
-    private IReadOnlyList<ProfileHobbyModel> ProfileHobbies { get; set; } = Array.Empty<ProfileHobbyModel>();
-    private IReadOnlyList<SentimentDto.Get> ProfileLikes { get; set; } = Array.Empty<SentimentDto.Get>();
-    private IReadOnlyList<SentimentDto.Get> ProfileDislikes { get; set; } = Array.Empty<SentimentDto.Get>();
-    private int? FriendAge { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -182,59 +69,9 @@ else
 
         user = await UserService.GetUserAsync(id.ToString());
 
-        if (user?.User is null)
+        if (user is null)
         {
             Console.WriteLine("Gebruiker niet gevonden!");
-            ProfileHobbies = Array.Empty<ProfileHobbyModel>();
-            FriendAge = null;
-            return;
         }
-
-        ProfileHobbies = user.User.Hobbies
-            .Select(h => new ProfileHobbyModel(h.Hobby.ToString(), h.Name, h.Emoji))
-            .ToList();
-
-        var interests = user.User.Interests ?? new List<SentimentDto.Get>();
-        ProfileLikes = interests
-            .Where(i => i.Type == SentimentTypeDto.Like)
-            .ToList();
-
-        ProfileDislikes = interests
-            .Where(i => i.Type == SentimentTypeDto.Dislike)
-            .ToList();
-
-        FriendAge = CalculateAge(user.User.BirthDay);
-
-        Console.WriteLine($"Aantal hobby's: {user.User.Hobbies.Count}");
-        foreach (var h in user.User.Hobbies)
-        {
-            Console.WriteLine($"Hobby: {h.Name}, Emoji: {h.Emoji}, Id: {h.Hobby.ToString()}");
-        }
-
     }
-
-    private static int? CalculateAge(DateOnly birthDay)
-    {
-        if (birthDay == default)
-        {
-            return null;
-        }
-
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var age = today.Year - birthDay.Year;
-
-        if (today < birthDay.AddYears(age))
-        {
-            age--;
-        }
-
-        return Math.Max(age, 0);
-    }
-
-    private static string FormatGender(GenderTypeDto gender) => gender switch
-    {
-        GenderTypeDto.Man => "Man",
-        GenderTypeDto.Woman => "Vrouw",
-        _ => "X",
-    };
 }

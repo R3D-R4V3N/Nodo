@@ -1,10 +1,7 @@
-using System;
-using System.Linq;
-using Rise.Domain.Users;
+﻿using Rise.Domain.Users;
 using Rise.Shared.Users;
 
 namespace Rise.Services.Users.Mapper;
-
 internal static class UserMapper
 {
     public static UserDto.Connection ToConnectionDto(this ApplicationUser user) =>
@@ -16,47 +13,17 @@ internal static class UserMapper
             Age = CalculateAge(user.BirthDay),
             AvatarUrl = user.AvatarUrl,
         };
-
-    public static UserDto.CurrentUser ToCurrentUserDto(this ApplicationUser user, string email = "") =>
+    public static UserDto.CurrentUser ToCurrentUserDto(this ApplicationUser user) =>
         new UserDto.CurrentUser
         {
             Id = user.Id,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
+            Name = $"{user.FirstName} {user.LastName}",
             AccountId = user.AccountId,
             AvatarUrl = user.AvatarUrl,
-            Email = email,
-            Biography = user.Biography,
-            Gender = user.Gender.ToDto(),
-            BirthDay = user.BirthDay,
-            CreatedAt = user.CreatedAt,
-            Interests = user.Sentiments
-                .Select(SentimentMapper.ToGetDto)
-                .ToList(),
-            Hobbies = user.Hobbies
-                .Select(HobbyMapper.ToGetDto)
-                .ToList(),
             DefaultChatLines = user
                 .UserSettings
                 .ChatTextLineSuggestions
                 .Select(x => x.Sentence.Value)
-                .ToList(),
-        };
-    public static UserDto.ConnectionProfile ToConnectionProfileDto(this ApplicationUser user) =>
-        new UserDto.ConnectionProfile
-        {
-            Id = user.Id,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            AccountId = user.AccountId,
-            AvatarUrl = user.AvatarUrl,
-           
-            Biography = user.Biography,
-            Gender = user.Gender.ToDto(),
-            BirthDay = user.BirthDay,
-            
-            Hobbies = user.Hobbies
-                .Select(HobbyMapper.ToGetDto)
                 .ToList(),
         };
 
@@ -77,7 +44,6 @@ internal static class UserMapper
             AccountId = user.AccountId,
             AvatarUrl = user.AvatarUrl
         };
-
 
     private static int CalculateAge(DateOnly birthDay)
     {
