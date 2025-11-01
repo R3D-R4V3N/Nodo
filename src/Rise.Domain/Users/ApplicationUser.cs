@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using Rise.Domain.Chats;
+using Rise.Domain.Organizations;
 using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Settings;
@@ -21,6 +22,18 @@ public class ApplicationUser : Entity
     public required AvatarUrl AvatarUrl { get; set; }
     public required DateOnly BirthDay { get; set; }
     public required UserType UserType { get; set; }
+    public int OrganizationId { get; private set; }
+
+    private Organization _organization = default!;
+    public required Organization Organization
+    {
+        get => _organization;
+        set
+        {
+            _organization = Guard.Against.Null(value);
+            OrganizationId = value.Id;
+        }
+    }
     
 
     //// connections

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
+using Rise.Domain.Organizations;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Properties;
@@ -80,12 +81,33 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         var chatterLotte = CreateIdentity("lotte@nodo.chat");
         var chatterAmina = CreateIdentity("amina@nodo.chat");
 
+        var nodoAntwerpen = new Organization
+        {
+            Name = "Nodo Antwerpen",
+            Location = "Antwerpen"
+        };
+
+        var nodoGent = new Organization
+        {
+            Name = "Nodo Gent",
+            Location = "Gent"
+        };
+
+        var nodoBrussel = new Organization
+        {
+            Name = "Nodo Brussel",
+            Location = "Brussel"
+        };
+
+        dbContext.Organizations.AddRange(nodoAntwerpen, nodoGent, nodoBrussel);
+
         var accounts = new List<SeedAccount>
         {
             new(admin, AppRoles.Administrator, null),
             new(supervisor, AppRoles.Supervisor,
                 new ApplicationUser(supervisor.Id)
                 {
+                    Organization = nodoAntwerpen,
                     FirstName = FirstName.Create("Super"),
                     LastName = LastName.Create("Visor"),
                     Biography = Biography.Create("Here to help you."),
@@ -101,6 +123,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(userAccount1, AppRoles.User,
                 new ApplicationUser(userAccount1.Id)
                 {
+                    Organization = nodoAntwerpen,
                     FirstName = FirstName.Create("John"),
                     LastName = LastName.Create("Doe"),
                     Biography = Biography.Create("Houdt van katten en rustige gesprekken."),
@@ -116,6 +139,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(userAccount2, AppRoles.User,
                 new ApplicationUser(userAccount2.Id)
                 {
+                    Organization = nodoGent,
                     FirstName = FirstName.Create("Stacey"),
                     LastName = LastName.Create("Willington"),
                     Biography = Biography.Create("Deelt graag verhalen over haar hulphond."),
@@ -132,6 +156,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(supervisorEmma, AppRoles.Supervisor,
                 new ApplicationUser(supervisorEmma.Id)
                 {
+                    Organization = nodoGent,
                     FirstName = FirstName.Create("Emma"),
                     LastName = LastName.Create("Claes"),
                     Biography = Biography.Create("Coach voor dagelijkse structuur en zelfvertrouwen."),
@@ -147,6 +172,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(supervisorJonas, AppRoles.Supervisor,
                 new ApplicationUser(supervisorJonas.Id)
                 {
+                    Organization = nodoBrussel,
                     FirstName = FirstName.Create("Jonas"),
                     LastName =  LastName.Create("Van Lint"),
                     Biography = Biography.Create("Helpt bij plannen en houdt wekelijks groepsmomenten."),
@@ -162,6 +188,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(supervisorElla, AppRoles.Supervisor,
                 new ApplicationUser(supervisorElla.Id)
                 {
+                    Organization = nodoAntwerpen,
                     FirstName = FirstName.Create("Ella"),
                     LastName =  LastName.Create("Vervoort"),
                     Biography = Biography.Create("Creatieve begeleider voor beeldende therapie."),
@@ -177,6 +204,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(chatterNoor, AppRoles.User,
                 new ApplicationUser(chatterNoor.Id)
                 {
+                    Organization = nodoGent,
                     FirstName = FirstName.Create("Noor"),
                     LastName = LastName.Create("Vermeulen"),
                     Biography = Biography.Create("Praat graag over muziek en wil nieuwe vrienden maken."),
@@ -192,6 +220,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(chatterMilan, AppRoles.User,
                 new ApplicationUser(chatterMilan.Id)
                 {
+                    Organization = nodoBrussel,
                     FirstName = FirstName.Create("Milan"),
                     LastName = LastName.Create("Peeters"),
                     Biography = Biography.Create("Zoekt iemand om samen over games te praten."),
@@ -207,6 +236,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(chatterLina, AppRoles.User,
                 new ApplicationUser(chatterLina.Id)
                 {
+                    Organization = nodoAntwerpen,
                     FirstName = FirstName.Create("Lina"),
                     LastName = LastName.Create("Jacobs"),
                     Biography = Biography.Create("Vindt het fijn om vragen te kunnen stellen in een veilige omgeving."),
@@ -222,6 +252,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(chatterKyandro, AppRoles.User,
                 new ApplicationUser(chatterKyandro.Id)
                 {
+                    Organization = nodoBrussel,
                     FirstName = FirstName.Create("Kyandro"),
                     LastName = LastName.Create("Voet"),
                     Biography = Biography.Create("Helpt vaak bij technische vragen en deelt programmeertips."),
@@ -237,6 +268,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(chatterJasper, AppRoles.User,
                 new ApplicationUser(chatterJasper.Id)
                 {
+                    Organization = nodoBrussel,
                     FirstName = FirstName.Create("Jasper"),
                     LastName = LastName.Create("Vermeersch"),
                     Biography = Biography.Create("Vindt het leuk om te discussiëren over technologie en innovatie."),
@@ -252,6 +284,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(chatterBjorn, AppRoles.User,
                 new ApplicationUser(chatterBjorn.Id)
                 {
+                    Organization = nodoAntwerpen,
                     FirstName = FirstName.Create("Bjorn"),
                     LastName = LastName.Create("Van Damme"),
                     Biography = Biography.Create("Praat graag over sport en houdt van teamwork."),
@@ -267,6 +300,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(chatterThibo, AppRoles.User,
                 new ApplicationUser(chatterThibo.Id)
                 {
+                    Organization = nodoAntwerpen,
                     FirstName = FirstName.Create("Thibo"),
                     LastName = LastName.Create("De Smet"),
                     Biography = Biography.Create("Is nieuwsgierig en stelt vaak interessante vragen."),
@@ -282,6 +316,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(chatterSaar, AppRoles.User,
                 new ApplicationUser(chatterSaar.Id)
                 {
+                    Organization = nodoGent,
                     FirstName = FirstName.Create("Saar"),
                     LastName = LastName.Create("Vandenberg"),
                     Biography = Biography.Create("Deelt graag foto's van haar tekeningen."),
@@ -297,6 +332,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(chatterYassin, AppRoles.User,
                 new ApplicationUser(chatterYassin.Id)
                 {
+                    Organization = nodoGent,
                     FirstName = FirstName.Create("Yassin"),
                     LastName = LastName.Create("El Amrani"),
                     Biography = Biography.Create("Leert zelfstandig koken en zoekt tips van vrienden."),
@@ -312,6 +348,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(chatterLotte, AppRoles.User,
                 new ApplicationUser(chatterLotte.Id)
                 {
+                    Organization = nodoBrussel,
                     FirstName = FirstName.Create("Lotte"),
                     LastName = LastName.Create("De Wilde"),
                     Biography = Biography.Create("Wordt blij van dansen en deelt positieve boodschappen."),
@@ -327,6 +364,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             new(chatterAmina, AppRoles.User,
                 new ApplicationUser(chatterAmina.Id)
                 {
+                    Organization = nodoBrussel,
                     FirstName = FirstName.Create("Amina"),
                     LastName = LastName.Create("Karim"),
                     Biography = Biography.Create("Houdt van creatieve projecten en begeleidt graag groepsspelletjes."),

@@ -44,6 +44,7 @@ internal class UserConfiguration : EntityConfiguration<ApplicationUser>
 
         builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.UserType).IsRequired();
+        builder.Property(x => x.OrganizationId).IsRequired();
 
         // connections
         builder.Ignore(u => u.Friends);
