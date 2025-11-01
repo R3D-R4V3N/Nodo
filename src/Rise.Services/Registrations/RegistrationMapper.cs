@@ -1,12 +1,14 @@
-using Rise.Domain.Registrations;
 using Rise.Domain.Users;
 using Rise.Shared.Registrations;
+
+using DomainRegistrationRequest = Rise.Domain.Registrations.RegistrationRequest;
+using DomainRegistrationRequestStatus = Rise.Domain.Registrations.RegistrationRequestStatus;
 
 namespace Rise.Services.Registrations;
 
 internal static class RegistrationMapper
 {
-    internal static RegistrationDto.PendingItem ToPendingDto(this RegistrationRequest registration) =>
+    internal static RegistrationDto.PendingItem ToPendingDto(this DomainRegistrationRequest registration) =>
         new()
         {
             Id = registration.Id,
@@ -20,7 +22,7 @@ internal static class RegistrationMapper
             Status = registration.Status.ToDto()
         };
 
-    internal static RegistrationDto.Detail ToDetailDto(this RegistrationRequest registration)
+    internal static RegistrationDto.Detail ToDetailDto(this DomainRegistrationRequest registration)
     {
         var detail = new RegistrationDto.Detail
         {
@@ -40,11 +42,11 @@ internal static class RegistrationMapper
         return detail;
     }
 
-    private static RegistrationStatus ToDto(this RegistrationRequestStatus status) => status switch
+    private static RegistrationStatus ToDto(this DomainRegistrationRequestStatus status) => status switch
     {
-        RegistrationRequestStatus.Pending => RegistrationStatus.Pending,
-        RegistrationRequestStatus.Approved => RegistrationStatus.Approved,
-        RegistrationRequestStatus.Rejected => RegistrationStatus.Rejected,
+        DomainRegistrationRequestStatus.Pending => RegistrationStatus.Pending,
+        DomainRegistrationRequestStatus.Approved => RegistrationStatus.Approved,
+        DomainRegistrationRequestStatus.Rejected => RegistrationStatus.Rejected,
         _ => RegistrationStatus.Pending
     };
 

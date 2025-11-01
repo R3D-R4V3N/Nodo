@@ -1,11 +1,13 @@
 using Ardalis.Result;
 using Microsoft.EntityFrameworkCore;
-using Rise.Domain.Registrations;
 using Rise.Domain.Users;
 using Rise.Persistence;
 using Rise.Services.Identity;
 using Rise.Shared.Identity;
 using Rise.Shared.Registrations;
+
+using DomainRegistrationRequestStatus = Rise.Domain.Registrations.RegistrationRequestStatus;
+using SharedRegistrationRequest = Rise.Shared.Registrations.RegistrationRequest;
 
 namespace Rise.Services.Registrations;
 
@@ -29,7 +31,7 @@ public class RegistrationService(
         var registrations = await _dbContext.RegistrationRequests
             .AsNoTracking()
             .Include(r => r.Organization)
-            .Where(r => r.Status == RegistrationRequestStatus.Pending && r.OrganizationId == supervisor.OrganizationId)
+            .Where(r => r.Status == DomainRegistrationRequestStatus.Pending && r.OrganizationId == supervisor.OrganizationId)
             .OrderBy(r => r.CreatedAt)
             .ToListAsync(cancellationToken);
 
@@ -70,12 +72,12 @@ public class RegistrationService(
         });
     }
 
-    public async Task<Result> ApproveAsync(RegistrationRequest.Approve request, CancellationToken cancellationToken = default)
+    public async Task<Result> ApproveAsync(SharedRegistrationRequest.Approve request, CancellationToken cancellationToken = default)
     {
         var supervisorResult = await GetCurrentSupervisorAsync(cancellationToken);
         if (!supervisorResult.IsSuccess)
         {
-            return supervisorResult;
+            return ConvertFailure(supervisorResult);
         }
 
         var supervisor = supervisorResult.Value;
@@ -95,7 +97,7 @@ public class RegistrationService(
             return Result.Forbidden();
         }
 
-        if (registration.Status != RegistrationRequestStatus.Pending)
+        if (registration.Status != DomainRegistrationRequestStatus.Pending)
         {
             return Result.Conflict("Aanvraag is al verwerkt.");
         }
@@ -103,7 +105,7 @@ public class RegistrationService(
         var assignedSupervisor = await GetSupervisorByIdAsync(request.SupervisorId, cancellationToken);
         if (!assignedSupervisor.IsSuccess)
         {
-            return assignedSupervisor;
+            return ConvertFailure(assignedSupervisor);
         }
 
         if (assignedSupervisor.Value.OrganizationId != registration.OrganizationId)
@@ -117,12 +119,12 @@ public class RegistrationService(
         return Result.Success();
     }
 
-    public async Task<Result> RejectAsync(RegistrationRequest.Reject request, CancellationToken cancellationToken = default)
+    public async Task<Result> RejectAsync(SharedRegistrationRequest.Reject request, CancellationToken cancellationToken = default)
     {
         var supervisorResult = await GetCurrentSupervisorAsync(cancellationToken);
         if (!supervisorResult.IsSuccess)
         {
-            return supervisorResult;
+            return ConvertFailure(supervisorResult);
         }
 
         var supervisor = supervisorResult.Value;
@@ -142,7 +144,7 @@ public class RegistrationService(
             return Result.Forbidden();
         }
 
-        if (registration.Status != RegistrationRequestStatus.Pending)
+        if (registration.Status != DomainRegistrationRequestStatus.Pending)
         {
             return Result.Conflict("Aanvraag is al verwerkt.");
         }
@@ -150,7 +152,7 @@ public class RegistrationService(
         var assignedSupervisor = await GetSupervisorByIdAsync(request.SupervisorId, cancellationToken);
         if (!assignedSupervisor.IsSuccess)
         {
-            return assignedSupervisor;
+            return ConvertFailure(assignedSupervisor);
         }
 
         if (assignedSupervisor.Value.OrganizationId != registration.OrganizationId)
@@ -218,6 +220,21 @@ public class RegistrationService(
             ResultStatus.Invalid => Result<T>.Invalid(failure.ValidationErrors),
             ResultStatus.Ok => Result<T>.Success(),
             _ => Result<T>.Error(failure.Errors.ToArray())
+        };
+    }
+
+    private static Result ConvertFailure(Result failure)
+    {
+        return failure.Status switch
+        {
+            ResultStatus.Forbidden => Result.Forbidden(failure.Errors.ToArray()),
+            ResultStatus.Unauthorized => Result.Unauthorized(failure.Errors.ToArray()),
+            ResultStatus.NotFound => Result.NotFound(failure.Errors.ToArray()),
+            ResultStatus.Conflict => Result.Conflict(failure.Errors.ToArray()),
+            ResultStatus.CriticalError => Result.CriticalError(failure.Errors.ToArray()),
+            ResultStatus.Invalid => Result.Invalid(failure.ValidationErrors),
+            ResultStatus.Ok => Result.Success(),
+            _ => Result.Error(failure.Errors.ToArray())
         };
     }
 }
