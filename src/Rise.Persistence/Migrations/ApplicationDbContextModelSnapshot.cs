@@ -408,6 +408,68 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("Organization", (string)null);
                 });
 
+            modelBuilder.Entity("Rise.Domain.Registrations.RegistrationRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("varchar(36)");
+
+                    b.Property<int?>("AssignedSupervisorId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)")
+                        .HasDefaultValue("Pending");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId")
+                        .IsUnique();
+
+                    b.HasIndex("AssignedSupervisorId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.ToTable("RegistrationRequest", (string)null);
+                });
+
             modelBuilder.Entity("Rise.Domain.Users.BaseUser", b =>
                 {
                     b.Property<int>("Id")
@@ -766,6 +828,24 @@ namespace Rise.Persistence.Migrations
                         });
 
                     b.Navigation("Connections");
+
+                    b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("Rise.Domain.Registrations.RegistrationRequest", b =>
+                {
+                    b.HasOne("Rise.Domain.Users.Supervisor", "AssignedSupervisor")
+                        .WithMany()
+                        .HasForeignKey("AssignedSupervisorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Rise.Domain.Organizations.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AssignedSupervisor");
 
                     b.Navigation("Organization");
                 });
