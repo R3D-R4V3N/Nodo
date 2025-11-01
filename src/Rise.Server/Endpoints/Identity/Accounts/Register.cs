@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Rise.Shared.Identity.Accounts;
 
@@ -29,10 +30,26 @@ public class Register(UserManager<IdentityUser> userManager, IUserStore<Identity
         await userStore.SetUserNameAsync(user, req.Email, CancellationToken.None);
         await emailStore.SetEmailAsync(user, req.Email, CancellationToken.None);
         var result = await userManager.CreateAsync(user, req.Password!);
-        
+
         if (!result.Succeeded)
         {
             return Result.Error(result.Errors.First().Description);
+        }
+
+        var organization = req.Organization?.Trim();
+
+        if (string.IsNullOrWhiteSpace(organization))
+        {
+            await userManager.DeleteAsync(user);
+            return Result.Error("Selecteer een organisatie.");
+        }
+
+        var claimResult = await userManager.AddClaimAsync(user, new Claim("organization", organization));
+
+        if (!claimResult.Succeeded)
+        {
+            await userManager.DeleteAsync(user);
+            return Result.Error(claimResult.Errors.First().Description);
         }
         
         // You can do more stuff when injecting a DbContext and create user stuff for example:

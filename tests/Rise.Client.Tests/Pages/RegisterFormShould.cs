@@ -58,6 +58,7 @@ public class RegisterFormShould : TestContext
 
         // Assert
         Assert.True(submitted, "OnSubmit should be triggered when the form is submitted");
+        Assert.Equal("org1", model.Organization);
     }
 
     //[Fact]

@@ -12,7 +12,7 @@ public partial class Register
 
     public async Task RegisterUserAsync()
     {
-        _result = await AccountManager.RegisterAsync(Model.Email!, Model.Password!, Model.ConfirmPassword!);
+        _result = await AccountManager.RegisterAsync(Model.Email!, Model.Password!, Model.ConfirmPassword!, Model.Organization!);
 
     }
 }

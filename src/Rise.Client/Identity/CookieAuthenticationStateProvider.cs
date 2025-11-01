@@ -37,7 +37,7 @@ namespace Rise.Client.Identity
         /// <param name="password">The user's password.</param>
         /// <returns>The result serialized to a <see cref="Result"/>.
         /// </returns>
-        public async Task<Result> RegisterAsync(string email, string password, string confirmPassword)
+        public async Task<Result> RegisterAsync(string email, string password, string confirmPassword, string organization)
         {
             try
             {
@@ -46,8 +46,9 @@ namespace Rise.Client.Identity
                     Email = email,
                     Password = password,
                     ConfirmPassword = confirmPassword,
+                    Organization = organization,
                 });
-            
+
                 var result = await response.Content.ReadFromJsonAsync<Result>();
                 return result!;
             }
@@ -56,7 +57,7 @@ namespace Rise.Client.Identity
                 Log.Error(ex, "Could not register user.");
                 return Result.Error("An unknown error prevented registration from succeeding.");
             }
-         }
+        }
 
         /// <summary>
         /// User login.

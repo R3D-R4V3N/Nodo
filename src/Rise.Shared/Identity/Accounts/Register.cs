@@ -1,4 +1,5 @@
 ﻿using Destructurama.Attributed;
+using FluentValidation;
 
 namespace Rise.Shared.Identity.Accounts;
 
@@ -25,6 +26,11 @@ public static partial class AccountRequest
         /// </summary>
         [LogMasked]
         public string? ConfirmPassword { get; set; }
+
+        /// <summary>
+        /// The organization the user belongs to.
+        /// </summary>
+        public string? Organization { get; set; } = string.Empty;
         
         // Other needed stuff here, like Role(s), Firstname, lastname etc.
 
@@ -40,6 +46,9 @@ public static partial class AccountRequest
                 RuleFor(x => x.ConfirmPassword)
                     .Equal(x => x.Password)
                     .WithMessage("Passwords do not match.");
+                RuleFor(x => x.Organization)
+                    .NotEmpty()
+                    .WithMessage("Selecteer een organisatie.");
             }
         }
     }
