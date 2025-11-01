@@ -43,23 +43,32 @@ public class RegistrationRequest : Entity
 
     public RegistrationRequestStatus Status { get; private set; } = RegistrationRequestStatus.Pending;
 
+    private string? _feedback;
+    public string? Feedback
+    {
+        get => _feedback;
+        private set => _feedback = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
     public int? AssignedSupervisorId { get; private set; }
     public Supervisor? AssignedSupervisor { get; private set; }
 
-    public void Approve(Supervisor supervisor)
+    public void Approve(Supervisor supervisor, string? feedback)
     {
         Guard.Against.Null(supervisor);
         Status = RegistrationRequestStatus.Approved;
         AssignedSupervisor = supervisor;
         AssignedSupervisorId = supervisor.Id;
+        Feedback = feedback;
     }
 
-    public void Reject(Supervisor supervisor)
+    public void Reject(Supervisor supervisor, string? feedback)
     {
         Guard.Against.Null(supervisor);
         Status = RegistrationRequestStatus.Rejected;
         AssignedSupervisor = supervisor;
         AssignedSupervisorId = supervisor.Id;
+        Feedback = feedback;
     }
 
     public void Reset()
@@ -67,5 +76,6 @@ public class RegistrationRequest : Entity
         Status = RegistrationRequestStatus.Pending;
         AssignedSupervisor = null;
         AssignedSupervisorId = null;
+        Feedback = null;
     }
 }

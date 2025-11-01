@@ -41,6 +41,10 @@ internal class RegistrationRequestConfiguration : EntityConfiguration<Registrati
             .HasForeignKey(x => x.AssignedSupervisorId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder.Property(x => x.Feedback)
+            .HasMaxLength(500)
+            .IsRequired(false);
+
         builder.HasIndex(x => x.AccountId)
             .IsUnique();
     }

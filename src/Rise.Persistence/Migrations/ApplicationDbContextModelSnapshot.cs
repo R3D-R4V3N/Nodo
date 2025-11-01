@@ -429,6 +429,10 @@ namespace Rise.Persistence.Migrations
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("current_timestamp()");
 
+                    b.Property<string>("Feedback")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)

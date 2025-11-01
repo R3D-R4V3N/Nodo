@@ -1,0 +1,403 @@
+@page "/supervisor/registrations"
+@using Rise.Shared.Identity
+@using Rise.Shared.Registrations
+@attribute [Authorize(Roles = AppRoles.Supervisor)]
+@inject IRegistrationService RegistrationService
+@inject UserState UserState
+
+<PageTitle>Openstaande aanvragen</PageTitle>
+
+<div class="min-h-dvh bg-neutral-100 overflow-x-hidden">
+    <header class="bg-[#127646] text-white px-4 sm:px-6 lg:px-8 pt-6 pb-6 sm:pb-7 rounded-b-3xl shadow">
+        <h1 class="text-2xl sm:text-3xl text-center lg:text-4xl font-semibold leading-tight">
+            Supervisor aanvragen
+        </h1>
+        <p class="text-center text-sm sm:text-base mt-2 text-neutral-200">
+            Beheer nieuwe gebruikersaanvragen binnen jouw organisatie.
+        </p>
+    </header>
+
+    <main class="mx-auto w-full max-w-screen-lg px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        @if (!string.IsNullOrEmpty(_successMessage))
+        {
+            <div class="mb-4 rounded-lg bg-emerald-100 text-emerald-900 px-4 py-3 text-sm">
+                @_successMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="mb-4 rounded-lg bg-red-100 text-red-900 px-4 py-3 text-sm">
+                @_errorMessage
+            </div>
+        }
+
+        <div class="grid gap-6 lg:grid-cols-[1fr,1.1fr]">
+            <section class="bg-white rounded-3xl shadow p-4 sm:p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-neutral-700">Openstaande aanvragen</h2>
+                    @if (!_isLoadingList && _registrations.Count > 0)
+                    {
+                        <span class="text-xs text-neutral-400">@_registrations.Count aanvragen</span>
+                    }
+                </div>
+
+                @if (_isLoadingList)
+                {
+                    <p class="text-sm text-neutral-500">Aanvragen worden geladen…</p>
+                }
+                else if (!string.IsNullOrEmpty(_listError))
+                {
+                    <p class="text-sm text-red-600">@_listError</p>
+                }
+                else if (_registrations.Count == 0)
+                {
+                    <p class="text-sm text-neutral-500">Er zijn momenteel geen pending aanvragen.</p>
+                }
+                else
+                {
+                    <ul class="space-y-3">
+                        @foreach (var registration in _registrations)
+                        {
+                            <li>
+                                <button type="button"
+                                        class="w-full text-left"
+                                        @onclick="() => SelectRegistrationAsync(registration)">
+                                    <div class="rounded-3xl border transition hover:shadow-md px-4 py-3 sm:px-5 sm:py-4 @(registration.Id == _selectedRegistration?.Id ? "border-emerald-400 bg-emerald-50" : "border-neutral-200 bg-white")">
+                                        <div class="flex items-start justify-between gap-3">
+                                            <div>
+                                                <p class="text-base font-medium text-neutral-800">@GetFullName(registration)</p>
+                                                <p class="text-xs text-neutral-500 mt-1">Aangevraagd op @registration.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</p>
+                                            </div>
+                                            <span class="text-xs font-semibold uppercase tracking-wide text-emerald-600">@registration.Status</span>
+                                        </div>
+                                        <p class="text-xs text-neutral-500 mt-2">Organisatie: @registration.OrganizationName</p>
+                                    </div>
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+
+            <section class="bg-white rounded-3xl shadow p-4 sm:p-6">
+                <h2 class="text-lg font-semibold text-neutral-700 mb-4">Aanvraagdetails</h2>
+
+                @if (_selectedRegistration is null)
+                {
+                    <p class="text-sm text-neutral-500">Selecteer een aanvraag uit de lijst om de details te bekijken.</p>
+                }
+                else if (_isLoadingDetail)
+                {
+                    <p class="text-sm text-neutral-500">Details worden geladen…</p>
+                }
+                else if (!string.IsNullOrEmpty(_detailError))
+                {
+                    <p class="text-sm text-red-600">@_detailError</p>
+                }
+                else if (_registrationDetail is null)
+                {
+                    <p class="text-sm text-neutral-500">Geen details beschikbaar.</p>
+                }
+                else
+                {
+                    <div class="space-y-4">
+                        <div class="rounded-2xl border border-neutral-200 p-4">
+                            <h3 class="text-base font-semibold text-neutral-700">@GetFullName(_registrationDetail)</h3>
+                            <dl class="mt-3 space-y-2 text-sm text-neutral-600">
+                                <div class="flex justify-between">
+                                    <dt>Organisatie</dt>
+                                    <dd class="font-medium">@_registrationDetail.OrganizationName</dd>
+                                </div>
+                                <div class="flex justify-between">
+                                    <dt>Account ID</dt>
+                                    <dd class="font-mono text-xs text-neutral-500">@_registrationDetail.AccountId</dd>
+                                </div>
+                                <div class="flex justify-between">
+                                    <dt>Aangevraagd op</dt>
+                                    <dd>@_registrationDetail.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</dd>
+                                </div>
+                                <div class="flex justify-between">
+                                    <dt>Status</dt>
+                                    <dd class="font-medium">@_registrationDetail.Status</dd>
+                                </div>
+                                @if (_registrationDetail.AssignedSupervisor is not null)
+                                {
+                                    <div class="flex justify-between">
+                                        <dt>Supervisor</dt>
+                                        <dd class="font-medium">@_registrationDetail.AssignedSupervisor.Name</dd>
+                                    </div>
+                                }
+                            </dl>
+                        </div>
+
+                        <div>
+                            <label for="feedback" class="block text-sm font-medium text-neutral-700 mb-2">Feedback voor de aanvrager (optioneel)</label>
+                            <textarea id="feedback"
+                                      class="w-full rounded-2xl border border-neutral-300 focus:border-emerald-400 focus:ring-emerald-400 text-sm p-3 resize-none min-h-[120px]"
+                                      placeholder="Geef een bericht mee voor de aanvrager..."
+                                      @bind="_feedback"></textarea>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <button class="flex-1 inline-flex items-center justify-center rounded-full bg-emerald-600 text-white px-4 py-3 text-sm font-semibold shadow hover:bg-emerald-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                                    disabled="@(_isProcessingAction)"
+                                    @onclick="ApproveSelectedAsync">
+                                Goedkeuren
+                            </button>
+                            <button class="flex-1 inline-flex items-center justify-center rounded-full bg-red-600 text-white px-4 py-3 text-sm font-semibold shadow hover:bg-red-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                                    disabled="@(_isProcessingAction)"
+                                    @onclick="RejectSelectedAsync">
+                                Afwijzen
+                            </button>
+                        </div>
+                    </div>
+                }
+            </section>
+        </div>
+    </main>
+</div>
+
+@code {
+    private readonly List<RegistrationDto.PendingItem> _registrations = [];
+    private RegistrationDto.PendingItem? _selectedRegistration;
+    private RegistrationDto.Detail? _registrationDetail;
+    private string? _listError;
+    private string? _detailError;
+    private string? _errorMessage;
+    private string? _successMessage;
+    private string _feedback = string.Empty;
+    private bool _isLoadingList = true;
+    private bool _isLoadingDetail;
+    private bool _isProcessingAction;
+    private PeriodicTimer? _pollingTimer;
+    private CancellationTokenSource? _pollingCts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPendingAsync();
+        StartPolling();
+    }
+
+    private async Task LoadPendingAsync(bool showSpinner = true)
+    {
+        if (showSpinner)
+        {
+            _isLoadingList = true;
+        }
+
+        _listError = null;
+
+        try
+        {
+            var result = await RegistrationService.GetPendingAsync();
+            if (result.IsSuccess && result.Value is not null)
+            {
+                var previouslySelectedId = _selectedRegistration?.Id;
+                _registrations.Clear();
+                _registrations.AddRange(result.Value.Registrations);
+
+                if (previouslySelectedId.HasValue)
+                {
+                    _selectedRegistration = _registrations.FirstOrDefault(r => r.Id == previouslySelectedId);
+                    if (_selectedRegistration is null)
+                    {
+                        _registrationDetail = null;
+                        _feedback = string.Empty;
+                    }
+                }
+            }
+            else
+            {
+                _listError = result.Errors.FirstOrDefault() ?? "Kon aanvragen niet laden.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _listError = $"Onverwachte fout bij het laden van aanvragen: {ex.Message}";
+        }
+        finally
+        {
+            _isLoadingList = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task SelectRegistrationAsync(RegistrationDto.PendingItem registration)
+    {
+        if (_selectedRegistration?.Id == registration.Id && _registrationDetail is not null)
+        {
+            return;
+        }
+
+        _selectedRegistration = registration;
+        _registrationDetail = null;
+        _detailError = null;
+        _feedback = string.Empty;
+        _isLoadingDetail = true;
+
+        try
+        {
+            var result = await RegistrationService.GetDetailAsync(registration.Id);
+            if (result.IsSuccess && result.Value?.Registration is not null)
+            {
+                _registrationDetail = result.Value.Registration;
+            }
+            else
+            {
+                _detailError = result.Errors.FirstOrDefault() ?? "Kon de aanvraagdetails niet laden.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _detailError = $"Onverwachte fout bij het ophalen van de details: {ex.Message}";
+        }
+        finally
+        {
+            _isLoadingDetail = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task ApproveSelectedAsync()
+    {
+        if (_selectedRegistration is null)
+        {
+            return;
+        }
+
+        var supervisorId = UserState.User?.Id;
+        if (supervisorId is null)
+        {
+            _errorMessage = "Geen supervisorprofiel gevonden.";
+            return;
+        }
+
+        _isProcessingAction = true;
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            var request = new RegistrationRequest.Approve
+            {
+                RegistrationId = _selectedRegistration.Id,
+                SupervisorId = supervisorId.Value,
+                Feedback = string.IsNullOrWhiteSpace(_feedback) ? null : _feedback.Trim()
+            };
+
+            var result = await RegistrationService.ApproveAsync(request);
+
+            if (result.IsSuccess)
+            {
+                _successMessage = $"Aanvraag van {GetFullName(_selectedRegistration)} is goedgekeurd.";
+                _registrations.RemoveAll(r => r.Id == _selectedRegistration.Id);
+                _selectedRegistration = null;
+                _registrationDetail = null;
+                _feedback = string.Empty;
+            }
+            else
+            {
+                _errorMessage = result.Errors.FirstOrDefault() ?? "Kon de aanvraag niet goedkeuren.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Onverwachte fout: {ex.Message}";
+        }
+        finally
+        {
+            _isProcessingAction = false;
+            await LoadPendingAsync(showSpinner: false);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task RejectSelectedAsync()
+    {
+        if (_selectedRegistration is null)
+        {
+            return;
+        }
+
+        var supervisorId = UserState.User?.Id;
+        if (supervisorId is null)
+        {
+            _errorMessage = "Geen supervisorprofiel gevonden.";
+            return;
+        }
+
+        _isProcessingAction = true;
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            var request = new RegistrationRequest.Reject
+            {
+                RegistrationId = _selectedRegistration.Id,
+                SupervisorId = supervisorId.Value,
+                Feedback = string.IsNullOrWhiteSpace(_feedback) ? null : _feedback.Trim()
+            };
+
+            var result = await RegistrationService.RejectAsync(request);
+
+            if (result.IsSuccess)
+            {
+                _successMessage = $"Aanvraag van {GetFullName(_selectedRegistration)} is afgewezen.";
+                _registrations.RemoveAll(r => r.Id == _selectedRegistration.Id);
+                _selectedRegistration = null;
+                _registrationDetail = null;
+                _feedback = string.Empty;
+            }
+            else
+            {
+                _errorMessage = result.Errors.FirstOrDefault() ?? "Kon de aanvraag niet afwijzen.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Onverwachte fout: {ex.Message}";
+        }
+        finally
+        {
+            _isProcessingAction = false;
+            await LoadPendingAsync(showSpinner: false);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void StartPolling()
+    {
+        _pollingCts = new CancellationTokenSource();
+        _pollingTimer = new PeriodicTimer(TimeSpan.FromSeconds(30));
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                while (_pollingTimer is not null && await _pollingTimer.WaitForNextTickAsync(_pollingCts.Token))
+                {
+                    await LoadPendingAsync(showSpinner: false);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // ignore cancellation
+            }
+        });
+    }
+
+    private static string GetFullName(RegistrationDto.PendingItem registration)
+        => $"{registration.FirstName} {registration.LastName}".Trim();
+
+    private static string GetFullName(RegistrationDto.Detail registration)
+        => $"{registration.FirstName} {registration.LastName}".Trim();
+
+    public void Dispose()
+    {
+        _pollingCts?.Cancel();
+        _pollingTimer?.Dispose();
+        _pollingCts?.Dispose();
+    }
+}

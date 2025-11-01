@@ -5,4 +5,7 @@ namespace Rise.Client.Layout;
 public partial class NavBar
 {
     [Inject] public UserState UserState { get; set; }
+    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+
+    private void NavigateToRegistrations() => NavigationManager.NavigateTo("/supervisor/registrations");
 }
