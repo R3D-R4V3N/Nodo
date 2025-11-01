@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Rise.Domain.Organizations;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Settings;
@@ -46,6 +47,14 @@ internal class BaseUserConfiguration : EntityConfiguration<BaseUser>
             .HasMaxLength(AvatarUrl.MAX_LENGTH);
 
         builder.Property(x => x.BirthDay).IsRequired();
+
+        builder.Property(x => x.OrganizationId)
+            .IsRequired();
+
+        builder.HasOne(x => x.Organization)
+            .WithMany(organization => organization.Members)
+            .HasForeignKey(x => x.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // settings
         builder.Ignore(u => u.UserSettings);
