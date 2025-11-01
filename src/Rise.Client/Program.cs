@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Rise.Client;
 using Rise.Client.Chats;
 using Rise.Client.Identity;
+using Rise.Client.Organizations;
 using Rise.Client.State;
 using Rise.Client.UserConnections;
 using Rise.Client.Users;
@@ -59,6 +60,11 @@ try
     });
 
     builder.Services.AddHttpClient<IUserService, UserService>(client =>
+    {
+        client.BaseAddress = backendUri;
+    });
+
+    builder.Services.AddHttpClient<IOrganizationService, OrganizationService>(client =>
     {
         client.BaseAddress = backendUri;
     });

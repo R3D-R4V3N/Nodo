@@ -1,12 +1,28 @@
+@using System
+@using Rise.Shared.Identity.Accounts
+@using Rise.Shared.Organizations
+
 <EditForm class="space-y-4" Model="Model" OnValidSubmit="OnSubmit">
     <FluentValidationValidator />
 
-    <div>
-        <label for="register-name" class="block text-sm font-medium text-[#04320C]">Volledige naam</label>
-        <InputText id="register-name"
-                   @bind-Value="FullName"
-                   placeholder="Jouw naam"
-                   class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1" />
+    <div class="grid gap-3 sm:grid-cols-2">
+        <div>
+            <label for="register-first-name" class="block text-sm font-medium text-[#04320C]">Voornaam</label>
+            <InputText id="register-first-name"
+                       @bind-Value="Model.FirstName"
+                       placeholder="Jouw voornaam"
+                       class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1" />
+            <ValidationMessage For="() => Model.FirstName" class="mt-2 block text-sm font-medium text-red-600" />
+        </div>
+
+        <div>
+            <label for="register-last-name" class="block text-sm font-medium text-[#04320C]">Achternaam</label>
+            <InputText id="register-last-name"
+                       @bind-Value="Model.LastName"
+                       placeholder="Jouw achternaam"
+                       class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1" />
+            <ValidationMessage For="() => Model.LastName" class="mt-2 block text-sm font-medium text-red-600" />
+        </div>
     </div>
 
     <div>
@@ -19,8 +35,8 @@
         <ValidationMessage For="() => Model.Email" class="mt-2 block text-sm font-medium text-red-600" />
     </div>
 
-    <div class="flex space-x-3">
-        <div>
+    <div class="flex flex-col gap-3 lg:flex-row">
+        <div class="flex-1">
             <label for="register-password" class="block text-sm font-medium text-[#04320C]">Wachtwoord</label>
             <InputText id="register-password"
                        @bind-Value="Model.Password"
@@ -31,7 +47,7 @@
             <ValidationMessage For="() => Model.Password" class="mt-2 block text-sm font-medium text-red-600" />
         </div>
 
-        <div>
+        <div class="flex-1">
             <label for="register-confirm-password" class="block text-sm font-medium text-[#04320C]">Bevestig wachtwoord</label>
             <InputText id="register-confirm-password"
                        @bind-Value="Model.ConfirmPassword"
@@ -45,14 +61,36 @@
 
     <div>
         <label for="register-organization" class="block text-sm font-medium text-[#04320C]">Organisatie</label>
-        <select id="register-organization"
-                @bind="SelectedOrganization"
-                class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1">
-            <option value="" disabled>Kies een organisatie</option>
-            <option value="org1">Organisatie 1</option>
-            <option value="org2">Organisatie 2</option>
-            <option value="org3">Organisatie 3</option>
-        </select>
+        <InputSelect @bind-Value="Model.OrganizationId" TValue="int?"
+                     id="register-organization"
+                     disabled="@(Organizations.Count == 0)"
+                     class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1">
+            @if (Organizations.Count == 0)
+            {
+                <option value="" disabled selected>Geen organisaties beschikbaar</option>
+            }
+            else
+            {
+                <option value="">Kies een organisatie</option>
+                @foreach (var organization in Organizations)
+                {
+                    <option value="@organization.Id">
+                        @organization.Name (@organization.Address)
+                    </option>
+                }
+            }
+        </InputSelect>
+        <ValidationMessage For="() => Model.OrganizationId" class="mt-2 block text-sm font-medium text-red-600" />
+    </div>
+
+    <div>
+        <label for="register-motivation" class="block text-sm font-medium text-[#04320C]">Motivatie (optioneel)</label>
+        <InputTextArea id="register-motivation"
+                       @bind-Value="Model.Motivation"
+                       rows="3"
+                       placeholder="Vertel ons kort waarom je wil aansluiten"
+                       class="mt-2 block w-full rounded-3xl bg-white px-4 py-3 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1" />
+        <ValidationMessage For="() => Model.Motivation" class="mt-2 block text-sm font-medium text-red-600" />
     </div>
 
     <button type="submit" class="w-full rounded-full bg-[#0B6532] py-3 text-lg font-semibold text-white shadow-md transition hover:bg-[#0a572b]">
@@ -69,9 +107,8 @@
     public required AccountRequest.Register Model { get; set; }
 
     [Parameter]
+    public required IReadOnlyList<OrganizationResponse.ListItem> Organizations { get; set; } = Array.Empty<OrganizationResponse.ListItem>();
+
+    [Parameter]
     public EventCallback OnSubmit { get; set; }
-
-    private string FullName { get; set; } = string.Empty;
-
-    private string SelectedOrganization { get; set; } = string.Empty;
 }
