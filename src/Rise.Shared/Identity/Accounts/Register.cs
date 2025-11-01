@@ -25,11 +25,6 @@ public static partial class AccountRequest
         public string LastName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Optional motivation message provided during registration.
-        /// </summary>
-        public string? Motivation { get; set; }
-
-        /// <summary>
         /// Identifier of the organization the user belongs to.
         /// </summary>
         public int? OrganizationId { get; set; }
@@ -65,9 +60,6 @@ public static partial class AccountRequest
                 RuleFor(x => x.OrganizationId)
                     .NotNull()
                     .GreaterThan(0);
-                RuleFor(x => x.Motivation)
-                    .MaximumLength(1000)
-                    .When(x => !string.IsNullOrWhiteSpace(x.Motivation));
                 RuleFor(x => x.Password).NotEmpty();
                 RuleFor(x => x.ConfirmPassword)
                     .Equal(x => x.Password)
