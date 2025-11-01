@@ -71,19 +71,28 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             nodoAntwerpen = new Organization
             {
                 Name = (OrganizationName)"Nodo Antwerpen",
-                Location = (OrganizationLocation)"Antwerpen"
+                Location = new OrganizationLocation(
+                    name: "Antwerpen",
+                    zipCode: "2000",
+                    city: "Antwerpen")
             };
 
             nodoGent = new Organization
             {
                 Name = (OrganizationName)"Nodo Gent",
-                Location = (OrganizationLocation)"Gent"
+                Location = new OrganizationLocation(
+                    name: "Gent",
+                    zipCode: "9000",
+                    city: "Gent")
             };
 
             nodoBrussel = new Organization
             {
                 Name = (OrganizationName)"Nodo Brussel",
-                Location = (OrganizationLocation)"Brussel"
+                Location = new OrganizationLocation(
+                    name: "Brussel",
+                    zipCode: "1000",
+                    city: "Brussel")
             };
 
             dbContext.Organizations.AddRange(nodoAntwerpen, nodoGent, nodoBrussel);

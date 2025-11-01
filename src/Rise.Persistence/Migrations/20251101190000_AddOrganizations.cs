@@ -20,7 +20,13 @@ namespace Rise.Persistence.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Location = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
+                    LocationName = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    LocationZipCode = table.Column<string>(type: "varchar(32)", maxLength: 32, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    LocationCity = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    LocationStreet = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
@@ -34,12 +40,12 @@ namespace Rise.Persistence.Migrations
 
             migrationBuilder.InsertData(
                 table: "Organization",
-                columns: new[] { "Id", "Location", "Name" },
+                columns: new[] { "Id", "LocationCity", "LocationName", "LocationStreet", "LocationZipCode", "Name" },
                 values: new object[,]
                 {
-                    { 1, "Antwerpen", "Nodo Antwerpen" },
-                    { 2, "Gent", "Nodo Gent" },
-                    { 3, "Brussel", "Nodo Brussel" }
+                    { 1, "Antwerpen", "Antwerpen", null, "2000", "Nodo Antwerpen" },
+                    { 2, "Gent", "Gent", null, "9000", "Nodo Gent" },
+                    { 3, "Brussel", "Brussel", null, "1000", "Nodo Brussel" }
                 });
 
             migrationBuilder.AddColumn<int>(

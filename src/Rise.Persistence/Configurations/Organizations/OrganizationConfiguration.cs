@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rise.Domain.Organizations;
 using Rise.Domain.Organizations.Properties;
@@ -18,20 +17,25 @@ internal sealed class OrganizationConfiguration : EntityConfiguration<Organizati
             .IsRequired()
             .HasMaxLength(OrganizationName.MAX_LENGTH);
 
-        builder.Property(organization => organization.Location)
-            .HasConversion(new ValueObjectConverter<OrganizationLocation, string>())
-            .IsRequired()
-            .HasMaxLength(OrganizationLocation.MAX_LENGTH);
+        builder.OwnsOne(organization => organization.Location, location =>
+        {
+            location.Property(l => l.Name)
+                .HasColumnName("LocationName")
+                .IsRequired()
+                .HasMaxLength(OrganizationLocation.NAME_MAX_LENGTH);
 
-        builder.HasMany(organization => organization.Members)
-            .WithOne(user => user.Organization)
-            .HasForeignKey("OrganizationId")
-            .OnDelete(DeleteBehavior.Restrict);
+            location.Property(l => l.ZipCode)
+                .HasColumnName("LocationZipCode")
+                .IsRequired()
+                .HasMaxLength(OrganizationLocation.ZIPCODE_MAX_LENGTH);
 
-        builder.Navigation(organization => organization.Members)
-            .HasField("_members")
-            .UsePropertyAccessMode(PropertyAccessMode.Field);
+            location.Property(l => l.City)
+                .HasColumnName("LocationCity")
+                .HasMaxLength(OrganizationLocation.CITY_MAX_LENGTH);
 
-        builder.Ignore(organization => organization.Supervisors);
+            location.Property(l => l.Street)
+                .HasColumnName("LocationStreet")
+                .HasMaxLength(OrganizationLocation.STREET_MAX_LENGTH);
+        });
     }
 }

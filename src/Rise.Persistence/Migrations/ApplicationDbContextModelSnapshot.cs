@@ -354,10 +354,23 @@ namespace Rise.Persistence.Migrations
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("Location")
+                    b.Property<string>("LocationCity")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("LocationName")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
+
+                    b.Property<string>("LocationStreet")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("LocationZipCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -372,6 +385,39 @@ namespace Rise.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Organization", (string)null);
+
+                    b.OwnsOne("Rise.Domain.Organizations.Properties.OrganizationLocation", "Location", b1 =>
+                        {
+                            b1.Property<int>("OrganizationId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("City")
+                                .HasMaxLength(200)
+                                .HasColumnType("varchar(200)")
+                                .HasColumnName("LocationCity");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("varchar(200)")
+                                .HasColumnName("LocationName");
+
+                            b1.Property<string>("Street")
+                                .HasMaxLength(200)
+                                .HasColumnType("varchar(200)")
+                                .HasColumnName("LocationStreet");
+
+                            b1.Property<string>("ZipCode")
+                                .IsRequired()
+                                .HasMaxLength(32)
+                                .HasColumnType("varchar(32)")
+                                .HasColumnName("LocationZipCode");
+
+                            b1.HasKey("OrganizationId");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OrganizationId");
+                        });
                 });
 
             modelBuilder.Entity("Rise.Domain.Users.BaseUser", b =>
@@ -444,12 +490,28 @@ namespace Rise.Persistence.Migrations
                 {
                     b.HasBaseType("Rise.Domain.Users.BaseUser");
 
+                    b.HasOne("Rise.Domain.Organizations.Organization", "Organization")
+                        .WithMany("Supervisors")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+
                     b.ToTable("Supervisors", (string)null);
                 });
 
             modelBuilder.Entity("Rise.Domain.Users.User", b =>
                 {
                     b.HasBaseType("Rise.Domain.Users.BaseUser");
+
+                    b.HasOne("Rise.Domain.Organizations.Organization", "Organization")
+                        .WithMany("Users")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
 
                     b.ToTable("Users", (string)null);
                 });
@@ -542,7 +604,7 @@ namespace Rise.Persistence.Migrations
             modelBuilder.Entity("Rise.Domain.Users.BaseUser", b =>
                 {
                     b.HasOne("Rise.Domain.Organizations.Organization", "Organization")
-                        .WithMany("Members")
+                        .WithMany()
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -684,7 +746,9 @@ namespace Rise.Persistence.Migrations
 
             modelBuilder.Entity("Rise.Domain.Organizations.Organization", b =>
                 {
-                    b.Navigation("Members");
+                    b.Navigation("Supervisors");
+
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

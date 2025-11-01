@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Ardalis.GuardClauses;
 using Rise.Domain.Common;
 using Rise.Domain.Organizations.Properties;
@@ -11,7 +10,6 @@ public class Organization : Entity
 {
     private OrganizationName _name = default!;
     private OrganizationLocation _location = default!;
-    private readonly List<BaseUser> _members = [];
 
     public required OrganizationName Name
     {
@@ -25,7 +23,7 @@ public class Organization : Entity
         set => _location = Guard.Against.Null(value);
     }
 
-    public IReadOnlyCollection<BaseUser> Members => _members.AsReadOnly();
+    public List<User> Users { get; private set; } = [];
 
-    public IEnumerable<Supervisor> Supervisors => _members.OfType<Supervisor>();
+    public List<Supervisor> Supervisors { get; private set; } = [];
 }
