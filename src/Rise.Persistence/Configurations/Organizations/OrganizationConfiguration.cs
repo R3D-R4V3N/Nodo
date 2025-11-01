@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rise.Domain.Organizations;
+using Rise.Domain.Organizations.Properties;
 using Rise.Persistence.Configurations;
 
 namespace Rise.Persistence.Configurations.Organizations;
@@ -12,14 +14,22 @@ internal sealed class OrganizationConfiguration : EntityConfiguration<Organizati
         base.Configure(builder);
 
         builder.Property(organization => organization.Name)
-            .IsRequired();
+            .HasConversion(new ValueObjectConverter<OrganizationName, string>())
+            .IsRequired()
+            .HasMaxLength(OrganizationName.MAX_LENGTH);
 
         builder.Property(organization => organization.Location)
-            .IsRequired();
+            .HasConversion(new ValueObjectConverter<OrganizationLocation, string>())
+            .IsRequired()
+            .HasMaxLength(OrganizationLocation.MAX_LENGTH);
 
         builder.HasMany(organization => organization.Members)
             .WithOne(user => user.Organization)
-            .HasForeignKey(user => user.OrganizationId)
+            .HasForeignKey("OrganizationId")
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Navigation(organization => organization.Members)
+            .HasField("_members")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

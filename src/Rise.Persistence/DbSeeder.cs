@@ -8,6 +8,7 @@ using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Settings;
 using Rise.Shared.Identity;
+using Rise.Domain.Organizations.Properties;
 
 namespace Rise.Persistence;
 
@@ -61,28 +62,28 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         {
             var organizations = await dbContext.Organizations.ToListAsync();
 
-            nodoAntwerpen = organizations.Single(o => o.Name == "Nodo Antwerpen");
-            nodoGent = organizations.Single(o => o.Name == "Nodo Gent");
-            nodoBrussel = organizations.Single(o => o.Name == "Nodo Brussel");
+            nodoAntwerpen = organizations.Single(o => o.Name.Value == "Nodo Antwerpen");
+            nodoGent = organizations.Single(o => o.Name.Value == "Nodo Gent");
+            nodoBrussel = organizations.Single(o => o.Name.Value == "Nodo Brussel");
         }
         else
         {
             nodoAntwerpen = new Organization
             {
-                Name = "Nodo Antwerpen",
-                Location = "Antwerpen"
+                Name = (OrganizationName)"Nodo Antwerpen",
+                Location = (OrganizationLocation)"Antwerpen"
             };
 
             nodoGent = new Organization
             {
-                Name = "Nodo Gent",
-                Location = "Gent"
+                Name = (OrganizationName)"Nodo Gent",
+                Location = (OrganizationLocation)"Gent"
             };
 
             nodoBrussel = new Organization
             {
-                Name = "Nodo Brussel",
-                Location = "Brussel"
+                Name = (OrganizationName)"Nodo Brussel",
+                Location = (OrganizationLocation)"Brussel"
             };
 
             dbContext.Organizations.AddRange(nodoAntwerpen, nodoGent, nodoBrussel);

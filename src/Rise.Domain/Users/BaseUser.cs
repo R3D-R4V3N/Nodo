@@ -26,19 +26,8 @@ public abstract class BaseUser : Entity
     public required Organization Organization
     {
         get => _organization;
-        set
-        {
-            if (_organization == value)
-            {
-                return;
-            }
-
-            _organization = Guard.Against.Null(value);
-            OrganizationId = _organization.Id;
-        }
+        set => _organization = Guard.Against.Null(value);
     }
-
-    public int OrganizationId { get; private set; }
 
     // settings
     private UserSetting _userSettings;

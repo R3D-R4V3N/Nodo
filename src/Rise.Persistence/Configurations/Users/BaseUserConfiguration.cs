@@ -48,13 +48,13 @@ internal class BaseUserConfiguration : EntityConfiguration<BaseUser>
 
         builder.Property(x => x.BirthDay).IsRequired();
 
-        builder.Property(x => x.OrganizationId)
-            .IsRequired();
-
         builder.HasOne(x => x.Organization)
             .WithMany(organization => organization.Members)
-            .HasForeignKey(x => x.OrganizationId)
+            .HasForeignKey("OrganizationId")
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property<int>("OrganizationId")
+            .IsRequired();
 
         // settings
         builder.Ignore(u => u.UserSettings);

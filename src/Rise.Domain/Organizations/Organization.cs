@@ -1,28 +1,31 @@
+using System.Collections.Generic;
+using System.Linq;
 using Ardalis.GuardClauses;
 using Rise.Domain.Common;
+using Rise.Domain.Organizations.Properties;
 using Rise.Domain.Users;
-using System.Linq;
 
 namespace Rise.Domain.Organizations;
 
 public class Organization : Entity
 {
-    private string _name = default!;
-    private string _location = default!;
+    private OrganizationName _name = default!;
+    private OrganizationLocation _location = default!;
+    private readonly List<BaseUser> _members = [];
 
-    public required string Name
+    public required OrganizationName Name
     {
         get => _name;
-        set => _name = Guard.Against.NullOrWhiteSpace(value);
+        set => _name = Guard.Against.Null(value);
     }
 
-    public required string Location
+    public required OrganizationLocation Location
     {
         get => _location;
-        set => _location = Guard.Against.NullOrWhiteSpace(value);
+        set => _location = Guard.Against.Null(value);
     }
 
-    public ICollection<BaseUser> Members { get; private set; } = new List<BaseUser>();
+    public IReadOnlyCollection<BaseUser> Members => _members.AsReadOnly();
 
-    public IEnumerable<Supervisor> Supervisors => Members.OfType<Supervisor>();
+    public IEnumerable<Supervisor> Supervisors => _members.OfType<Supervisor>();
 }
