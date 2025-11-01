@@ -1,5 +1,7 @@
+using Ardalis.GuardClauses;
 using Ardalis.Result;
 using Rise.Domain.Chats;
+using Rise.Domain.Organizations;
 using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Settings;
 
@@ -18,7 +20,14 @@ public abstract class BaseUser : Entity
     public required LastName LastName { get; set; }
     public required Biography Biography { get; set; }
     public required AvatarUrl AvatarUrl { get; set; }
-    public required DateOnly BirthDay { get; set; }    
+    public required DateOnly BirthDay { get; set; }
+
+    private Organization _organization = default!;
+    public required Organization Organization
+    {
+        get => _organization;
+        set => _organization = Guard.Against.Null(value);
+    }
 
     // settings
     private UserSetting _userSettings;
