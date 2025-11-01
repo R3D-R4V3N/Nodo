@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
+using Rise.Persistence;
 using Rise.Shared.Identity.Accounts;
+using Rise.Shared.Identity.Claims;
 
 namespace Rise.Server.Endpoints.Identity.Accounts;
 
@@ -10,7 +12,10 @@ namespace Rise.Server.Endpoints.Identity.Accounts;
 /// </summary>
 /// <param name="userManager"></param>
 /// <param name="userStore"></param>
-public class Register(UserManager<IdentityUser> userManager, IUserStore<IdentityUser> userStore) : Endpoint<AccountRequest.Register, Result>
+public class Register(
+    UserManager<IdentityUser> userManager,
+    IUserStore<IdentityUser> userStore,
+    ApplicationDbContext dbContext) : Endpoint<AccountRequest.Register, Result>
 {
     public override void Configure()
     {
@@ -36,15 +41,25 @@ public class Register(UserManager<IdentityUser> userManager, IUserStore<Identity
             return Result.Error(result.Errors.First().Description);
         }
 
-        var organization = req.Organization?.Trim();
-
-        if (string.IsNullOrWhiteSpace(organization))
+        if (!req.OrganizationId.HasValue)
         {
             await userManager.DeleteAsync(user);
             return Result.Error("Selecteer een organisatie.");
         }
 
-        var claimResult = await userManager.AddClaimAsync(user, new Claim("organization", organization));
+        var organization = await dbContext.Organizations.FindAsync(
+            new object?[] { req.OrganizationId.Value },
+            cancellationToken: ctx);
+
+        if (organization is null)
+        {
+            await userManager.DeleteAsync(user);
+            return Result.Error("Ongeldige organisatie gekozen.");
+        }
+
+        var claimResult = await userManager.AddClaimAsync(
+            user,
+            new Claim(CustomClaimTypes.Organization, organization.Id.ToString()));
 
         if (!claimResult.Succeeded)
         {

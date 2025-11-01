@@ -1,11 +1,15 @@
+using System.Linq;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
+using Rise.Domain.Organizations;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Settings;
 using Rise.Shared.Identity;
+using Rise.Shared.Identity.Claims;
 
 namespace Rise.Persistence;
 
@@ -22,7 +26,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
     public async Task SeedAsync()
     {
         await RolesAsync();
-        await UsersAsync();
+        var organizations = await OrganizationsAsync();
+        await UsersAsync(organizations);
         await ConnectionsAsync();
         await ChatsAsync();
         await MessagesAsync();
@@ -41,8 +46,30 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         await roleManager.CreateAsync(new IdentityRole("Supervisor"));
         await roleManager.CreateAsync(new IdentityRole("User"));
     }
-    
-    private async Task UsersAsync()
+
+    private async Task<IReadOnlyList<Organization>> OrganizationsAsync()
+    {
+        if (await dbContext.Organizations.AnyAsync())
+        {
+            return await dbContext.Organizations
+                .OrderBy(o => o.Name)
+                .ToListAsync();
+        }
+
+        var organizations = new List<Organization>
+        {
+            new() { Name = "Nodo vzw", Description = "De standaardorganisatie voor Nodo-gebruikers." },
+            new() { Name = "HoGent", Description = "Hogeschool Gent" },
+            new() { Name = "Stad Gent", Description = "Stad Gent" }
+        };
+
+        dbContext.Organizations.AddRange(organizations);
+        await dbContext.SaveChangesAsync();
+
+        return organizations;
+    }
+
+    private async Task UsersAsync(IReadOnlyList<Organization> organizations)
     {
         if (dbContext.Users.Any())
         {
@@ -50,6 +77,10 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         }
 
         await dbContext.Roles.ToListAsync();
+
+        var defaultOrganization = organizations.First();
+        var hogent = organizations.FirstOrDefault(o => o.Name == "HoGent") ?? defaultOrganization;
+        var stadGent = organizations.FirstOrDefault(o => o.Name == "Stad Gent") ?? defaultOrganization;
 
         IdentityUser CreateIdentity(string email) => new()
         {
@@ -82,8 +113,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
 
         var accounts = new List<SeedAccount>
         {
-            new(admin, AppRoles.Administrator, null),
-            new(supervisor, AppRoles.Supervisor,
+            new(admin, AppRoles.Administrator, defaultOrganization, null),
+            new(supervisor, AppRoles.Supervisor, hogent,
                 new ApplicationUser(supervisor.Id)
                 {
                     FirstName = FirstName.Create("Super"),
@@ -98,7 +129,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(userAccount1, AppRoles.User,
+            new(userAccount1, AppRoles.User, defaultOrganization,
                 new ApplicationUser(userAccount1.Id)
                 {
                     FirstName = FirstName.Create("John"),
@@ -113,7 +144,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(userAccount2, AppRoles.User,
+            new(userAccount2, AppRoles.User, defaultOrganization,
                 new ApplicationUser(userAccount2.Id)
                 {
                     FirstName = FirstName.Create("Stacey"),
@@ -128,8 +159,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(nodoAdmin, AppRoles.Administrator, null),
-            new(supervisorEmma, AppRoles.Supervisor,
+            new(nodoAdmin, AppRoles.Administrator, defaultOrganization, null),
+            new(supervisorEmma, AppRoles.Supervisor, hogent,
                 new ApplicationUser(supervisorEmma.Id)
                 {
                     FirstName = FirstName.Create("Emma"),
@@ -144,7 +175,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(supervisorJonas, AppRoles.Supervisor,
+            new(supervisorJonas, AppRoles.Supervisor, hogent,
                 new ApplicationUser(supervisorJonas.Id)
                 {
                     FirstName = FirstName.Create("Jonas"),
@@ -159,7 +190,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(supervisorElla, AppRoles.Supervisor,
+            new(supervisorElla, AppRoles.Supervisor, hogent,
                 new ApplicationUser(supervisorElla.Id)
                 {
                     FirstName = FirstName.Create("Ella"),
@@ -174,7 +205,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(chatterNoor, AppRoles.User,
+            new(chatterNoor, AppRoles.User, stadGent,
                 new ApplicationUser(chatterNoor.Id)
                 {
                     FirstName = FirstName.Create("Noor"),
@@ -189,7 +220,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(chatterMilan, AppRoles.User,
+            new(chatterMilan, AppRoles.User, stadGent,
                 new ApplicationUser(chatterMilan.Id)
                 {
                     FirstName = FirstName.Create("Milan"),
@@ -204,7 +235,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(chatterLina, AppRoles.User,
+            new(chatterLina, AppRoles.User, defaultOrganization,
                 new ApplicationUser(chatterLina.Id)
                 {
                     FirstName = FirstName.Create("Lina"),
@@ -219,7 +250,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(chatterKyandro, AppRoles.User,
+            new(chatterKyandro, AppRoles.User, defaultOrganization,
                 new ApplicationUser(chatterKyandro.Id)
                 {
                     FirstName = FirstName.Create("Kyandro"),
@@ -234,7 +265,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(chatterJasper, AppRoles.User,
+            new(chatterJasper, AppRoles.User, defaultOrganization,
                 new ApplicationUser(chatterJasper.Id)
                 {
                     FirstName = FirstName.Create("Jasper"),
@@ -249,7 +280,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(chatterBjorn, AppRoles.User,
+            new(chatterBjorn, AppRoles.User, stadGent,
                 new ApplicationUser(chatterBjorn.Id)
                 {
                     FirstName = FirstName.Create("Bjorn"),
@@ -264,7 +295,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(chatterThibo, AppRoles.User,
+            new(chatterThibo, AppRoles.User, stadGent,
                 new ApplicationUser(chatterThibo.Id)
                 {
                     FirstName = FirstName.Create("Thibo"),
@@ -279,7 +310,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(chatterSaar, AppRoles.User,
+            new(chatterSaar, AppRoles.User, stadGent,
                 new ApplicationUser(chatterSaar.Id)
                 {
                     FirstName = FirstName.Create("Saar"),
@@ -294,7 +325,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(chatterYassin, AppRoles.User,
+            new(chatterYassin, AppRoles.User, stadGent,
                 new ApplicationUser(chatterYassin.Id)
                 {
                     FirstName = FirstName.Create("Yassin"),
@@ -309,7 +340,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(chatterLotte, AppRoles.User,
+            new(chatterLotte, AppRoles.User, defaultOrganization,
                 new ApplicationUser(chatterLotte.Id)
                 {
                     FirstName = FirstName.Create("Lotte"),
@@ -324,7 +355,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                         IsDarkMode = false,
                     }
                 }),
-            new(chatterAmina, AppRoles.User,
+            new(chatterAmina, AppRoles.User, defaultOrganization,
                 new ApplicationUser(chatterAmina.Id)
                 {
                     FirstName = FirstName.Create("Amina"),
@@ -341,10 +372,16 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 }),
         };
 
-        foreach (var (identity, role, profile) in accounts)
+        foreach (var (identity, role, organization, profile) in accounts)
         {
             await userManager.CreateAsync(identity, PasswordDefault);
             await userManager.AddToRoleAsync(identity, role);
+            var claimResult = await userManager.AddClaimAsync(identity, new Claim(CustomClaimTypes.Organization, organization.Id.ToString()));
+
+            if (!claimResult.Succeeded)
+            {
+                throw new InvalidOperationException($"Kon de organisatieclaim niet toevoegen voor gebruiker {identity.Email}: {string.Join(',', claimResult.Errors.Select(e => e.Description))}");
+            }
 
             if (profile is not null)
             {
@@ -512,7 +549,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         await dbContext.SaveChangesAsync();
     }
 
-    private sealed record SeedAccount(IdentityUser Identity, string Role, ApplicationUser? Profile);
+    private sealed record SeedAccount(IdentityUser Identity, string Role, Organization Organization, ApplicationUser? Profile);
 }
 
 internal static class DbSeederExtensions

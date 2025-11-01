@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Rise.Client.Identity.Components;
 using Rise.Shared.Identity.Accounts;
+using Rise.Shared.Organizations;
 using Xunit;
 
 public class RegisterFormShould : TestContext
@@ -12,8 +13,14 @@ public class RegisterFormShould : TestContext
     {
         // Arrange
         var model = new AccountRequest.Register();
+        var organizations = new List<OrganizationDto.Summary>
+        {
+            new() { Id = 1, Name = "Nodo vzw" },
+            new() { Id = 2, Name = "HoGent" }
+        };
         var cut = RenderComponent<RegisterForm>(parameters => parameters
             .Add(p => p.Model, model)
+            .Add(p => p.Organizations, organizations)
             .Add(p => p.OnSubmit, EventCallback.Factory.Create(this, () => { }))
         );
 
@@ -39,10 +46,16 @@ public class RegisterFormShould : TestContext
     {
         // Arrange
         var model = new AccountRequest.Register();
+        var organizations = new List<OrganizationDto.Summary>
+        {
+            new() { Id = 1, Name = "Nodo vzw" },
+            new() { Id = 2, Name = "HoGent" }
+        };
         bool submitted = false;
 
         var cut = RenderComponent<RegisterForm>(parameters => parameters
             .Add(p => p.Model, model)
+            .Add(p => p.Organizations, organizations)
             .Add(p => p.OnSubmit, EventCallback.Factory.Create(this, () => { submitted = true; }))
         );
 
@@ -51,14 +64,14 @@ public class RegisterFormShould : TestContext
         cut.Find("#register-email").Change("kyandro@example.com");
         cut.Find("#register-password").Change("Secret123!");
         cut.Find("#register-confirm-password").Change("Secret123!");
-        cut.Find("#register-organization").Change("org1");
+        cut.Find("#register-organization").Change("2");
 
         // Act
         cut.Find("form").Submit();
 
         // Assert
         Assert.True(submitted, "OnSubmit should be triggered when the form is submitted");
-        Assert.Equal("org1", model.Organization);
+        Assert.Equal(2, model.OrganizationId);
     }
 
     //[Fact]

@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Rise.Client;
 using Rise.Client.Chats;
 using Rise.Client.Identity;
+using Rise.Client.Organizations;
 using Rise.Client.State;
 using Rise.Client.UserConnections;
 using Rise.Client.Users;
 using Rise.Shared.Chats;
+using Rise.Shared.Organizations;
 using Rise.Shared.UserConnections;
 using Rise.Shared.Users;
 using UserService = Rise.Client.Users.UserService;
@@ -62,6 +64,11 @@ try
     {
         client.BaseAddress = backendUri;
     });
+
+    builder.Services.AddHttpClient<IOrganizationService, OrganizationService>(client =>
+    {
+        client.BaseAddress = backendUri;
+    }).AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<UserContextService>(client =>
     {

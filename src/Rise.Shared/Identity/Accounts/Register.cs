@@ -28,9 +28,9 @@ public static partial class AccountRequest
         public string? ConfirmPassword { get; set; }
 
         /// <summary>
-        /// The organization the user belongs to.
+        /// The identifier of the organization the user belongs to.
         /// </summary>
-        public string? Organization { get; set; } = string.Empty;
+        public int? OrganizationId { get; set; }
         
         // Other needed stuff here, like Role(s), Firstname, lastname etc.
 
@@ -46,8 +46,9 @@ public static partial class AccountRequest
                 RuleFor(x => x.ConfirmPassword)
                     .Equal(x => x.Password)
                     .WithMessage("Passwords do not match.");
-                RuleFor(x => x.Organization)
-                    .NotEmpty()
+                RuleFor(x => x.OrganizationId)
+                    .NotNull()
+                    .GreaterThan(0)
                     .WithMessage("Selecteer een organisatie.");
             }
         }
