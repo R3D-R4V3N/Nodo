@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Rise.Domain.Locations;
 using Rise.Domain.Organizations;
-using Rise.Domain.Organizations.Properties;
-using Rise.Persistence.Configurations;
 
 namespace Rise.Persistence.Configurations.Organizations;
 
@@ -11,31 +10,28 @@ internal sealed class OrganizationConfiguration : EntityConfiguration<Organizati
     public override void Configure(EntityTypeBuilder<Organization> builder)
     {
         base.Configure(builder);
+        builder.HasKey(a => a.Id);
 
         builder.Property(organization => organization.Name)
-            .HasConversion(new ValueObjectConverter<OrganizationName, string>())
-            .IsRequired()
-            .HasMaxLength(OrganizationName.MAX_LENGTH);
+            .HasConversion(
+                new ValueObjectConverter<Domain.Organizations.Properties.Name, string>()
+            ).IsRequired()
+            .HasMaxLength(Domain.Organizations.Properties.Name.MAX_LENGTH);
 
-        builder.OwnsOne(organization => organization.Location, location =>
-        {
-            location.Property(l => l.Name)
-                .HasColumnName("LocationName")
-                .IsRequired()
-                .HasMaxLength(OrganizationLocation.NAME_MAX_LENGTH);
+        builder.HasOne(o => o.Address)
+               .WithMany() 
+               .HasForeignKey("AddressId") // Shadow property for FK
+               .IsRequired()
+               .OnDelete(DeleteBehavior.Restrict);
 
-            location.Property(l => l.ZipCode)
-                .HasColumnName("LocationZipCode")
-                .IsRequired()
-                .HasMaxLength(OrganizationLocation.ZIPCODE_MAX_LENGTH);
+        // Users collection
+        builder.HasMany(o => o.Users)
+            .WithOne()
+            .HasForeignKey("OrganizationId");
 
-            location.Property(l => l.City)
-                .HasColumnName("LocationCity")
-                .HasMaxLength(OrganizationLocation.CITY_MAX_LENGTH);
-
-            location.Property(l => l.Street)
-                .HasColumnName("LocationStreet")
-                .HasMaxLength(OrganizationLocation.STREET_MAX_LENGTH);
-        });
+        // Supervisors collection
+        builder.HasMany(o => o.Supervisors)
+            .WithOne()
+            .HasForeignKey("OrganizationId");
     }
 }

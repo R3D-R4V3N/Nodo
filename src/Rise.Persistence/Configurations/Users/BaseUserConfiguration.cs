@@ -48,9 +48,6 @@ internal class BaseUserConfiguration : EntityConfiguration<BaseUser>
 
         builder.Property(x => x.BirthDay).IsRequired();
 
-        builder.Property<int>("OrganizationId")
-            .IsRequired();
-
         // settings
         builder.Ignore(u => u.UserSettings);
 

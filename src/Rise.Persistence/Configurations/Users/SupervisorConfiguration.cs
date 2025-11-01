@@ -13,8 +13,9 @@ internal class SupervisorConfiguration : EntityConfiguration<Supervisor>
 
         builder.ToTable("Supervisors");
 
-        builder.HasOne(supervisor => supervisor.Organization)
-            .WithMany(organization => organization.Supervisors)
+        // organisation
+        builder.HasOne(x => x.Organization)
+            .WithMany(x => x.Supervisors)
             .HasForeignKey("OrganizationId")
             .OnDelete(DeleteBehavior.Restrict);
     }

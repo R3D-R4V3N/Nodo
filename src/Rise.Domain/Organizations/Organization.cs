@@ -1,6 +1,4 @@
-using System.Collections.Generic;
-using Ardalis.GuardClauses;
-using Rise.Domain.Common;
+using Rise.Domain.Locations;
 using Rise.Domain.Organizations.Properties;
 using Rise.Domain.Users;
 
@@ -8,22 +6,25 @@ namespace Rise.Domain.Organizations;
 
 public class Organization : Entity
 {
-    private OrganizationName _name = default!;
-    private OrganizationLocation _location = default!;
+    public Organization() { }
 
-    public required OrganizationName Name
+    private Name _name = default!;
+    public required Name Name
     {
         get => _name;
         set => _name = Guard.Against.Null(value);
     }
 
-    public required OrganizationLocation Location
+    private Address _address = default!;
+    public required Address Address
     {
-        get => _location;
-        set => _location = Guard.Against.Null(value);
+        get => _address;
+        set => _address = Guard.Against.Null(value);
     }
 
-    public List<User> Users { get; private set; } = [];
+    private List<User> _users = [];
+    public IReadOnlyCollection<User> Users => _users;
 
-    public List<Supervisor> Supervisors { get; private set; } = [];
+    private List<Supervisor> _supervisors = [];
+    public IReadOnlyCollection<Supervisor> Supervisors => _supervisors;
 }

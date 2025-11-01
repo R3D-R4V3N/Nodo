@@ -1,21 +1,16 @@
-using System;
-using System.Collections.Generic;
 using Ardalis.Result;
-using Rise.Domain.Common;
 
 namespace Rise.Domain.Organizations.Properties;
 
-public sealed class OrganizationName : ValueObject, IProperty<OrganizationName, string>
+public sealed class Name : ValueObject, IProperty<Name, string>
 {
-    private OrganizationName()
-    {
-    }
+    private Name() { }
 
     public const int MAX_LENGTH = 200;
 
     public string Value { get; private set; } = default!;
 
-    public static Result<OrganizationName> Create(string value)
+    public static Result<Name> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
@@ -29,15 +24,15 @@ public sealed class OrganizationName : ValueObject, IProperty<OrganizationName, 
             return Result.Conflict("Organisatienaam is te lang.");
         }
 
-        return Result.Success(new OrganizationName
+        return Result.Success(new Name
         {
             Value = trimmedValue,
         });
     }
 
-    public static implicit operator string(OrganizationName name) => name.Value;
+    public static implicit operator string(Name name) => name.Value;
 
-    public static explicit operator OrganizationName(string value)
+    public static explicit operator Name(string value)
     {
         var result = Create(value);
         if (!result.IsSuccess)

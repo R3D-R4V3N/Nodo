@@ -9,6 +9,8 @@ using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Settings;
 using Rise.Shared.Identity;
 using Rise.Domain.Organizations.Properties;
+using Rise.Domain.Locations;
+using Rise.Domain.Locations.Properties;
 
 namespace Rise.Persistence;
 
@@ -70,29 +72,47 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         {
             nodoAntwerpen = new Organization
             {
-                Name = (OrganizationName)"Nodo Antwerpen",
-                Location = new OrganizationLocation(
-                    name: "Antwerpen",
-                    zipCode: "2000",
-                    city: "Antwerpen")
+                Name = Domain.Organizations.Properties.Name.Create("Nodo Antwerpen"),
+                Address = new Address()
+                {
+                    Province = Domain.Locations.Properties.Name.Create("Antwerpen"),
+                    City = new City()
+                    {
+                        Name = Domain.Locations.Properties.Name.Create("Antwerpen"),
+                        ZipCode = Domain.Locations.Properties.ZipCode.Create(2000),
+                        Street = Domain.Locations.Properties.Name.Create("Antwerpen Straat"),
+                    }
+                }
             };
 
             nodoGent = new Organization
             {
-                Name = (OrganizationName)"Nodo Gent",
-                Location = new OrganizationLocation(
-                    name: "Gent",
-                    zipCode: "9000",
-                    city: "Gent")
+                Name = Domain.Organizations.Properties.Name.Create("Nodo Gent"),
+                Address = new Address()
+                {
+                    Province = Domain.Locations.Properties.Name.Create("Oost-Vlaanderen"),
+                    City = new City()
+                    {
+                        Name = Domain.Locations.Properties.Name.Create("Gent"),
+                        ZipCode = Domain.Locations.Properties.ZipCode.Create(9000),
+                        Street = Domain.Locations.Properties.Name.Create("Gent Straat"),
+                    }
+                }
             };
 
             nodoBrussel = new Organization
             {
-                Name = (OrganizationName)"Nodo Brussel",
-                Location = new OrganizationLocation(
-                    name: "Brussel",
-                    zipCode: "1000",
-                    city: "Brussel")
+                Name = Domain.Organizations.Properties.Name.Create("Nodo Brussel"),
+                Address = new Address()
+                {
+                    Province = Domain.Locations.Properties.Name.Create("Brussel"),
+                    City = new City()
+                    {
+                        Name = Domain.Locations.Properties.Name.Create("Brussel"),
+                        ZipCode = Domain.Locations.Properties.ZipCode.Create(1000),
+                        Street = Domain.Locations.Properties.Name.Create("Brussel Straat"),
+                    }
+                }
             };
 
             dbContext.Organizations.AddRange(nodoAntwerpen, nodoGent, nodoBrussel);
