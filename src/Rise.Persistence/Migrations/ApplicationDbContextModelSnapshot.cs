@@ -284,7 +284,7 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("Chat", (string)null);
                 });
 
-            modelBuilder.Entity("Rise.Domain.Messages.Message", b =>
+            modelBuilder.Entity("Rise.Domain.Chats.Message", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -351,8 +351,8 @@ namespace Rise.Persistence.Migrations
 
                     b.Property<string>("AvatarUrl")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                        .HasMaxLength(250)
+                        .HasColumnType("varchar(250)");
 
                     b.Property<string>("Biography")
                         .IsRequired()
@@ -371,10 +371,6 @@ namespace Rise.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
-
-                    b.Property<int>("Gender")
-                        .HasMaxLength(10)
-                        .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -400,111 +396,6 @@ namespace Rise.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("ApplicationUser", (string)null);
-                });
-
-            modelBuilder.Entity("Rise.Domain.Users.Hobbys.UserHobby", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<string>("Hobby")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("varchar(64)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Hobby")
-                        .IsUnique();
-
-                    b.ToTable("Hobbies", (string)null);
-                });
-
-            modelBuilder.Entity("Rise.Domain.Users.Sentiment.UserSentiment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("varchar(64)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Type", "Category")
-                        .IsUnique();
-
-                    b.ToTable("Sentiments", (string)null);
-                });
-
-            modelBuilder.Entity("Rise.Persistence.Configurations.Users.UserHobbyJoin", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("HobbyId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserId", "HobbyId");
-
-                    b.HasIndex("HobbyId");
-
-                    b.ToTable("UserHobbies", (string)null);
-                });
-
-            modelBuilder.Entity("Rise.Persistence.Configurations.Users.UserSentimentJoin", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SentimentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserId", "SentimentId");
-
-                    b.HasIndex("SentimentId");
-
-                    b.ToTable("UserSentiments", (string)null);
                 });
 
             modelBuilder.Entity("ApplicationUserChat", b =>
@@ -573,7 +464,7 @@ namespace Rise.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Rise.Domain.Messages.Message", b =>
+            modelBuilder.Entity("Rise.Domain.Chats.Message", b =>
                 {
                     b.HasOne("Rise.Domain.Chats.Chat", "Chat")
                         .WithMany("Messages")
@@ -594,7 +485,71 @@ namespace Rise.Persistence.Migrations
 
             modelBuilder.Entity("Rise.Domain.Users.ApplicationUser", b =>
                 {
-                    b.OwnsMany("Rise.Domain.Users.Connections.UserConnection", "Connections", b1 =>
+                    b.OwnsOne("Rise.Domain.Users.ApplicationUserSetting", "_userSettings", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<int>("FontSize")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasDefaultValue(12);
+
+                            b1.Property<bool>("IsDarkMode")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("tinyint(1)")
+                                .HasDefaultValue(false);
+
+                            b1.Property<int>("UserId")
+                                .HasColumnType("int");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("UserId")
+                                .IsUnique();
+
+                            b1.ToTable("UserSetting", (string)null);
+
+                            b1.WithOwner("User")
+                                .HasForeignKey("UserId");
+
+                            b1.OwnsMany("Rise.Domain.Users.UserSettingChatTextLineSuggestion", "ChatTextLineSuggestions", b2 =>
+                                {
+                                    b2.Property<int>("UserSettingsId")
+                                        .HasColumnType("int");
+
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("int");
+
+                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<int>("Id"));
+
+                                    b2.Property<int>("Rank")
+                                        .HasColumnType("int");
+
+                                    b2.Property<string>("Text")
+                                        .IsRequired()
+                                        .HasMaxLength(200)
+                                        .HasColumnType("varchar(200)")
+                                        .HasColumnName("TextSuggestion");
+
+                                    b2.HasKey("UserSettingsId", "Id");
+
+                                    b2.ToTable("UserSettingChatTextLineSuggestions", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("UserSettingsId");
+                                });
+
+                            b1.Navigation("ChatTextLineSuggestions");
+
+                            b1.Navigation("User");
+                        });
+
+                    b.OwnsMany("Rise.Domain.Users.UserConnection", "_connections", b1 =>
                         {
                             b1.Property<int>("Id")
                                 .ValueGeneratedOnAdd()
@@ -635,111 +590,9 @@ namespace Rise.Persistence.Migrations
                             b1.Navigation("Connection");
                         });
 
-                    b.OwnsOne("Rise.Domain.Users.Settings.ApplicationUserSetting", "_userSettings", b1 =>
-                        {
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
-
-                            b1.Property<int>("FontSize")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int")
-                                .HasDefaultValue(12);
-
-                            b1.Property<bool>("IsDarkMode")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("tinyint(1)")
-                                .HasDefaultValue(false);
-
-                            b1.Property<int>("UserId")
-                                .HasColumnType("int");
-
-                            b1.HasKey("Id");
-
-                            b1.HasIndex("UserId")
-                                .IsUnique();
-
-                            b1.ToTable("UserSetting", (string)null);
-
-                            b1.WithOwner("User")
-                                .HasForeignKey("UserId");
-
-                            b1.OwnsMany("Rise.Domain.Users.Settings.UserSettingChatTextLineSuggestion", "ChatTextLineSuggestions", b2 =>
-                                {
-                                    b2.Property<int>("UserSettingsId")
-                                        .HasColumnType("int");
-
-                                    b2.Property<int>("Id")
-                                        .ValueGeneratedOnAdd()
-                                        .HasColumnType("int");
-
-                                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b2.Property<int>("Id"));
-
-                                    b2.Property<int>("Rank")
-                                        .HasColumnType("int");
-
-                                    b2.Property<string>("Sentence")
-                                        .IsRequired()
-                                        .HasMaxLength(150)
-                                        .HasColumnType("varchar(150)")
-                                        .HasColumnName("TextSuggestion");
-
-                                    b2.HasKey("UserSettingsId", "Id");
-
-                                    b2.ToTable("UserSettingChatTextLineSuggestions", (string)null);
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("UserSettingsId");
-                                });
-
-                            b1.Navigation("ChatTextLineSuggestions");
-
-                            b1.Navigation("User");
-                        });
-
-                    b.Navigation("Connections");
+                    b.Navigation("_connections");
 
                     b.Navigation("_userSettings");
-                });
-
-            modelBuilder.Entity("Rise.Persistence.Configurations.Users.UserHobbyJoin", b =>
-                {
-                    b.HasOne("Rise.Domain.Users.Hobbys.UserHobby", "Hobby")
-                        .WithMany()
-                        .HasForeignKey("HobbyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Hobby");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Rise.Persistence.Configurations.Users.UserSentimentJoin", b =>
-                {
-                    b.HasOne("Rise.Domain.Users.Sentiment.UserSentiment", "Sentiment")
-                        .WithMany()
-                        .HasForeignKey("SentimentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Rise.Domain.Users.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Sentiment");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Rise.Domain.Chats.Chat", b =>

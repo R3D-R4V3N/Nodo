@@ -1,5 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Rise.Domain.Users.Properties;
+﻿using Microsoft.EntityFrameworkCore;
 using Rise.Persistence;
 using Rise.Services.Identity;
 using Rise.Services.Users.Mapper;
@@ -24,8 +23,6 @@ public class UserContextService(
         }
 
         var currentUser = await _dbContext.ApplicationUsers
-            .Include(u => u.Sentiments)
-            .Include(u => u.Hobbies)
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
 
         if (currentUser is null)
@@ -33,14 +30,9 @@ public class UserContextService(
             return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
         }
 
-        var email = (await _dbContext.Users
-            .SingleOrDefaultAsync(u => u.Id == accountId, cancellationToken)
-            )?.Email
-            ?? string.Empty;
-
         return Result.Success(new UserResponse.CurrentUser
         {
-            User = UserMapper.ToCurrentUserDto(currentUser, email)
+            User = UserMapper.ToCurrentUserDto(currentUser)
         });
     }
 }
