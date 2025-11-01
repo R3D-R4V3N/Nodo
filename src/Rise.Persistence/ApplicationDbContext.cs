@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
+using Rise.Domain.Locations;
 using Rise.Domain.Messages;
+using Rise.Domain.Organizations;
 using Rise.Domain.Users;
 
 namespace Rise.Persistence;
@@ -20,6 +22,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> opts) :
 {
     public DbSet<Chat> Chats => Set<Chat>();
     public DbSet<Message> Messages => Set<Message>();
+    public DbSet<Address> Addresses => Set<Address>();
+    public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Supervisor> Supervisors => Set<Supervisor>();
 

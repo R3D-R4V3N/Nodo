@@ -1,4 +1,6 @@
 ﻿using Rise.Domain.Chats;
+using Rise.Domain.Locations;
+using Rise.Domain.Organizations;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Settings;
@@ -6,6 +8,7 @@ using Rise.Domain.Users.Settings.Properties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,6 +32,21 @@ public static class TestData
     public static LastName ValidLastName() => LastName.Create($"Doe");
     public static Biography ValidBiography() => Biography.Create($"Dit is een bio.");
     public static AvatarUrl ValidAvatarUrl() => AvatarUrl.Create($"Dit is een img.");
+    public static Organization ValidOrganization() =>
+        new Organization
+        {
+            Name = Domain.Organizations.Properties.Name.Create("Nodo Antwerpen"),
+            Address = new Address()
+            {
+                Province = Domain.Locations.Properties.Name.Create("Antwerpen"),
+                City = new City()
+                {
+                    Name = Domain.Locations.Properties.Name.Create("Antwerpen"),
+                    ZipCode = Domain.Locations.Properties.ZipCode.Create(2000),
+                    Street = Domain.Locations.Properties.Name.Create("Antwerpen Straat"),
+                }
+            }
+        };
     public static User ValidUser(int id) =>
         (User) new User()
         {
@@ -38,7 +56,8 @@ public static class TestData
             Biography = ValidBiography(),
             AvatarUrl = ValidAvatarUrl(),
             BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
-            UserSettings = ValidUserSettings()
+            UserSettings = ValidUserSettings(),
+            Organization = ValidOrganization(),
         }.WithId(id);
 
     public static Supervisor ValidSupervisor(int id) =>
@@ -50,7 +69,8 @@ public static class TestData
             Biography = ValidBiography(),
             AvatarUrl = ValidAvatarUrl(),
             BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-40)),
-            UserSettings = ValidUserSettings()
+            UserSettings = ValidUserSettings(),
+            Organization = ValidOrganization(),
         }.WithId(id);
 
     private static BaseUser WithId(this BaseUser user, int id)

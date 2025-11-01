@@ -12,6 +12,12 @@ internal class UserConfiguration : EntityConfiguration<User>
         base.Configure(builder);
         builder.ToTable("Users");
 
+        // organisation
+        builder.HasOne(user => user.Organization)
+            .WithMany(organization => organization.Users)
+            .HasForeignKey("OrganizationId")
+            .OnDelete(DeleteBehavior.Restrict);
+
         // connections
         builder.Ignore(u => u.Friends);
         builder.Ignore(u => u.FriendRequests);

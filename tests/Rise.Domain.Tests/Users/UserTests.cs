@@ -1,5 +1,6 @@
 ﻿using Ardalis.Result;
 using Rise.Domain.Chats;
+using Rise.Domain.Organizations;
 using Rise.Domain.Users;
 using System.Runtime.Intrinsics.X86;
 
@@ -16,6 +17,7 @@ public class ApplicationUserTests
         var avatarUrl = TestData.ValidAvatarUrl();
         var birthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28));
         var userSettings = TestData.ValidUserSettings();
+        var org = TestData.ValidOrganization();
 
         var user = new User()
         {
@@ -25,7 +27,8 @@ public class ApplicationUserTests
             Biography = biography,
             AvatarUrl = avatarUrl,
             BirthDay = birthDay,
-            UserSettings = userSettings
+            UserSettings = userSettings,
+            Organization = org,
         };
 
         user.AccountId.ShouldBe(accountId);
@@ -35,6 +38,7 @@ public class ApplicationUserTests
         user.AvatarUrl.ShouldBe(avatarUrl);
         user.BirthDay.ShouldBe(birthDay);
         user.UserSettings.ShouldBe(userSettings);
+        user.Organization.ShouldBe(org);
     }
 
     [Fact]
