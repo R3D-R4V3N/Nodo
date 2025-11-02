@@ -18,5 +18,7 @@ internal class SupervisorConfiguration : EntityConfiguration<Supervisor>
             .WithMany(x => x.Supervisors)
             .HasForeignKey("OrganizationId")
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Navigation(x => x.Users).UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

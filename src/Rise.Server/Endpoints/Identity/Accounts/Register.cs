@@ -82,7 +82,7 @@ public class Register(
         dbContext.RegistrationRequests.Add(registration);
         await dbContext.SaveChangesAsync(ctx);
 
-        return Result.Success();
+        return Result.Success("Registratie ontvangen. Een supervisor zal je account binnenkort beoordelen.");
     }
 
 }

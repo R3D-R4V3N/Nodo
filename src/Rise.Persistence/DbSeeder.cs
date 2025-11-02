@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
 using Rise.Domain.Chats;
 using Rise.Domain.Organizations;
@@ -128,6 +129,90 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         var organizationIndex = 0;
         Organization NextOrganization() => organizationPool[organizationIndex++ % organizationPool.Length];
 
+        var supervisorsByOrganization = new Dictionary<Organization, List<Supervisor>>();
+        var supervisorRotationIndex = new Dictionary<Organization, int>();
+
+        Supervisor RegisterSupervisorProfile(Supervisor supervisorProfile)
+        {
+            if (!supervisorsByOrganization.TryGetValue(supervisorProfile.Organization, out var list))
+            {
+                list = [];
+                supervisorsByOrganization[supervisorProfile.Organization] = list;
+                supervisorRotationIndex[supervisorProfile.Organization] = 0;
+            }
+
+            list.Add(supervisorProfile);
+            return supervisorProfile;
+        }
+
+        Supervisor GetSupervisorForOrganization(Organization organization)
+        {
+            if (!supervisorsByOrganization.TryGetValue(organization, out var list) || list.Count == 0)
+            {
+                throw new InvalidOperationException($"Geen supervisor beschikbaar voor organisatie {organization.Name.Value}.");
+            }
+
+            var index = supervisorRotationIndex[organization];
+            var supervisorProfile = list[index];
+            supervisorRotationIndex[organization] = (index + 1) % list.Count;
+            return supervisorProfile;
+        }
+
+        Supervisor CreateSupervisorProfile(
+            IdentityUser identity,
+            Organization organization,
+            string firstName,
+            string lastName,
+            string biography,
+            string avatarUrl,
+            int age)
+        {
+            var profile = new Supervisor()
+            {
+                AccountId = identity.Id,
+                FirstName = FirstName.Create(firstName),
+                LastName = LastName.Create(lastName),
+                Biography = Biography.Create(biography),
+                AvatarUrl = AvatarUrl.Create(avatarUrl),
+                BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-age)),
+                Organization = organization,
+                UserSettings = new UserSetting()
+                {
+                    FontSize = FontSize.Create(12),
+                    IsDarkMode = false,
+                }
+            };
+
+            return RegisterSupervisorProfile(profile);
+        }
+
+        User CreateUserProfile(
+            IdentityUser identity,
+            string firstName,
+            string lastName,
+            string biography,
+            string avatarUrl,
+            int age)
+        {
+            var organization = NextOrganization();
+            return new User()
+            {
+                AccountId = identity.Id,
+                FirstName = FirstName.Create(firstName),
+                LastName = LastName.Create(lastName),
+                Biography = Biography.Create(biography),
+                AvatarUrl = AvatarUrl.Create(avatarUrl),
+                BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-age)),
+                Organization = organization,
+                Supervisor = GetSupervisorForOrganization(organization),
+                UserSettings = new UserSetting()
+                {
+                    FontSize = FontSize.Create(12),
+                    IsDarkMode = false,
+                }
+            };
+        }
+
         IdentityUser CreateIdentity(string email) => new()
         {
             UserName = email,
@@ -161,278 +246,146 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         {
             new(admin, AppRoles.Administrator, null),
             new(supervisor, AppRoles.Supervisor,
-                new Supervisor()
-                {
-                    AccountId = supervisor.Id,
-                    FirstName = FirstName.Create("Super"),
-                    LastName = LastName.Create("Visor"),
-                    Biography = Biography.Create("Here to help you."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-30)),
-                    Organization = nodoAntwerpen,
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
-            new(userAccount1, AppRoles.User,
-                new User()
-                {
-                    AccountId = userAccount1.Id,
-                    FirstName = FirstName.Create("John"),
-                    LastName = LastName.Create("Doe"),
-                    Biography = Biography.Create("Houdt van katten en rustige gesprekken."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
-                    Organization = NextOrganization(),
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
-            new(userAccount2, AppRoles.User,
-                new User()
-                {
-                    AccountId = userAccount2.Id,
-                    FirstName = FirstName.Create("Stacey"),
-                    LastName = LastName.Create("Willington"),
-                    Biography = Biography.Create("Deelt graag verhalen over haar hulphond."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-26)),
-                    Organization = NextOrganization(),
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateSupervisorProfile(
+                    supervisor,
+                    nodoAntwerpen,
+                    "Super",
+                    "Visor",
+                    "Here to help you.",
+                    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    30)),
             new(nodoAdmin, AppRoles.Administrator, null),
             new(supervisorEmma, AppRoles.Supervisor,
-                new Supervisor()
-                {
-                    AccountId = supervisorEmma.Id,
-                    FirstName = FirstName.Create("Emma"),
-                    LastName = LastName.Create("Claes"),
-                    Biography = Biography.Create("Coach voor dagelijkse structuur en zelfvertrouwen."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-35)),
-                    Organization = nodoGent,
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateSupervisorProfile(
+                    supervisorEmma,
+                    nodoGent,
+                    "Emma",
+                    "Claes",
+                    "Coach voor dagelijkse structuur en zelfvertrouwen.",
+                    "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    35)),
             new(supervisorJonas, AppRoles.Supervisor,
-                new Supervisor()
-                {
-                    AccountId = supervisorJonas.Id,
-                    FirstName = FirstName.Create("Jonas"),
-                    LastName =  LastName.Create("Van Lint"),
-                    Biography = Biography.Create("Helpt bij plannen en houdt wekelijks groepsmomenten."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1531891437562-4301cf35b7e4?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-33)),
-                    Organization = nodoAntwerpen,
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateSupervisorProfile(
+                    supervisorJonas,
+                    nodoAntwerpen,
+                    "Jonas",
+                    "Van Lint",
+                    "Helpt bij plannen en houdt wekelijks groepsmomenten.",
+                    "https://images.unsplash.com/photo-1531891437562-4301cf35b7e4?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    33)),
             new(supervisorElla, AppRoles.Supervisor,
-                new Supervisor()
-                {
-                    AccountId = supervisorElla.Id,
-                    FirstName = FirstName.Create("Ella"),
-                    LastName =  LastName.Create("Vervoort"),
-                    Biography = Biography.Create("Creatieve begeleider voor beeldende therapie."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-31)),
-                    Organization = nodoBrussel,
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateSupervisorProfile(
+                    supervisorElla,
+                    nodoBrussel,
+                    "Ella",
+                    "Vervoort",
+                    "Creatieve begeleider voor beeldende therapie.",
+                    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    31)),
+            new(userAccount1, AppRoles.User,
+                CreateUserProfile(
+                    userAccount1,
+                    "John",
+                    "Doe",
+                    "Houdt van katten en rustige gesprekken.",
+                    "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    28)),
+            new(userAccount2, AppRoles.User,
+                CreateUserProfile(
+                    userAccount2,
+                    "Stacey",
+                    "Willington",
+                    "Deelt graag verhalen over haar hulphond.",
+                    "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    26)),
             new(chatterNoor, AppRoles.User,
-                new User()
-                {
-                    AccountId = chatterNoor.Id,
-                    FirstName = FirstName.Create("Noor"),
-                    LastName = LastName.Create("Vermeulen"),
-                    Biography = Biography.Create("Praat graag over muziek en wil nieuwe vrienden maken."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
-                    Organization = NextOrganization(),
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateUserProfile(
+                    chatterNoor,
+                    "Noor",
+                    "Vermeulen",
+                    "Praat graag over muziek en wil nieuwe vrienden maken.",
+                    "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    24)),
             new(chatterMilan, AppRoles.User,
-                new User()
-                {
-                    AccountId = chatterMilan.Id,
-                    FirstName = FirstName.Create("Milan"),
-                    LastName = LastName.Create("Peeters"),
-                    Biography = Biography.Create("Zoekt iemand om samen over games te praten."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
-                    Organization = NextOrganization(),
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateUserProfile(
+                    chatterMilan,
+                    "Milan",
+                    "Peeters",
+                    "Zoekt iemand om samen over games te praten.",
+                    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    23)),
             new(chatterLina, AppRoles.User,
-                new User()
-                {
-                    AccountId = chatterLina.Id,
-                    FirstName = FirstName.Create("Lina"),
-                    LastName = LastName.Create("Jacobs"),
-                    Biography = Biography.Create("Vindt het fijn om vragen te kunnen stellen in een veilige omgeving."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1760733345250-6b2625fca116?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-22)),
-                    Organization = NextOrganization(),
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateUserProfile(
+                    chatterLina,
+                    "Lina",
+                    "Jacobs",
+                    "Vindt het fijn om vragen te kunnen stellen in een veilige omgeving.",
+                    "https://images.unsplash.com/photo-1760733345250-6b2625fca116?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    22)),
             new(chatterKyandro, AppRoles.User,
-                new User()
-                {
-                    AccountId = chatterKyandro.Id,
-                    FirstName = FirstName.Create("Kyandro"),
-                    LastName = LastName.Create("Voet"),
-                    Biography = Biography.Create("Helpt vaak bij technische vragen en deelt programmeertips."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1760681555543-0a3c65fa10eb?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-25)),
-                    Organization = NextOrganization(),
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateUserProfile(
+                    chatterKyandro,
+                    "Kyandro",
+                    "Voet",
+                    "Helpt vaak bij technische vragen en deelt programmeertips.",
+                    "https://images.unsplash.com/photo-1760681555543-0a3c65fa10eb?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    25)),
             new(chatterJasper, AppRoles.User,
-                new User()
-                {
-                    AccountId = chatterJasper.Id,
-                    FirstName = FirstName.Create("Jasper"),
-                    LastName = LastName.Create("Vermeersch"),
-                    Biography = Biography.Create("Vindt het leuk om te discussiëren over technologie en innovatie."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1760625525477-f725e48f5a13?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
-                    Organization = NextOrganization(),
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateUserProfile(
+                    chatterJasper,
+                    "Jasper",
+                    "Vermeersch",
+                    "Vindt het leuk om te discussiëren over technologie en innovatie.",
+                    "https://images.unsplash.com/photo-1760625525477-f725e48f5a13?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    24)),
             new(chatterBjorn, AppRoles.User,
-                new User()
-                {
-                    AccountId = chatterBjorn.Id,
-                    FirstName = FirstName.Create("Bjorn"),
-                    LastName = LastName.Create("Van Damme"),
-                    Biography = Biography.Create("Praat graag over sport en houdt van teamwork."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1749521166410-9031d6ded805?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-27)),
-                    Organization = NextOrganization(),
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateUserProfile(
+                    chatterBjorn,
+                    "Bjorn",
+                    "Van Damme",
+                    "Praat graag over sport en houdt van teamwork.",
+                    "https://images.unsplash.com/photo-1749521166410-9031d6ded805?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    27)),
             new(chatterThibo, AppRoles.User,
-                new User()
-                {
-                    AccountId = chatterThibo.Id,
-                    FirstName = FirstName.Create("Thibo"),
-                    LastName = LastName.Create("De Smet"),
-                    Biography = Biography.Create("Is nieuwsgierig en stelt vaak interessante vragen."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1760604278004-91a4d7b22447?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-21)),
-                    Organization = NextOrganization(),
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateUserProfile(
+                    chatterThibo,
+                    "Thibo",
+                    "De Smet",
+                    "Is nieuwsgierig en stelt vaak interessante vragen.",
+                    "https://images.unsplash.com/photo-1760604278004-91a4d7b22447?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    21)),
             new(chatterSaar, AppRoles.User,
-                new User()
-                {
-                    AccountId = chatterSaar.Id,
-                    FirstName = FirstName.Create("Saar"),
-                    LastName = LastName.Create("Vandenberg"),
-                    Biography = Biography.Create("Deelt graag foto's van haar tekeningen."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1760497925596-a6462350c583?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
-                    Organization = NextOrganization(),
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateUserProfile(
+                    chatterSaar,
+                    "Saar",
+                    "Vandenberg",
+                    "Deelt graag foto's van haar tekeningen.",
+                    "https://images.unsplash.com/photo-1760497925596-a6462350c583?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    24)),
             new(chatterYassin, AppRoles.User,
-                new User()
-                {
-                    AccountId = chatterYassin.Id,
-                    FirstName = FirstName.Create("Yassin"),
-                    LastName = LastName.Create("El Amrani"),
-                    Biography = Biography.Create("Leert zelfstandig koken en zoekt tips van vrienden."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1760411069721-60d7c378b697?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-25)),
-                    Organization = NextOrganization(),
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateUserProfile(
+                    chatterYassin,
+                    "Yassin",
+                    "El Amrani",
+                    "Leert zelfstandig koken en zoekt tips van vrienden.",
+                    "https://images.unsplash.com/photo-1760411069721-60d7c378b697?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    25)),
             new(chatterLotte, AppRoles.User,
-                new User()
-                {
-                    AccountId = chatterLotte.Id,
-                    FirstName = FirstName.Create("Lotte"),
-                    LastName = LastName.Create("De Wilde"),
-                    Biography = Biography.Create("Wordt blij van dansen en deelt positieve boodschappen."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1760086741328-c56df17e8272?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
-                    Organization = NextOrganization(),
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateUserProfile(
+                    chatterLotte,
+                    "Lotte",
+                    "De Wilde",
+                    "Wordt blij van dansen en deelt positieve boodschappen.",
+                    "https://images.unsplash.com/photo-1760086741328-c56df17e8272?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    23)),
             new(chatterAmina, AppRoles.User,
-                new User()
-                {
-                    AccountId = chatterAmina.Id,
-                    FirstName = FirstName.Create("Amina"),
-                    LastName = LastName.Create("Karim"),
-                    Biography = Biography.Create("Houdt van creatieve projecten en begeleidt graag groepsspelletjes."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1739889399693-8a46b389473f?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-22)),
-                    Organization = NextOrganization(),
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+                CreateUserProfile(
+                    chatterAmina,
+                    "Amina",
+                    "Karim",
+                    "Houdt van creatieve projecten en begeleidt graag groepsspelletjes.",
+                    "https://images.unsplash.com/photo-1739889399693-8a46b389473f?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80",
+                    22)),
         };
 
         foreach (var (identity, role, profile) in accounts)

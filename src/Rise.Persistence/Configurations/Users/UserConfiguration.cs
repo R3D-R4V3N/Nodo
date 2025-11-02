@@ -18,6 +18,12 @@ internal class UserConfiguration : EntityConfiguration<User>
             .HasForeignKey("OrganizationId")
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(user => user.Supervisor)
+            .WithMany(supervisor => supervisor.Users)
+            .HasForeignKey(u => u.SupervisorId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
+
         // connections
         builder.Ignore(u => u.Friends);
         builder.Ignore(u => u.FriendRequests);

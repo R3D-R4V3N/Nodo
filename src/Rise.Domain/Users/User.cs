@@ -1,4 +1,6 @@
+using Ardalis.GuardClauses;
 using Ardalis.Result;
+using System.Collections.Generic;
 using Rise.Domain.Chats;
 using Rise.Domain.Users.Connections;
 
@@ -6,6 +8,26 @@ namespace Rise.Domain.Users;
 
 public class User : BaseUser
 {
+    private Supervisor _supervisor = default!;
+    public required Supervisor Supervisor
+    {
+        get => _supervisor;
+        set
+        {
+            if (_supervisor == value)
+            {
+                return;
+            }
+
+            _supervisor?.DetachUser(this);
+            _supervisor = Guard.Against.Null(value);
+            SupervisorId = _supervisor.Id;
+            _supervisor.AttachUser(this);
+        }
+    }
+
+    public int SupervisorId { get; private set; }
+
     //// connections
     private readonly List<UserConnection> _connections = new();
     public IReadOnlyCollection<UserConnection> Connections => _connections;

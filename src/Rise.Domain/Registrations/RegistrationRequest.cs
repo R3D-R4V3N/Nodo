@@ -46,20 +46,23 @@ public class RegistrationRequest : Entity
     public int? AssignedSupervisorId { get; private set; }
     public Supervisor? AssignedSupervisor { get; private set; }
 
-    public void Approve(Supervisor supervisor)
+    public void AssignSupervisor(Supervisor supervisor)
     {
         Guard.Against.Null(supervisor);
-        Status = RegistrationRequestStatus.Approved;
         AssignedSupervisor = supervisor;
         AssignedSupervisorId = supervisor.Id;
     }
 
+    public void Approve(Supervisor supervisor)
+    {
+        AssignSupervisor(supervisor);
+        Status = RegistrationRequestStatus.Approved;
+    }
+
     public void Reject(Supervisor supervisor)
     {
-        Guard.Against.Null(supervisor);
+        AssignSupervisor(supervisor);
         Status = RegistrationRequestStatus.Rejected;
-        AssignedSupervisor = supervisor;
-        AssignedSupervisorId = supervisor.Id;
     }
 
     public void Reset()

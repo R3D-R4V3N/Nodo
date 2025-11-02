@@ -5,6 +5,7 @@ using Rise.Client;
 using Rise.Client.Chats;
 using Rise.Client.Identity;
 using Rise.Client.Organizations;
+using Rise.Client.Registrations;
 using Rise.Client.State;
 using Rise.Client.UserConnections;
 using Rise.Client.Users;
@@ -68,6 +69,11 @@ try
     {
         client.BaseAddress = backendUri;
     });
+
+    builder.Services.AddHttpClient<IRegistrationService, RegistrationService>(client =>
+    {
+        client.BaseAddress = backendUri;
+    }).AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<UserContextService>(client =>
     {
