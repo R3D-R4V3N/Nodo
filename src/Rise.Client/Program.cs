@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Rise.Client;
 using Rise.Client.Chats;
 using Rise.Client.Identity;
+using Rise.Client.Registrations;
 using Rise.Client.Organizations;
 using Rise.Client.State;
 using Rise.Client.UserConnections;
@@ -73,6 +74,11 @@ try
     {
         client.BaseAddress = backendUri;
     });
+
+    builder.Services.AddHttpClient<IRegistrationRequestClient, RegistrationRequestClient>(client =>
+    {
+        client.BaseAddress = backendUri;
+    }).AddHttpMessageHandler<CookieHandler>();
 
     // current user
     builder.Services.AddSingleton<UserState>();

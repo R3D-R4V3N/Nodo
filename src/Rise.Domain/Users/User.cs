@@ -1,3 +1,5 @@
+using System;
+using Ardalis.GuardClauses;
 using Ardalis.Result;
 using Rise.Domain.Chats;
 using Rise.Domain.Users.Connections;
@@ -6,6 +8,49 @@ namespace Rise.Domain.Users;
 
 public class User : BaseUser
 {
+    private Supervisor _supervisor = default!;
+    public Supervisor Supervisor
+    {
+        get => _supervisor;
+        private set
+        {
+            _supervisor = Guard.Against.Null(value);
+            if (!_supervisor.Users.Contains(this))
+            {
+                _supervisor.AddUser(this);
+            }
+        }
+    }
+
+    public int SupervisorId { get; private set; }
+
+    public void AssignSupervisor(Supervisor supervisor)
+    {
+        Guard.Against.Null(supervisor);
+
+        if (Supervisor == supervisor)
+        {
+            return;
+        }
+
+        if (_supervisor is not null)
+        {
+            _supervisor.RemoveUser(this);
+        }
+
+        if (Organization is not null
+            && supervisor.Organization is not null
+            && Organization.Id != default
+            && supervisor.Organization.Id != default
+            && Organization.Id != supervisor.Organization.Id)
+        {
+            throw new ArgumentException("Supervisor behoort tot een andere organisatie.", nameof(supervisor));
+        }
+
+        Supervisor = supervisor;
+        SupervisorId = supervisor.Id;
+    }
+
     //// connections
     private readonly List<UserConnection> _connections = new();
     public IReadOnlyCollection<UserConnection> Connections => _connections;

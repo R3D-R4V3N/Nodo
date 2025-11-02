@@ -157,25 +157,74 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         var chatterLotte = CreateIdentity("lotte@nodo.chat");
         var chatterAmina = CreateIdentity("amina@nodo.chat");
 
+        var defaultSupervisorProfile = new Supervisor()
+        {
+            AccountId = supervisor.Id,
+            FirstName = FirstName.Create("Super"),
+            LastName = LastName.Create("Visor"),
+            Biography = Biography.Create("Here to help you."),
+            AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
+            BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-30)),
+            Organization = nodoAntwerpen,
+            UserSettings = new UserSetting()
+            {
+                FontSize = FontSize.Create(12),
+                IsDarkMode = false,
+            }
+        };
+
+        var supervisorEmmaProfile = new Supervisor()
+        {
+            AccountId = supervisorEmma.Id,
+            FirstName = FirstName.Create("Emma"),
+            LastName = LastName.Create("Claes"),
+            Biography = Biography.Create("Coach voor dagelijkse structuur en zelfvertrouwen."),
+            AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
+            BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-35)),
+            Organization = nodoGent,
+            UserSettings = new UserSetting()
+            {
+                FontSize = FontSize.Create(12),
+                IsDarkMode = false,
+            }
+        };
+
+        var supervisorJonasProfile = new Supervisor()
+        {
+            AccountId = supervisorJonas.Id,
+            FirstName = FirstName.Create("Jonas"),
+            LastName =  LastName.Create("Van Lint"),
+            Biography = Biography.Create("Helpt bij plannen en houdt wekelijks groepsmomenten."),
+            AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1531891437562-4301cf35b7e4?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
+            BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-33)),
+            Organization = nodoAntwerpen,
+            UserSettings = new UserSetting()
+            {
+                FontSize = FontSize.Create(12),
+                IsDarkMode = false,
+            }
+        };
+
+        var supervisorEllaProfile = new Supervisor()
+        {
+            AccountId = supervisorElla.Id,
+            FirstName = FirstName.Create("Ella"),
+            LastName =  LastName.Create("Vervoort"),
+            Biography = Biography.Create("Creatieve begeleider voor beeldende therapie."),
+            AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
+            BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-31)),
+            Organization = nodoBrussel,
+            UserSettings = new UserSetting()
+            {
+                FontSize = FontSize.Create(12),
+                IsDarkMode = false,
+            }
+        };
+
         var accounts = new List<SeedAccount>
         {
             new(admin, AppRoles.Administrator, null),
-            new(supervisor, AppRoles.Supervisor,
-                new Supervisor()
-                {
-                    AccountId = supervisor.Id,
-                    FirstName = FirstName.Create("Super"),
-                    LastName = LastName.Create("Visor"),
-                    Biography = Biography.Create("Here to help you."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-30)),
-                    Organization = nodoAntwerpen,
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+            new(supervisor, AppRoles.Supervisor, defaultSupervisorProfile),
             new(userAccount1, AppRoles.User,
                 new User()
                 {
@@ -209,54 +258,9 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     }
                 }),
             new(nodoAdmin, AppRoles.Administrator, null),
-            new(supervisorEmma, AppRoles.Supervisor,
-                new Supervisor()
-                {
-                    AccountId = supervisorEmma.Id,
-                    FirstName = FirstName.Create("Emma"),
-                    LastName = LastName.Create("Claes"),
-                    Biography = Biography.Create("Coach voor dagelijkse structuur en zelfvertrouwen."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-35)),
-                    Organization = nodoGent,
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
-            new(supervisorJonas, AppRoles.Supervisor,
-                new Supervisor()
-                {
-                    AccountId = supervisorJonas.Id,
-                    FirstName = FirstName.Create("Jonas"),
-                    LastName =  LastName.Create("Van Lint"),
-                    Biography = Biography.Create("Helpt bij plannen en houdt wekelijks groepsmomenten."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1531891437562-4301cf35b7e4?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-33)),
-                    Organization = nodoAntwerpen,
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
-            new(supervisorElla, AppRoles.Supervisor,
-                new Supervisor()
-                {
-                    AccountId = supervisorElla.Id,
-                    FirstName = FirstName.Create("Ella"),
-                    LastName =  LastName.Create("Vervoort"),
-                    Biography = Biography.Create("Creatieve begeleider voor beeldende therapie."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2.5&w=200&h=200&q=80"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-31)),
-                    Organization = nodoBrussel,
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+            new(supervisorEmma, AppRoles.Supervisor, supervisorEmmaProfile),
+            new(supervisorJonas, AppRoles.Supervisor, supervisorJonasProfile),
+            new(supervisorElla, AppRoles.Supervisor, supervisorEllaProfile),
             new(chatterNoor, AppRoles.User,
                 new User()
                 {
@@ -434,6 +438,38 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     }
                 }),
         };
+
+        var supervisorProfiles = accounts
+            .Select(a => a.Profile)
+            .OfType<Supervisor>()
+            .ToList();
+
+        var supervisorsByOrganization = supervisorProfiles
+            .GroupBy(s => s.Organization)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var supervisorIndexByOrganization = supervisorsByOrganization
+            .ToDictionary(kvp => kvp.Key, _ => 0);
+
+        foreach (var userProfile in accounts.Select(a => a.Profile).OfType<User>())
+        {
+            if (userProfile.Organization is null)
+            {
+                continue;
+            }
+
+            if (!supervisorsByOrganization.TryGetValue(userProfile.Organization, out var supervisorsForOrg)
+                || supervisorsForOrg.Count == 0)
+            {
+                continue;
+            }
+
+            var index = supervisorIndexByOrganization[userProfile.Organization];
+            var supervisorProfile = supervisorsForOrg[index % supervisorsForOrg.Count];
+            supervisorIndexByOrganization[userProfile.Organization] = (index + 1) % supervisorsForOrg.Count;
+
+            userProfile.AssignSupervisor(supervisorProfile);
+        }
 
         foreach (var (identity, role, profile) in accounts)
         {
