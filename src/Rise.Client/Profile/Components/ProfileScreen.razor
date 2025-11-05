@@ -14,7 +14,7 @@
 
     @if (IsLoading)
     {
-        <main class="mx-auto max-w-screen-sm px-4 pb-24 pt-6">
+        <main class="mx-auto w-full max-w-screen-sm px-4 pb-24 pt-6 md:max-w-2xl md:px-6 lg:max-w-4xl lg:px-8">
             <div class="rounded-2xl border border-dashed border-neutral-300 bg-white/60 px-4 py-8 text-center text-sm text-neutral-600">
                 Profiel wordt geladen...
             </div>
@@ -22,7 +22,7 @@
     }
     else if (HasError)
     {
-        <main class="mx-auto max-w-screen-sm px-4 pb-24 pt-6">
+        <main class="mx-auto w-full max-w-screen-sm px-4 pb-24 pt-6 md:max-w-2xl md:px-6 lg:max-w-4xl lg:px-8">
             <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-6 text-center text-sm text-rose-700">
                 @ErrorMessage
             </div>
@@ -30,7 +30,7 @@
     }
     else
     {
-        <main class="mx-auto max-w-screen-sm px-4 pb-24 pt-4">
+        <main class="mx-auto w-full max-w-screen-sm px-4 pb-24 pt-4 md:max-w-2xl md:px-6 md:pt-6 lg:max-w-4xl lg:px-8">
             <section class="text-center">
                 <ProfileAvatar
                     AvatarUrl="@_draft.AvatarUrl"

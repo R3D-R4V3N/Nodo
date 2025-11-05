@@ -22,11 +22,11 @@ else if (user?.User is null)
 }
 else
 {
-    <div class="relative flex min-h-screen flex-col bg-[#F2F2F2] text-neutral-900 antialiased md:flex-row animate-fade-in">
+    <div class="relative flex min-h-screen flex-col bg-[#F2F2F2] text-neutral-900 antialiased md:mx-auto md:my-6 md:flex-row md:max-w-6xl md:rounded-3xl md:shadow-xl md:overflow-hidden animate-fade-in">
         <EmojiComponent Hobbies="@ProfileHobbies"/>
         <BackButton />
 
-        <header class="relative h-[65vh] md:h-auto md:w-1/2">
+        <header class="relative h-[65vh] md:h-auto md:w-1/2 md:min-h-full">
             <ProfileImageComponent ImgSource="@user.User.AvatarUrl" />
             <BlurComponent />
 

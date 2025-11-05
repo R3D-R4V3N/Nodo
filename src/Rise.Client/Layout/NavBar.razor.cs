@@ -27,22 +27,25 @@ public partial class NavBar : IDisposable
     private string GetNavItemClasses(string href, NavLinkMatch match = NavLinkMatch.Prefix, bool isProfile = false, params string[] additionalMatches)
     {
         var baseClasses = isProfile
-            ? "w-10 h-10 rounded-full overflow-hidden border-2 border-white hover:scale-110 transition"
-            : "p-2.5 rounded-full hover:bg-white/20 transition";
+            ? "flex items-center justify-center w-10 h-10 rounded-full overflow-hidden border-2 border-white transition hover:scale-[1.02] hover:bg-white/10 md:w-full md:h-auto md:justify-start md:gap-3 md:rounded-2xl md:border-transparent md:px-4 md:py-3 md:hover:scale-100 md:hover:bg-neutral-100 md:text-neutral-600"
+            : "flex items-center justify-center p-2.5 rounded-full transition hover:bg-white/20 md:w-full md:justify-start md:gap-3 md:rounded-2xl md:px-4 md:py-3 md:text-neutral-600 md:hover:bg-neutral-100 md:hover:text-[#127646]";
 
         var isActive = IsActive(href, match, additionalMatches);
 
         if (isProfile)
         {
-            return isActive
-                ? $"{baseClasses} bg-white"
-                : $"{baseClasses}";
+            var activeClasses = isActive
+                ? "bg-white text-[#127646] md:bg-[#127646] md:text-white"
+                : "text-white md:text-neutral-600";
+
+            return $"{baseClasses} {activeClasses}".Trim();
         }
 
-        var textClass = isActive ? "text-[#127646]" : "text-white";
-        var backgroundClass = isActive ? "bg-white" : string.Empty;
+        var stateClasses = isActive
+            ? "bg-white text-[#127646] md:bg-[#127646] md:text-white md:hover:bg-[#127646] md:hover:text-white"
+            : "text-white md:text-neutral-600";
 
-        return $"{baseClasses} {backgroundClass} {textClass}".Trim();
+        return $"{baseClasses} {stateClasses}".Trim();
     }
 
     private bool IsActive(string href, NavLinkMatch match, IReadOnlyList<string> additionalMatches)

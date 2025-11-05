@@ -18,68 +18,70 @@
 @inject IJSRuntime JSRuntime
 
 
-<div class="flex flex-col h-screen max-h-screen overflow-hidden bg-neutral-100 text-neutral-900">
+<div class="flex min-h-dvh flex-col bg-neutral-100 text-neutral-900 md:bg-neutral-200">
+    <div class="flex flex-1 flex-col overflow-hidden bg-neutral-100 md:mx-auto md:my-6 md:w-full md:max-w-3xl md:rounded-3xl md:border md:border-neutral-200 md:shadow-xl">
 
-    <!-- Header -->
-    <button class="p-0 border-none bg-transparent" @onclick="NavigateToFriendProfileFromChat">
-        <ChatHeader DisplayName="@GetChatTitle()"
-                    AvatarUrl="@GetChatImage()"
-                    StatusText="@GetChatStatusText()"
-                    OnBack="NavigateBack"
-                    OnAlert="TriggerAlert"
-                   />
-    </button>
-    @if (_isLoading)
-    {
-        <div class="flex-1 grid place-items-center">
-            <p class="text-sm text-neutral-500">Gesprek wordt geladen…</p>
-        </div>
-    }
-    else if (!string.IsNullOrWhiteSpace(_loadError))
-    {
-        <div class="flex-1 grid place-items-center px-6 text-center">
-            <div class="space-y-2">
-                <p class="text-sm text-red-600">@_loadError</p>
-                <button class="text-xs text-[#127646] underline" @onclick="NavigateBack">
-                    Ga terug naar overzicht
-                </button>
-            </div>
-        </div>
-    }
-    else if (_chat is null)
-    {
-        <div class="flex-1 grid place-items-center">
-            <p class="text-sm text-neutral-500">Dit gesprek kon niet gevonden worden.</p>
-        </div>
-    }
-    else
-    {
-        @if (!string.IsNullOrWhiteSpace(_connectionError))
+        <!-- Header -->
+        <button class="border-none bg-transparent p-0" @onclick="NavigateToFriendProfileFromChat">
+            <ChatHeader DisplayName="@GetChatTitle()"
+                        AvatarUrl="@GetChatImage()"
+                        StatusText="@GetChatStatusText()"
+                        OnBack="NavigateBack"
+                        OnAlert="TriggerAlert"
+                       />
+        </button>
+        @if (_isLoading)
         {
-            <div class="px-6 py-2 text-xs text-amber-700 bg-amber-50 border-b border-amber-200">
-                @_connectionError
+            <div class="flex-1 grid place-items-center">
+                <p class="text-sm text-neutral-500">Gesprek wordt geladen…</p>
             </div>
         }
-
-        <!-- Scrollable messages -->
-        <div class="flex-1 overflow-y-auto px-3 no-scrollbar" style="@GetMessageHostPaddingStyle()" @ref="_messagesHost">
-            <MessageList Messages="_chat?.Messages" TimestampText="@GetConversationDateLabel()" />
-        </div>
-
-        <!-- Fixed input bar -->
-        <div class="fixed bottom-0 left-0 right-0 bg-white" @ref="_footerHost">
-            <div class="mx-auto px-3">
-                <SuggestionChips Suggestions="UserState.User!.DefaultChatLines" OnPick="ApplySuggestion" />
-                <ChatInput @bind-Value="_draft"
-                           OnSend="HandleTextMessageAsync"
-                           OnSendVoice="HandleVoiceMessageAsync" />
-                @if (!string.IsNullOrWhiteSpace(_errorMessage))
-                {
-                    <p class="px-2 pb-3 text-xs text-red-600">@_errorMessage</p>
-                }
+        else if (!string.IsNullOrWhiteSpace(_loadError))
+        {
+            <div class="flex-1 grid place-items-center px-6 text-center">
+                <div class="space-y-2">
+                    <p class="text-sm text-red-600">@_loadError</p>
+                    <button class="text-xs text-[#127646] underline" @onclick="NavigateBack">
+                        Ga terug naar overzicht
+                    </button>
+                </div>
             </div>
-        </div>
-    }
+        }
+        else if (_chat is null)
+        {
+            <div class="flex-1 grid place-items-center">
+                <p class="text-sm text-neutral-500">Dit gesprek kon niet gevonden worden.</p>
+            </div>
+        }
+        else
+        {
+            @if (!string.IsNullOrWhiteSpace(_connectionError))
+            {
+                <div class="border-b border-amber-200 bg-amber-50 px-6 py-2 text-xs text-amber-700">
+                    @_connectionError
+                </div>
+            }
+
+            <!-- Scrollable messages -->
+            <div class="flex-1 overflow-y-auto px-3 no-scrollbar md:px-6" style="@GetMessageHostPaddingStyle()" @ref="_messagesHost">
+                <MessageList Messages="_chat?.Messages" TimestampText="@GetConversationDateLabel()" />
+            </div>
+
+            <!-- Input bar -->
+            <div class="fixed bottom-0 left-0 right-0 bg-white md:static md:mt-auto md:w-full md:border-t md:border-neutral-100" @ref="_footerHost">
+                <div class="mx-auto px-3 md:px-6">
+                    <SuggestionChips Suggestions="UserState.User!.DefaultChatLines" OnPick="ApplySuggestion" />
+                    <ChatInput @bind-Value="_draft"
+                               OnSend="HandleTextMessageAsync"
+                               OnSendVoice="HandleVoiceMessageAsync" />
+                    @if (!string.IsNullOrWhiteSpace(_errorMessage))
+                    {
+                        <p class="px-2 pb-3 text-xs text-red-600">@_errorMessage</p>
+                    }
+                </div>
+            </div>
+        }
+    </div>
 </div>
 
 <style>

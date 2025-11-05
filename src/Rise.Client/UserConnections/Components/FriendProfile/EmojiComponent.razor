@@ -1,8 +1,8 @@
 @using Rise.Client.Profile.Models
 
 
-<div class="absolute top-[67%] left-1/2 z-[60] w-full max-w-[400px] -translate-x-1/2 -translate-y-1/2">
-    <div class="grid grid-cols-3 items-center justify-center gap-6 p-9">
+<div class="absolute top-[67%] left-1/2 z-[60] w-full max-w-[400px] -translate-x-1/2 -translate-y-1/2 md:static md:mt-10 md:max-w-none md:translate-x-0 md:translate-y-0 md:flex md:justify-center">
+    <div class="grid grid-cols-3 items-center justify-center gap-6 p-9 md:gap-4 md:p-6">
         @foreach (var hobby in Hobbies.Take(3))
         {
             <button type="button" class="group focus:outline-none">
