@@ -1,4 +1,8 @@
-<TopBar Title="Vrienden" ShowBackButton="true" OnBack="OnBack" />
+<TopBar Title="Vrienden"
+        ShowBackButton="true"
+        OnBack="OnBack"
+        Class="shadow lg:shadow-none"
+        InnerClass="px-4 pb-4 pt-8 sm:px-6 lg:max-w-4xl lg:px-8 lg:pb-6" />
 
 @code {
     [Parameter] public EventCallback OnBack { get; set; }

@@ -27,22 +27,23 @@ public partial class NavBar : IDisposable
     private string GetNavItemClasses(string href, NavLinkMatch match = NavLinkMatch.Prefix, bool isProfile = false, params string[] additionalMatches)
     {
         var baseClasses = isProfile
-            ? "w-10 h-10 rounded-full overflow-hidden border-2 border-white hover:scale-110 transition"
-            : "p-2.5 rounded-full hover:bg-white/20 transition";
+            ? "flex h-12 w-12 items-center justify-center rounded-full overflow-hidden border-2 border-white transition hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 lg:h-16 lg:w-16"
+            : "flex h-12 w-12 items-center justify-center rounded-full transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 lg:h-auto lg:w-full lg:justify-start lg:gap-3 lg:rounded-2xl lg:px-4 lg:py-3";
 
         var isActive = IsActive(href, match, additionalMatches);
 
         if (isProfile)
         {
             return isActive
-                ? $"{baseClasses} bg-white"
+                ? $"{baseClasses} bg-white text-[#127646]"
                 : $"{baseClasses}";
         }
 
         var textClass = isActive ? "text-[#127646]" : "text-white";
-        var backgroundClass = isActive ? "bg-white" : string.Empty;
+        var backgroundClass = isActive ? "bg-white" : "lg:bg-white/10";
+        var activeDesktopClass = isActive ? "lg:bg-white lg:text-[#127646]" : "lg:text-white";
 
-        return $"{baseClasses} {backgroundClass} {textClass}".Trim();
+        return $"{baseClasses} {backgroundClass} {textClass} {activeDesktopClass}".Trim();
     }
 
     private bool IsActive(string href, NavLinkMatch match, IReadOnlyList<string> additionalMatches)

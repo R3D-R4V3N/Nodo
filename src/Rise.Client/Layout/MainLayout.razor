@@ -1,10 +1,11 @@
 ﻿@inherits LayoutComponentBase
-<div>
-    <main>
-        <section class="section">
+<div class="relative min-h-screen bg-neutral-100 lg:flex lg:items-stretch lg:gap-10 lg:px-8 lg:py-6">
+    <NavBar />
+
+    <main class="flex-1 lg:flex lg:flex-col">
+        <section class="pb-28 lg:flex-1 lg:pb-0">
             @Body
         </section>
     </main>
-    <NavBar />
 </div>
 

@@ -1,8 +1,8 @@
 @using Rise.Shared.Assets
 
-<article class="friend-card flex items-center gap-3 bg-white rounded-2xl px-3 py-3 shadow-sm"
+<article class="friend-card flex flex-col items-start gap-3 rounded-2xl bg-white px-3 py-3 shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:px-4 sm:py-4 lg:gap-5"
          @onclick="() => NavigateToFriendProfile(Friend, PageContext)">
-    <img src="@(Friend.User.AvatarUrl)" alt="@Friend.User.Name" class="h-10 w-10  rounded-full object-cover border border-neutral-200 shrink-0 " />
+    <img src="@(Friend.User.AvatarUrl)" alt="@Friend.User.Name" class="h-10 w-10 shrink-0 rounded-full border border-neutral-200 object-cover sm:h-12 sm:w-12" />
     <div class="flex-1 min-w-0">
         <p class="text-sm font-medium truncate">@Friend.User.Name</p>
         <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-md bg-[#e7f5ec] text-[#127646] border border-[#cfead9]">
@@ -10,7 +10,7 @@
         </span>
     </div>
 
-    <div class="flex space-x-2">
+    <div class="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap sm:items-center sm:justify-end">
         @if (PageContext == UserConnectionTypeDto.AddFriends)
         { 
             <button class="h-12 w-12 grid place-items-center text-white rounded-xl bg-[#127646] hover:bg-[#0f613a]"

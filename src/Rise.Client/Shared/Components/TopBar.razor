@@ -125,11 +125,13 @@ else
         "bg-[#127646]",
         "text-white",
         "rounded-b-3xl",
+        "lg:rounded-3xl",
+        "shadow",
         Class
     }.Where(static value => !string.IsNullOrWhiteSpace(value)));
 
     private string InnerClasses => string.IsNullOrWhiteSpace(InnerClass)
-        ? "px-4 pb-4 pt-8"
+        ? "px-4 pb-4 pt-8 sm:px-6 lg:px-8 lg:pb-6"
         : InnerClass!;
 
     private string BackButtonClasses => "p-2 -ml-2 rounded-full text-white/90 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition";
