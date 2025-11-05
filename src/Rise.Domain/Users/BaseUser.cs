@@ -1,7 +1,5 @@
-using Ardalis.GuardClauses;
 using Ardalis.Result;
 using Rise.Domain.Chats;
-using Rise.Domain.Organizations;
 using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Settings;
 
@@ -20,14 +18,7 @@ public abstract class BaseUser : Entity
     public required LastName LastName { get; set; }
     public required Biography Biography { get; set; }
     public required AvatarUrl AvatarUrl { get; set; }
-    public required DateOnly BirthDay { get; set; }
-
-    private Organization _organization = default!;
-    public required Organization Organization
-    {
-        get => _organization;
-        set => _organization = Guard.Against.Null(value);
-    }
+    public required DateOnly BirthDay { get; set; }    
 
     // settings
     private UserSetting _userSettings;
@@ -59,7 +50,7 @@ public abstract class BaseUser : Entity
 
         if (chatOwner is User chatOwnerUser && this is User currentUser)
         {
-            if (!chatOwnerUser.HasFriend(currentUser))
+            if (!chatOwnerUser.IsFriend(currentUser))
             {
                 return Result.Conflict(
                     $"{chatOwnerUser} is niet bevriendt met {currentUser}"
@@ -83,7 +74,7 @@ public abstract class BaseUser : Entity
 
     public Result RemoveChat(BaseUser chatOwner, Chat chat)
     {
-        if (chatOwner is not Supervisor && !_chats.Contains(chat))
+        if (!_chats.Contains(chat))
         {
             return Result.Conflict($"Gebruiker is geen lid van chat {chat}");
         }

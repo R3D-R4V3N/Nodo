@@ -1,15 +1,11 @@
-
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Users.Connections;
 using Rise.Persistence;
 using Rise.Services.Identity;
 using Rise.Services.UserConnections.Mapper;
-using Rise.Services.Users.Mapper;
 using Rise.Shared.Common;
 using Rise.Shared.Identity;
 using Rise.Shared.UserConnections;
-using Rise.Shared.Users;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Rise.Services.UserConnections;
 /// <summary>
@@ -19,17 +15,20 @@ namespace Rise.Services.UserConnections;
 /// <param name="sessionContextProvider"></param>
 public class UserConnectionService(ApplicationDbContext dbContext, ISessionContextProvider sessionContextProvider) : IUserConnectionService
 {
-    public async Task<Result<UserConnectionResponse.GetFriends>> GetFriendIndexAsync(QueryRequest.SkipTake request, CancellationToken ctx = default)
+    public async Task<Result<UserConnectionResponse.GetFriends>>
+        GetFriendIndexAsync(QueryRequest.SkipTake request, CancellationToken ctx = default)
     {
         var userId = sessionContextProvider.User!.GetUserId();
 
-        var loggedInUser = await dbContext.Users
+        var loggedInUser = await dbContext
+            .Users
             .SingleOrDefaultAsync(x => x.AccountId == sessionContextProvider.User!.GetUserId(), ctx);
 
         if (loggedInUser is null)
             return Result.Unauthorized("You are not authorized to fetch user connections.");
 
-        var query = dbContext.Users
+        var query = dbContext
+            .Users
             .Where(u => u.AccountId == userId)
             .SelectMany(u => u.Connections)
             .Where(c =>
@@ -39,9 +38,9 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-            query = query.Where(p => 
-                p.Connection.FirstName.Value.Contains(request.SearchTerm) 
-                || p.Connection.LastName.Value.Contains(request.SearchTerm));
+            query = query.Where(p =>
+                p.To.FirstName.Value.Contains(request.SearchTerm)
+                || p.To.LastName.Value.Contains(request.SearchTerm));
         }
 
         var totalCount = await query.CountAsync(ctx);
@@ -57,135 +56,185 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
         {
             // Default order
             query = query
-                .OrderByDescending(p => p.Connection.CreatedAt)
-                .ThenBy(p => p.Connection.FirstName);
+                .OrderByDescending(p => p.CreatedAt)
+                .ThenBy(p => p.To.FirstName);
         }
 
         var connections = await query.AsNoTracking()
             .Skip(request.Skip)
             .Take(request.Take)
-            .Include(x => x.Connection)
+            .Include(x => x.To)
             .ToListAsync(ctx);
 
-        return Result.Success(new UserConnectionResponse.GetFriends
-        {
-            Connections = connections.Select(UserConnectionMapper.ToGetDto),
-            TotalCount = totalCount
-        });
+        return Result.Success(
+            new UserConnectionResponse.GetFriends
+            {
+                Connections = connections.Select(UserConnectionMapper.ToGetDto),
+                TotalCount = totalCount
+            }
+        );
     }
 
-    
-    public async Task<Result<string>> AddFriendAsync(string targetAccountId, CancellationToken ctx = default)
-    {
-        var currentUserId = sessionContextProvider.User!.GetUserId();
-
-        // Huidige gebruiker ophalen
-        var currentUser = await dbContext.Users
-            .Include(u => u.Connections)
-            .ThenInclude(uc => uc.Connection) // <-- dit laadt de ApplicationUser waar UserConnection naar verwijst
-            .SingleOrDefaultAsync(u => u.AccountId == currentUserId, ctx);
-        // Doelgebruiker ophalen
-        var targetUser = await dbContext.Users
-            .Include(u => u.Connections)
-            .ThenInclude(uc => uc.Connection)
-            .SingleOrDefaultAsync(u => u.AccountId == targetAccountId, ctx);
-        
-        if (currentUser is null || targetUser is null)
-            return Result.NotFound("User not found.");
-
-        // Domeinlogica hergebruiken
-        var result = currentUser.AddFriend(targetUser);
-
-        if (!result.IsSuccess)
-            return result; // bijv. conflict of invalid state
-
-        await dbContext.SaveChangesAsync(ctx);
-        return result;
-    }
-    
-    public async Task<Result<string>> AcceptFriendAsync(string requesterAccountId, CancellationToken ct = default)
-    {
-        var currentUserId = sessionContextProvider.User!.GetUserId();
-
-        // Huidige gebruiker ophalen
-        var currentUser = await dbContext.Users
-            .Include(u => u.Connections)
-            .SingleOrDefaultAsync(u => u.AccountId == currentUserId, ct);
-
-        // Aanvrager ophalen
-        var requesterUser = await dbContext.Users
-            .Include(u => u.Connections)
-            .SingleOrDefaultAsync(u => u.AccountId == requesterAccountId, ct);
-
-        if (currentUser is null || requesterUser is null)
-            return Result.NotFound("User not found.");
-
-        // Domeinlogica hergebruiken
-        //var result = currentUser.AcceptFriendRequest(requesterUser);
-
-        //if (!result.IsSuccess)
-        //    return result; // bijv. conflict of invalid state
-
-        await dbContext.SaveChangesAsync(ct);
-        return Result.Success();
-    }
-
-    public async Task<Result<UserConnectionResponse.GetSuggestions>> GetSuggestedFriendsAsync(QueryRequest.SkipTake request, CancellationToken ctx)
+    public async Task<Result<UserConnectionResponse.GetSuggestions>>
+        GetSuggestedFriendsAsync(QueryRequest.SkipTake req, CancellationToken ctx = default)
     {
         var userId = sessionContextProvider.User!.GetUserId();
 
-        var loggedInUser = await dbContext.Users
+        var loggedInUser = await dbContext
+            .Users
             .SingleOrDefaultAsync(x => x.AccountId == sessionContextProvider.User!.GetUserId(), ctx);
 
         if (loggedInUser is null)
-        { 
+        {
             return Result.Unauthorized("You are not authorized to fetch user connections.");
         }
-        
-        var existingConnectionIds = dbContext.Users
+
+        var existingConnectionIds = dbContext
+                .Users
                 .Where(u => u.AccountId == userId)
                 .SelectMany(u => u.Connections)
                 .Where(c =>
                     c.ConnectionType.Equals(UserConnectionType.Friend)
                     || c.ConnectionType.Equals(UserConnectionType.RequestIncoming)
                     || c.ConnectionType.Equals(UserConnectionType.RequestOutgoing))
-                .Select(c => c.Connection.AccountId)
+                .Select(c => c.To.AccountId)
                 .ToList();
-        
-        var query = dbContext.Users
+
+        var query = dbContext
+            .Users
             .Where(u => u.AccountId != userId && !existingConnectionIds.Contains(u.AccountId));
 
         var totalCount = await query.CountAsync(ctx);
 
         var suggestedFriends = await query
-            .Skip(request.Skip)
-            .Take(request.Take)
+            .Skip(req.Skip)
+            .Take(req.Take)
             .ToListAsync(ctx);
 
-        return Result.Success(new UserConnectionResponse.GetSuggestions
-        {
-            Users = suggestedFriends.Select(UserConnectionMapper.ToGetDto),
-            TotalCount = totalCount
-        });
+        return Result.Success(
+            new UserConnectionResponse.GetSuggestions
+            {
+                Users = suggestedFriends.Select(UserConnectionMapper.ToGetDto),
+                TotalCount = totalCount
+            }
+        );
     }
 
-    public async Task<Result<string>> RejectFriendAsync(string reqRequesterAccountId, CancellationToken ct)
+    public async Task<Result<UserConnectionResponse.SendFriendRequest>>
+        SendFriendRequestAsync(string targetAccountId, CancellationToken ctx = default)
     {
-        var userId = sessionContextProvider.User!.GetUserId();
+        var currentUserId = sessionContextProvider.User!.GetUserId();
 
-        var loggedInUser = await dbContext.Users
-            .SingleOrDefaultAsync(x => x.AccountId == sessionContextProvider.User!.GetUserId(), ct);
-        var reqRequesterAccount = await dbContext.Users
-            .SingleOrDefaultAsync(x => x.AccountId == reqRequesterAccountId, ct);
-        
-        if (loggedInUser is null)
-            return Result.Unauthorized("You are not authorized to reject friend requests.");
-        
-        if (reqRequesterAccount is null)
-            return Result.NotFound("The requester account was not found.");
-        
-        return loggedInUser.RejectFriendRequest(reqRequesterAccount);
+        // Huidige gebruiker ophalen
+        var currentUser = await dbContext
+            .Users
+            .Include(u => u.Connections)
+                .ThenInclude(c => c.To)
+            .Include(u => u.Connections)
+                .ThenInclude(c => c.From)
+            .SingleOrDefaultAsync(u => u.AccountId == currentUserId, ctx);
 
+        // Doelgebruiker ophalen
+        var targetUser = await dbContext
+            .Users
+            .Include(u => u.Connections)
+                .ThenInclude(c => c.To)
+            .Include(u => u.Connections)
+                .ThenInclude(c => c.From)
+            .SingleOrDefaultAsync(u => u.AccountId == targetAccountId, ctx);
+
+        if (currentUser is null || targetUser is null)
+            return Result.NotFound("Gebruiker niet gevonden.");
+
+        var result = currentUser.SendFriendRequest(targetUser);
+
+        if (!result.IsSuccess)
+            return Result.Conflict(string.Join(',', result.Errors));
+
+        await dbContext.SaveChangesAsync(ctx);
+
+        return Result.Success(
+            new UserConnectionResponse.SendFriendRequest()
+            {
+                Message = result.SuccessMessage
+            }
+        );
+    }
+
+    public async Task<Result<UserConnectionResponse.AcceptFriendRequest>>
+        AcceptFriendRequestAsync(string targetAccountId, CancellationToken ctx = default)
+    {
+        var currentUserId = sessionContextProvider.User!.GetUserId();
+
+        // Huidige gebruiker ophalen
+        var currentUser = await dbContext
+            .Users
+            .Include(u => u.Connections)
+                .ThenInclude(c => c.To)
+            .Include(u => u.Connections)
+                .ThenInclude(c => c.From)
+            .SingleOrDefaultAsync(u => u.AccountId == currentUserId, ctx);
+
+        // Doelgebruiker ophalen
+        var targetUser = await dbContext
+            .Users
+            .Include(u => u.Connections)
+                .ThenInclude(c => c.To)
+            .Include(u => u.Connections)
+                .ThenInclude(c => c.From)
+            .SingleOrDefaultAsync(u => u.AccountId == targetAccountId, ctx);
+
+        if (currentUser is null || targetUser is null)
+            return Result.NotFound("Gebruiker niet gevonden.");
+
+        var result = currentUser.AcceptFriendRequest(targetUser);
+
+        if (!result.IsSuccess)
+            return Result.Conflict(string.Join(',', result.Errors));
+
+        await dbContext.SaveChangesAsync(ctx);
+
+        return Result.Success(
+            new UserConnectionResponse.AcceptFriendRequest()
+            {
+                Message = result.SuccessMessage
+            }
+        );
+    }
+
+    public async Task<Result<UserConnectionResponse.RejectFriendRequest>>
+        RejectFriendRequestAsync(string targetAccountId, CancellationToken ctx = default)
+    {
+        var currentUserId = sessionContextProvider.User!.GetUserId();
+
+        // Huidige gebruiker ophalen
+        var currentUser = await dbContext
+            .Users
+            .Include(u => u.Connections)
+                .ThenInclude(c => c.To)
+            .Include(u => u.Connections)
+                .ThenInclude(c => c.From)
+            .SingleOrDefaultAsync(u => u.AccountId == currentUserId, ctx);
+
+        // Doelgebruiker ophalen
+        var targetUser = await dbContext
+            .Users
+            .Include(u => u.Connections)
+                .ThenInclude(c => c.To)
+            .Include(u => u.Connections)
+                .ThenInclude(c => c.From)
+            .SingleOrDefaultAsync(u => u.AccountId == targetAccountId, ctx);
+
+        if (currentUser is null || targetUser is null)
+            return Result.NotFound("Gebruiker niet gevonden.");
+
+        var result = currentUser.RemoveFriendRequest(targetUser);
+
+        return Result.Success(
+            new UserConnectionResponse.RejectFriendRequest()
+            {
+                Message = result.SuccessMessage
+            }
+        );
     }
 }
-

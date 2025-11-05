@@ -9,7 +9,7 @@ public static class UserConnectionMapper
     public static UserConnectionDto.Get ToGetDto(this UserConnection user) =>
         new UserConnectionDto.Get
         {
-            User = user.Connection.ToConnectionDto(),
+            User = user.To.ToConnectionDto(),
             State = user.ConnectionType.MapToDto(),
         };
 
@@ -19,4 +19,5 @@ public static class UserConnectionMapper
             User = user.ToConnectionDto(),
             State = UserConnectionTypeDto.None,
         };
+    
 }

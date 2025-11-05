@@ -1,11 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Rise.Domain.Organizations;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Settings;
 using Rise.Domain.Users.Settings.Properties;
-using System.Reflection.Emit;
 
 
 namespace Rise.Persistence.Configurations.Users;
@@ -24,34 +22,32 @@ internal class BaseUserConfiguration : EntityConfiguration<BaseUser>
 
         builder.Property(x => x.FirstName)
             .HasConversion(
-                new ValueObjectConverter<FirstName, string>()
+                new PropertyConverter<FirstName, string>()
             ).IsRequired()
             .HasMaxLength(FirstName.MAX_LENGTH);
 
         builder.Property(x => x.LastName)
             .HasConversion(
-                new ValueObjectConverter<LastName, string>()
+                new PropertyConverter<LastName, string>()
             ).IsRequired()
             .HasMaxLength(LastName.MAX_LENGTH);
 
         builder.Property(x => x.Biography)
             .HasConversion(
-                new ValueObjectConverter<Biography, string>()
+                new PropertyConverter<Biography, string>()
             ).IsRequired()
             .HasMaxLength(Biography.MAX_LENGTH);
 
         builder.Property(x => x.AvatarUrl)
             .HasConversion(
-                new ValueObjectConverter<AvatarUrl, string>()
+                new PropertyConverter<AvatarUrl, string>()
             ).IsRequired()
             .HasMaxLength(AvatarUrl.MAX_LENGTH);
 
         builder.Property(x => x.BirthDay).IsRequired();
 
         // settings
-        builder.Ignore(u => u.UserSettings);
-
-        builder.OwnsOne<UserSetting>("_userSettings", userSettings => 
+        builder.OwnsOne(u => u.UserSettings, userSettings =>
         {
             userSettings.WithOwner(s => s.User)
                 .HasForeignKey("UserId");
@@ -60,12 +56,12 @@ internal class BaseUserConfiguration : EntityConfiguration<BaseUser>
             userSettings.Property<int>("Id");
             userSettings.HasKey("Id");
 
-            userSettings.Property(s=> s.IsDarkMode)
+            userSettings.Property(s => s.IsDarkMode)
                 .HasDefaultValue(false);
 
             userSettings.Property(s => s.FontSize)
                 .HasConversion(
-                    new ValueObjectConverter<FontSize, int>()
+                    new PropertyConverter<FontSize, int>()
                 )
                 .HasDefaultValue(FontSize.Create(12).Value);
 
@@ -77,7 +73,7 @@ internal class BaseUserConfiguration : EntityConfiguration<BaseUser>
 
                 nav.Property(p => p.Sentence)
                     .HasConversion(
-                        new ValueObjectConverter<DefaultSentence, string>()
+                        new PropertyConverter<DefaultSentence, string>()
                     ).IsRequired()
                     .HasMaxLength(DefaultSentence.MAX_LENGTH)
                     .HasColumnName("TextSuggestion");

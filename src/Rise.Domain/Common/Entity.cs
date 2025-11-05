@@ -1,7 +1,7 @@
 namespace Rise.Domain.Common;
 
 /// <summary>
-/// Entity Base Class, all entities should inherit from this. (read: Entity = Row in SQL terms)
+/// Entity Base Class
 /// </summary>
 public abstract class Entity
 {
@@ -22,7 +22,7 @@ public abstract class Entity
     /// </summary>
     public bool IsDeleted { get; set; }
 
-    protected Entity() {}
+    protected Entity() { }
 
     protected Entity(int id)
     {
@@ -64,6 +64,6 @@ public abstract class Entity
 
     public override int GetHashCode()
     {
-        return (GetType().ToString() + Id).GetHashCode();
+        return HashCode.Combine(GetType().ToString(), Id);
     }
 }

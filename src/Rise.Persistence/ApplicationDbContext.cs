@@ -2,11 +2,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
-using Rise.Domain.Locations;
 using Rise.Domain.Messages;
-using Rise.Domain.Organizations;
-using Rise.Domain.Registrations;
 using Rise.Domain.Users;
+using Rise.Domain.Users.Connections;
+using Rise.Domain.Users.Hobbys;
+using Rise.Domain.Users.Sentiment;
+using Rise.Persistence.Configurations.Users;
 
 namespace Rise.Persistence;
 
@@ -23,11 +24,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> opts) :
 {
     public DbSet<Chat> Chats => Set<Chat>();
     public DbSet<Message> Messages => Set<Message>();
-    public DbSet<Address> Addresses => Set<Address>();
-    public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Supervisor> Supervisors => Set<Supervisor>();
-    public DbSet<RegistrationRequest> RegistrationRequests => Set<RegistrationRequest>();
+    public DbSet<UserConnection> UserConnections => Set<UserConnection>();
+    public DbSet<UserHobby> Hobbies => Set<UserHobby>();
+    public DbSet<UserSentiment> Sentiments => Set<UserSentiment>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -40,6 +41,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> opts) :
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
         // Applying all types of IEntityTypeConfiguration in the Persistence project.
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }

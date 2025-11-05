@@ -1,7 +1,6 @@
-﻿using Rise.Domain.Chats;
-using Rise.Domain.Locations;
-using Rise.Domain.Organizations;
+using Rise.Domain.Chats;
 using Rise.Domain.Users;
+using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Settings;
 using Rise.Domain.Users.Settings.Properties;
@@ -9,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -32,23 +33,8 @@ public static class TestData
     public static LastName ValidLastName() => LastName.Create($"Doe");
     public static Biography ValidBiography() => Biography.Create($"Dit is een bio.");
     public static AvatarUrl ValidAvatarUrl() => AvatarUrl.Create($"Dit is een img.");
-    public static Organization ValidOrganization() =>
-        new Organization
-        {
-            Name = Domain.Organizations.Properties.Name.Create("Nodo Antwerpen"),
-            Address = new Address()
-            {
-                Province = Domain.Locations.Properties.Name.Create("Antwerpen"),
-                City = new City()
-                {
-                    Name = Domain.Locations.Properties.Name.Create("Antwerpen"),
-                    ZipCode = Domain.Locations.Properties.ZipCode.Create(2000),
-                    Street = Domain.Locations.Properties.Name.Create("Antwerpen Straat"),
-                }
-            }
-        };
     public static User ValidUser(int id) =>
-        (User) new User()
+        new User()
         {
             AccountId = "valid-id-" + id,
             FirstName = ValidFirstName(),
@@ -56,12 +42,13 @@ public static class TestData
             Biography = ValidBiography(),
             AvatarUrl = ValidAvatarUrl(),
             BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
-            UserSettings = ValidUserSettings(),
-            Organization = ValidOrganization(),
+            UserType = UserType.Regular,
+            Gender = GenderType.X,
+            UserSettings = ValidUserSettings()
         }.WithId(id);
 
     public static Supervisor ValidSupervisor(int id) =>
-        (Supervisor) new Supervisor()
+        new Supervisor()
         {
             AccountId = "valid-id-" + id,
             FirstName = ValidFirstName(),
@@ -69,15 +56,28 @@ public static class TestData
             Biography = ValidBiography(),
             AvatarUrl = ValidAvatarUrl(),
             BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-40)),
-            UserSettings = ValidUserSettings(),
-            Organization = ValidOrganization(),
+            UserType = UserType.Supervisor,
+            Gender = GenderType.X,
+            UserSettings = ValidUserSettings()
         }.WithId(id);
 
-    private static BaseUser WithId(this BaseUser user, int id)
+    private static T WithId<T>(this T user, int id) where T : BaseUser
     {
-        typeof(BaseUser)
+        typeof(T)
             .GetProperty(nameof(BaseUser.Id))!
             .SetValue(user, id);
+
+        return user;
+    }
+    public static User WithConnections(this User user, UserConnection connection)
+    {
+        return user.WithConnections([connection]);
+    }
+    public static User WithConnections(this User user, IEnumerable<UserConnection> connections)
+    {
+        typeof(User)
+            .GetField("_connections", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .SetValue(user, new HashSet<UserConnection>(connections));
 
         return user;
     }
@@ -87,8 +87,8 @@ public static class TestData
         var user1 = ValidUser(-1);
         var user2 = ValidUser(-2);
 
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
+        user1.AcceptFriendRequest(user2);
+        user2.AcceptFriendRequest(user1);
 
         return Chat.CreateChat(user1, user2);
     }

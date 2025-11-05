@@ -5,6 +5,7 @@ using Rise.Domain.Messages.Properties;
 using Rise.Persistence;
 using Rise.Services.Chats.Mapper;
 using Rise.Services.Identity;
+using Rise.Shared.Common;
 using Rise.Shared.Chats;
 using Rise.Shared.Identity;
 

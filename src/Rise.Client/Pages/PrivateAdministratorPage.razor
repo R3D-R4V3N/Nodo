@@ -1,250 +1,41 @@
-@page "/private-administrator"
-@attribute [Authorize(Roles = AppRoles.Administrator + "," + AppRoles.Supervisor)]
+﻿@page "/private-administrator"
+@attribute [Authorize(Roles = AppRoles.Administrator)]
 @using System.Security.Claims
 @using Rise.Shared.Identity
-@using Rise.Shared.Registrations
 
-<PageTitle>Registratiebeheer</PageTitle>
+<PageTitle>Private Manager Page</PageTitle>
 
-<h1 class="text-2xl font-semibold text-[#04320C]">Registratiebeheer</h1>
-<p class="mt-2 text-sm text-gray-600">Beheer nieuwe gebruikersaanvragen en koppel een supervisor vooraleer je ze goedkeurt.</p>
+<h1>Private Administrator Page</h1>
 
-@if (!string.IsNullOrEmpty(_successMessage))
-{
-    <div class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">@_successMessage</div>
-}
-@if (!string.IsNullOrEmpty(_errorMessage))
-{
-    <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">@_errorMessage</div>
-}
+<AuthorizeView>
+    <p>Hello, @context.User.Identity?.Name! You're authenticated and you have a <b>Administrator</b> role claim, so you can see this page.</p>
+</AuthorizeView>
 
-@if (_isLoading)
-{
-    <p class="mt-6 text-sm text-gray-500">Registraties worden geladen...</p>
-}
-else if (_requests.Count == 0)
-{
-    <p class="mt-6 text-sm text-gray-500">Er zijn momenteel geen openstaande registratieaanvragen.</p>
-}
-else
-{
-    <div class="mt-6 space-y-4">
-        @foreach (var request in _requests)
-        {
-            var statusLabel = TranslateStatus(request.Status);
-            var statusClasses = GetStatusClasses(request.Status);
-
-            <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                        <h3 class="text-lg font-semibold text-[#04320C]">@request.FirstName @request.LastName</h3>
-                        <p class="text-sm text-gray-600">@request.Email</p>
-                        <p class="text-sm text-gray-600">@request.OrganizationName</p>
-                    </div>
-                    <span class=@$"inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide {statusClasses}">
-                        @statusLabel
-                    </span>
-                </div>
-
-                <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <label class="text-sm font-medium text-[#04320C]" for="supervisor-@request.Id">Koppel supervisor</label>
-                        <select id="supervisor-@request.Id"
-                                class="w-full rounded-full border border-gray-300 bg-white px-4 py-2 text-sm text-gray-800 focus:border-[#0B6532] focus:outline-none focus:ring-2 focus:ring-[#0B6532]"
-                                value="@GetSupervisorSelection(request.Id)"
-                                @onchange="eventArgs => OnSupervisorChanged(request.Id, eventArgs)">
-                            <option value="">Kies een supervisor</option>
-                            @foreach (var option in request.Supervisors)
-                            {
-                                <option value="@option.Id">@option.Name</option>
-                            }
-                        </select>
-                    </div>
-
-                    <div class="flex gap-2">
-                        <button class="rounded-full bg-[#0B6532] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0a572b] disabled:opacity-50"
-                                disabled="@(_actionInProgress || !HasSupervisorSelection(request.Id))"
-                                @onclick="() => ApproveAsync(request.Id)">
-                            Goedkeuren
-                        </button>
-                        <button class="rounded-full border border-red-500 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
-                                disabled="@(_actionInProgress || !HasSupervisorSelection(request.Id))"
-                                @onclick="() => RejectAsync(request.Id)">
-                            Weigeren
-                        </button>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-}
+<h2>Claims</h2>
 
 @if (claims.Any())
 {
-    <section class="mt-10">
-        <h2 class="text-lg font-semibold text-[#04320C]">Claims</h2>
-        <ul class="mt-2 space-y-1 text-sm text-gray-600">
-            @foreach (var claim in claims)
-            {
-                <li><b>@claim.Type:</b> @claim.Value</li>
-            }
-        </ul>
-    </section>
+    <ul>
+        @foreach (var claim in claims)
+        {
+            <li><b>@claim.Type:</b> @claim.Value</li>
+        }
+    </ul>
 }
 
 @code {
-    private readonly List<RegistrationResponse.ListItem> _requests = [];
-    private readonly Dictionary<int, int?> _selectedSupervisor = new();
     private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
-    private bool _isLoading;
-    private bool _actionInProgress;
-    private string? _errorMessage;
-    private string? _successMessage;
-
-    [Inject]
-    private IRegistrationService RegistrationService { get; set; } = default!;
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-        if (AuthState is not null)
+        if (AuthState == null)
         {
-            var authState = await AuthState;
-            claims = authState.User.Claims;
-        }
-
-        await LoadRequestsAsync(clearMessages: true);
-    }
-
-    private async Task LoadRequestsAsync(bool clearMessages = false)
-    {
-        _isLoading = true;
-        if (clearMessages)
-        {
-            _errorMessage = null;
-            _successMessage = null;
-        }
-
-        try
-        {
-            var result = await RegistrationService.GetRequestsAsync();
-            if (result.IsSuccess)
-            {
-                _requests.Clear();
-                _requests.AddRange(result.Value);
-                _selectedSupervisor.Clear();
-
-                foreach (var request in _requests)
-                {
-                    _selectedSupervisor[request.Id] = request.AssignedSupervisorId;
-                }
-            }
-            else
-            {
-                _requests.Clear();
-                _selectedSupervisor.Clear();
-                _errorMessage = string.Join(" ", result.Errors);
-            }
-        }
-        finally
-        {
-            _isLoading = false;
-            StateHasChanged();
-        }
-    }
-
-    private string GetSupervisorSelection(int requestId)
-        => _selectedSupervisor.TryGetValue(requestId, out var value) && value.HasValue
-            ? value.Value.ToString()
-            : string.Empty;
-
-    private bool HasSupervisorSelection(int requestId)
-        => _selectedSupervisor.TryGetValue(requestId, out var value) && value.HasValue;
-
-    private void OnSupervisorChanged(int requestId, ChangeEventArgs args)
-    {
-        if (args.Value is string raw && int.TryParse(raw, out var supervisorId))
-        {
-            _selectedSupervisor[requestId] = supervisorId;
-        }
-        else
-        {
-            _selectedSupervisor[requestId] = null;
-        }
-    }
-
-    private async Task ApproveAsync(int requestId)
-    {
-        if (!HasSupervisorSelection(requestId))
-        {
-            _errorMessage = "Selecteer een supervisor voordat je goedkeurt.";
-            _successMessage = null;
             return;
         }
-
-        var supervisorId = _selectedSupervisor[requestId]!.Value;
-
-        _actionInProgress = true;
-        _errorMessage = null;
-        _successMessage = null;
-
-        var result = await RegistrationService.ApproveAsync(requestId, supervisorId);
-
-        _actionInProgress = false;
-
-        if (!result.IsSuccess)
-        {
-            _errorMessage = string.Join(" ", result.Errors);
-            return;
-        }
-
-        await LoadRequestsAsync();
-        _successMessage = "Registratie succesvol goedgekeurd.";
-        StateHasChanged();
+        var authState = await AuthState;
+        claims = authState.User.Claims;
     }
-
-    private async Task RejectAsync(int requestId)
-    {
-        if (!HasSupervisorSelection(requestId))
-        {
-            _errorMessage = "Selecteer een supervisor voordat je weigert.";
-            _successMessage = null;
-            return;
-        }
-
-        var supervisorId = _selectedSupervisor[requestId]!.Value;
-
-        _actionInProgress = true;
-        _errorMessage = null;
-        _successMessage = null;
-
-        var result = await RegistrationService.RejectAsync(requestId, supervisorId);
-
-        _actionInProgress = false;
-
-        if (!result.IsSuccess)
-        {
-            _errorMessage = string.Join(" ", result.Errors);
-            return;
-        }
-
-        await LoadRequestsAsync();
-        _successMessage = "Registratie geweigerd.";
-        StateHasChanged();
-    }
-
-    private static string TranslateStatus(string status) => status switch
-    {
-        "Approved" => "Goedgekeurd",
-        "Rejected" => "Geweigerd",
-        _ => "In behandeling"
-    };
-
-    private static string GetStatusClasses(string status) => status switch
-    {
-        "Approved" => "bg-emerald-50 text-emerald-700",
-        "Rejected" => "bg-red-50 text-red-600",
-        _ => "bg-amber-50 text-amber-700"
-    };
 }

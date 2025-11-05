@@ -7,6 +7,17 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="censoring\**" />
+      <Compile Remove="Components\**" />
+      <Content Remove="censoring\**" />
+      <Content Remove="Components\**" />
+      <EmbeddedResource Remove="censoring\**" />
+      <EmbeddedResource Remove="Components\**" />
+      <None Remove="censoring\**" />
+      <None Remove="Components\**" />
+    </ItemGroup>
+
+    <ItemGroup>
       <Compile Remove="UserConnections\Friends.razor.cs" />
     </ItemGroup>
 
@@ -32,11 +43,6 @@
     
     <ItemGroup>
       <ProjectReference Include="..\Rise.Shared\Rise.Shared.csproj" />
-    </ItemGroup>
-    
-    <ItemGroup>
-      <Folder Include="censoring\" />
-      <Folder Include="Components\FriendsProfile\" />
     </ItemGroup>
 
 </Project>

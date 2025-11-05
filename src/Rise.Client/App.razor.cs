@@ -9,7 +9,7 @@ public partial class App : IDisposable
     [Inject] public AuthenticationStateProvider AuthStateProvider { get; set; }
     [Inject] public UserContextService UserContext { get; set; }
     [Inject] public UserState UserState { get; set; } = default!;
-    private bool _isLoading;
+    private bool _isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {

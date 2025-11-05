@@ -13,8 +13,9 @@ public class UserContextService(
     private readonly HttpClient _http = httpClient;
     private UserDto.CurrentUser? CurrentUser = null;
 
-    public async Task<Result<UserResponse.CurrentUser>> GetCurrentUserAsync(CancellationToken ctx = default) 
+    public async Task<Result<UserResponse.CurrentUser>> GetCurrentUserAsync(CancellationToken ctx = default)
         => await _http.GetFromJsonAsync<Result<UserResponse.CurrentUser>>($"/api/users/current", cancellationToken: ctx)!;
+
 
     public async Task<UserDto.CurrentUser?> InitializeAsync(CancellationToken ctx = default)
     {
