@@ -20,7 +20,7 @@ public class Chat : Entity
     {
         if (baseUser1 is User user1 && baseUser2 is User user2)
         {
-            if (!user1.HasFriend(user2) || !user2.HasFriend(user1))
+            if (!user1.IsFriend(user2) || !user2.IsFriend(user1))
             {
                 return Result.Conflict(
                     $"Chat kan niet worden gemaakt omdat {user1} en {user2} elkaar niet bevriend zijn"

@@ -9,7 +9,7 @@ public class SuggestedFriends(IUserConnectionService connectionService)
 {
     public override void Configure()
     {
-        Get("/api/connections/suggested");
+        Get("/api/connections/friends/suggested");
         Roles(AppRoles.User, AppRoles.Supervisor, AppRoles.Administrator);
     }
 

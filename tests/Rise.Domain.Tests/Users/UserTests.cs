@@ -1,11 +1,11 @@
 ﻿using Ardalis.Result;
 using Rise.Domain.Chats;
-using Rise.Domain.Organizations;
+using Rise.Domain.Helper;
 using Rise.Domain.Users;
-using System.Runtime.Intrinsics.X86;
+using Rise.Domain.Users.Connections;
 
 namespace Rise.Domain.Tests.Users;
-public class ApplicationUserTests
+public class UserTests
 {
     [Fact]
     public void Constructor_ShouldSetPropertiesCorrectly()
@@ -17,7 +17,6 @@ public class ApplicationUserTests
         var avatarUrl = TestData.ValidAvatarUrl();
         var birthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28));
         var userSettings = TestData.ValidUserSettings();
-        var org = TestData.ValidOrganization();
 
         var user = new User()
         {
@@ -27,8 +26,7 @@ public class ApplicationUserTests
             Biography = biography,
             AvatarUrl = avatarUrl,
             BirthDay = birthDay,
-            UserSettings = userSettings,
-            Organization = org,
+            UserSettings = userSettings
         };
 
         user.AccountId.ShouldBe(accountId);
@@ -38,7 +36,63 @@ public class ApplicationUserTests
         user.AvatarUrl.ShouldBe(avatarUrl);
         user.BirthDay.ShouldBe(birthDay);
         user.UserSettings.ShouldBe(userSettings);
-        user.Organization.ShouldBe(org);
+    }
+
+    [Theory]
+    [InlineData(UserConnectionType.None, 0)]
+    [InlineData(UserConnectionType.RequestIncoming, 0)]
+    [InlineData(UserConnectionType.RequestOutgoing, 0)]
+    [InlineData(UserConnectionType.Friend, 1)]
+    [InlineData(UserConnectionType.Blocked, 0)]
+    public void Friends_ReturnsFriends(UserConnectionType type, int count)
+    {
+        var user = TestData
+            .ValidUser(1);
+
+        user = user
+            .WithConnections(
+                user.CreateConnectionWith(TestData.ValidUser(2), type)
+            );
+
+        user.Friends.Count().ShouldBe(count);
+    }
+
+    [Theory]
+    [InlineData(UserConnectionType.None, 0)]
+    [InlineData(UserConnectionType.RequestIncoming, 1)]
+    [InlineData(UserConnectionType.RequestOutgoing, 1)]
+    [InlineData(UserConnectionType.Friend, 0)]
+    [InlineData(UserConnectionType.Blocked, 0)]
+    public void FriendRequests_ReturnsFriendRequests(UserConnectionType type, int count)
+    {
+        var user = TestData
+            .ValidUser(1);
+
+        user = user
+            .WithConnections(
+                user.CreateConnectionWith(TestData.ValidUser(2), type)
+            );
+
+        user.FriendRequests.Count().ShouldBe(count);
+    }
+
+    [Theory]
+    [InlineData(UserConnectionType.None, 0)]
+    [InlineData(UserConnectionType.RequestIncoming, 0)]
+    [InlineData(UserConnectionType.RequestOutgoing, 0)]
+    [InlineData(UserConnectionType.Friend, 0)]
+    [InlineData(UserConnectionType.Blocked, 1)]
+    public void BlockedUsers_ReturnsBlockedUsers(UserConnectionType type, int count)
+    {
+        var user = TestData
+            .ValidUser(1);
+
+        user = user
+            .WithConnections(
+                user.CreateConnectionWith(TestData.ValidUser(2), type)
+            );
+
+        user.BlockedUsers.Count().ShouldBe(count);
     }
 
     [Fact]
@@ -47,103 +101,227 @@ public class ApplicationUserTests
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
 
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
+        user1 = user1
+            .WithConnections(
+                user1.CreateConnectionWith(user2, UserConnectionType.Friend)
+            );
 
-        user1.HasFriend(user2).ShouldBeTrue();
-        user2.HasFriend(user1).ShouldBeTrue();
+        user2 = user2
+            .WithConnections(
+                user2.CreateConnectionWith(user1, UserConnectionType.Friend)
+            );
+
+        user1.IsFriend(user2).ShouldBeTrue();
+        user2.IsFriend(user1).ShouldBeTrue();
     }
 
     [Fact]
-    public void HasFriend_ShouldReturnFalse_WhenNoConnectionExists()
+    public void IsFriend_ShouldReturnFalse_WhenNoFriendshipExists()
     {
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
 
-        user1.HasFriend(user2).ShouldBeFalse();
-        user2.HasFriend(user1).ShouldBeFalse();
+        user1.IsFriend(user2).ShouldBeFalse();
+        user2.IsFriend(user1).ShouldBeFalse();
     }
 
     [Fact]
-    public void AddFriend_ShouldCreateFriendRequest_WhenNoConnectionExists()
+    public void IsBlocked_ShouldReturnTrue_WhenBlockExists()
     {
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
 
-        var result = user1.AddFriend(user2);
+        user1 = user1
+            .WithConnections(
+                user1.CreateConnectionWith(user2, UserConnectionType.Blocked)
+            );
+
+        user1.IsBlocked(user2).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void IsBlocked_ShouldReturnFalse_WhenNoBlockExists()
+    {
+        var user1 = TestData.ValidUser(1);
+        var user2 = TestData.ValidUser(2);
+
+        user1.IsBlocked(user2).ShouldBeFalse();
+        user2.IsBlocked(user1).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void HasFriendRequest_ShouldReturnTrue_WhenIncomingRequestExists()
+    {
+        var user1 = TestData.ValidUser(1);
+        var user2 = TestData.ValidUser(2);
+
+        user1 = user1
+            .WithConnections(
+                user1.CreateConnectionWith(user2, UserConnectionType.RequestIncoming)
+            );
+
+        user2 = user2
+            .WithConnections(
+                user2.CreateConnectionWith(user1, UserConnectionType.RequestIncoming)
+            );
+
+        user1.HasFriendRequest(user2).ShouldBeTrue();
+        user2.HasFriendRequest(user1).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void HasFriendRequest_ShouldReturnTrue_WhenOutgoingRequestExists()
+    {
+        var user1 = TestData.ValidUser(1);
+        var user2 = TestData.ValidUser(2);
+
+        user1 = user1
+            .WithConnections(
+                user1.CreateConnectionWith(user2, UserConnectionType.RequestOutgoing)
+            );
+
+        user2 = user2
+            .WithConnections(
+                user2.CreateConnectionWith(user1, UserConnectionType.RequestOutgoing)
+            );
+
+        user1.HasFriendRequest(user2).ShouldBeTrue();
+        user2.HasFriendRequest(user1).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void HasFriendRequest_ShouldReturnFalse_WhenNoRequestExists()
+    {
+        var user1 = TestData.ValidUser(1);
+        var user2 = TestData.ValidUser(2);
+
+        user1.IsFriend(user2).ShouldBeFalse();
+        user2.IsFriend(user1).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void SendFriendRequest_ShouldCreateFriendRequest_WhenNoConnectionExists()
+    {
+        var user1 = TestData.ValidUser(1);
+        var user2 = TestData.ValidUser(2);
+
+        var result = user1.SendFriendRequest(user2);
 
         result.IsSuccess.ShouldBeTrue();
-        user1.FriendRequests.ShouldContain(x => x.Connection.Equals(user2));
-        user2.FriendRequests.ShouldContain(x => x.Connection.Equals(user1));
+        user1.FriendRequests.ShouldContain(x => x.To.Equals(user2) && x.ConnectionType.Equals(UserConnectionType.RequestOutgoing));
+        user2.FriendRequests.ShouldContain(x => x.To.Equals(user1) && x.ConnectionType.Equals(UserConnectionType.RequestIncoming));
     }
 
     [Fact]
-    public void AddFriend_ShouldCreateFriendship_WhenRequestExistsFromOtherUser()
+    public void SendFriendRequest_ShouldReturnConflict_WhenTargetHasCurrentBlocked()
     {
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
 
-        user2.AddFriend(user1);
+        user2 = user2.WithConnections(
+            user2.CreateConnectionWith(user1, UserConnectionType.Blocked)
+        );
 
-        var result = user1.AddFriend(user2);
+        var result = user1.SendFriendRequest(user2);
 
-        result.Status.ShouldBe(ResultStatus.Ok);
-        user1.Friends.ShouldContain(x => x.Connection.Equals(user2));
-        user2.Friends.ShouldContain(x => x.Connection.Equals(user1));
+        result.Status.ShouldBe(ResultStatus.Conflict);
+        result.Errors.ShouldBe([$"{user2} heeft je geblokkeerd"]);
+    }
+
+    [Theory]
+    [InlineData(UserConnectionType.Friend)]
+    [InlineData(UserConnectionType.RequestIncoming)]
+    [InlineData(UserConnectionType.RequestOutgoing)]
+    [InlineData(UserConnectionType.Blocked)]
+    public void SendFriendRequest_ShouldReturnConflict_WhenConnectionAlreadyExists(UserConnectionType type)
+    {
+        var user1 = TestData.ValidUser(1);
+        var user2 = TestData.ValidUser(2);
+
+        user1 = user1.WithConnections(
+            user1.CreateConnectionWith(user2, type)
+        );
+
+        var result = user1.SendFriendRequest(user2);
+
+        result.Status.ShouldBe(ResultStatus.Conflict);
+        result.Errors.Count().ShouldBe(1);
+    }
+
+    [Fact]
+    public void AcceptFriendRequest_ShouldCreateFriendship_WhenIncomingConnectionExists()
+    {
+        var user1 = TestData.ValidUser(1);
+        var user2 = TestData.ValidUser(2);
+
+        user1.SendFriendRequest(user2);
+        var result = user2.AcceptFriendRequest(user1);
+
+        result.IsSuccess.ShouldBeTrue();
+
+        user1.Friends.ShouldContain(x => x.To.Equals(user2));
         user1.FriendRequests.ShouldBeEmpty();
+
+        user2.Friends.ShouldContain(x => x.To.Equals(user1));
         user2.FriendRequests.ShouldBeEmpty();
     }
 
-
     [Fact]
-    public void AddFriend_ShouldReturnConflict_WhenAlreadyFriends()
+    public void AcceptFriendRequest_ShouldReturnConflict_WhenNoConnectionExists()
     {
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
 
+        var result = user1.AcceptFriendRequest(user2);
 
-        var result = user1.AddFriend(user2);
-
-        result.IsSuccess.ShouldBeFalse();
         result.Status.ShouldBe(ResultStatus.Conflict);
-        result.Errors.ShouldBe([$"Gebruiker is al bevriend met {user2}"]);
+        result.Errors.ShouldBe([$"Er is geen veroek van {user2} om te accepteren"]);
 
-        user1.Friends.ShouldContain(x => x.Connection.Equals(user2));
-        user2.Friends.ShouldContain(x => x.Connection.Equals(user1));
+        user1.FriendRequests.ShouldBeEmpty();
+        user1.Friends.ShouldBeEmpty();
+        user2.FriendRequests.ShouldBeEmpty();
+        user2.Friends.ShouldBeEmpty();
     }
 
     [Fact]
-    public void AddFriend_ShouldReturnConflict_WhenRequestExistsFromSameUser()
+    public void AcceptFriendRequest_ShouldReturnConflict_WhenAlreadyFriends()
     {
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
-        user1.AddFriend(user2);
 
-        var result = user1.AddFriend(user2);
+        user1.SendFriendRequest(user2);
+        user2.AcceptFriendRequest(user1);
 
-        result.IsSuccess.ShouldBeFalse();
+        var result = user1.AcceptFriendRequest(user2);
+
         result.Status.ShouldBe(ResultStatus.Conflict);
-        result.Errors.ShouldBe([$"Gebruiker heeft al een vriendschapsverzoek naar {user2} verstuurd"]);
+        result.Errors.ShouldBe([$"{user1} is al bevriend met {user2}"]);
 
-        user1.FriendRequests.ShouldContain(x => x.Connection.Equals(user2));
-        user2.FriendRequests.ShouldContain(x => x.Connection.Equals(user1));
+        user1.Friends.Count().ShouldBe(1);
+        user1.FriendRequests.ShouldBeEmpty();
+
+        user2.Friends.Count().ShouldBe(1);
+        user2.FriendRequests.ShouldBeEmpty();
     }
 
     [Fact]
-    public void RemoveFriend_ShouldRemoveFromBothUsers()
+    public void AcceptFriendRequest_ShouldReturnConflict_WhenNoIncoming()
     {
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
-        user1.AddFriend(user2);
-        user2.AddFriend(user1); 
 
-        var result = user1.RemoveFriend(user2);
+        user1.SendFriendRequest(user2);
 
-        result.Status.ShouldBe(ResultStatus.Ok);
-        user1.Friends.ShouldNotContain(x => x.Connection.Equals(user2));
-        user2.Friends.ShouldNotContain(x => x.Connection.Equals(user1));
+        var result = user1.AcceptFriendRequest(user2);
+
+        result.Status.ShouldBe(ResultStatus.Conflict);
+        result.Errors.ShouldBe([$"Er is geen verzoek van {user2} om te accepteren"]);
+
+        user1.Friends.ShouldBeEmpty();
+        user1.FriendRequests.Count().ShouldBe(1);
+
+        user2.Friends.ShouldBeEmpty();
+        user2.FriendRequests.Count().ShouldBe(1); ;
     }
 
     [Fact]
@@ -151,13 +329,30 @@ public class ApplicationUserTests
     {
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
-        user1.AddFriend(user2);
+
+        user1.AcceptFriendRequest(user2);
 
         var result = user1.RemoveFriendRequest(user2);
 
         result.Status.ShouldBe(ResultStatus.Ok);
-        user1.FriendRequests.ShouldNotContain(x => x.Connection.Equals(user2));
-        user2.FriendRequests.ShouldNotContain(x => x.Connection.Equals(user1));
+        user1.FriendRequests.ShouldBeEmpty();
+        user2.FriendRequests.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void RemoveFriend_ShouldRemoveFromBothUsers()
+    {
+        var user1 = TestData.ValidUser(1);
+        var user2 = TestData.ValidUser(2);
+
+        user1.AcceptFriendRequest(user2);
+        user2.AcceptFriendRequest(user1); 
+
+        var result = user1.RemoveFriend(user2);
+
+        result.Status.ShouldBe(ResultStatus.Ok);
+        user1.Friends.ShouldBeEmpty();
+        user2.Friends.ShouldBeEmpty();
     }
 
     [Fact]
@@ -166,14 +361,14 @@ public class ApplicationUserTests
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
 
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
+        user1.SendFriendRequest(user2);
+        user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreateChat(user1, user2);
 
         var newUser = TestData.ValidUser(3);
-        user1.AddFriend(newUser);
-        newUser.AddFriend(user1);
+        user1.SendFriendRequest(newUser);
+        newUser.AcceptFriendRequest(user1);
 
         var result = newUser.AddChat(user1, chat);
 
@@ -183,44 +378,20 @@ public class ApplicationUserTests
         chat.Users.Count.ShouldBe(3);
     }
 
-    [Theory]
-    [InlineData(false)] 
-    [InlineData(true)] 
-    public void AddChat_SupervisorCanAdd_WithoutFriendship(bool isSelfOwner)
-    {
-        var user1 = TestData.ValidUser(1);
-        var user2 = TestData.ValidUser(2);
-
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
-
-        Chat chat = Chat.CreateChat(user1, user2);
-
-        var supervisor = TestData.ValidSupervisor(3);
-        BaseUser owner = isSelfOwner ? supervisor : user1;
-
-        var result = supervisor.AddChat(owner, chat);
-
-        result.IsSuccess.ShouldBeTrue();
-        supervisor.Chats.ShouldContain(chat);
-        chat.Users.ShouldContain(supervisor);
-        chat.Users.Count.ShouldBe(3);
-    }
-
     [Fact]
     public void AddChat_ShouldReturnConflict_WhenAlreadyInChat()
     {
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
 
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
+        user1.SendFriendRequest(user2);
+        user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreateChat(user1, user2);
 
         var newUser = TestData.ValidUser(3);
-        user1.AddFriend(newUser);
-        newUser.AddFriend(user1);
+        user1.SendFriendRequest(newUser);
+        newUser.AcceptFriendRequest(user1);
 
         newUser.AddChat(user1, chat);
 
@@ -236,8 +407,8 @@ public class ApplicationUserTests
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
 
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
+        user1.AcceptFriendRequest(user2);
+        user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreateChat(user1, user2);
 
@@ -255,14 +426,14 @@ public class ApplicationUserTests
         var user2 = TestData.ValidUser(2);
         var user3 = TestData.ValidUser(3);
 
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
+        user1.SendFriendRequest(user2);
+        user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreateChat(user1, user2);
 
         var newUser = TestData.ValidUser(4);
-        newUser.AddFriend(user3);
-        user3.AddFriend(newUser);
+        newUser.SendFriendRequest(user3);
+        user3.AcceptFriendRequest(newUser);
 
         var result = newUser.AddChat(user3, chat);
 
@@ -276,8 +447,8 @@ public class ApplicationUserTests
     [MemberData(nameof(RemoveChat_ShouldRemoveUserAndChatLink_MemberData))]
     public void RemoveChat_ShouldRemoveUserAndChatLink(User user1, User user2, User owner)
     {
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
+        user1.SendFriendRequest(user2);
+        user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreateChat(user1, user2);
 
@@ -293,37 +464,14 @@ public class ApplicationUserTests
         yield return new object[] { TestData.ValidUser(1), TestData.ValidUser(2), TestData.ValidUser(2) };
     }
 
-
-    [Theory]
-    [MemberData(nameof(RemoveChat_SupervisorCanRemove_WhenNotInChat_MemberData))]
-    public void RemoveChat_SupervisorCanRemove_WhenNotInChat(User user1, User user2, User removedUser)
-    {
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
-
-        Chat chat = Chat.CreateChat(user1, user2);
-        var supervisor = TestData.ValidSupervisor(3);
-
-        var result = removedUser.RemoveChat(supervisor, chat);
-
-        result.IsSuccess.ShouldBeTrue();
-        removedUser.Chats.ShouldNotContain(chat);
-        chat.Users.Count.ShouldBe(1);
-    }
-    public static IEnumerable<object[]> RemoveChat_SupervisorCanRemove_WhenNotInChat_MemberData()
-    {
-        yield return new object[] { TestData.ValidUser(1), TestData.ValidUser(2), TestData.ValidUser(1) };
-        yield return new object[] { TestData.ValidUser(1), TestData.ValidUser(2), TestData.ValidUser(2) };
-    }
-
     [Fact]
     public void RemoveChat_ShouldReturnConflict_WhenNotInChat()
     {
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
 
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
+        user1.SendFriendRequest(user2);
+        user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreateChat(user1, user2);
         user2.RemoveChat(user2, chat);
@@ -341,8 +489,8 @@ public class ApplicationUserTests
         var user2 = TestData.ValidUser(2);
         var user3 = TestData.ValidUser(3);
 
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
+        user1.SendFriendRequest(user2);
+        user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreateChat(user1, user2);
 

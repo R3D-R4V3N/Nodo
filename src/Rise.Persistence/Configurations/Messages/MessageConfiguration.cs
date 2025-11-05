@@ -26,7 +26,7 @@ internal class MessageConfiguration : EntityConfiguration<Message>
         // Extra properties configureren (optioneel)
         builder.Property(m => m.Text)
             .HasConversion(
-                new ValueObjectConverter<Domain.Messages.Properties.Text, string>()
+                new PropertyConverter<Domain.Messages.Properties.Text, string>()
             )
             .HasMaxLength(Domain.Messages.Properties.Text.MAX_LENGTH);
 

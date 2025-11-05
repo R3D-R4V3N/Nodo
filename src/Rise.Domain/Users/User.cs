@@ -1,129 +1,139 @@
 using Ardalis.Result;
 using Rise.Domain.Chats;
+using Rise.Domain.Helper;
 using Rise.Domain.Users.Connections;
+using Rise.Domain.Users.Settings;
 
 namespace Rise.Domain.Users;
 
 public class User : BaseUser
 {
     //// connections
-    private readonly List<UserConnection> _connections = new();
+    private readonly HashSet<UserConnection> _connections = [];
     public IReadOnlyCollection<UserConnection> Connections => _connections;
     public IEnumerable<UserConnection> Friends => _connections
-        .Where(x => x.ConnectionType.Equals(UserConnectionType.Friend));
+        .Where(x => x.ConnectionType is UserConnectionType.Friend);
     public IEnumerable<UserConnection> FriendRequests => _connections
-        .Where(x => 
-            x.ConnectionType.Equals(UserConnectionType.RequestIncoming) 
-            || x.ConnectionType.Equals(UserConnectionType.RequestOutgoing));
+        .Where(x => x.ConnectionType is UserConnectionType.RequestIncoming or UserConnectionType.RequestOutgoing);
     public IEnumerable<UserConnection> BlockedUsers => _connections
-        .Where(x => x.ConnectionType.Equals(UserConnectionType.Blocked));
+        .Where(x => x.ConnectionType is UserConnectionType.Blocked);
 
-    public bool HasFriend(User friend) 
-        => _connections.Contains(new UserConnection() { Connection = friend, ConnectionType = UserConnectionType.Friend});
-
-    public Result<string> RejectFriendRequest(User requester)
-    {
-        UserConnection? friendRequest = FriendRequests
-            .FirstOrDefault(x => x.Connection.Equals(requester));
-
-        if (friendRequest is null)
-        {
-            return Result.NotFound($"Er is geen vriendschapsverzoek van {requester} gevonden");
-        }
-
-        _connections.Remove(
-            new UserConnection()
-            {
-                Connection = requester,
-                ConnectionType = UserConnectionType.RequestIncoming
-            }
-        );
-
-        requester._connections.Remove(
-            new UserConnection()
-            {
-                Connection = this,
-                ConnectionType = UserConnectionType.RequestOutgoing
-            }
-        );
-
-        return Result.Success($"Gebruiker weigert vriendschapsverzoek van {requester}");
+    public bool IsFriend(User req) 
+        => (GetConnection(req)?.ConnectionType ?? UserConnectionType.None) == UserConnectionType.Friend;
+    public bool IsBlocked(User req)
+        => (GetConnection(req)?.ConnectionType ?? UserConnectionType.None) == UserConnectionType.Blocked;
+    public bool HasFriendRequest(User req)
+    { 
+        var type = GetConnection(req)?.ConnectionType ?? UserConnectionType.None;
+        return type.Equals(UserConnectionType.RequestIncoming) || type.Equals(UserConnectionType.RequestOutgoing);
     }
-    
-    public Result<string> AddFriend(User friend)
-    {       
-        bool isAdded = Friends.Any(x => x.Connection?.Equals(friend) ?? false);
 
-        if (isAdded)
+    private UserConnection? GetConnection(User target)
+    {
+        foreach (var conType in Enum.GetValues<UserConnectionType>())
         {
-            return Result.Conflict($"Gebruiker is al bevriend met {friend}");
-        }
-        
-        UserConnection? friendRequest = FriendRequests
-            .FirstOrDefault(x => x.Connection.Equals(friend));
-
-        if (friendRequest is null)
-        {
-            _connections.Add(
-                new UserConnection()
-                {
-                    Connection = friend,
-                    ConnectionType = UserConnectionType.RequestOutgoing
-                }
+            var con = _connections.FirstOrDefault(c =>
+                c.From.Id == this.Id &&
+                c.To.Id == target.Id &&
+                c.ConnectionType == conType
             );
 
-            friend._connections.Add(
-                new UserConnection() 
-                { 
-                    Connection = this,
-                    ConnectionType = UserConnectionType.RequestIncoming 
-                }
-            );
+            if (con is not null)
+                return con;
 
-            return Result.Success($"Gebruiker verstuurd een vriendschapsverzoek naar {friend}");
+            //var key = this.CreateConnectionWith(target, conType);
+            //if (_connections.TryGetValue(key, out var con))
+            //{
+            //    return con;
+            //}
         }
 
-        if (friendRequest.ConnectionType.Equals(UserConnectionType.RequestOutgoing))
+        return null;
+    }
+
+    public Result<User> SendFriendRequest(User target)
+    {
+        UserConnection? targetConn = target.GetConnection(this);
+
+        if (targetConn is not null && targetConn.ConnectionType.Equals(UserConnectionType.Blocked))
         {
-            return Result.Conflict($"Gebruiker heeft al een vriendschapsverzoek naar {friend} verstuurd");
+            return Result.Conflict($"{target} heeft je geblokkeerd");
         }
-        
-        _connections.Remove(
-            new UserConnection()
+
+        UserConnection? conn = GetConnection(target);
+
+        if (conn is not null)
+        {
+            string conflictMessage = conn.ConnectionType switch
             {
-                Connection = friend,
-                ConnectionType = UserConnectionType.RequestIncoming
-            }
-        );
+                UserConnectionType.Friend
+                    => $"{this} is al bevriend met {target}",
+                UserConnectionType.RequestIncoming 
+                    => $"{target} heeft al een verzoek verstuurd, accepteer hem!",
+                UserConnectionType.RequestOutgoing
+                    => $"{this} heeft al een vriendschapsverzoek naar {target} verstuurd",
+                UserConnectionType.Blocked
+                    => $"Gebruiker {target} is geblokkeerd",
+                _ => throw new NotImplementedException(conn.ConnectionType.ToString()),
+            };
+
+            return Result.Conflict(conflictMessage);
+        }
 
         _connections.Add(
-            new UserConnection()
-            {
-                Connection = friend,
-                ConnectionType = UserConnectionType.Friend
-            }
+            this.CreateConnectionWith(target, UserConnectionType.RequestOutgoing)
         );
 
-        friend._connections.Remove(
-            new UserConnection()
-            {
-                Connection = this,
-                ConnectionType = UserConnectionType.RequestOutgoing
-            }
+        target._connections.Add(
+            target.CreateConnectionWith(this, UserConnectionType.RequestIncoming)
         );
 
-        friend._connections.Add(
-            new UserConnection()
-            {
-                Connection = this,
-                ConnectionType = UserConnectionType.Friend
-            }
-        );
-
-        return Result.Success($"Gebruiker voegt {friend} toe");
+        return Result.Success(this, $"{this} verstuurd een vriendschapsverzoek naar {target}");
     }
 
-    public Result RemoveFriend(User friend)
+    public Result<User> AcceptFriendRequest(User target)
+    {
+        UserConnection? conn = GetConnection(target);
+
+        if (conn is null)
+        {
+            return Result.Conflict($"Er is geen veroek van {target} om te accepteren");
+        }
+
+        if (conn.ConnectionType.Equals(UserConnectionType.Friend))
+        {
+            return Result.Conflict($"{this} is al bevriend met {target}");
+        }
+
+        if (!conn.ConnectionType.Equals(UserConnectionType.RequestIncoming))
+        { 
+            return Result.Conflict($"Er is geen verzoek van {target} om te accepteren");
+        }
+
+        Span<User> span =
+        [
+            this, target
+        ];
+
+        for (int i = 0; i < span.Length; i++)
+        {
+            var current = span[i];
+            var opposite = span[(i + 1) % span.Length];
+            current._connections.Remove(
+                current.CreateConnectionWith(opposite, UserConnectionType.RequestIncoming)
+            );
+            current._connections.Remove(
+                current.CreateConnectionWith(opposite, UserConnectionType.RequestOutgoing)
+            );
+            current._connections.Add(
+                current.CreateConnectionWith(opposite, UserConnectionType.Friend)
+            );
+        }
+
+        return Result.Success(this, $"{this} is nu bevriend met {target}");
+    }
+
+    public Result<User> RemoveFriendRequest(User friend)
     {
         Span<User> span =
         [
@@ -135,18 +145,17 @@ public class User : BaseUser
             var current = span[i];
             var opposite = span[(i + 1) % span.Length];
             current._connections.Remove(
-                new UserConnection()
-                {
-                    Connection = opposite,
-                    ConnectionType = UserConnectionType.Friend,
-                }
+                current.CreateConnectionWith(opposite, UserConnectionType.RequestIncoming)
+            );
+            current._connections.Remove(
+                current.CreateConnectionWith(opposite, UserConnectionType.RequestOutgoing)
             );
         }
 
-        return Result.Success();
+        return Result.Success(this, $"vriendschap verzoek verwijderd van {friend}");
     }
 
-    public Result RemoveFriendRequest(User friend)
+    public Result<User> RemoveFriend(User friend)
     {
         Span<User> span =
         [
@@ -158,22 +167,11 @@ public class User : BaseUser
             var current = span[i];
             var opposite = span[(i + 1) % span.Length];
             current._connections.Remove(
-                new UserConnection()
-                {
-                    Connection = opposite,
-                    ConnectionType = UserConnectionType.RequestIncoming,
-                }
-            );
-            current._connections.Remove(
-                new UserConnection()
-                {
-                    Connection = opposite,
-                    ConnectionType = UserConnectionType.RequestOutgoing,
-                }
+                current.CreateConnectionWith(opposite, UserConnectionType.Friend)
             );
         }
 
-        return Result.Success();
+        return Result.Success(this, $"vriendschap beeindigd met {friend}");
     }
 
     public override string ToString()

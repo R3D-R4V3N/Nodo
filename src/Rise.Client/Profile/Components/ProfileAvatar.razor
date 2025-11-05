@@ -1,0 +1,26 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<div class="mx-auto grid place-items-center">
+    <div class="relative h-24 w-24 rounded-full ring-2 ring-emerald-400/70 ring-offset-2 ring-offset-white shadow">
+        <img alt="Profielfoto" class="h-full w-full rounded-full object-cover bg-neutral-200" src="@AvatarUrl" />
+        <label class="absolute -right-1 -bottom-1 grid h-7 w-7 place-items-center rounded-full bg-emerald-600 text-white text-[11px] cursor-pointer shadow" for="@_inputId">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="#ffffff" viewBox="0 0 256 256">
+                <path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM51.31,160l90.35-90.35,16.68,16.69L68,176.68ZM48,179.31,76.69,208H48Zm48,25.38L79.31,188l90.35-90.35h0l16.68,16.69Z"></path>
+            </svg>
+        </label>
+        <InputFile id="@_inputId" class="hidden" OnChange="HandleChange" accept="image/*" />
+    </div>
+</div>
+<h2 class="mt-3 text-xl font-semibold">@DisplayName</h2>
+<p class="text-xs text-neutral-500">@MemberSince</p>
+
+@code {
+    [Parameter] public string? AvatarUrl { get; set; }
+    [Parameter] public string DisplayName { get; set; } = string.Empty;
+    [Parameter] public string MemberSince { get; set; } = string.Empty;
+    [Parameter] public EventCallback<InputFileChangeEventArgs> OnAvatarChanged { get; set; }
+
+    private readonly string _inputId = $"avatar-input-{Guid.NewGuid():N}";
+
+    private Task HandleChange(InputFileChangeEventArgs args) => OnAvatarChanged.InvokeAsync(args);
+}

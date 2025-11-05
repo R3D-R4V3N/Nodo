@@ -4,8 +4,8 @@ namespace Rise.Shared.UserConnections;
 public interface IUserConnectionService
 {
     Task<Result<UserConnectionResponse.GetFriends>> GetFriendIndexAsync(QueryRequest.SkipTake request, CancellationToken ctx = default);
-    Task<Result<string>> AddFriendAsync(string targetAccountId, CancellationToken ctx = default);
-    Task<Result<string>> AcceptFriendAsync(string requesterAccountId, CancellationToken ctx = default);
-    Task<Result<UserConnectionResponse.GetSuggestions>> GetSuggestedFriendsAsync(QueryRequest.SkipTake req, CancellationToken ct = default);
-    Task<Result<string>> RejectFriendAsync(string reqRequesterAccountId, CancellationToken ct);
+    Task<Result<UserConnectionResponse.GetSuggestions>> GetSuggestedFriendsAsync(QueryRequest.SkipTake req, CancellationToken ctx = default);
+    Task<Result<UserConnectionResponse.SendFriendRequest>> SendFriendRequestAsync(string targetAccountId, CancellationToken ctx = default);
+    Task<Result<UserConnectionResponse.AcceptFriendRequest>> AcceptFriendRequestAsync(string targetAccountId, CancellationToken ctx = default);
+    Task<Result<UserConnectionResponse.RejectFriendRequest>> RejectFriendRequestAsync(string targetAccountId, CancellationToken ctx = default);
 }

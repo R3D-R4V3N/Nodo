@@ -17,8 +17,8 @@ public class ChatTests
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
 
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
+        user1.SendFriendRequest(user2);
+        user2.AcceptFriendRequest(user1);
 
         var result = Chat.CreateChat(user1, user2);
 
@@ -49,14 +49,14 @@ public class ChatTests
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
 
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
+        user1.SendFriendRequest(user2);
+        user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreateChat(user1, user2);
 
         var user3 = TestData.ValidUser(3);
-        user1.AddFriend(user3);
-        user3.AddFriend(user1);
+        user1.SendFriendRequest(user3);
+        user3.AcceptFriendRequest(user1);
 
         var result = chat.AddUser(user1, user3);
 
@@ -72,8 +72,8 @@ public class ChatTests
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
         
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
+        user1.SendFriendRequest(user2);
+        user2.AcceptFriendRequest(user1);
         
         Chat chat = Chat.CreateChat(user1, user2);
 
@@ -89,8 +89,8 @@ public class ChatTests
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
 
-        user1.AddFriend(user2);
-        user2.AddFriend(user1);
+        user1.SendFriendRequest(user2);
+        user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreateChat(user1, user2);
 

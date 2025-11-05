@@ -68,14 +68,14 @@ public partial class Index
     private void GoBack() => Nav.NavigateTo("/"); // TODO: maybe callback
     private async void AcceptFriendRequest(UserConnectionDto.Get f)
     {
-        ConnectionService.AcceptFriendAsync( f.User.AccountId);
+        ConnectionService.AcceptFriendRequestAsync( f.User.AccountId);
         ApplyFilter();
     }
 
     private void RejectFriendRequest(UserConnectionDto.Get f)
     {
         //_all.Remove(f);
-        ConnectionService.RejectFriendAsync(f.User.AccountId, CancellationToken.None);
+        ConnectionService.RejectFriendRequestAsync(f.User.AccountId, CancellationToken.None);
         ApplyFilter();
     }
     private async void CancelFriendRequest(UserConnectionDto.Get f)
@@ -88,7 +88,7 @@ public partial class Index
     private async void AddFriend(UserConnectionDto.Get f)
     {
         //f.State = UserConnectionTypeDto.Friend;
-        ConnectionService.AddFriendAsync(f.User.AccountId);
+        ConnectionService.SendFriendRequestAsync(f.User.AccountId);
         ApplyFilter();
     }
 
