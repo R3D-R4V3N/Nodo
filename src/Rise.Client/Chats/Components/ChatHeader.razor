@@ -1,7 +1,7 @@
 @using Rise.Shared.Assets
 
 @* Header met terugknop, avatar, titel en alarmknop *@
-<TopBar ShowBackButton="true" OnBack="OnBack" Title="@DisplayName" Subtitle="@StatusText">
+<TopBar Class="text-start" ShowBackButton="true" OnBack="OnBack" Title="@DisplayName" Subtitle="@StatusText">
     <LeadingContent>
         <img src="@AvatarUrl"
              alt="@DisplayName"
