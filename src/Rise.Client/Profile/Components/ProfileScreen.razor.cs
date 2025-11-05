@@ -443,7 +443,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         try
         {
             _isSaving = true;
-            var result = await UserService.UpdateCurrentUserAsync(request);
+            var result = await UserService.UpdateUserAsync(UserState?.User.AccountId, request);
 
             if (result.IsSuccess && result.Value.User is not null)
             {

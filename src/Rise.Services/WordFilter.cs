@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Rise.Shared.Common
+namespace Rise.Services
 {
     public static class WordFilter
     {

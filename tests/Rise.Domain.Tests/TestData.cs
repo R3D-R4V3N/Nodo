@@ -1,4 +1,4 @@
-using Rise.Domain.Chats;
+﻿using Rise.Domain.Chats;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Properties;
@@ -42,7 +42,6 @@ public static class TestData
             Biography = ValidBiography(),
             AvatarUrl = ValidAvatarUrl(),
             BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
-            UserType = UserType.Regular,
             Gender = GenderType.X,
             UserSettings = ValidUserSettings()
         }.WithId(id);
@@ -56,7 +55,6 @@ public static class TestData
             Biography = ValidBiography(),
             AvatarUrl = ValidAvatarUrl(),
             BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-40)),
-            UserType = UserType.Supervisor,
             Gender = GenderType.X,
             UserSettings = ValidUserSettings()
         }.WithId(id);

@@ -24,6 +24,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> opts) :
 {
     public DbSet<Chat> Chats => Set<Chat>();
     public DbSet<Message> Messages => Set<Message>();
+    public DbSet<IdentityUser> IdentityUsers => Set<IdentityUser>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Supervisor> Supervisors => Set<Supervisor>();
     public DbSet<UserConnection> UserConnections => Set<UserConnection>();

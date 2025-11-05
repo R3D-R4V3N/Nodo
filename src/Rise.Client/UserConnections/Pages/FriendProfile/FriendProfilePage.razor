@@ -1,6 +1,7 @@
 @page "/FriendProfilePage/{id:guid}"
 @layout EmptyLayout
 @using Rise.Client.Profile.Models
+@using Rise.Client.State
 @using Rise.Client.UserConnections.Components.FriendProfile
 @using Rise.Shared.Assets
 @using Rise.Shared.Users
@@ -48,7 +49,7 @@ else
 @code {
     [Parameter] public Guid id { get; set; } 
 
-    [CascadingParameter] public UserDto.CurrentUser? CurrentUser { get; set; }
+    [Inject] public UserState UserState { get; set; }
 
     [Inject] private IUserService UserService { get; set; } = default!;
 
@@ -78,6 +79,7 @@ else
         {
             Console.WriteLine("Gebruiker niet gevonden!");
         }
+
         ProfileHobbies = user.User.Hobbies
             .Select(h => new ProfileHobbyModel(h.Hobby.ToString(), h.Name, h.Emoji))
             .ToList();
@@ -87,6 +89,5 @@ else
         {
             Console.WriteLine($"Hobby: {h.Name}, Emoji: {h.Emoji}, Id: {h.Hobby.ToString()}");
         }
-
     }
 }

@@ -7,9 +7,9 @@ namespace Rise.Client.Users;
 public class UserService(HttpClient httpClient) : IUserService
 {
     private readonly HttpClient _http = httpClient;
-    public async Task<Result<UserResponse.CurrentUser>> UpdateCurrentUserAsync(UserRequest.UpdateCurrentUser request, CancellationToken ctx = default)
+    public async Task<Result<UserResponse.CurrentUser>> UpdateUserAsync(string accountId, UserRequest.UpdateCurrentUser request, CancellationToken ctx = default)
     {
-        var response = await _http.PutAsJsonAsync("/api/users/current", request, ctx);
+        var response = await _http.PutAsJsonAsync($"/api/users/{accountId}", request, ctx);
 
         if (!response.IsSuccessStatusCode)
         {

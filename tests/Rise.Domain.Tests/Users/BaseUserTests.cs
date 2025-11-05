@@ -1,6 +1,7 @@
 ﻿using Ardalis.Result;
 using Rise.Domain.Chats;
 using Rise.Domain.Users;
+using Rise.Domain.Users.Properties;
 
 namespace Rise.Domain.Tests.Users;
 public class BaseUserTests
@@ -15,6 +16,7 @@ public class BaseUserTests
         var biography = TestData.ValidBiography();
         var avatarUrl = TestData.ValidAvatarUrl();
         var birthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28));
+        var gender = GenderType.X;
         var userSettings = TestData.ValidUserSettings();
 
         var user = new DummyUser()
@@ -25,6 +27,7 @@ public class BaseUserTests
             Biography = biography,
             AvatarUrl = avatarUrl,
             BirthDay = birthDay,
+            Gender = gender,
             UserSettings = userSettings
         };
 
@@ -34,6 +37,7 @@ public class BaseUserTests
         user.Biography.ShouldBe(biography);
         user.AvatarUrl.ShouldBe(avatarUrl);
         user.BirthDay.ShouldBe(birthDay);
+        user.Gender.ShouldBe(gender);
         user.UserSettings.ShouldBe(userSettings);
     }
 }

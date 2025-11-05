@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rise.Persistence.Configurations.Users;
+namespace Rise.Persistence.Configurations.Users.Connections;
 
-internal class UserConnectionConfiguration : EntityConfiguration<UserConnection>
+internal class ConnectionConfiguration : EntityConfiguration<UserConnection>
 {
     public override void Configure(EntityTypeBuilder<UserConnection> builder)
     {
@@ -23,7 +23,7 @@ internal class UserConnectionConfiguration : EntityConfiguration<UserConnection>
             .IsRequired();
 
         builder.HasOne(c => c.To)
-            .WithMany() 
+            .WithMany()
             .HasForeignKey("ToId")
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();

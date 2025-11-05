@@ -3,6 +3,7 @@ using Rise.Domain.Chats;
 using Rise.Domain.Helper;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Connections;
+using Rise.Domain.Users.Properties;
 
 namespace Rise.Domain.Tests.Users;
 public class UserTests
@@ -16,6 +17,7 @@ public class UserTests
         var biography = TestData.ValidBiography();
         var avatarUrl = TestData.ValidAvatarUrl();
         var birthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28));
+        var gender = GenderType.X;
         var userSettings = TestData.ValidUserSettings();
 
         var user = new User()
@@ -26,6 +28,7 @@ public class UserTests
             Biography = biography,
             AvatarUrl = avatarUrl,
             BirthDay = birthDay,
+            Gender = gender,
             UserSettings = userSettings
         };
 
@@ -35,6 +38,7 @@ public class UserTests
         user.Biography.ShouldBe(biography);
         user.AvatarUrl.ShouldBe(avatarUrl);
         user.BirthDay.ShouldBe(birthDay);
+        user.Gender.ShouldBe(gender);
         user.UserSettings.ShouldBe(userSettings);
     }
 

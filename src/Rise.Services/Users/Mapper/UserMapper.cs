@@ -7,7 +7,7 @@ namespace Rise.Services.Users.Mapper;
 
 internal static class UserMapper
 {
-    public static UserDto.Connection ToConnectionDto(this BaseUser user) =>
+    public static UserDto.Connection ToConnectionDto(this User user) =>
         new UserDto.Connection
         {
             Id = user.Id,
@@ -16,8 +16,7 @@ internal static class UserMapper
             Age = CalculateAge(user.BirthDay),
             AvatarUrl = user.AvatarUrl,
         };
-
-    public static UserDto.CurrentUser ToCurrentUserDto(this BaseUser user, string email = "") =>
+    public static UserDto.CurrentUser ToCurrentUserDto(this User user, string email) =>
         new UserDto.CurrentUser
         {
             Id = user.Id,
@@ -42,7 +41,7 @@ internal static class UserMapper
                 .Select(x => x.Sentence.Value)
                 .ToList(),
         };
-    public static UserDto.ConnectionProfile ToConnectionProfileDto(this ApplicationUser user) =>
+    public static UserDto.ConnectionProfile ToConnectionProfileDto(this User user) =>
         new UserDto.ConnectionProfile
         {
             Id = user.Id,

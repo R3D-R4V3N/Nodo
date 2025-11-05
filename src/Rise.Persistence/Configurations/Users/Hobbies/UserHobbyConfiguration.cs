@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rise.Domain.Users.Hobbys;
 
-namespace Rise.Persistence.Configurations.Users;
+namespace Rise.Persistence.Configurations.Users.Hobbies;
 
 internal sealed class UserHobbyConfiguration : EntityConfiguration<UserHobby>
 {

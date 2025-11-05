@@ -2,12 +2,30 @@ using Ardalis.Result;
 using Rise.Domain.Chats;
 using Rise.Domain.Helper;
 using Rise.Domain.Users.Connections;
+using Rise.Domain.Users.Hobbys;
+using Rise.Domain.Users.Sentiment;
 using Rise.Domain.Users.Settings;
+using System.Collections.Generic;
 
 namespace Rise.Domain.Users;
 
 public class User : BaseUser
 {
+    public const int MAX_SENTIMENTS_PER_TYPE = 5;
+    public const int MAX_HOBBIES = 3;
+
+    // sentiments
+    private readonly List<UserSentiment> _sentiments = [];
+    public IReadOnlyCollection<UserSentiment> Sentiments => _sentiments;
+    public IEnumerable<UserSentiment> Likes => _sentiments
+        .Where(x => x.Type.Equals(SentimentType.Like));
+    public IEnumerable<UserSentiment> Dislikes => _sentiments
+        .Where(x => x.Type.Equals(SentimentType.Dislike));
+
+    // hobbies
+    private readonly HashSet<UserHobby> _hobbies = [];
+    public IReadOnlyCollection<UserHobby> Hobbies => _hobbies;
+
     //// connections
     private readonly HashSet<UserConnection> _connections = [];
     public IReadOnlyCollection<UserConnection> Connections => _connections;
@@ -172,6 +190,56 @@ public class User : BaseUser
         }
 
         return Result.Success(this, $"vriendschap beeindigd met {friend}");
+    }
+
+    public Result UpdateSentiments(IEnumerable<UserSentiment> sentiments)
+    {
+        if (sentiments is null)
+            return Result.Conflict("Gevoelens is null");
+
+        // if performance becomes an issue and you know SentimentType
+        // will be nicely indexed, use stackalloc
+        Dictionary<SentimentType, int> freq = Enum.GetValues<SentimentType>()
+            .ToDictionary(x => x, _ => 0);
+
+        List<UserSentiment> tempLst = [];
+
+        foreach (var sentiment in sentiments)
+        {
+            if (sentiment is null)
+                return Result.Conflict("Gevoelens is null");
+
+            if (tempLst.Contains(sentiment))
+                continue;
+
+            if (++freq[sentiment.Type] > MAX_HOBBIES)
+                return Result.Conflict($"Mag maximaal {MAX_HOBBIES} van een gevoelens type hebben, {sentiment.Type} overschreed dit");
+
+            var hasConflictingSentiment = tempLst
+                .Any(x => x.Type != sentiment.Type
+                    && x.Category == sentiment.Category);
+
+            if (hasConflictingSentiment)
+                return Result.Conflict("Bevat duplicaat category in een andere gevoel");
+
+            tempLst.Add(sentiment);
+        }
+
+        _sentiments.Clear();
+        _sentiments.AddRange(tempLst);
+
+        return Result.Success();
+    }
+
+    public void UpdateHobbies(IEnumerable<UserHobby> hobbies)
+    {
+        Guard.Against.Null(hobbies);
+
+        _hobbies.Clear();
+        foreach (var hobby in hobbies)
+        {
+            _hobbies.Add(Guard.Against.Null(hobby));
+        }
     }
 
     public override string ToString()

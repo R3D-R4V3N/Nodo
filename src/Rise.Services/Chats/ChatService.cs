@@ -29,7 +29,8 @@ public class ChatService(
             return Result.Unauthorized();
         }
 
-        var sender = await _dbContext.Users
+        var sender = await _dbContext
+            .Users
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
 
         if (sender is null)
@@ -64,7 +65,8 @@ public class ChatService(
             return Result.Unauthorized();
         }
 
-        var sender = await _dbContext.Users
+        var sender = await _dbContext
+            .Users
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
 
         if (sender is null)
@@ -100,7 +102,8 @@ public class ChatService(
             return Result.Unauthorized();
         }
 
-        var sender = await _dbContext.Users
+        var sender = await _dbContext
+            .Users
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
 
         if (sender is null)

@@ -18,12 +18,14 @@ public class UserContextService(
     public async Task<Result<UserResponse.CurrentUser>> GetCurrentUserAsync(CancellationToken cancellationToken = default)
     {
         var accountId = _sessionContextProvider.User?.GetUserId();
+
         if (string.IsNullOrWhiteSpace(accountId))
         {
             return Result.Unauthorized();
         }
 
-        var currentUser = await _dbContext.Users
+        var currentUser = await _dbContext
+            .Users
             .Include(u => u.Sentiments)
             .Include(u => u.Hobbies)
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
@@ -33,7 +35,8 @@ public class UserContextService(
             return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
         }
 
-        var email = (await _dbContext.Users
+        var email = (await _dbContext
+            .IdentityUsers
             .SingleOrDefaultAsync(u => u.Id == accountId, cancellationToken)
             )?.Email
             ?? string.Empty;

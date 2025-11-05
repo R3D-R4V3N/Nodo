@@ -130,8 +130,6 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
             .Users
             .Include(u => u.Connections)
                 .ThenInclude(c => c.To)
-            .Include(u => u.Connections)
-                .ThenInclude(c => c.From)
             .SingleOrDefaultAsync(u => u.AccountId == currentUserId, ctx);
 
         // Doelgebruiker ophalen
@@ -139,8 +137,6 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
             .Users
             .Include(u => u.Connections)
                 .ThenInclude(c => c.To)
-            .Include(u => u.Connections)
-                .ThenInclude(c => c.From)
             .SingleOrDefaultAsync(u => u.AccountId == targetAccountId, ctx);
 
         if (currentUser is null || targetUser is null)
@@ -171,8 +167,6 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
             .Users
             .Include(u => u.Connections)
                 .ThenInclude(c => c.To)
-            .Include(u => u.Connections)
-                .ThenInclude(c => c.From)
             .SingleOrDefaultAsync(u => u.AccountId == currentUserId, ctx);
 
         // Doelgebruiker ophalen
@@ -180,8 +174,6 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
             .Users
             .Include(u => u.Connections)
                 .ThenInclude(c => c.To)
-            .Include(u => u.Connections)
-                .ThenInclude(c => c.From)
             .SingleOrDefaultAsync(u => u.AccountId == targetAccountId, ctx);
 
         if (currentUser is null || targetUser is null)
@@ -212,8 +204,6 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
             .Users
             .Include(u => u.Connections)
                 .ThenInclude(c => c.To)
-            .Include(u => u.Connections)
-                .ThenInclude(c => c.From)
             .SingleOrDefaultAsync(u => u.AccountId == currentUserId, ctx);
 
         // Doelgebruiker ophalen
@@ -221,8 +211,6 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
             .Users
             .Include(u => u.Connections)
                 .ThenInclude(c => c.To)
-            .Include(u => u.Connections)
-                .ThenInclude(c => c.From)
             .SingleOrDefaultAsync(u => u.AccountId == targetAccountId, ctx);
 
         if (currentUser is null || targetUser is null)

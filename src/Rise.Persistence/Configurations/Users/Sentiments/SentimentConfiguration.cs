@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rise.Domain.Common;
 using Rise.Domain.Users.Sentiment;
 
-namespace Rise.Persistence.Configurations.Chats;
+namespace Rise.Persistence.Configurations.Users.Sentiments;
 
 internal class SentimentConfiguration : EntityConfiguration<UserSentiment>
 {

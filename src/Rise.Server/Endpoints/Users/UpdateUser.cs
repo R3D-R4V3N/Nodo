@@ -3,17 +3,18 @@ using Rise.Shared.Users;
 
 namespace Rise.Server.Endpoints.Users;
 
-public class UpdateCurrentUser(IUserService userService)
+public class UpdateUser(IUserService userService)
     : Endpoint<UserRequest.UpdateCurrentUser, Result<UserResponse.CurrentUser>>
 {
     public override void Configure()
     {
-        Put("/api/users/current");
+        Put("/api/users/{accountId}");
         Claims(ClaimTypes.NameIdentifier);
     }
 
     public override Task<Result<UserResponse.CurrentUser>> ExecuteAsync(UserRequest.UpdateCurrentUser req, CancellationToken ct)
     {
-        return userService.UpdateCurrentUserAsync(req, ct);
+        var userToChangeAccountId = Route<string>("accountId")!;
+        return userService.UpdateUserAsync(userToChangeAccountId, req, ct);
     }
 }

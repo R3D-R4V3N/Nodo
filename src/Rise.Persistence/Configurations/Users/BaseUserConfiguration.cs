@@ -45,6 +45,8 @@ internal class BaseUserConfiguration : EntityConfiguration<BaseUser>
             .HasMaxLength(AvatarUrl.MAX_LENGTH);
 
         builder.Property(x => x.BirthDay).IsRequired();
+        builder.Property(x => x.Gender)
+            .HasDefaultValue(GenderType.X);
 
         // settings
         builder.OwnsOne(u => u.UserSettings, userSettings =>

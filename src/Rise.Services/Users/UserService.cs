@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Users.Properties;
 using Rise.Persistence;
 using Rise.Services.Identity;
@@ -19,29 +19,22 @@ public class UserService(
 
     public async Task<Result<UserResponse.CurrentUser>> GetUserAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        // if (string.IsNullOrWhiteSpace(accountId))
-        // {
-        //     return Result.Unauthorized();
-        // }
+        if (string.IsNullOrWhiteSpace(accountId))
+        {
+            return Result.Unauthorized();
+        }
 
-        var previous = Console.ForegroundColor;
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("AccountId: " + accountId);
-
-
-        var currentUser = await _dbContext.Users.Include(u => u.Hobbies)
+        var currentUser = await _dbContext
+            .Users
+            .Include(u => u.Hobbies)
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
-
-        Console.WriteLine("Account" + currentUser);
 
         if (currentUser is null)
         {
             return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
         }
 
-        Console.ForegroundColor = previous; // restore
-
-        var email = (await _dbContext.Users
+        var email = (await _dbContext.IdentityUsers
                         .SingleOrDefaultAsync(u => u.Id == accountId, cancellationToken)
                     )?.Email
                     ?? string.Empty;
@@ -52,31 +45,46 @@ public class UserService(
         });
     }
 
-    public async Task<Result<UserResponse.CurrentUser>> UpdateCurrentUserAsync(
+    public async Task<Result<UserResponse.CurrentUser>> UpdateUserAsync(
+        string userToChangeAccountId,
         UserRequest.UpdateCurrentUser request,
         CancellationToken cancellationToken = default)
     {
-        var accountId = _sessionContextProvider.User?.GetUserId();
-        if (string.IsNullOrWhiteSpace(accountId))
+        var changerId = _sessionContextProvider.User?.GetUserId();
+
+        if (string.IsNullOrWhiteSpace(userToChangeAccountId) || string.IsNullOrWhiteSpace(changerId))
         {
             return Result.Unauthorized();
         }
 
-        var currentUser = await _dbContext.ApplicationUsers
+        var userToChange = await _dbContext
+            .Users
             .Include(u => u.Sentiments)
             .Include(u => u.Hobbies)
-            .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+            .SingleOrDefaultAsync(u => u.AccountId == userToChangeAccountId, cancellationToken);
 
-        if (currentUser is null)
+        if (userToChange is null)
         {
             return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
         }
 
-        currentUser.FirstName = FirstName.Create(request.FirstName);
-        currentUser.LastName = LastName.Create(request.LastName);
-        currentUser.Biography = Biography.Create(request.Biography);
-        currentUser.AvatarUrl = AvatarUrl.Create(request.AvatarUrl);
-        currentUser.Gender = request.Gender.ToDomain();
+        if (!userToChangeAccountId.Equals(changerId))
+        {
+            var changer = await _dbContext
+                .Supervisors
+                .SingleOrDefaultAsync(u => u.AccountId == changerId, cancellationToken);
+
+            if (changer is null)
+            {
+                return Result.Unauthorized();
+            }
+        }
+
+        userToChange.FirstName = FirstName.Create(request.FirstName);
+        userToChange.LastName = LastName.Create(request.LastName);
+        userToChange.Biography = Biography.Create(request.Biography);
+        userToChange.AvatarUrl = AvatarUrl.Create(request.AvatarUrl);
+        userToChange.Gender = request.Gender.ToDomain();
 
         // can use IAsyncEnumerable but a pain to work with
         var hobbiesResult = await HobbyMapper.ToDomainAsync(request.Hobbies, _dbContext, cancellationToken);
@@ -92,7 +100,7 @@ public class UserService(
             return Result.Conflict(hobbiesResult.Errors.ToArray());
         }
 
-        currentUser.UpdateHobbies(hobbiesResult.Value);
+        userToChange.UpdateHobbies(hobbiesResult.Value);
 
         var sentimentsResult = await SentimentMapper.ToDomainAsync(request.Sentiments, _dbContext, cancellationToken);
         if (!sentimentsResult.IsSuccess)
@@ -105,7 +113,7 @@ public class UserService(
             return Result.Conflict(sentimentsResult.Errors.ToArray());
         }
 
-        var updateSentimentsResult = currentUser.UpdateSentiments(sentimentsResult.Value);
+        var updateSentimentsResult = userToChange.UpdateSentiments(sentimentsResult.Value);
         if (!updateSentimentsResult.IsSuccess)
         {
             var updateError = updateSentimentsResult.Errors.FirstOrDefault() ?? "Kon de voorkeuren niet bijwerken.";
@@ -114,13 +122,13 @@ public class UserService(
 
         // can also add an update function
         // this is small enough where it doesnt really matter
-        currentUser.UserSettings.RemoveChatTextLines();
+        userToChange.UserSettings.RemoveChatTextLines();
 
         var chatLines = request.DefaultChatLines ?? [];
         foreach (var chatLine in chatLines)
         {
             var censored = WordFilter.Censor(chatLine);
-            var addResult = currentUser.UserSettings.AddChatTextLine(censored);
+            var addResult = userToChange.UserSettings.AddChatTextLine(censored);
             if (!addResult.IsSuccess)
             {
                 if (addResult.ValidationErrors.Any())
@@ -132,7 +140,10 @@ public class UserService(
             }
         }
 
-        var identityUser = await _dbContext.Users.SingleOrDefaultAsync(u => u.Id == accountId, cancellationToken);
+        var identityUser = await _dbContext
+            .IdentityUsers
+            .SingleOrDefaultAsync(u => u.Id == userToChangeAccountId, cancellationToken);
+
         if (identityUser is not null)
         {
             var trimmedEmail = request.Email?.Trim() ?? string.Empty;
@@ -153,7 +164,7 @@ public class UserService(
 
         return Result.Success(new UserResponse.CurrentUser
         {
-            User = UserMapper.ToCurrentUserDto(currentUser, email)
+            User = UserMapper.ToCurrentUserDto(userToChange, email)
         });
     }
 }
