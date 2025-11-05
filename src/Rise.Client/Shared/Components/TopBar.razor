@@ -1,0 +1,53 @@
+@if (UseHeaderElement)
+{
+    <header class="@RootClasses" @attributes="AdditionalAttributes">
+        @if (WrapInnerContent)
+        {
+            <div class="@InnerClasses">
+                @ChildContent
+            </div>
+        }
+        else
+        {
+            @ChildContent
+        }
+    </header>
+}
+else
+{
+    <div class="@RootClasses" @attributes="AdditionalAttributes">
+        @if (WrapInnerContent)
+        {
+            <div class="@InnerClasses">
+                @ChildContent
+            </div>
+        }
+        else
+        {
+            @ChildContent
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? InnerClass { get; set; }
+    [Parameter] public bool UseHeaderElement { get; set; }
+    [Parameter] public bool WrapInnerContent { get; set; } = true;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string RootClasses => string.Join(" ", new[]
+    {
+        "bg-[#127646]",
+        "text-white",
+        "rounded-b-3xl",
+        Class
+    }.Where(static value => !string.IsNullOrWhiteSpace(value)));
+
+    private string InnerClasses => string.IsNullOrWhiteSpace(InnerClass)
+        ? "px-4 py-4"
+        : InnerClass!;
+}

@@ -12,13 +12,13 @@
 
 <div class="min-h-dvh bg-neutral-100 overflow-x-hidden">
   <!-- Header -->
-  <header class="bg-[#127646] text-white px-4 sm:px-6 lg:px-8 pt-6 pb-6 sm:pb-7 rounded-b-3xl shadow">
+  <TopBar UseHeaderElement="true" Class="shadow" InnerClass="px-4 sm:px-6 lg:px-8 pt-6 pb-6 sm:pb-7 space-y-4 sm:space-y-5">
     <h1 class="text-2xl sm:text-3xl text-center lg:text-4xl font-semibold leading-tight">
       Goeiemorgen @UserState.User?.Name
     </h1>
 
     <!-- Search -->
-    <div class="mt-4 sm:mt-5 bg-white rounded-full flex items-center gap-2 px-4 py-3 sm:py-3.5 text-neutral-700 shadow">
+    <div class="bg-white rounded-full flex items-center gap-2 px-4 py-3 sm:py-3.5 text-neutral-700 shadow">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 opacity-70" fill="currentColor" viewBox="0 0 256 256">
         <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
       </svg>
@@ -28,7 +28,7 @@
              @bind="_searchTerm"
              @bind:event="oninput" />
     </div>
-  </header>
+  </TopBar>
 
   <!-- Content -->
   <main class="mx-auto w-full max-w-screen-sm sm:max-w-screen-md lg:max-w-2xl px-4 sm:px-6 lg:px-8">
