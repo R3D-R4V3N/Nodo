@@ -1,4 +1,4 @@
-﻿using Rise.Shared.Common;
+using Rise.Shared.Common;
 using Rise.Shared.UserConnections;
 using System.Net.Http.Json;
 
@@ -73,6 +73,23 @@ public class UserConnectionService(HttpClient httpClient) : IUserConnectionServi
     {
         var result = await httpClient
             .GetFromJsonAsync<Result<UserConnectionResponse.GetSuggestions>>("/api/connections/friends/suggested", cancellationToken: ctx);
+        return result!;
+    }
+
+    public async Task<Result<UserConnectionResponse.CancelFriendRequest>> CancelFriendRequest(string targetAccountId, CancellationToken ct = default)
+    {
+        var response = await httpClient.DeleteAsync($"/api/connections/cancel?targetAccountId={targetAccountId}", ct);
+
+        //var response = await httpClient.DeleteAsync(requestUrl, ct);
+
+        // Controleer of de API een geldige response gaf
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(ct);
+            return Result.Error($"Fout bij het annuleren van vriendschap: {error}");
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<Result<UserConnectionResponse.CancelFriendRequest>>(cancellationToken: ct);
         return result!;
     }
 }

@@ -329,14 +329,34 @@ public class UserTests
     }
 
     [Fact]
-    public void RemoveFriendRequest_ShouldRemoveFromBothUsers()
+    public void RemoveFriend_ShouldRemoveFromBothUsers()
     {
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
 
-        user1.AcceptFriendRequest(user2);
+        user1.SendFriendRequest(user2);
+        user2.AcceptFriendRequest(user1);
 
-        var result = user1.RemoveFriendRequest(user2);
+        user1.Friends.ShouldNotBeEmpty();
+        user2.Friends.ShouldNotBeEmpty();
+
+        var result = user1.RemoveFriend(user2);
+
+        result.Status.ShouldBe(ResultStatus.Ok);
+        user1.Friends.ShouldBeEmpty();
+        user2.Friends.ShouldBeEmpty();
+    }
+
+
+    [Fact]
+    public void CancelFriendRequest_ShouldRemoveFromBothUsers()
+    {
+        var user1 = TestData.ValidUser(1);
+        var user2 = TestData.ValidUser(2);
+
+        user1.SendFriendRequest(user2);
+
+        var result = user1.CancelFriendRequest(user2);
 
         result.Status.ShouldBe(ResultStatus.Ok);
         user1.FriendRequests.ShouldBeEmpty();
@@ -344,19 +364,112 @@ public class UserTests
     }
 
     [Fact]
-    public void RemoveFriend_ShouldRemoveFromBothUsers()
+    public void CancelFriendRequest_NotFound_NoConnectionToCancel()
     {
         var user1 = TestData.ValidUser(1);
         var user2 = TestData.ValidUser(2);
 
-        user1.AcceptFriendRequest(user2);
+        var result = user1.CancelFriendRequest(user2);
+
+        result.Status.ShouldBe(ResultStatus.NotFound);
+        result.Errors.ShouldBe([$"Er is geen verzoek naar {user2} om te annuleren."]);
+        user1.FriendRequests.ShouldBeEmpty();
+        user2.FriendRequests.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void CancelFriendRequest_ShouldConflict_UsersAreFriends()
+    {
+        var user1 = TestData.ValidUser(1);
+        var user2 = TestData.ValidUser(2);
+
+        user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1); 
 
-        var result = user1.RemoveFriend(user2);
+        var result = user1.CancelFriendRequest(user2);
+
+        result.Status.ShouldBe(ResultStatus.Conflict);
+        result.Errors.ShouldBe([$"{user1} is al bevriend met {user2} en kan geen verzoek annuleren."]);
+        user1.Friends.ShouldNotBeEmpty();
+        user2.Friends.ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public void CancelFriendRequest_ShouldConflict_ConnectionButNoOutgoingConnection()
+    {
+        var user1 = TestData.ValidUser(1);
+        var user2 = TestData.ValidUser(2);
+
+        user2.SendFriendRequest(user1);
+
+        var result = user1.CancelFriendRequest(user2);
+
+        result.Status.ShouldBe(ResultStatus.Conflict);
+        result.Errors.ShouldBe([$"Er is geen uitgaand verzoek van {user1} naar {user2} om te annuleren."]);
+        user1.FriendRequests.ShouldNotBeEmpty();
+        user2.FriendRequests.ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public void RejectFriendRequest_ShouldRemoveFromBothUsers()
+    {
+        var user1 = TestData.ValidUser(1);
+        var user2 = TestData.ValidUser(2);
+
+        user1.SendFriendRequest(user2);
+
+        var result = user2.RejectFriendRequest(user1);
 
         result.Status.ShouldBe(ResultStatus.Ok);
-        user1.Friends.ShouldBeEmpty();
-        user2.Friends.ShouldBeEmpty();
+        user1.FriendRequests.ShouldBeEmpty();
+        user2.FriendRequests.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void RejectFriendRequest_NotFound_NoConnectionToReject()
+    {
+        var user1 = TestData.ValidUser(1);
+        var user2 = TestData.ValidUser(2);
+
+        var result = user1.RejectFriendRequest(user2);
+
+        result.Status.ShouldBe(ResultStatus.NotFound);
+        result.Errors.ShouldBe([$"Er is geen verzoek van {user2} om te weigeren"]);
+        user1.FriendRequests.ShouldBeEmpty();
+        user2.FriendRequests.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void RejectFriendRequest_ShouldConflict_UsersAreFriends()
+    {
+        var user1 = TestData.ValidUser(1);
+        var user2 = TestData.ValidUser(2);
+
+        user1.SendFriendRequest(user2);
+        user2.AcceptFriendRequest(user1);
+
+        var result = user1.RejectFriendRequest(user2);
+
+        result.Status.ShouldBe(ResultStatus.Conflict);
+        result.Errors.ShouldBe([$"{user1} is al bevriend met {user2} en kan geen verzoek weigeren."]);
+        user1.Friends.ShouldNotBeEmpty();
+        user2.Friends.ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public void RejectFriendRequest_ShouldConflict_ConnectionButNoIncomingConnection()
+    {
+        var user1 = TestData.ValidUser(1);
+        var user2 = TestData.ValidUser(2);
+
+        user1.SendFriendRequest(user2);
+
+        var result = user1.RejectFriendRequest(user2);
+
+        result.Status.ShouldBe(ResultStatus.Conflict);
+        result.Errors.ShouldBe([$"Er is geen uitgaand verzoek van {user1} naar {user2} om te weigeren."]);
+        user1.FriendRequests.ShouldNotBeEmpty();
+        user2.FriendRequests.ShouldNotBeEmpty();
     }
 
     [Fact]

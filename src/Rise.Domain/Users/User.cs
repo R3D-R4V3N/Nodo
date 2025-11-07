@@ -27,7 +27,7 @@ public class User : BaseUser
     public IReadOnlyCollection<UserHobby> Hobbies => _hobbies;
 
     //// connections
-    private readonly HashSet<UserConnection> _connections = [];
+    private readonly List<UserConnection> _connections = [];
     public IReadOnlyCollection<UserConnection> Connections => _connections;
     public IEnumerable<UserConnection> Friends => _connections
         .Where(x => x.ConnectionType is UserConnectionType.Friend);
@@ -151,28 +151,6 @@ public class User : BaseUser
         return Result.Success(this, $"{this} is nu bevriend met {target}");
     }
 
-    public Result<User> RemoveFriendRequest(User friend)
-    {
-        Span<User> span =
-        [
-            this, friend
-        ];
-
-        for (int i = 0; i < span.Length; i++)
-        {
-            var current = span[i];
-            var opposite = span[(i + 1) % span.Length];
-            current._connections.Remove(
-                current.CreateConnectionWith(opposite, UserConnectionType.RequestIncoming)
-            );
-            current._connections.Remove(
-                current.CreateConnectionWith(opposite, UserConnectionType.RequestOutgoing)
-            );
-        }
-
-        return Result.Success(this, $"vriendschap verzoek verwijderd van {friend}");
-    }
-
     public Result<User> RemoveFriend(User friend)
     {
         Span<User> span =
@@ -190,6 +168,85 @@ public class User : BaseUser
         }
 
         return Result.Success(this, $"vriendschap beeindigd met {friend}");
+    }
+    
+    public Result<User> CancelFriendRequest(User target)
+    {
+        UserConnection? conn = GetConnection(target);
+
+        if (conn is null)
+        {
+            return Result.NotFound($"Er is geen verzoek naar {target} om te annuleren.");
+        }
+
+        if (conn.ConnectionType.Equals(UserConnectionType.Friend))
+        {
+            return Result.Conflict($"{this} is al bevriend met {target} en kan geen verzoek annuleren.");
+        }
+
+        if (!conn.ConnectionType.Equals(UserConnectionType.RequestOutgoing))
+        {
+            return Result.Conflict($"Er is geen uitgaand verzoek van {this} naar {target} om te annuleren.");
+        }
+
+        // Beide kanten verwijderen (net zoals bij RemoveFriendRequest)
+        Span<User> span =
+        [
+            this, target
+        ];
+
+        for (int i = 0; i < span.Length; i++)
+        {
+            var current = span[i];
+            var opposite = span[(i + 1) % span.Length];
+            current._connections.Remove(
+                current.CreateConnectionWith(opposite, UserConnectionType.RequestIncoming)
+            );
+            current._connections.Remove(
+                current.CreateConnectionWith(opposite, UserConnectionType.RequestOutgoing)
+            );
+        }
+
+        return Result.Success(this, $"{this} heeft het vriendschapsverzoek naar {target} geannuleerd");
+    }
+
+    public Result<User> RejectFriendRequest(User targetUser)
+    {
+        UserConnection? conn = GetConnection(targetUser);
+
+        if (conn is null)
+        {
+            return Result.NotFound($"Er is geen verzoek van {targetUser} om te weigeren");
+        }
+
+        if (conn.ConnectionType.Equals(UserConnectionType.Friend))
+        {
+            return Result.Conflict($"{this} is al bevriend met {targetUser} en kan geen verzoek weigeren.");
+        }
+
+        if (!conn.ConnectionType.Equals(UserConnectionType.RequestIncoming))
+        {
+            return Result.Conflict($"Er is geen uitgaand verzoek van {targetUser} naar {this} om te weigeren.");
+        }
+
+        Span<User> span =
+        [
+            this, targetUser
+        ];
+
+        for (int i = 0; i < span.Length; i++)
+        {
+            var current = span[i];
+            var opposite = span[(i + 1) % span.Length];
+            current._connections.Remove(
+                current.CreateConnectionWith(opposite, UserConnectionType.RequestIncoming)
+            );
+            current._connections.Remove(
+                current.CreateConnectionWith(opposite, UserConnectionType.RequestOutgoing)
+            );
+        }
+
+        return Result.Success(this, $"{this} heeft het vriendschapsverzoek van {targetUser} geweigerd");
     }
 
     public Result UpdateSentiments(IEnumerable<UserSentiment> sentiments)
@@ -212,8 +269,8 @@ public class User : BaseUser
             if (tempLst.Contains(sentiment))
                 continue;
 
-            if (++freq[sentiment.Type] > MAX_HOBBIES)
-                return Result.Conflict($"Mag maximaal {MAX_HOBBIES} van een gevoelens type hebben, {sentiment.Type} overschreed dit");
+            if (++freq[sentiment.Type] > MAX_SENTIMENTS_PER_TYPE)
+                return Result.Conflict($"Mag maximaal {MAX_SENTIMENTS_PER_TYPE} van een gevoelens type hebben, {sentiment.Type} overschreed dit");
 
             var hasConflictingSentiment = tempLst
                 .Any(x => x.Type != sentiment.Type
@@ -231,15 +288,27 @@ public class User : BaseUser
         return Result.Success();
     }
 
-    public void UpdateHobbies(IEnumerable<UserHobby> hobbies)
+    public Result UpdateHobbies(IEnumerable<UserHobby> hobbies)
     {
-        Guard.Against.Null(hobbies);
+        if (hobbies is null)
+            return Result.Conflict("Gevoelens is null");
+
+        var hobbiesLst = hobbies as List<UserHobby> ?? hobbies.ToList();
+
+        if (hobbiesLst.Count > MAX_HOBBIES)
+            return Result.Conflict($"Mag maximaal {MAX_HOBBIES} hobbies hebben.");
 
         _hobbies.Clear();
-        foreach (var hobby in hobbies)
+
+        foreach (var hobby in hobbiesLst)
         {
-            _hobbies.Add(Guard.Against.Null(hobby));
+            if (hobby is null)
+                return Result.Conflict("Hobby is null");
+
+            _hobbies.Add(hobby);
         }
+
+        return Result.Success();
     }
 
     public override string ToString()

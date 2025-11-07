@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR.Client;
 using Rise.Client.State;
 using Rise.Shared.Assets;
 using Rise.Shared.Chats;
@@ -19,6 +20,9 @@ public partial class Homepage
     private bool _isLoading = true;
     private string? _loadError;
     private string? _searchTerm;
+    
+    private HubConnection? _hubConnection;
+    private readonly HashSet<string> _onlineUsers = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -34,7 +38,39 @@ public partial class Homepage
         }
 
         _isLoading = false;
+        
+        await InitializeHubAsync();
+
     }
+    
+    private async Task InitializeHubAsync()
+    {
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        // Wanneer iemand online of offline gaat
+        _hubConnection.On<string, bool>("UserStatusChanged", (userId, isOnline) =>
+        {
+            if (isOnline)
+                _onlineUsers.Add(userId);
+            else
+                _onlineUsers.Remove(userId);
+
+            InvokeAsync(StateHasChanged); // UI updaten
+        });
+
+        await _hubConnection.StartAsync();
+
+        // Vraag de huidige online users op
+        var onlineNow = await _hubConnection.InvokeAsync<List<string>>("GetOnlineUsers");
+        foreach (var id in onlineNow)
+            _onlineUsers.Add(id);
+
+        StateHasChanged();
+    }
+
 
     private void NavigateToChat(ChatDto.GetChats chat) 
         => NavigationManager.NavigateTo($"/chat/{chat.ChatId}");
@@ -112,4 +148,5 @@ public partial class Homepage
             NavigationManager.NavigateTo($"/FriendProfilePage/{accountId}");
         }
     }
+    
 }

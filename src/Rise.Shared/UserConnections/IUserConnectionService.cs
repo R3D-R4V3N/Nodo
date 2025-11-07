@@ -8,4 +8,5 @@ public interface IUserConnectionService
     Task<Result<UserConnectionResponse.SendFriendRequest>> SendFriendRequestAsync(string targetAccountId, CancellationToken ctx = default);
     Task<Result<UserConnectionResponse.AcceptFriendRequest>> AcceptFriendRequestAsync(string targetAccountId, CancellationToken ctx = default);
     Task<Result<UserConnectionResponse.RejectFriendRequest>> RejectFriendRequestAsync(string targetAccountId, CancellationToken ctx = default);
+    Task<Result<UserConnectionResponse.CancelFriendRequest>> CancelFriendRequest(string targetAccountId, CancellationToken ct);
 }

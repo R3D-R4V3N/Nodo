@@ -24,6 +24,11 @@
     mask-repeat: no-repeat;
     mask-size: cover;
 }
+/* test class */
+.test-red {
+    @apply bg-testRed w-20 h-20;
+}
+
 
 #blazor-error-ui {
     color-scheme: light only;
