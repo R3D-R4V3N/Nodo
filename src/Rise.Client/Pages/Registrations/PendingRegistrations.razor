@@ -49,7 +49,7 @@
                             <div class="flex w-full flex-col gap-3 md:w-60">
                                 <label class="text-xs font-medium uppercase tracking-wide text-neutral-500">Begeleider</label>
                                 <select class="rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-700 focus:border-[#0B6532] focus:outline-none focus:ring-1 focus:ring-[#0B6532]"
-                                        @bind-Value="_selectedSupervisors[request.Id]"
+                                        @bind="_selectedSupervisors[request.Id]"
                                         disabled="@(request.Supervisors.Count == 0 || isProcessing)">
                                     <option value="" disabled>Kies een begeleider</option>
                                     @foreach (var supervisor in request.Supervisors)
