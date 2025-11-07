@@ -1,12 +1,15 @@
+@using Rise.Shared.Organizations
+
 <EditForm class="space-y-4" Model="Model" OnValidSubmit="OnSubmit">
     <FluentValidationValidator />
 
     <div>
         <label for="register-name" class="block text-sm font-medium text-[#04320C]">Volledige naam</label>
         <InputText id="register-name"
-                   @bind-Value="FullName"
+                   @bind-Value="Model.FullName"
                    placeholder="Jouw naam"
                    class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1" />
+        <ValidationMessage For="() => Model.FullName" class="mt-2 block text-sm font-medium text-red-600" />
     </div>
 
     <div>
@@ -20,7 +23,7 @@
     </div>
 
     <div class="flex space-x-3">
-        <div>
+        <div class="flex-1">
             <label for="register-password" class="block text-sm font-medium text-[#04320C]">Wachtwoord</label>
             <InputText id="register-password"
                        @bind-Value="Model.Password"
@@ -31,7 +34,7 @@
             <ValidationMessage For="() => Model.Password" class="mt-2 block text-sm font-medium text-red-600" />
         </div>
 
-        <div>
+        <div class="flex-1">
             <label for="register-confirm-password" class="block text-sm font-medium text-[#04320C]">Bevestig wachtwoord</label>
             <InputText id="register-confirm-password"
                        @bind-Value="Model.ConfirmPassword"
@@ -46,17 +49,26 @@
     <div>
         <label for="register-organization" class="block text-sm font-medium text-[#04320C]">Organisatie</label>
         <select id="register-organization"
-                @bind="SelectedOrganization"
-                class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1">
+                @bind-Value="Model.OrganizationId"
+                class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1"
+                disabled="@(IsProcessing || Organizations.Count == 0)">
             <option value="" disabled>Kies een organisatie</option>
-            <option value="org1">Organisatie 1</option>
-            <option value="org2">Organisatie 2</option>
-            <option value="org3">Organisatie 3</option>
+            @foreach (var organization in Organizations)
+            {
+                <option value="@organization.Id">@organization.Name</option>
+            }
         </select>
+        @if (Organizations.Count == 0)
+        {
+            <p class="mt-2 text-sm text-red-600">Er zijn momenteel geen organisaties beschikbaar.</p>
+        }
+        <ValidationMessage For="() => Model.OrganizationId" class="mt-2 block text-sm font-medium text-red-600" />
     </div>
 
-    <button type="submit" class="w-full rounded-full bg-[#0B6532] py-3 text-lg font-semibold text-white shadow-md transition hover:bg-[#0a572b]">
-        Registreer
+    <button type="submit"
+            class="w-full rounded-full bg-[#0B6532] py-3 text-lg font-semibold text-white shadow-md transition hover:bg-[#0a572b] disabled:cursor-not-allowed disabled:bg-[#9fc9b3]"
+            disabled="@IsSubmitDisabled">
+        @(IsProcessing ? "Aan het versturen..." : "Registreer")
     </button>
 
     <a href="/login" class="inline-flex w-full items-center justify-center rounded-full border-2 border-[#0B6532] py-3 text-lg font-semibold text-[#0B6532] bg-white transition hover:bg-[#e8f5ec]">
@@ -71,7 +83,18 @@
     [Parameter]
     public EventCallback OnSubmit { get; set; }
 
-    private string FullName { get; set; } = string.Empty;
+    [Parameter]
+    public IReadOnlyList<OrganizationDto.Summary> Organizations { get; set; } = [];
 
-    private string SelectedOrganization { get; set; } = string.Empty;
+    [Parameter]
+    public bool IsProcessing { get; set; }
+
+    private bool IsSubmitDisabled => IsProcessing
+        || string.IsNullOrWhiteSpace(Model.FullName)
+        || string.IsNullOrWhiteSpace(Model.Email)
+        || string.IsNullOrWhiteSpace(Model.Password)
+        || string.IsNullOrWhiteSpace(Model.ConfirmPassword)
+        || !string.Equals(Model.Password, Model.ConfirmPassword, StringComparison.Ordinal)
+        || Model.OrganizationId is null or <= 0
+        || Organizations.Count == 0;
 }

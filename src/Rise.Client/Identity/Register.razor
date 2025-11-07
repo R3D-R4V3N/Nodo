@@ -29,8 +29,8 @@
                 @if (_result?.IsSuccess == true)
                 {
                     <div class="space-y-4 rounded-3xl bg-white/70 p-6 text-center shadow-xl backdrop-blur">
-                        <p class="text-lg font-semibold text-[#04320C]">Je registratie is geslaagd!</p>
-                        <p class="text-sm text-zinc-600">Je kan nu inloggen om verder te gaan.</p>
+                        <p class="text-lg font-semibold text-[#04320C]">Je aanvraag is verstuurd!</p>
+                        <p class="text-sm text-zinc-600">Een begeleider bekijkt je registratie en keurt deze goed voordat je kan inloggen.</p>
                         <a href="/login" class="inline-flex w-full items-center justify-center rounded-full bg-[#0B6532] py-3 text-lg font-semibold text-white shadow-md transition hover:bg-[#0a572b]">
                             Ga naar login
                         </a>
@@ -39,7 +39,16 @@
                 else
                 {
                     <AuthErrorList Errors="_result?.Errors as IReadOnlyCollection<string>" />
-                    <RegisterForm Model="Model" OnSubmit="RegisterUserAsync" />
+                    @if (!string.IsNullOrEmpty(_loadError))
+                    {
+                        <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            @_loadError
+                        </div>
+                    }
+                    <RegisterForm Model="Model"
+                                  OnSubmit="RegisterUserAsync"
+                                  Organizations="_organizations"
+                                  IsProcessing="_isSubmitting" />
                 }
             </ChildContent>
         </AuthLayout>

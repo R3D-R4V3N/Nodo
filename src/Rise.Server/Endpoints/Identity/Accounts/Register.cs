@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Rise.Domain.Registrations;
+using Rise.Persistence;
 using Rise.Shared.Identity.Accounts;
 
 namespace Rise.Server.Endpoints.Identity.Accounts;
@@ -8,8 +11,12 @@ namespace Rise.Server.Endpoints.Identity.Accounts;
 /// See https://fast-endpoints.com/
 /// </summary>
 /// <param name="userManager"></param>
-/// <param name="userStore"></param>
-public class Register(UserManager<IdentityUser> userManager, IUserStore<IdentityUser> userStore) : Endpoint<AccountRequest.Register, Result>
+/// <param name="dbContext"></param>
+/// <param name="passwordHasher"></param>
+public class Register(
+    UserManager<IdentityUser> userManager,
+    ApplicationDbContext dbContext,
+    IPasswordHasher<IdentityUser> passwordHasher) : Endpoint<AccountRequest.Register, Result>
 {
     public override void Configure()
     {
@@ -20,30 +27,56 @@ public class Register(UserManager<IdentityUser> userManager, IUserStore<Identity
 
     public override async Task<Result> ExecuteAsync(AccountRequest.Register req, CancellationToken ctx)
     {
-        if (!userManager.SupportsUserEmail)
+        if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.Password))
         {
-            return Result.CriticalError("Requires a user store with email support.");
+            return Result.Invalid(new ValidationError(nameof(req.Email), "Ongeldige gegevens."));
         }
-        var emailStore = (IUserEmailStore<IdentityUser>)userStore;
-        var user = new IdentityUser();
-        await userStore.SetUserNameAsync(user, req.Email, CancellationToken.None);
-        await emailStore.SetEmailAsync(user, req.Email, CancellationToken.None);
-        var result = await userManager.CreateAsync(user, req.Password!);
-        
-        if (!result.Succeeded)
+
+        var normalizedEmail = userManager.NormalizeEmail(req.Email);
+
+        if (string.IsNullOrWhiteSpace(normalizedEmail))
         {
-            return Result.Error(result.Errors.First().Description);
+            return Result.Invalid(new ValidationError(nameof(req.Email), "Ongeldig e-mailadres."));
         }
-        
-        // You can do more stuff when injecting a DbContext and create user stuff for example:
-        // dbContext.Technicians.Add(new Technician("Fname", "Lname", user.Id));
-        // or assinging a specific role etc using the RoleManager<IdentityUser> (inject it in the primary constructor).
 
-        
-        // You can send a confirmation email by using a SMTP server or anything in the like. 
-        // await SendConfirmationEmailAsync(user, userManager, context, email); or do something that matters
+        if (await userManager.FindByEmailAsync(req.Email) is not null)
+        {
+            return Result.Conflict("Er bestaat al een account met dit e-mailadres.");
+        }
 
-        return Result.Success();
+        var hasPendingRequest = await dbContext.RegistrationRequests
+            .AnyAsync(r => r.NormalizedEmail == normalizedEmail && r.Status == RegistrationStatus.Pending, ctx);
+
+        if (hasPendingRequest)
+        {
+            return Result.Conflict("Er is al een lopende registratieaanvraag voor dit e-mailadres.");
+        }
+
+        var organization = await dbContext.Organizations
+            .SingleOrDefaultAsync(o => o.Id == req.OrganizationId, ctx);
+
+        if (organization is null)
+        {
+            return Result.Invalid(new ValidationError(nameof(req.OrganizationId), "Ongeldige organisatie geselecteerd."));
+        }
+
+        var passwordUser = new IdentityUser { UserName = req.Email, Email = req.Email };
+        var hashedPassword = passwordHasher.HashPassword(passwordUser, req.Password);
+
+        var registration = RegistrationRequest.Create(
+            req.Email,
+            normalizedEmail,
+            req.FullName!,
+            hashedPassword,
+            organization);
+
+        dbContext.RegistrationRequests.Add(registration);
+        await dbContext.SaveChangesAsync(ctx);
+
+        var result = Result.Success();
+        result.SuccessMessage = "Je aanvraag is ingediend en wacht op goedkeuring door een begeleider.";
+        return result;
     }
-    
+
 }
+using Ardalis.Result;

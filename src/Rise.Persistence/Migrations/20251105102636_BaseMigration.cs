@@ -16,6 +16,26 @@ namespace Rise.Persistence.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "Organizations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Description = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Organizations", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "BaseUsers",
                 columns: table => new
                 {
@@ -33,6 +53,7 @@ namespace Rise.Persistence.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     BirthDay = table.Column<DateOnly>(type: "date", nullable: false),
                     Gender = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    OrganizationId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
                     IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: false)
@@ -40,6 +61,12 @@ namespace Rise.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_BaseUsers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BaseUsers_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -183,6 +210,55 @@ namespace Rise.Persistence.Migrations
                         principalTable: "BaseUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "RegistrationRequests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Email = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    NormalizedEmail = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    FullName = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    PasswordHash = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Status = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    OrganizationId = table.Column<int>(type: "int", nullable: false),
+                    AssignedSupervisorId = table.Column<int>(type: "int", nullable: true),
+                    ApprovedBySupervisorId = table.Column<int>(type: "int", nullable: true),
+                    ApprovedAt = table.Column<DateTime>(type: "datetime", nullable: true),
+                    DeniedReason = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RegistrationRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RegistrationRequests_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RegistrationRequests_Supervisors_ApprovedBySupervisorId",
+                        column: x => x.ApprovedBySupervisorId,
+                        principalTable: "Supervisors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RegistrationRequests_Supervisors_AssignedSupervisorId",
+                        column: x => x.AssignedSupervisorId,
+                        principalTable: "Supervisors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -513,6 +589,11 @@ namespace Rise.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_BaseUsers_OrganizationId",
+                table: "BaseUsers",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Hobbies_Hobby",
                 table: "Hobbies",
                 column: "Hobby",
@@ -564,6 +645,27 @@ namespace Rise.Persistence.Migrations
                 name: "IX_Message_SenderId",
                 table: "Message",
                 column: "SenderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RegistrationRequests_ApprovedBySupervisorId",
+                table: "RegistrationRequests",
+                column: "ApprovedBySupervisorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RegistrationRequests_AssignedSupervisorId",
+                table: "RegistrationRequests",
+                column: "AssignedSupervisorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RegistrationRequests_NormalizedEmail",
+                table: "RegistrationRequests",
+                column: "NormalizedEmail",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RegistrationRequests_OrganizationId",
+                table: "RegistrationRequests",
+                column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sentiments_Type_Category",
@@ -624,6 +726,9 @@ namespace Rise.Persistence.Migrations
                 name: "Message");
 
             migrationBuilder.DropTable(
+                name: "RegistrationRequests");
+
+            migrationBuilder.DropTable(
                 name: "Supervisors");
 
             migrationBuilder.DropTable(
@@ -661,6 +766,9 @@ namespace Rise.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "BaseUsers");
+
+            migrationBuilder.DropTable(
+                name: "Organizations");
         }
     }
 }

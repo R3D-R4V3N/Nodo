@@ -21,9 +21,14 @@ internal class UserConfiguration : EntityConfiguration<User>
         builder.Ignore(u => u.FriendRequests);
         builder.Ignore(u => u.BlockedUsers);
 
+        builder.HasOne(u => u.Organization)
+            .WithMany()
+            .HasForeignKey(u => u.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasMany(u => u.Connections)
-            .WithOne(c => c.From) 
-            .HasForeignKey("FromId") 
+            .WithOne(c => c.From)
+            .HasForeignKey("FromId")
             .OnDelete(DeleteBehavior.Restrict);
 
         // sentiments

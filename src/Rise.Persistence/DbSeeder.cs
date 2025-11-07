@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
+using Rise.Domain.Organizations;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Hobbys;
@@ -29,6 +30,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         await RolesAsync();
         await SentimentsAsync();
         await HobbiesAsync();
+        await OrganizationsAsync();
         await UsersAsync();
         await ConnectionsAsync();
         await ChatsAsync();
@@ -104,6 +106,24 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         await dbContext.SaveChangesAsync();
     }
 
+    private async Task OrganizationsAsync()
+    {
+        if (dbContext.Organizations.Any())
+        {
+            return;
+        }
+
+        var organizations = new List<Organization>
+        {
+            new("Nodo Centrum", "Ondersteuning vanuit het centrale team."),
+            new("Community Noord", "Samen sterker in regio Noord."),
+            new("Community Zuid", "Creatieve ontmoetingsplek voor iedereen."),
+        };
+
+        dbContext.Organizations.AddRange(organizations);
+        await dbContext.SaveChangesAsync();
+    }
+
     private async Task UsersAsync()
     {
         if (dbContext.Users.Any())
@@ -112,6 +132,18 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         }
 
         await dbContext.Roles.ToListAsync();
+
+        var organizationsByName = await dbContext.Organizations
+            .ToDictionaryAsync(o => o.Name, StringComparer.OrdinalIgnoreCase);
+
+        Organization GetOrganization(string name)
+            => organizationsByName.TryGetValue(name, out var organization)
+                ? organization
+                : throw new InvalidOperationException($"Organisatie '{name}' werd niet gevonden.");
+
+        var nodoCentrum = GetOrganization("Nodo Centrum");
+        var communityNoord = GetOrganization("Community Noord");
+        var communityZuid = GetOrganization("Community Zuid");
 
         IEnumerable<UserSentiment> CreateSentiments()
         {
@@ -447,6 +479,37 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     }
                 }),
         };
+
+        var organizationAssignments = new Dictionary<string, Organization>(StringComparer.OrdinalIgnoreCase)
+        {
+            [supervisor.Email!] = nodoCentrum,
+            [userAccount1.Email!] = nodoCentrum,
+            [userAccount2.Email!] = nodoCentrum,
+            [supervisorEmma.Email!] = communityNoord,
+            [supervisorJonas.Email!] = communityNoord,
+            [supervisorElla.Email!] = communityZuid,
+            [chatterNoor.Email!] = nodoCentrum,
+            [chatterMilan.Email!] = nodoCentrum,
+            [chatterLina.Email!] = nodoCentrum,
+            [chatterKyandro.Email!] = nodoCentrum,
+            [chatterJasper.Email!] = communityZuid,
+            [chatterBjorn.Email!] = communityNoord,
+            [chatterThibo.Email!] = communityNoord,
+            [chatterSaar.Email!] = communityNoord,
+            [chatterYassin.Email!] = communityNoord,
+            [chatterLotte.Email!] = communityZuid,
+            [chatterAmina.Email!] = communityZuid,
+        };
+
+        foreach (var account in accounts)
+        {
+            if (account.Profile is BaseUser profile &&
+                account.Identity.Email is { } email &&
+                organizationAssignments.TryGetValue(email, out var organization))
+            {
+                profile.AssignOrganization(organization);
+            }
+        }
 
         foreach (var (identity, role, profile) in accounts)
         {
