@@ -478,15 +478,30 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             {
                 profile.UserSettings.AddChatTextLine("Kowabunga!");
                 profile.UserSettings.AddChatTextLine("Hallo hoe gaat het?");
+
                 if (profile is User _user)
                 {
-                    _user.UpdateSentiments(CreateSentiments());
-                    _user.UpdateHobbies(CreateHobbies(dbContext, HobbyType.Reading, HobbyType.BoardGames, HobbyType.Crafting));
-                    dbContext.Users.Add(_user);
+                    var userExists = await dbContext.Users
+                        .IgnoreQueryFilters()
+                        .AnyAsync(u => u.AccountId == _user.AccountId);
+
+                    if (!userExists)
+                    {
+                        _user.UpdateSentiments(CreateSentiments());
+                        _user.UpdateHobbies(CreateHobbies(dbContext, HobbyType.Reading, HobbyType.BoardGames, HobbyType.Crafting));
+                        dbContext.Users.Add(_user);
+                    }
                 }
                 else if (profile is Supervisor _supervisor)
                 {
-                    dbContext.Supervisors.Add(_supervisor);
+                    var supervisorExists = await dbContext.Supervisors
+                        .IgnoreQueryFilters()
+                        .AnyAsync(s => s.AccountId == _supervisor.AccountId);
+
+                    if (!supervisorExists)
+                    {
+                        dbContext.Supervisors.Add(_supervisor);
+                    }
                 }
             }
         }
