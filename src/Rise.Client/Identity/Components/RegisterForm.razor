@@ -48,9 +48,9 @@
 
     <div>
         <label for="register-organization" class="block text-sm font-medium text-[#04320C]">Organisatie</label>
-        <InputSelect<int?> id="register-organization"
-                           @bind-Value="Model.OrganizationId"
-                           class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1">
+        <InputSelect TValue="int?" id="register-organization"
+                     @bind-Value="Model.OrganizationId"
+                     class="mt-2 block w-full rounded-full bg-white px-4 py-3 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0B6532] focus:ring-offset-1">
             <option value="">Kies een organisatie</option>
             @foreach (var organization in Organizations)
             {
