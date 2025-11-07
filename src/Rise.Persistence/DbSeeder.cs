@@ -135,7 +135,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
 
     private async Task UsersAsync()
     {
-        if (dbContext.Users.Any())
+        if (await dbContext.Set<BaseUser>().AnyAsync())
         {
             return;
         }
