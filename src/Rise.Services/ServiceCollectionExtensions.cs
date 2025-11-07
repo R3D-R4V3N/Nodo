@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Rise.Persistence;
 using Rise.Services.Chats;
 using Rise.Shared.Chats;
+using Rise.Services.Registrations;
 using Rise.Services.UserConnections;
 using Rise.Shared.UserConnections;
 using Rise.Shared.Users;
@@ -17,7 +18,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserContextService, UserContextService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IUserConnectionService, UserConnectionService>();
-        services.AddTransient<DbSeeder>();       
+        services.AddScoped<IRegistrationService, RegistrationService>();
+        services.AddTransient<DbSeeder>();
         
         // Add other application services here.
         return services;

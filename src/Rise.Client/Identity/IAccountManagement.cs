@@ -22,10 +22,9 @@
         /// <summary>
         /// Registration service.
         /// </summary>
-        /// <param name="email">User's email.</param>
-        /// <param name="password">User's password.</param>
-        /// <returns>The result of the request serialized to <see cref="FormResult"/>.</returns>
-        public Task<Result> RegisterAsync(string email, string password, string confirmPassword);
+        /// <param name="request">Registration payload.</param>
+        /// <returns>The result of the request serialized to <see cref="Result"/>.</returns>
+        public Task<Result> RegisterAsync(AccountRequest.Register request);
 
         public Task<bool> CheckAuthenticatedAsync();
     }

@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Rise.Domain.Organizations;
+using Rise.Persistence;
 using Rise.Shared.Identity.Accounts;
 
 namespace Rise.Server.Endpoints.Identity.Accounts;
@@ -9,7 +12,11 @@ namespace Rise.Server.Endpoints.Identity.Accounts;
 /// </summary>
 /// <param name="userManager"></param>
 /// <param name="userStore"></param>
-public class Register(UserManager<IdentityUser> userManager, IUserStore<IdentityUser> userStore) : Endpoint<AccountRequest.Register, Result>
+/// <param name="dbContext"></param>
+public class Register(
+    UserManager<IdentityUser> userManager,
+    IUserStore<IdentityUser> userStore,
+    ApplicationDbContext dbContext) : Endpoint<AccountRequest.Register, Result>
 {
     public override void Configure()
     {
@@ -25,25 +32,46 @@ public class Register(UserManager<IdentityUser> userManager, IUserStore<Identity
             return Result.CriticalError("Requires a user store with email support.");
         }
         var emailStore = (IUserEmailStore<IdentityUser>)userStore;
+        var organization = await dbContext
+            .Organizations
+            .SingleOrDefaultAsync(o => o.Id == req.OrganizationId, ctx);
+
+        if (organization is null)
+        {
+            return Result.Invalid(new ValidationError(nameof(req.OrganizationId), "Ongeldige organisatie geselecteerd."));
+        }
+
         var user = new IdentityUser();
         await userStore.SetUserNameAsync(user, req.Email, CancellationToken.None);
         await emailStore.SetEmailAsync(user, req.Email, CancellationToken.None);
         var result = await userManager.CreateAsync(user, req.Password!);
-        
+
         if (!result.Succeeded)
         {
             return Result.Error(result.Errors.First().Description);
         }
-        
-        // You can do more stuff when injecting a DbContext and create user stuff for example:
-        // dbContext.Technicians.Add(new Technician("Fname", "Lname", user.Id));
-        // or assinging a specific role etc using the RoleManager<IdentityUser> (inject it in the primary constructor).
 
-        
-        // You can send a confirmation email by using a SMTP server or anything in the like. 
-        // await SendConfirmationEmailAsync(user, userManager, context, email); or do something that matters
+        try
+        {
+            var registration = new UserRegistration
+            {
+                AccountId = user.Id,
+                Email = req.Email!.Trim(),
+                FirstName = req.FirstName!.Trim(),
+                LastName = req.LastName!.Trim(),
+                OrganizationId = organization.Id,
+            };
+
+            dbContext.UserRegistrations.Add(registration);
+            await dbContext.SaveChangesAsync(ctx);
+        }
+        catch
+        {
+            await userManager.DeleteAsync(user);
+            throw;
+        }
 
         return Result.Success();
     }
-    
+
 }

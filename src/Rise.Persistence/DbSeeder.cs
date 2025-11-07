@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
+using Rise.Domain.Organizations;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Hobbys;
@@ -29,6 +30,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         await RolesAsync();
         await SentimentsAsync();
         await HobbiesAsync();
+        await OrganizationsAsync();
         await UsersAsync();
         await ConnectionsAsync();
         await ChatsAsync();
@@ -104,6 +106,24 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         await dbContext.SaveChangesAsync();
     }
 
+    private async Task OrganizationsAsync()
+    {
+        if (dbContext.Organizations.Any())
+        {
+            return;
+        }
+
+        var organizations = new List<Organization>
+        {
+            new() { Name = "Organisatie 1" },
+            new() { Name = "Organisatie 2" },
+            new() { Name = "Organisatie 3" }
+        };
+
+        dbContext.Organizations.AddRange(organizations);
+        await dbContext.SaveChangesAsync();
+    }
+
     private async Task UsersAsync()
     {
         if (dbContext.Users.Any())
@@ -112,6 +132,19 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         }
 
         await dbContext.Roles.ToListAsync();
+
+        var organizations = await dbContext.Organizations
+            .OrderBy(o => o.Id)
+            .ToListAsync();
+
+        if (organizations.Count == 0)
+        {
+            throw new InvalidOperationException("Er zijn geen organisaties om gebruikers aan te koppelen.");
+        }
+
+        var organisatieEen = organizations[0];
+        var organisatieTwee = organizations.ElementAtOrDefault(1) ?? organizations[0];
+        var organisatieDrie = organizations.ElementAtOrDefault(2) ?? organizations[0];
 
         IEnumerable<UserSentiment> CreateSentiments()
         {
@@ -170,25 +203,78 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         var chatterLotte = CreateIdentity("lotte@nodo.chat");
         var chatterAmina = CreateIdentity("amina@nodo.chat");
 
+        var genericSupervisorProfile = new Supervisor()
+        {
+            AccountId = supervisor.Id,
+            FirstName = FirstName.Create("Super"),
+            LastName = LastName.Create("Visor"),
+            Biography = Biography.Create("Here to help you."),
+            AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1761405378284-834f87bb9818?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
+            BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-30)),
+            Gender = GenderType.X,
+            UserSettings = new UserSetting()
+            {
+                FontSize = FontSize.Create(12),
+                IsDarkMode = false,
+            },
+            Organization = organisatieEen,
+        };
+
+        var supervisorEmmaProfile = new Supervisor()
+        {
+            AccountId = supervisorEmma.Id,
+            FirstName = FirstName.Create("Emma"),
+            LastName = LastName.Create("Claes"),
+            Biography = Biography.Create("Coach voor dagelijkse structuur en zelfvertrouwen."),
+            AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1639149888905-fb39731f2e6c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
+            BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-35)),
+            Gender = GenderType.X,
+            UserSettings = new UserSetting()
+            {
+                FontSize = FontSize.Create(12),
+                IsDarkMode = false,
+            },
+            Organization = organisatieEen,
+        };
+
+        var supervisorJonasProfile = new Supervisor()
+        {
+            AccountId = supervisorJonas.Id,
+            FirstName = FirstName.Create("Jonas"),
+            LastName = LastName.Create("Van Lint"),
+            Biography = Biography.Create("Helpt bij plannen en houdt wekelijks groepsmomenten."),
+            AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjZ8fGF2YXRhcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=700"),
+            BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-33)),
+            Gender = GenderType.X,
+            UserSettings = new UserSetting()
+            {
+                FontSize = FontSize.Create(12),
+                IsDarkMode = false,
+            },
+            Organization = organisatieTwee,
+        };
+
+        var supervisorEllaProfile = new Supervisor()
+        {
+            AccountId = supervisorElla.Id,
+            FirstName = FirstName.Create("Ella"),
+            LastName = LastName.Create("Vervoort"),
+            Biography = Biography.Create("Creatieve begeleider voor beeldende therapie."),
+            AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
+            BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-31)),
+            Gender = GenderType.X,
+            UserSettings = new UserSetting()
+            {
+                FontSize = FontSize.Create(12),
+                IsDarkMode = false,
+            },
+            Organization = organisatieDrie,
+        };
+
         var accounts = new List<SeedAccount>
         {
             new(admin, AppRoles.Administrator, null),
-            new(supervisor, AppRoles.Supervisor,
-                new Supervisor()
-                {
-                    AccountId = supervisor.Id,
-                    FirstName = FirstName.Create("Super"),
-                    LastName = LastName.Create("Visor"),
-                    Biography = Biography.Create("Here to help you."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1761405378284-834f87bb9818?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-30)),
-                    Gender = GenderType.X,
-                    UserSettings = new UserSetting()
-                    { 
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+            new(supervisor, AppRoles.Supervisor, genericSupervisorProfile),
             new(userAccount1, AppRoles.User,
                 new User()
                 {
@@ -199,6 +285,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=932"),
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
                     Gender = GenderType.X,
+                    Organization = organisatieEen,
+                    Supervisor = supervisorEmmaProfile,
                     UserSettings = new UserSetting()
                     {
                         FontSize = FontSize.Create(12),
@@ -215,6 +303,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-26)),
                     Gender = GenderType.X,
+                    Organization = organisatieEen,
+                    Supervisor = supervisorEmmaProfile,
                     UserSettings = new UserSetting()
                     {
                         FontSize = FontSize.Create(12),
@@ -222,54 +312,9 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     }
                 }),
             new(nodoAdmin, AppRoles.Administrator, null),
-            new(supervisorEmma, AppRoles.Supervisor,
-                new Supervisor()
-                {
-                    AccountId = supervisorEmma.Id,
-                    FirstName = FirstName.Create("Emma"),
-                    LastName = LastName.Create("Claes"),
-                    Biography = Biography.Create("Coach voor dagelijkse structuur en zelfvertrouwen."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1639149888905-fb39731f2e6c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-35)),
-                    Gender = GenderType.X,
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
-            new(supervisorJonas, AppRoles.Supervisor,
-                new Supervisor()
-                {
-                    AccountId = supervisorJonas.Id,
-                    FirstName = FirstName.Create("Jonas"),
-                    LastName =  LastName.Create("Van Lint"),
-                    Biography = Biography.Create("Helpt bij plannen en houdt wekelijks groepsmomenten."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjZ8fGF2YXRhcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=700"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-33)),
-                    Gender = GenderType.X,
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
-            new(supervisorElla, AppRoles.Supervisor,
-                new Supervisor()
-                {
-                    AccountId = supervisorElla.Id,
-                    FirstName = FirstName.Create("Ella"),
-                    LastName =  LastName.Create("Vervoort"),
-                    Biography = Biography.Create("Creatieve begeleider voor beeldende therapie."),
-                    AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
-                    BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-31)),
-                    Gender = GenderType.X,
-                    UserSettings = new UserSetting()
-                    {
-                        FontSize = FontSize.Create(12),
-                        IsDarkMode = false,
-                    }
-                }),
+            new(supervisorEmma, AppRoles.Supervisor, supervisorEmmaProfile),
+            new(supervisorJonas, AppRoles.Supervisor, supervisorJonasProfile),
+            new(supervisorElla, AppRoles.Supervisor, supervisorEllaProfile),
             new(chatterNoor, AppRoles.User,
                 new User()
                 {
@@ -280,6 +325,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
                     Gender = GenderType.X,
+                    Organization = organisatieEen,
+                    Supervisor = supervisorEmmaProfile,
                     UserSettings = new UserSetting()
                     {
                         FontSize = FontSize.Create(12),
@@ -296,6 +343,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=922"),
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
                     Gender = GenderType.X,
+                    Organization = organisatieEen,
+                    Supervisor = supervisorEmmaProfile,
                     UserSettings = new UserSetting()
                     {
                         FontSize = FontSize.Create(12),
@@ -312,6 +361,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1687832254672-bf177d8819df?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-22)),
                     Gender = GenderType.X,
+                    Organization = organisatieEen,
+                    Supervisor = supervisorEmmaProfile,
                     UserSettings = new UserSetting()
                     {
                         FontSize = FontSize.Create(12),
@@ -328,6 +379,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1664536392896-cd1743f9c02c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-25)),
                     Gender = GenderType.X,
+                    Organization = organisatieEen,
+                    Supervisor = supervisorEmmaProfile,
                     UserSettings = new UserSetting()
                     {
                         FontSize = FontSize.Create(12),
@@ -344,6 +397,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1664536392896-cd1743f9c02c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
                     Gender = GenderType.X,
+                    Organization = organisatieTwee,
+                    Supervisor = supervisorJonasProfile,
                     UserSettings = new UserSetting()
                     {
                         FontSize = FontSize.Create(12),
@@ -360,6 +415,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1704726135027-9c6f034cfa41?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=770"),
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-27)),
                     Gender = GenderType.X,
+                    Organization = organisatieTwee,
+                    Supervisor = supervisorJonasProfile,
                     UserSettings = new UserSetting()
                     {
                         FontSize = FontSize.Create(12),
@@ -376,6 +433,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-21)),
                     Gender = GenderType.X,
+                    Organization = organisatieTwee,
+                    Supervisor = supervisorJonasProfile,
                     UserSettings = new UserSetting()
                     {
                         FontSize = FontSize.Create(12),
@@ -392,6 +451,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1704726135027-9c6f034cfa41?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=770"),
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
                     Gender = GenderType.X,
+                    Organization = organisatieTwee,
+                    Supervisor = supervisorJonasProfile,
                     UserSettings = new UserSetting()
                     {
                         FontSize = FontSize.Create(12),
@@ -408,6 +469,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1690587673708-d6ba8a1579a5?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=758"),
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-25)),
                     Gender = GenderType.X,
+                    Organization = organisatieDrie,
+                    Supervisor = supervisorEllaProfile,
                     UserSettings = new UserSetting()
                     {
                         FontSize = FontSize.Create(12),
@@ -424,6 +487,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1708271598591-4a84ef3b8dde?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870"),
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
                     Gender = GenderType.X,
+                    Organization = organisatieDrie,
+                    Supervisor = supervisorEllaProfile,
                     UserSettings = new UserSetting()
                     {
                         FontSize = FontSize.Create(12),
@@ -440,6 +505,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1708271598591-4a84ef3b8dde?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870"),
                     BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-22)),
                     Gender = GenderType.X,
+                    Organization = organisatieDrie,
+                    Supervisor = supervisorEllaProfile,
                     UserSettings = new UserSetting()
                     {
                         FontSize = FontSize.Create(12),

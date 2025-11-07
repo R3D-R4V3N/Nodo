@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rise.Domain.Users;
 using Rise.Persistence.Configurations.Users.Hobbies;
@@ -22,9 +23,14 @@ internal class UserConfiguration : EntityConfiguration<User>
         builder.Ignore(u => u.BlockedUsers);
 
         builder.HasMany(u => u.Connections)
-            .WithOne(c => c.From) 
-            .HasForeignKey("FromId") 
+            .WithOne(c => c.From)
+            .HasForeignKey("FromId")
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(u => u.Supervisor)
+            .WithMany(s => s.AssignedUsers)
+            .HasForeignKey(u => u.SupervisorId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         // sentiments
         builder.Ignore(u => u.Likes);

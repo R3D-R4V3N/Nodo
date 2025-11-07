@@ -1,6 +1,7 @@
 using Ardalis.Result;
 using Rise.Domain.Chats;
 using Rise.Domain.Helper;
+using Rise.Domain.Organizations;
 using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Hobbys;
 using Rise.Domain.Users.Sentiment;
@@ -13,6 +14,11 @@ public class User : BaseUser
 {
     public const int MAX_SENTIMENTS_PER_TYPE = 5;
     public const int MAX_HOBBIES = 3;
+
+    public int OrganizationId { get; set; }
+    public Organization Organization { get; set; } = null!;
+    public int? SupervisorId { get; set; }
+    public Supervisor? Supervisor { get; set; }
 
     // sentiments
     private readonly List<UserSentiment> _sentiments = [];

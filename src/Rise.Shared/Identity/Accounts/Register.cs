@@ -15,6 +15,21 @@ public static partial class AccountRequest
         public string? Email { get; set; }
 
         /// <summary>
+        /// The user's first name.
+        /// </summary>
+        public string? FirstName { get; set; }
+
+        /// <summary>
+        /// The user's last name.
+        /// </summary>
+        public string? LastName { get; set; }
+
+        /// <summary>
+        /// The identifier of the organisation the user wants to join.
+        /// </summary>
+        public int? OrganizationId { get; set; }
+
+        /// <summary>
         /// The user's password.
         /// </summary>
         [LogMasked]
@@ -36,6 +51,11 @@ public static partial class AccountRequest
             public Validator()
             {
                 RuleFor(x => x.Email).NotEmpty().EmailAddress();
+                RuleFor(x => x.FirstName).NotEmpty().MaximumLength(100);
+                RuleFor(x => x.LastName).NotEmpty().MaximumLength(100);
+                RuleFor(x => x.OrganizationId)
+                    .NotNull()
+                    .GreaterThan(0);
                 RuleFor(x => x.Password).NotEmpty();
                 RuleFor(x => x.ConfirmPassword)
                     .Equal(x => x.Password)

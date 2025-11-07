@@ -1,0 +1,81 @@
+@page "/supervisor/aanvragen"
+@using Microsoft.AspNetCore.Authorization
+@using Rise.Shared.Identity
+@using Rise.Shared.Registrations
+@attribute [Authorize(Roles = $"{AppRoles.Supervisor},{AppRoles.Administrator}")]
+
+<PageTitle>Beheer registraties</PageTitle>
+
+<section class="space-y-6">
+    <header>
+        <h1 class="text-3xl font-bold text-[#04320C]">Inschrijvingsaanvragen</h1>
+        <p class="text-sm text-gray-600">Koppel aanvragen aan een begeleider en keur ze goed zodat nieuwe gebruikers kunnen starten.</p>
+    </header>
+
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            @_error
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_statusMessage))
+    {
+        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+            @_statusMessage
+        </div>
+    }
+
+    @if (_isLoading)
+    {
+        <p class="text-gray-600">Aan het laden...</p>
+    }
+    else if (_registrations.Count == 0)
+    {
+        <p class="rounded-2xl border border-dashed border-gray-300 bg-white/70 p-6 text-center text-gray-600">Er zijn momenteel geen openstaande aanvragen voor jouw organisatie.</p>
+    }
+    else
+    {
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            @foreach (var registration in _registrations)
+            {
+                var isAssignedToMe = string.Equals(registration.AssignedSupervisorAccountId, CurrentAccountId, StringComparison.Ordinal);
+                <article class="flex h-full flex-col justify-between rounded-3xl bg-white p-6 shadow-lg">
+                    <div class="space-y-2">
+                        <h2 class="text-xl font-semibold text-[#04320C]">@registration.FullName</h2>
+                        <p class="text-sm text-gray-600">@registration.Email</p>
+                        <p class="text-sm text-gray-600">Organisatie: <span class="font-medium text-[#0B6532]">@registration.OrganizationName</span></p>
+                        @if (!string.IsNullOrEmpty(registration.AssignedSupervisorName))
+                        {
+                            <p class="text-sm text-gray-600">Gekoppeld aan: <span class="font-medium">@registration.AssignedSupervisorName</span></p>
+                        }
+                        <p class="text-xs text-gray-500">Aangevraagd op @registration.RequestedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+
+                    <div class="mt-4 space-y-3">
+                        @if (registration.AssignedSupervisorAccountId is null)
+                        {
+                            <button class="w-full rounded-full bg-[#0B6532] px-4 py-2 text-white shadow disabled:opacity-70"
+                                    disabled="@_isBusy"
+                                    @onclick="() => AssignToMeAsync(registration)">
+                                Koppel aan mij
+                            </button>
+                        }
+                        else if (!isAssignedToMe)
+                        {
+                            <p class="rounded-full border border-gray-200 px-4 py-2 text-center text-sm text-gray-600">
+                                Aanvraag wordt opgevolgd door @registration.AssignedSupervisorName
+                            </p>
+                        }
+
+                        <button class="w-full rounded-full border border-[#0B6532] px-4 py-2 text-[#0B6532] shadow disabled:opacity-70"
+                                disabled="@(!isAssignedToMe || _isBusy)"
+                                @onclick="() => ApproveAsync(registration)">
+                            Aanvraag goedkeuren
+                        </button>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>

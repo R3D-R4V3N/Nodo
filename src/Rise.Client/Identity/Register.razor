@@ -26,20 +26,27 @@
                 <HomeHeading />
             </HeaderContent>
             <ChildContent>
-                @if (_result?.IsSuccess == true)
+                @if (!string.IsNullOrWhiteSpace(_loadError))
                 {
                     <div class="space-y-4 rounded-3xl bg-white/70 p-6 text-center shadow-xl backdrop-blur">
-                        <p class="text-lg font-semibold text-[#04320C]">Je registratie is geslaagd!</p>
-                        <p class="text-sm text-zinc-600">Je kan nu inloggen om verder te gaan.</p>
+                        <p class="text-lg font-semibold text-red-700">@_loadError</p>
+                        <p class="text-sm text-zinc-600">Ververs de pagina of neem contact op met een administrator.</p>
+                    </div>
+                }
+                else if (_result?.IsSuccess == true)
+                {
+                    <div class="space-y-4 rounded-3xl bg-white/70 p-6 text-center shadow-xl backdrop-blur">
+                        <p class="text-lg font-semibold text-[#04320C]">Bedankt voor je registratie!</p>
+                        <p class="text-sm text-zinc-600">Een begeleider van je gekozen organisatie bekijkt je aanvraag. Zodra deze is goedgekeurd, kan je inloggen en de chat gebruiken.</p>
                         <a href="/login" class="inline-flex w-full items-center justify-center rounded-full bg-[#0B6532] py-3 text-lg font-semibold text-white shadow-md transition hover:bg-[#0a572b]">
-                            Ga naar login
+                            Terug naar login
                         </a>
                     </div>
                 }
                 else
                 {
                     <AuthErrorList Errors="_result?.Errors as IReadOnlyCollection<string>" />
-                    <RegisterForm Model="Model" OnSubmit="RegisterUserAsync" />
+                    <RegisterForm Model="Model" OnSubmit="RegisterUserAsync" Organizations="Organizations" />
                 }
             </ChildContent>
         </AuthLayout>
