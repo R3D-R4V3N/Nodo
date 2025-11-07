@@ -336,6 +336,43 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("Message", (string)null);
                 });
 
+            modelBuilder.Entity("Rise.Domain.Organizations.Organization", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Organizations", (string)null);
+                });
+
             modelBuilder.Entity("Rise.Domain.Users.BaseUser", b =>
                 {
                     b.Property<int>("Id")
@@ -481,6 +518,78 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("Hobbies", (string)null);
                 });
 
+            modelBuilder.Entity("Rise.Domain.Users.Registrations.UserRegistrationRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("varchar(36)");
+
+                    b.Property<int?>("AssignedSupervisorId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.Property<string>("DecisionNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("FullName")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int?>("ProcessedBySupervisorId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId")
+                        .IsUnique();
+
+                    b.HasIndex("AssignedSupervisorId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("ProcessedBySupervisorId");
+
+                    b.ToTable("UserRegistrationRequests", (string)null);
+                });
+
             modelBuilder.Entity("Rise.Domain.Users.Sentiment.UserSentiment", b =>
                 {
                     b.Property<int>("Id")
@@ -518,43 +627,6 @@ namespace Rise.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Sentiments", (string)null);
-                });
-
-            modelBuilder.Entity("Rise.Domain.Organizations.Organization", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Organizations", (string)null);
                 });
 
             modelBuilder.Entity("Rise.Persistence.Configurations.Users.Hobbies.UserHobbyJoin", b =>
@@ -614,78 +686,6 @@ namespace Rise.Persistence.Migrations
                     b.HasIndex("SupervisorId");
 
                     b.ToTable("Users", (string)null);
-                });
-
-            modelBuilder.Entity("Rise.Domain.Users.Registrations.UserRegistrationRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AccountId")
-                        .IsRequired()
-                        .HasMaxLength(36)
-                        .HasColumnType("varchar(36)");
-
-                    b.Property<int?>("AssignedSupervisorId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<string>("DecisionNote")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("FullName")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<int>("OrganizationId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ProcessedAt")
-                        .HasColumnType("datetime");
-
-                    b.Property<int?>("ProcessedBySupervisorId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountId")
-                        .IsUnique();
-
-                    b.HasIndex("AssignedSupervisorId");
-
-                    b.HasIndex("OrganizationId");
-
-                    b.HasIndex("ProcessedBySupervisorId");
-
-                    b.ToTable("UserRegistrationRequests", (string)null);
                 });
 
             modelBuilder.Entity("BaseUserChat", b =>
@@ -862,6 +862,31 @@ namespace Rise.Persistence.Migrations
                     b.Navigation("To");
                 });
 
+            modelBuilder.Entity("Rise.Domain.Users.Registrations.UserRegistrationRequest", b =>
+                {
+                    b.HasOne("Rise.Domain.Users.Supervisor", "AssignedSupervisor")
+                        .WithMany()
+                        .HasForeignKey("AssignedSupervisorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Rise.Domain.Organizations.Organization", "Organization")
+                        .WithMany("RegistrationRequests")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Rise.Domain.Users.Supervisor", "ProcessedBySupervisor")
+                        .WithMany()
+                        .HasForeignKey("ProcessedBySupervisorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("AssignedSupervisor");
+
+                    b.Navigation("Organization");
+
+                    b.Navigation("ProcessedBySupervisor");
+                });
+
             modelBuilder.Entity("Rise.Persistence.Configurations.Users.Hobbies.UserHobbyJoin", b =>
                 {
                     b.HasOne("Rise.Domain.Users.Hobbys.UserHobby", "Hobby")
@@ -946,36 +971,6 @@ namespace Rise.Persistence.Migrations
                     b.Navigation("Messages");
                 });
 
-            modelBuilder.Entity("Rise.Domain.Users.User", b =>
-                {
-                    b.Navigation("Connections");
-                });
-
-            modelBuilder.Entity("Rise.Domain.Users.Registrations.UserRegistrationRequest", b =>
-                {
-                    b.HasOne("Rise.Domain.Users.Supervisor", "AssignedSupervisor")
-                        .WithMany()
-                        .HasForeignKey("AssignedSupervisorId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Rise.Domain.Organizations.Organization", "Organization")
-                        .WithMany("RegistrationRequests")
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Rise.Domain.Users.Supervisor", "ProcessedBySupervisor")
-                        .WithMany()
-                        .HasForeignKey("ProcessedBySupervisorId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("AssignedSupervisor");
-
-                    b.Navigation("Organization");
-
-                    b.Navigation("ProcessedBySupervisor");
-                });
-
             modelBuilder.Entity("Rise.Domain.Organizations.Organization", b =>
                 {
                     b.Navigation("RegistrationRequests");
@@ -983,6 +978,11 @@ namespace Rise.Persistence.Migrations
                     b.Navigation("Supervisors");
 
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Rise.Domain.Users.User", b =>
+                {
+                    b.Navigation("Connections");
                 });
 #pragma warning restore 612, 618
         }
