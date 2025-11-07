@@ -15,11 +15,6 @@ public static partial class AccountRequest
         public string? Email { get; set; }
 
         /// <summary>
-        /// The user's full name displayed to supervisors when reviewing registrations.
-        /// </summary>
-        public string? FullName { get; set; }
-
-        /// <summary>
         /// The user's password.
         /// </summary>
         [LogMasked]
@@ -30,12 +25,7 @@ public static partial class AccountRequest
         /// </summary>
         [LogMasked]
         public string? ConfirmPassword { get; set; }
-
-        /// <summary>
-        /// Organization selected during registration.
-        /// </summary>
-        public int? OrganizationId { get; set; }
-
+        
         // Other needed stuff here, like Role(s), Firstname, lastname etc.
 
         /// <summary>
@@ -46,16 +36,10 @@ public static partial class AccountRequest
             public Validator()
             {
                 RuleFor(x => x.Email).NotEmpty().EmailAddress();
-                RuleFor(x => x.FullName)
-                    .NotEmpty()
-                    .MaximumLength(200);
                 RuleFor(x => x.Password).NotEmpty();
                 RuleFor(x => x.ConfirmPassword)
                     .Equal(x => x.Password)
                     .WithMessage("Passwords do not match.");
-                RuleFor(x => x.OrganizationId)
-                    .NotNull()
-                    .GreaterThan(0);
             }
         }
     }

@@ -3,11 +3,9 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
 using Rise.Domain.Messages;
-using Rise.Domain.Organizations;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Hobbys;
-using Rise.Domain.Users.Registrations;
 using Rise.Domain.Users.Sentiment;
 using Rise.Persistence.Configurations.Users;
 
@@ -29,8 +27,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> opts) :
     public DbSet<IdentityUser> IdentityUsers => Set<IdentityUser>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Supervisor> Supervisors => Set<Supervisor>();
-    public DbSet<Organization> Organizations => Set<Organization>();
-    public DbSet<UserRegistrationRequest> UserRegistrationRequests => Set<UserRegistrationRequest>();
     public DbSet<UserConnection> UserConnections => Set<UserConnection>();
     public DbSet<UserHobby> Hobbies => Set<UserHobby>();
     public DbSet<UserSentiment> Sentiments => Set<UserSentiment>();

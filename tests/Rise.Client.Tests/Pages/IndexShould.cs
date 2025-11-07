@@ -1,6 +1,6 @@
 ﻿using Xunit.Abstractions;
 
-namespace Rise.Client.Pages;
+namespace Rise.Client.Tests.Pages;
 
 /// <summary>
 /// These tests are written entirely in C#.

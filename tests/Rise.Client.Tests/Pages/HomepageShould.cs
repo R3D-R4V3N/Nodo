@@ -1,16 +1,15 @@
-using System.Globalization;
-using System.Security.Claims;
 using Ardalis.Result;
-using Bunit;
-using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using Rise.Shared.Chats;
-using Xunit.Abstractions;
 using Rise.Client.Home.Pages;
-using Rise.Shared.Assets;
+using Rise.Client.State;
+using Rise.Shared.Chats;
+using Rise.Shared.Identity;
+using System.Security.Claims;
+using Xunit.Abstractions;
 
+namespace Rise.Client.Tests.Pages;
 public class HomepageShould : TestContext
 {
    
@@ -43,6 +42,19 @@ public class HomepageShould : TestContext
 
         Services.AddSingleton<IChatService>(mockChatService);
         Services.AddSingleton<AuthenticationStateProvider>(mockAuth);
+
+
+        var userState = new UserState();
+        userState.User = new Rise.Shared.Users.UserDto.CurrentUser
+        {
+            Id = 1,
+            AccountId = "1",
+            FirstName = "Kyandro",
+            LastName = "Voet",
+            AvatarUrl = "",
+        };
+
+        Services.AddSingleton<UserState>(userState);
 
         // Act
         var cut = RenderComponent<Homepage>();
@@ -82,8 +94,18 @@ public class HomepageShould : TestContext
                         {
                             Id = 1,
                             AccountId = "1",
+                            Name = "Kyandro Voet",
                             AvatarUrl = "",
-                            Name = "Kyandro voet"
+                        }
+                    },
+                    Users = new List<Rise.Shared.Users.UserDto.Chat>()
+                    { 
+                        new Rise.Shared.Users.UserDto.Chat()
+                        {
+                            Id = 2,
+                            AccountId = "1",
+                            Name = "Kyandro Voet",
+                            AvatarUrl = "",
                         }
                     }
                 }
@@ -104,6 +126,19 @@ public class HomepageShould : TestContext
         mockAuth.GetAuthenticationStateAsync().Returns(Task.FromResult(new AuthenticationState(fakeUser)));
         Services.AddSingleton<AuthenticationStateProvider>(mockAuth);
 
+
+        var userState = new UserState();
+        userState.User = new Rise.Shared.Users.UserDto.CurrentUser
+        {
+            Id = 1,
+            AccountId = "1",
+            FirstName = "Kyandro",
+            LastName = "Voet",
+            AvatarUrl = "",
+        };
+
+        Services.AddSingleton<UserState>(userState);
+
         // Act
         var cut = RenderComponent<Homepage>();
 
@@ -116,6 +151,4 @@ public class HomepageShould : TestContext
         Assert.Contains("Hallo, testbericht", chatItems[0].TextContent);
         Assert.Contains("Kyandro", chatItems[0].TextContent);
     }
-
-    
 }

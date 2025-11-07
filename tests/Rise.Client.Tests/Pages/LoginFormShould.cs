@@ -7,7 +7,7 @@ using Rise.Client.Pages;
 using Xunit.Abstractions;
 using Rise.Client.Identity.Components;
 
-namespace Rise.Client.Pages;
+namespace Rise.Client.Tests.Pages;
 
 public class LoginFormShould : TestContext
 {

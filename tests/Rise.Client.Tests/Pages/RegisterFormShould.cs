@@ -5,6 +5,7 @@ using Rise.Client.Identity.Components;
 using Rise.Shared.Identity.Accounts;
 using Xunit;
 
+namespace Rise.Client.Tests.Pages;
 public class RegisterFormShould : TestContext
 {
     [Fact]

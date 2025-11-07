@@ -1,13 +1,10 @@
-using Ardalis.GuardClauses;
 using Ardalis.Result;
 using Rise.Domain.Chats;
 using Rise.Domain.Helper;
-using Rise.Domain.Organizations;
 using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Hobbys;
 using Rise.Domain.Users.Sentiment;
 using Rise.Domain.Users.Settings;
-using System;
 using System.Collections.Generic;
 
 namespace Rise.Domain.Users;
@@ -16,16 +13,6 @@ public class User : BaseUser
 {
     public const int MAX_SENTIMENTS_PER_TYPE = 5;
     public const int MAX_HOBBIES = 3;
-
-    public int OrganizationId { get; private set; }
-
-    public Organization Organization { get; private set; } = null!;
-
-    public int? SupervisorId { get; private set; }
-
-    public Supervisor? Supervisor { get; private set; }
-
-    public bool HasSupervisor => Supervisor is not null;
 
     // sentiments
     private readonly List<UserSentiment> _sentiments = [];
@@ -120,44 +107,6 @@ public class User : BaseUser
         );
 
         return Result.Success(this, $"{this} verstuurd een vriendschapsverzoek naar {target}");
-    }
-
-    public void AssignToOrganization(Organization organization)
-    {
-        Organization = Guard.Against.Null(organization);
-
-        if (OrganizationId != default && OrganizationId != organization.Id)
-        {
-            throw new InvalidOperationException("De organisatie van de gebruiker kan niet worden gewijzigd.");
-        }
-
-        OrganizationId = organization.Id;
-        organization.AddUser(this);
-    }
-
-    public Result AssignSupervisor(Supervisor supervisor)
-    {
-        Guard.Against.Null(supervisor);
-
-        if (supervisor.Organization is null)
-        {
-            return Result.Conflict("Begeleider is niet gekoppeld aan een organisatie.");
-        }
-
-        if (OrganizationId == default)
-        {
-            AssignToOrganization(supervisor.Organization);
-        }
-
-        if (supervisor.OrganizationId != OrganizationId)
-        {
-            return Result.Conflict("Begeleider behoort niet tot dezelfde organisatie.");
-        }
-
-        Supervisor = supervisor;
-        SupervisorId = supervisor.Id;
-
-        return Result.Success();
     }
 
     public Result<User> AcceptFriendRequest(User target)
