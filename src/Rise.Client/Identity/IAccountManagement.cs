@@ -24,8 +24,11 @@
         /// </summary>
         /// <param name="email">User's email.</param>
         /// <param name="password">User's password.</param>
+        /// <param name="confirmPassword">Confirmation of the password.</param>
+        /// <param name="fullName">Full name provided during registration.</param>
+        /// <param name="organizationId">Selected organization identifier.</param>
         /// <returns>The result of the request serialized to <see cref="FormResult"/>.</returns>
-        public Task<Result> RegisterAsync(string email, string password, string confirmPassword);
+        public Task<Result> RegisterAsync(string email, string password, string confirmPassword, string fullName, int organizationId);
 
         public Task<bool> CheckAuthenticatedAsync();
     }
