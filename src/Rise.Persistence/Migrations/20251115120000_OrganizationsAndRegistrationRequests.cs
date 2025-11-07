@@ -1,12 +1,16 @@
 using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Rise.Persistence;
 
 #nullable disable
 
 namespace Rise.Persistence.Migrations
 {
     /// <inheritdoc />
+    [DbContext(typeof(ApplicationDbContext))]
+    [Migration("20251115120000_OrganizationsAndRegistrationRequests")]
     public partial class OrganizationsAndRegistrationRequests : Migration
     {
         /// <inheritdoc />
