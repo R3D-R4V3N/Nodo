@@ -100,7 +100,12 @@ public class UserService(
             return Result.Conflict(hobbiesResult.Errors.ToArray());
         }
 
-        userToChange.UpdateHobbies(hobbiesResult.Value);
+        var updateHobbiesResult = userToChange.UpdateHobbies(hobbiesResult.Value);
+        if (!updateHobbiesResult.IsSuccess)
+        {
+            var updateError = updateHobbiesResult.Errors.FirstOrDefault() ?? "Kon de voorkeuren niet bijwerken.";
+            return Result.Invalid(new ValidationError(nameof(request.Sentiments), updateError));
+        }
 
         var sentimentsResult = await SentimentMapper.ToDomainAsync(request.Sentiments, _dbContext, cancellationToken);
         if (!sentimentsResult.IsSuccess)

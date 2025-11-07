@@ -120,6 +120,43 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
         );
     }
 
+    public async Task<Result<UserConnectionResponse.CancelFriendRequest>> CancelFriendRequest(string targetAccountId, CancellationToken ctx = default)
+    {
+        var currentUserId = sessionContextProvider.User!.GetUserId();
+
+        // Huidige gebruiker ophalen
+        var currentUser = await dbContext
+            .Users
+            .Include(u => u.Connections)
+                .ThenInclude(c => c.To)
+            .SingleOrDefaultAsync(u => u.AccountId == currentUserId, ctx);
+
+        // Doelgebruiker ophalen
+        var targetUser = await dbContext
+            .Users
+            .Include(u => u.Connections)
+                .ThenInclude(c => c.To)
+            .SingleOrDefaultAsync(u => u.AccountId == targetAccountId, ctx);
+
+        if (currentUser is null || targetUser is null)
+            return Result.NotFound("Gebruiker niet gevonden.");
+
+        var result = currentUser.CancelFriendRequest(targetUser);
+
+        if (!result.IsSuccess)
+            return Result.Conflict(string.Join(',', result.Errors));
+
+        await dbContext.SaveChangesAsync(ctx);
+
+        return Result.Success(
+            new UserConnectionResponse.CancelFriendRequest()
+            {
+                Message = result.SuccessMessage
+            }
+        );
+    }
+    
+  
     public async Task<Result<UserConnectionResponse.SendFriendRequest>>
         SendFriendRequestAsync(string targetAccountId, CancellationToken ctx = default)
     {
@@ -216,7 +253,12 @@ public class UserConnectionService(ApplicationDbContext dbContext, ISessionConte
         if (currentUser is null || targetUser is null)
             return Result.NotFound("Gebruiker niet gevonden.");
 
-        var result = currentUser.RemoveFriendRequest(targetUser);
+        var result = currentUser.RejectFriendRequest(targetUser);
+
+        if (!result.IsSuccess)
+            return Result.Conflict(string.Join(',', result.Errors));
+
+        await dbContext.SaveChangesAsync(ctx);
 
         return Result.Success(
             new UserConnectionResponse.RejectFriendRequest()

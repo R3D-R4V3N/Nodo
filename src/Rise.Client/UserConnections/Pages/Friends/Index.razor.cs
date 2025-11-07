@@ -81,7 +81,7 @@ public partial class Index
     private async void CancelFriendRequest(UserConnectionDto.Get f)
     {
         //TODO: link websocket to every friend request method
-        //f.State = UserConnectionTypeDto.Friend;
+        ConnectionService.CancelFriendRequest(f.User.AccountId, CancellationToken.None);
         ApplyFilter();
     }
 

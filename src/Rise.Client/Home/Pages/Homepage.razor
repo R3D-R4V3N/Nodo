@@ -3,6 +3,7 @@
 @using Rise.Client.Chats
 @using Rise.Shared.Assets
 @using Rise.Shared.Chats
+@using Microsoft.AspNetCore.SignalR.Client
 
 
 @layout MainLayout
@@ -73,11 +74,20 @@
                   }
                   else
                   {
-                    <img src="@GetAvatarUrl(chat)"
-                         alt="Profielfoto"
-                         class="h-12 w-12 sm:h-14 sm:w-14 rounded-full object-cover border border-neutral-200 shrink-0 cursor-pointer hover:scale-105 transition"
-                         @onclick="() => NavigateToFriendProfile(chat)" />
-                  }  
+                    var otherUser = chat.Users.FirstOrDefault(u => u.Id != UserState.User.Id);
+                    var isOnline = otherUser is not null && _onlineUsers.Contains(otherUser.AccountId);
+
+                    <div class="relative inline-block">
+                      <img src="@GetAvatarUrl(chat)"
+                           alt="Profielfoto"
+                           class="h-12 w-12 sm:h-14 sm:w-14 rounded-full object-cover border border-neutral-200 shrink-0 cursor-pointer hover:scale-105 transition"
+                           @onclick="() => NavigateToFriendProfile(chat)" />
+
+                      <span class="absolute bottom-0 right-0 block h-3 w-3 rounded-full border border-white
+                        @(isOnline ? "bg-green-500" : "invisible")"></span>
+                    </div>
+                  }
+ 
                   
                   <!-- Texts -->
                   <div class="min-w-0 flex-1">

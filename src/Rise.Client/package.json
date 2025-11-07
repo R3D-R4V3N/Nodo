@@ -9,7 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "tw:build": "tailwindcss -i ./Styles/app.css -o ./wwwroot/css/app.css --minify",
-    "tw:watch": "tailwindcss -i ./Styles/app.css -o ./wwwroot/css/app.css --watch"
+    "tw:watch": "tailwindcss -i ./Styles/app.css -o ./wwwroot/css/app.css --watch --verbose"
   },
   "keywords": [],
   "author": "",

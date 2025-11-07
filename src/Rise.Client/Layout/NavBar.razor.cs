@@ -12,7 +12,7 @@ public partial class NavBar : IDisposable
     private string _currentPath = "/";
 
     [Inject]
-    public UserState UserState { get; set; } = default!;
+    public UserState UserState { get; set; }
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -24,19 +24,19 @@ public partial class NavBar : IDisposable
         NavigationManager.LocationChanged += HandleLocationChanged;
     }
 
-    private string GetNavItemClasses(string href, NavLinkMatch match = NavLinkMatch.Prefix, bool isProfile = false, params string[]? additionalMatches)
+    private string GetNavItemClasses(string href, NavLinkMatch match = NavLinkMatch.Prefix, bool isProfile = false, params string[] additionalMatches)
     {
         var baseClasses = isProfile
             ? "w-10 h-10 rounded-full overflow-hidden border-2 border-white hover:scale-110 transition"
             : "p-2.5 rounded-full hover:bg-white/20 transition";
 
-        var isActive = IsActive(href, match, additionalMatches ?? Array.Empty<string>());
+        var isActive = IsActive(href, match, additionalMatches);
 
         if (isProfile)
         {
             return isActive
                 ? $"{baseClasses} bg-white"
-                : baseClasses;
+                : $"{baseClasses}";
         }
 
         var textClass = isActive ? "text-[#127646]" : "text-white";

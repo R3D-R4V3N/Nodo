@@ -75,7 +75,7 @@ public static class TestData
     {
         typeof(User)
             .GetField("_connections", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .SetValue(user, new HashSet<UserConnection>(connections));
+            .SetValue(user, new List<UserConnection>(connections));
 
         return user;
     }
