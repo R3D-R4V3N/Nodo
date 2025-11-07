@@ -36,10 +36,9 @@ namespace Rise.Persistence.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.InsertData(
-                table: "Organizations",
-                columns: new[] { "Id", "Name", "Description", "CreatedAt", "UpdatedAt", "IsDeleted" },
-                values: new object[] { 1, "Onbekende organisatie", null, new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), false });
+            migrationBuilder.Sql(
+                "INSERT INTO `Organizations` (`Id`, `Name`, `Description`, `CreatedAt`, `UpdatedAt`, `IsDeleted`) " +
+                "VALUES (1, 'Onbekende organisatie', NULL, '2024-01-01 00:00:00', '2024-01-01 00:00:00', 0);");
 
             migrationBuilder.AddColumn<int>(
                 name: "OrganizationId",
