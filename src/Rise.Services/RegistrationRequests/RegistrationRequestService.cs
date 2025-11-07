@@ -193,7 +193,8 @@ public class RegistrationRequestService(
         if (chatLineResults.Any(r => !r.IsSuccess))
         {
             var errors = chatLineResults.SelectMany(r => r.Errors).ToArray();
-            return Result.Error(errors);
+            var errorMessage = string.Join(" ", errors);
+            return Result.Error(errorMessage);
         }
 
         _dbContext.Users.Add(newUser);

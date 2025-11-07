@@ -1,3 +1,4 @@
+using Ardalis.Result;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Registrations;
@@ -73,10 +74,7 @@ public class Register(
         dbContext.RegistrationRequests.Add(registration);
         await dbContext.SaveChangesAsync(ctx);
 
-        var result = Result.Success();
-        result.SuccessMessage = "Je aanvraag is ingediend en wacht op goedkeuring door een begeleider.";
-        return result;
+        return Result.SuccessWithMessage("Je aanvraag is ingediend en wacht op goedkeuring door een begeleider.");
     }
 
 }
-using Ardalis.Result;
