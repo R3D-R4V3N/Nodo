@@ -142,6 +142,9 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
 
         await dbContext.Roles.ToListAsync();
 
+        static string FormatErrors(IdentityResult result) =>
+            string.Join(", ", result.Errors.Select(e => e.Description));
+
         IEnumerable<UserSentiment> CreateSentiments()
         {
             var allSentiments = dbContext.Sentiments.ToList();
@@ -450,8 +453,26 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
 
         foreach (var (identity, role, profile) in accounts)
         {
-            await userManager.CreateAsync(identity, PasswordDefault);
-            await userManager.AddToRoleAsync(identity, role);
+            if (identity.Email is not null)
+            {
+                var existingIdentity = await userManager.FindByEmailAsync(identity.Email);
+                if (existingIdentity is not null)
+                {
+                    continue;
+                }
+            }
+
+            var createResult = await userManager.CreateAsync(identity, PasswordDefault);
+            if (!createResult.Succeeded)
+            {
+                throw new InvalidOperationException($"Kon seed gebruiker {identity.Email} niet aanmaken: {FormatErrors(createResult)}");
+            }
+
+            var roleResult = await userManager.AddToRoleAsync(identity, role);
+            if (!roleResult.Succeeded)
+            {
+                throw new InvalidOperationException($"Kon seed gebruiker {identity.Email} niet koppelen aan rol {role}: {FormatErrors(roleResult)}");
+            }
 
             if (profile is not null)
             {
