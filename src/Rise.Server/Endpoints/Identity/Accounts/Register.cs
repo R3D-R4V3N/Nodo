@@ -97,7 +97,7 @@ public class Register(
         // You can send a confirmation email by using a SMTP server or anything in the like. 
         // await SendConfirmationEmailAsync(user, userManager, context, email); or do something that matters
 
-        return Result.Success("Registratieaanvraag is ontvangen en wacht op goedkeuring.");
+        return Result.SuccessWithMessage("Registratieaanvraag is ontvangen en wacht op goedkeuring.");
     }
 
 }
