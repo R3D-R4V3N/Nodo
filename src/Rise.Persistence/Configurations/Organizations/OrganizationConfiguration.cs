@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rise.Domain.Organizations;
 
@@ -16,5 +17,12 @@ internal class OrganizationConfiguration : EntityConfiguration<Organization>
 
         builder.Property(o => o.Description)
             .HasMaxLength(500);
+
+        var membersNavigation = builder.Metadata.FindNavigation(nameof(Organization.Members));
+        if (membersNavigation is not null)
+        {
+            membersNavigation.SetPropertyAccessMode(PropertyAccessMode.Field);
+            membersNavigation.SetField("_members");
+        }
     }
 }
