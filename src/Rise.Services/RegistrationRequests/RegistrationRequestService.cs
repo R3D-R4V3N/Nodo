@@ -65,6 +65,13 @@ public class RegistrationRequestService(
         var supervisors = await supervisorsQuery
             .OrderBy(s => s.FirstName.Value)
             .ThenBy(s => s.LastName.Value)
+            .Select(s => new
+            {
+                s.Id,
+                s.OrganizationId,
+                FirstName = s.FirstName.Value,
+                LastName = s.LastName.Value,
+            })
             .ToListAsync(ct);
 
         var supervisorLookup = supervisors
