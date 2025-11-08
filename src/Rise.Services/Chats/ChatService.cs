@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
 using Rise.Domain.Messages;
 using Rise.Domain.Messages.Properties;
+using Rise.Domain.Users;
 using Rise.Persistence;
 using Rise.Services.Chats.Mapper;
 using Rise.Services.Identity;
@@ -30,7 +31,7 @@ public class ChatService(
         }
 
         var sender = await _dbContext
-            .Users
+            .Set<BaseUser>()
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
 
         if (sender is null)
@@ -66,7 +67,7 @@ public class ChatService(
         }
 
         var sender = await _dbContext
-            .Users
+            .Set<BaseUser>()
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
 
         if (sender is null)
@@ -103,7 +104,7 @@ public class ChatService(
         }
 
         var sender = await _dbContext
-            .Users
+            .Set<BaseUser>()
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
 
         if (sender is null)
