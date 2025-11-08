@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Ardalis.Result;
 using Microsoft.AspNetCore.Identity;
@@ -52,11 +53,22 @@ public class RegistrationRequestService(
             return Result.Unauthorized();
         }
 
-        var supervisorLookup = await _dbContext.Supervisors
+        var supervisors = await _dbContext.Supervisors
             .AsNoTracking()
             .OrderBy(s => s.FirstName.Value)
+            .ThenBy(s => s.LastName.Value)
+            .Select(s => new
+            {
+                s.Id,
+                s.OrganizationId,
+                FirstName = s.FirstName.Value,
+                LastName = s.LastName.Value,
+            })
+            .ToListAsync(ct);
+
+        var supervisorLookup = supervisors
             .GroupBy(s => s.OrganizationId)
-            .ToDictionaryAsync(
+            .ToDictionary(
                 g => g.Key,
                 g => g
                     .Select(s => new RegistrationRequestDto.SupervisorOption
@@ -64,8 +76,7 @@ public class RegistrationRequestService(
                         Id = s.Id,
                         Name = $"{s.FirstName} {s.LastName}",
                     })
-                    .ToList(),
-                ct);
+                    .ToList());
 
         var pendingQuery = _dbContext.RegistrationRequests
             .AsNoTracking()
@@ -102,7 +113,7 @@ public class RegistrationRequestService(
                 AssignedSupervisorId = r.AssignedSupervisorId,
                 Supervisors = supervisorLookup.TryGetValue(r.OrganizationId, out var options)
                     ? options
-                    : []
+                    : Array.Empty<RegistrationRequestDto.SupervisorOption>()
             })
             .ToList();
 
