@@ -4,10 +4,14 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Rise.Client;
 using Rise.Client.Chats;
 using Rise.Client.Identity;
+using Rise.Client.Organizations;
+using Rise.Client.RegistrationRequests;
 using Rise.Client.State;
 using Rise.Client.UserConnections;
 using Rise.Client.Users;
 using Rise.Shared.Chats;
+using Rise.Shared.Organizations;
+using Rise.Shared.RegistrationRequests;
 using Rise.Shared.UserConnections;
 using Rise.Shared.Users;
 using UserService = Rise.Client.Users.UserService;
@@ -51,22 +55,32 @@ try
     builder.Services.AddHttpClient<IUserConnectionService, UserConnectionService>(client =>
     {
         client.BaseAddress = backendUri;
-    });
+    }).AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<IUserContextService, UserContextService>(client =>
     {
         client.BaseAddress = backendUri;
-    });
+    }).AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<IUserService, UserService>(client =>
     {
         client.BaseAddress = backendUri;
-    });
+    }).AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<UserContextService>(client =>
     {
         client.BaseAddress = backendUri;
+    }).AddHttpMessageHandler<CookieHandler>();
+
+    builder.Services.AddHttpClient<IOrganizationService, OrganizationService>(client =>
+    {
+        client.BaseAddress = backendUri;
     });
+
+    builder.Services.AddHttpClient<IRegistrationRequestService, RegistrationRequestService>(client =>
+    {
+        client.BaseAddress = backendUri;
+    }).AddHttpMessageHandler<CookieHandler>();
 
     // current user
     builder.Services.AddSingleton<UserState>();

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Rise.Domain.Users;
 using Rise.Shared.Users;
@@ -7,17 +8,13 @@ namespace Rise.Services.Users.Mapper;
 
 internal static class UserMapper
 {
-    public static UserDto.Connection ToConnectionDto(this User user) =>
-        new UserDto.Connection
-        {
-            Id = user.Id,
-            Name = $"{user.FirstName} {user.LastName}",
-            AccountId = user.AccountId,
-            Age = CalculateAge(user.BirthDay),
-            AvatarUrl = user.AvatarUrl,
-        };
-    public static UserDto.CurrentUser ToCurrentUserDto(this User user, string email) =>
-        new UserDto.CurrentUser
+    public static UserDto.CurrentUser ToCurrentUserDto(
+        this BaseUser user,
+        string email,
+        IEnumerable<SentimentDto.Get>? sentiments = null,
+        IEnumerable<HobbyDto.Get>? hobbies = null,
+        IEnumerable<string>? defaultChatLines = null)
+        => new UserDto.CurrentUser
         {
             Id = user.Id,
             FirstName = user.FirstName,
@@ -29,18 +26,29 @@ internal static class UserMapper
             Gender = user.Gender.ToDto(),
             BirthDay = user.BirthDay,
             CreatedAt = user.CreatedAt,
-            Interests = user.Sentiments
-                .Select(SentimentMapper.ToGetDto)
-                .ToList(),
-            Hobbies = user.Hobbies
-                .Select(HobbyMapper.ToGetDto)
-                .ToList(),
-            DefaultChatLines = user
-                .UserSettings
-                .ChatTextLineSuggestions
-                .Select(x => x.Sentence.Value)
-                .ToList(),
+            Interests = sentiments?.ToList() ?? [],
+            Hobbies = hobbies?.ToList() ?? [],
+            DefaultChatLines = defaultChatLines?.ToList()
+                ?? user.UserSettings.ChatTextLineSuggestions
+                    .Select(x => x.Sentence.Value)
+                    .ToList(),
         };
+
+    public static UserDto.Connection ToConnectionDto(this User user) =>
+        new UserDto.Connection
+        {
+            Id = user.Id,
+            Name = $"{user.FirstName} {user.LastName}",
+            AccountId = user.AccountId,
+            Age = CalculateAge(user.BirthDay),
+            AvatarUrl = user.AvatarUrl,
+        };
+    public static UserDto.CurrentUser ToCurrentUserDto(this User user, string email) =>
+        ((BaseUser)user).ToCurrentUserDto(
+            email,
+            user.Sentiments.Select(SentimentMapper.ToGetDto),
+            user.Hobbies.Select(HobbyMapper.ToGetDto),
+            user.UserSettings.ChatTextLineSuggestions.Select(x => x.Sentence.Value));
     public static UserDto.ConnectionProfile ToConnectionProfileDto(this User user) =>
         new UserDto.ConnectionProfile
         {

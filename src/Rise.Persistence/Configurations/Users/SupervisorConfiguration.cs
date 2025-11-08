@@ -12,5 +12,6 @@ internal class SupervisorConfiguration : EntityConfiguration<Supervisor>
         base.Configure(builder);
 
         builder.ToTable("Supervisors");
+
     }
 }

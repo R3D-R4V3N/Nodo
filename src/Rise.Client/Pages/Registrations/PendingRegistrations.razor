@@ -1,0 +1,171 @@
+@page "/registrations/pending"
+@using Microsoft.AspNetCore.Authorization
+@using Rise.Shared.Identity
+@using Rise.Shared.RegistrationRequests
+@attribute [Authorize(Roles = $"{AppRoles.Supervisor},{AppRoles.Administrator}")]
+@inject IRegistrationRequestService RegistrationRequestService
+@using Serilog
+
+<PageTitle>Registratieaanvragen</PageTitle>
+
+<section class="min-h-screen bg-gradient-to-b from-[#F3F8F4] to-white px-6 pb-28 pt-12">
+    <div class="mx-auto max-w-3xl space-y-6">
+        <header class="text-center">
+            <h1 class="text-3xl font-bold text-[#0B6532]">Inkomende registraties</h1>
+            <p class="mt-2 text-sm text-neutral-600">Bevestig nieuwe aanvragen en wijs een begeleider toe.</p>
+        </header>
+
+        @if (_isLoading)
+        {
+            <div class="rounded-2xl border border-neutral-200 bg-white px-4 py-10 text-center shadow-sm">
+                <p class="text-sm text-neutral-500">Aan het laden...</p>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-700">@_errorMessage</div>
+        }
+        else if (_requests.Count == 0)
+        {
+            <div class="rounded-2xl border border-neutral-200 bg-white px-4 py-10 text-center shadow-sm">
+                <p class="text-sm text-neutral-500">Er zijn momenteel geen openstaande registraties.</p>
+            </div>
+        }
+        else
+        {
+            <div class="space-y-4">
+                @foreach (var request in _requests)
+                {
+                    var isProcessing = _approving.Contains(request.Id);
+
+                    <article class="rounded-3xl border border-neutral-200 bg-white px-5 py-6 shadow-sm">
+                        <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                            <div>
+                                <h2 class="text-lg font-semibold text-[#04320C]">@request.FullName</h2>
+                                <p class="text-sm text-neutral-600">@request.Email</p>
+                                <p class="mt-1 text-sm text-neutral-500">Organisatie: <span class="font-medium text-neutral-700">@request.OrganizationName</span></p>
+                                <p class="text-xs text-neutral-400">Ingediend op @request.SubmittedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+                            </div>
+                            <div class="flex w-full flex-col gap-3 md:w-60">
+                                <label class="text-xs font-medium uppercase tracking-wide text-neutral-500">Begeleider</label>
+                                <select class="rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-700 focus:border-[#0B6532] focus:outline-none focus:ring-1 focus:ring-[#0B6532]"
+                                        @bind="_selectedSupervisors[request.Id]"
+                                        disabled="@(request.Supervisors.Count == 0 || isProcessing)">
+                                    <option value="" disabled>Kies een begeleider</option>
+                                    @foreach (var supervisor in request.Supervisors)
+                                    {
+                                    <option value="@supervisor.Id">@supervisor.Name</option>
+                                    }
+                                </select>
+
+                                <button class="rounded-xl bg-[#0B6532] px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#0a572b] disabled:cursor-not-allowed disabled:bg-[#9fc9b3]"
+                                        disabled="@(isProcessing || !_selectedSupervisors.ContainsKey(request.Id) || _selectedSupervisors[request.Id] is null)"
+                                        @onclick="() => ApproveAsync(request)">
+                                    @(isProcessing ? "Bezig..." : "Keur goed")
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(_statusMessage))
+        {
+            <div class="rounded-2xl border border-green-200 bg-green-50 px-4 py-4 text-sm text-green-700">@_statusMessage</div>
+        }
+    </div>
+</section>
+
+@code {
+    private readonly List<RegistrationRequestDto.Pending> _requests = [];
+    private readonly Dictionary<int, int?> _selectedSupervisors = new();
+    private readonly HashSet<int> _approving = new();
+
+    private bool _isLoading = true;
+    private string? _errorMessage;
+    private string? _statusMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRequestsAsync();
+    }
+
+    private async Task LoadRequestsAsync()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+        _statusMessage = null;
+
+        try
+        {
+            var result = await RegistrationRequestService.GetPendingAsync();
+            if (result.IsSuccess)
+            {
+                _requests.Clear();
+                _requests.AddRange(result.Value.Requests);
+                _selectedSupervisors.Clear();
+
+                foreach (var request in _requests)
+                {
+                    var selected = request.AssignedSupervisorId ?? request.Supervisors.FirstOrDefault()?.Id;
+                    _selectedSupervisors[request.Id] = selected;
+                }
+            }
+            else
+            {
+                _errorMessage = string.Join(Environment.NewLine, result.Errors);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Could not load pending registration requests.");
+            _errorMessage = "Kon de registraties niet laden.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task ApproveAsync(RegistrationRequestDto.Pending request)
+    {
+        if (!_selectedSupervisors.TryGetValue(request.Id, out var supervisorId) || supervisorId is null)
+        {
+            _statusMessage = "Selecteer eerst een begeleider.";
+            return;
+        }
+
+        _approving.Add(request.Id);
+        _errorMessage = null;
+        _statusMessage = null;
+
+        try
+        {
+            var result = await RegistrationRequestService.ApproveAsync(request.Id, new RegistrationRequestRequest.Approve
+            {
+                AssignedSupervisorId = supervisorId.Value,
+            });
+
+            if (result.IsSuccess)
+            {
+                _requests.RemoveAll(r => r.Id == request.Id);
+                _selectedSupervisors.Remove(request.Id);
+                _statusMessage = "De aanvraag werd goedgekeurd.";
+            }
+            else
+            {
+                _errorMessage = string.Join(Environment.NewLine, result.Errors);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Could not approve registration request {RegistrationId}", request.Id);
+            _errorMessage = "Goedkeuren is mislukt.";
+        }
+        finally
+        {
+            _approving.Remove(request.Id);
+        }
+    }
+}

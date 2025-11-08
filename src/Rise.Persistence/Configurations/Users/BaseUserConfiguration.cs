@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Rise.Domain.Organizations;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Settings;
@@ -47,6 +48,11 @@ internal class BaseUserConfiguration : EntityConfiguration<BaseUser>
         builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.Gender)
             .HasDefaultValue(GenderType.X);
+
+        builder.HasOne(u => u.Organization)
+            .WithMany(o => o.Members)
+            .HasForeignKey(u => u.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // settings
         builder.OwnsOne(u => u.UserSettings, userSettings =>

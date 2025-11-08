@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using Rise.Domain.Chats;
+using Rise.Domain.Organizations;
 using Rise.Domain.Users.Hobbys;
 using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Sentiment;
@@ -22,6 +23,8 @@ public abstract class BaseUser : Entity
     public required AvatarUrl AvatarUrl { get; set; }
     public required DateOnly BirthDay { get; set; }
     public required GenderType Gender { get; set; }
+    public int OrganizationId { get; private set; }
+    public Organization Organization { get; private set; } = null!;
     // settings
     private UserSetting _userSettings;
     public required UserSetting UserSettings
@@ -93,6 +96,13 @@ public abstract class BaseUser : Entity
         }
 
         return Result.Success();
+    }
+
+    public void AssignOrganization(Organization organization)
+    {
+        Organization = Guard.Against.Null(organization);
+        OrganizationId = organization.Id;
+        organization.AddMember(this);
     }
 
     public override string ToString()
