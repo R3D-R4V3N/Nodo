@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
 using Rise.Domain.Messages;
 using Rise.Domain.Messages.Properties;
+using Rise.Domain.Users;
 using Rise.Persistence;
 using Rise.Services.Chats.Mapper;
 using Rise.Services.Identity;
@@ -23,18 +24,30 @@ public class ChatService(
 
     public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var accountId = _sessionContextProvider.User?.GetUserId();
+        var principal = _sessionContextProvider.User;
+        if (principal is null)
+        {
+            return Result.Unauthorized();
+        }
+
+        var accountId = principal.GetUserId();
         if (string.IsNullOrWhiteSpace(accountId))
         {
             return Result.Unauthorized();
         }
 
-        var sender = await _dbContext
-            .Users
-            .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+        var sender = await FindProfileByAccountIdAsync(accountId, cancellationToken);
 
         if (sender is null)
         {
+            if (principal.IsInRole(AppRoles.Administrator))
+            {
+                return Result.Success(new ChatResponse.GetChats
+                {
+                    Chats = []
+                });
+            }
+
             return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
         }
 
@@ -59,15 +72,19 @@ public class ChatService(
 
     public async Task<Result<ChatResponse.GetChat>> GetByIdAsync(int chatId, CancellationToken cancellationToken = default)
     {
-        var accountId = _sessionContextProvider.User?.GetUserId();
+        var principal = _sessionContextProvider.User;
+        if (principal is null)
+        {
+            return Result.Unauthorized();
+        }
+
+        var accountId = principal.GetUserId();
         if (string.IsNullOrWhiteSpace(accountId))
         {
             return Result.Unauthorized();
         }
 
-        var sender = await _dbContext
-            .Users
-            .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+        var sender = await FindProfileByAccountIdAsync(accountId, cancellationToken);
 
         if (sender is null)
         {
@@ -96,15 +113,19 @@ public class ChatService(
 
     public async Task<Result<MessageDto.Chat>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
     {
-        var accountId = _sessionContextProvider.User?.GetUserId();
+        var principal = _sessionContextProvider.User;
+        if (principal is null)
+        {
+            return Result.Unauthorized();
+        }
+
+        var accountId = principal.GetUserId();
         if (string.IsNullOrWhiteSpace(accountId))
         {
             return Result.Unauthorized();
         }
 
-        var sender = await _dbContext
-            .Users
-            .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+        var sender = await FindProfileByAccountIdAsync(accountId, cancellationToken);
 
         if (sender is null)
         {
@@ -183,5 +204,28 @@ public class ChatService(
         }
 
         return Result.Success(dto);
+    }
+
+    private async Task<BaseUser?> FindProfileByAccountIdAsync(string accountId, CancellationToken cancellationToken)
+    {
+        var profile = await _dbContext
+            .Set<BaseUser>()
+            .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+
+        if (profile is not null)
+        {
+            return profile;
+        }
+
+        profile = await _dbContext.Supervisors
+            .SingleOrDefaultAsync(s => s.AccountId == accountId, cancellationToken);
+
+        if (profile is not null)
+        {
+            return profile;
+        }
+
+        return await _dbContext.Users
+            .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
     }
 }

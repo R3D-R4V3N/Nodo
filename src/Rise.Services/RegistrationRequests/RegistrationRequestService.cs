@@ -54,8 +54,15 @@ public class RegistrationRequestService(
             return Result.Unauthorized();
         }
 
-        var supervisors = await _dbContext.Supervisors
-            .AsNoTracking()
+        var supervisorsQuery = _dbContext.Supervisors
+            .AsNoTracking();
+
+        if (!isAdministrator && supervisor is not null)
+        {
+            supervisorsQuery = supervisorsQuery.Where(s => s.OrganizationId == supervisor.OrganizationId);
+        }
+
+        var supervisors = await supervisorsQuery
             .OrderBy(s => s.FirstName.Value)
             .ThenBy(s => s.LastName.Value)
             .Select(s => new
@@ -83,7 +90,7 @@ public class RegistrationRequestService(
             .AsNoTracking()
             .Where(r => r.Status == RegistrationStatus.Pending);
 
-        if (supervisor is not null)
+        if (supervisor is not null && !isAdministrator)
         {
             pendingQuery = pendingQuery.Where(r => r.OrganizationId == supervisor.OrganizationId);
         }
@@ -126,18 +133,28 @@ public class RegistrationRequestService(
 
     public async Task<Result<RegistrationRequestResponse.Approve>> ApproveAsync(int requestId, RegistrationRequestRequest.Approve request, CancellationToken ct = default)
     {
-        var approverAccountId = _sessionContextProvider.User?.GetUserId();
+        var principal = _sessionContextProvider.User;
 
-        if (string.IsNullOrWhiteSpace(approverAccountId))
+        if (principal is null)
         {
             return Result.Unauthorized();
         }
 
-        var approver = await _dbContext.Supervisors
-            .Include(s => s.Organization)
-            .SingleOrDefaultAsync(s => s.AccountId == approverAccountId, ct);
+        var approverAccountId = principal.GetUserId();
+        var isAdministrator = principal.IsInRole(AppRoles.Administrator);
 
-        if (approver is null)
+        if (string.IsNullOrWhiteSpace(approverAccountId) && !isAdministrator)
+        {
+            return Result.Unauthorized();
+        }
+
+        var approver = string.IsNullOrWhiteSpace(approverAccountId)
+            ? null
+            : await _dbContext.Supervisors
+                .Include(s => s.Organization)
+                .SingleOrDefaultAsync(s => s.AccountId == approverAccountId, ct);
+
+        if (approver is null && !isAdministrator)
         {
             return Result.Unauthorized();
         }
@@ -151,7 +168,7 @@ public class RegistrationRequestService(
             return Result.NotFound();
         }
 
-        if (registration.OrganizationId != approver.OrganizationId)
+        if (approver is not null && registration.OrganizationId != approver.OrganizationId)
         {
             return Result.Unauthorized();
         }
@@ -174,7 +191,7 @@ public class RegistrationRequestService(
             return Result.Invalid(new ValidationError(nameof(request.AssignedSupervisorId), "Begeleider behoort niet tot dezelfde organisatie."));
         }
 
-        var approvalResult = registration.Approve(approver, assignedSupervisor);
+        var approvalResult = registration.Approve(approver ?? assignedSupervisor, assignedSupervisor);
         if (!approvalResult.IsSuccess)
         {
             return Result.Conflict(approvalResult.Errors.ToArray());
