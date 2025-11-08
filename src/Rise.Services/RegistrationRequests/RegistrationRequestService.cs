@@ -1,3 +1,4 @@
+using System.Linq;
 using Ardalis.Result;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -26,14 +27,14 @@ public class RegistrationRequestService(
 
     public async Task<Result<RegistrationRequestResponse.PendingList>> GetPendingAsync(CancellationToken ct = default)
     {
-        var user = _sessionContextProvider.User;
+        var principal = _sessionContextProvider.User;
 
-        if (user is null)
+        if (principal is null)
         {
             return Result.Unauthorized();
         }
 
-        var accountId = user.GetUserId();
+        var accountId = principal.GetUserId();
 
         if (string.IsNullOrWhiteSpace(accountId))
         {
@@ -44,38 +45,66 @@ public class RegistrationRequestService(
             .AsNoTracking()
             .SingleOrDefaultAsync(s => s.AccountId == accountId, ct);
 
-        if (supervisor is null)
+        var isAdministrator = principal.IsInRole(AppRoles.Administrator);
+
+        if (supervisor is null && !isAdministrator)
         {
             return Result.Unauthorized();
         }
 
-        var supervisorOptions = await _dbContext.Supervisors
+        var supervisorLookup = await _dbContext.Supervisors
             .AsNoTracking()
-            .Where(s => s.OrganizationId == supervisor.OrganizationId)
             .OrderBy(s => s.FirstName.Value)
-            .Select(s => new RegistrationRequestDto.SupervisorOption
+            .GroupBy(s => s.OrganizationId)
+            .ToDictionaryAsync(
+                g => g.Key,
+                g => g
+                    .Select(s => new RegistrationRequestDto.SupervisorOption
+                    {
+                        Id = s.Id,
+                        Name = $"{s.FirstName} {s.LastName}",
+                    })
+                    .ToList(),
+                ct);
+
+        var pendingQuery = _dbContext.RegistrationRequests
+            .AsNoTracking()
+            .Where(r => r.Status == RegistrationStatus.Pending);
+
+        if (supervisor is not null)
+        {
+            pendingQuery = pendingQuery.Where(r => r.OrganizationId == supervisor.OrganizationId);
+        }
+
+        var pendingRows = await pendingQuery
+            .OrderBy(r => r.CreatedAt)
+            .Select(r => new
             {
-                Id = s.Id,
-                Name = $"{s.FirstName} {s.LastName}",
+                r.Id,
+                r.Email,
+                r.FullName,
+                r.OrganizationId,
+                OrganizationName = r.Organization.Name,
+                r.CreatedAt,
+                r.AssignedSupervisorId,
             })
             .ToListAsync(ct);
 
-        var pendingRequests = await _dbContext.RegistrationRequests
-            .AsNoTracking()
-            .Where(r => r.OrganizationId == supervisor.OrganizationId && r.Status == RegistrationStatus.Pending)
-            .OrderBy(r => r.CreatedAt)
+        var pendingRequests = pendingRows
             .Select(r => new RegistrationRequestDto.Pending
             {
                 Id = r.Id,
                 Email = r.Email,
                 FullName = r.FullName,
                 OrganizationId = r.OrganizationId,
-                OrganizationName = r.Organization.Name,
+                OrganizationName = r.OrganizationName,
                 SubmittedAt = r.CreatedAt,
                 AssignedSupervisorId = r.AssignedSupervisorId,
-                Supervisors = supervisorOptions,
+                Supervisors = supervisorLookup.TryGetValue(r.OrganizationId, out var options)
+                    ? options
+                    : []
             })
-            .ToListAsync(ct);
+            .ToList();
 
         return Result.Success(new RegistrationRequestResponse.PendingList
         {
