@@ -1,7 +1,9 @@
 @page "/registrations/pending"
 @using Microsoft.AspNetCore.Authorization
+@using Rise.Shared.Assets
 @using Rise.Shared.Identity
 @using Rise.Shared.RegistrationRequests
+@using Rise.Shared.Users
 @attribute [Authorize(Roles = $"{AppRoles.Supervisor},{AppRoles.Administrator}")]
 @inject IRegistrationRequestService RegistrationRequestService
 @using Serilog
@@ -45,11 +47,22 @@
 
                         <article class="rounded-3xl border border-neutral-200 bg-white px-5 py-6 shadow-sm">
                             <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                                <div class="space-y-1">
-                                    <h2 class="text-lg font-semibold text-neutral-800">@request.FullName</h2>
-                                    <p class="text-sm text-neutral-600">@request.Email</p>
-                                    <p class="text-sm text-neutral-500">Organisatie: <span class="font-medium text-neutral-700">@request.OrganizationName</span></p>
-                                    <p class="text-xs text-neutral-400">Ingediend op @request.SubmittedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+                                <div class="flex flex-1 gap-4">
+                                    <img class="h-16 w-16 rounded-full object-cover border border-neutral-200"
+                                         src="@GetAvatarUrl(request.AvatarUrl)"
+                                         alt="Profielfoto van @request.FullName" />
+                                    <div class="space-y-1">
+                                        <h2 class="text-lg font-semibold text-neutral-800">@request.FullName</h2>
+                                        <div class="text-sm text-neutral-600 space-y-1">
+                                            <p>@request.Email</p>
+                                            <p>Voornaam: <span class="font-medium text-neutral-700">@request.FirstName</span></p>
+                                            <p>Achternaam: <span class="font-medium text-neutral-700">@request.LastName</span></p>
+                                            <p>Geboortedatum: <span class="font-medium text-neutral-700">@request.BirthDate.ToString("dd/MM/yyyy")</span></p>
+                                            <p>Geslacht: <span class="font-medium text-neutral-700">@GetGenderLabel(request.Gender)</span></p>
+                                            <p class="text-neutral-500">Organisatie: <span class="font-medium text-neutral-700">@request.OrganizationName</span></p>
+                                        </div>
+                                        <p class="text-xs text-neutral-400">Ingediend op @request.SubmittedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+                                    </div>
                                 </div>
                                 <div class="flex w-full flex-col gap-3 md:w-60">
                                     <label class="text-xs font-medium uppercase tracking-wide text-neutral-500">Begeleider</label>
@@ -91,6 +104,17 @@
     private bool _isLoading = true;
     private string? _errorMessage;
     private string? _statusMessage;
+
+    private static string GetAvatarUrl(string? avatarUrl) => string.IsNullOrWhiteSpace(avatarUrl)
+        ? DefaultImages.Profile
+        : avatarUrl;
+
+    private static string GetGenderLabel(GenderTypeDto gender) => gender switch
+    {
+        GenderTypeDto.Man => "Man",
+        GenderTypeDto.Woman => "Vrouw",
+        _ => "X",
+    };
 
     protected override async Task OnInitializedAsync()
     {

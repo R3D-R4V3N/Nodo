@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Registrations;
 using Rise.Persistence;
+using Rise.Domain.Users.Properties;
+using Rise.Shared.Assets;
 using Rise.Shared.Identity.Accounts;
+using Rise.Shared.Users;
 
 namespace Rise.Server.Endpoints.Identity.Accounts;
 
@@ -64,10 +67,20 @@ public class Register(
         var passwordUser = new IdentityUser { UserName = req.Email, Email = req.Email };
         var hashedPassword = passwordHasher.HashPassword(passwordUser, req.Password);
 
+        var birthDate = req.BirthDate ?? DateOnly.FromDateTime(DateTime.Today.AddYears(-18));
+        var gender = (GenderType)req.Gender;
+        var avatarUrl = string.IsNullOrWhiteSpace(req.AvatarDataUrl)
+            ? DefaultImages.GetProfile(req.Email)
+            : req.AvatarDataUrl;
+
         var registration = RegistrationRequest.Create(
             req.Email,
             normalizedEmail,
-            req.FullName!,
+            req.FirstName!,
+            req.LastName!,
+            birthDate,
+            gender,
+            avatarUrl,
             hashedPassword,
             organization);
 

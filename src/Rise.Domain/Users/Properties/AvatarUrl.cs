@@ -6,7 +6,7 @@ public class AvatarUrl : ValueObject, IProperty<AvatarUrl, string>
 {
     // EF
     private AvatarUrl() { }
-    public const int MAX_LENGTH = 255;
+    public const int MAX_LENGTH = 500000;
 
     public string Value { get; private set; }
     public static Result<AvatarUrl> Create(string value)
@@ -18,7 +18,7 @@ public class AvatarUrl : ValueObject, IProperty<AvatarUrl, string>
 
         if (value.Length > MAX_LENGTH)
         {
-            return Result.Conflict("Avatar url is te lang.");
+            return Result.Conflict($"Avatar url is te lang. Maximum {MAX_LENGTH} tekens.");
         }
 
         return Result.Success(new AvatarUrl() { Value = value });

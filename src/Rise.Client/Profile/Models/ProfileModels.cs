@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rise.Shared.Users;
@@ -24,6 +25,7 @@ public record ProfileModel
     public string Email { get; init; } = string.Empty;
     public string Bio { get; init; } = string.Empty;
     public GenderTypeDto Gender { get; init; }
+    public DateOnly BirthDay { get; init; }
     public string AvatarUrl { get; init; } = DefaultAvatar;
     public string MemberSince { get; init; } = string.Empty;
     public IReadOnlyList<ProfileInterestModel> Interests { get; init; } = Array.Empty<ProfileInterestModel>();
@@ -55,6 +57,7 @@ public record ProfileModel
             Email = user.Email,
             Bio = user.Biography,
             Gender = user.Gender,
+            BirthDay = user.BirthDay,
             AvatarUrl = string.IsNullOrWhiteSpace(user.AvatarUrl) ? DefaultAvatar : user.AvatarUrl,
             MemberSince = memberSince,
             Interests = interests,
@@ -73,6 +76,7 @@ public class ProfileDraft
     public string Email { get; set; } = string.Empty;
     public string Bio { get; set; } = string.Empty;
     public GenderTypeDto Gender { get; set; }
+    public DateOnly BirthDay { get; set; }
     public string AvatarUrl { get; set; } = ProfileModel.DefaultAvatar;
     public string MemberSince { get; set; } = string.Empty;
 
@@ -83,6 +87,7 @@ public class ProfileDraft
         Email = model.Email,
         Bio = model.Bio,
         Gender = model.Gender,
+        BirthDay = model.BirthDay,
         AvatarUrl = model.AvatarUrl,
         MemberSince = model.MemberSince
     };
@@ -94,6 +99,7 @@ public class ProfileDraft
         Email = Email,
         Bio = Bio,
         Gender = Gender,
+        BirthDay = BirthDay,
         AvatarUrl = AvatarUrl,
         MemberSince = MemberSince
     };

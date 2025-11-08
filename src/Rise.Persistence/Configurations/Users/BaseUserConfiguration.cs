@@ -43,7 +43,7 @@ internal class BaseUserConfiguration : EntityConfiguration<BaseUser>
             .HasConversion(
                 new PropertyConverter<AvatarUrl, string>()
             ).IsRequired()
-            .HasMaxLength(AvatarUrl.MAX_LENGTH);
+            .HasColumnType("longtext");
 
         builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.Gender)

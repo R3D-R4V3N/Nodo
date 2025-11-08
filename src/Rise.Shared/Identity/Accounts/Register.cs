@@ -1,4 +1,7 @@
-﻿using Destructurama.Attributed;
+using System;
+using Destructurama.Attributed;
+using FluentValidation;
+using Rise.Shared.Users;
 
 namespace Rise.Shared.Identity.Accounts;
 
@@ -15,16 +18,36 @@ public static partial class AccountRequest
         public string? Email { get; set; }
 
         /// <summary>
-        /// The user's full name.
+        /// The user's first name.
         /// </summary>
-        public string? FullName { get; set; }
+        public string? FirstName { get; set; }
+
+        /// <summary>
+        /// The user's last name.
+        /// </summary>
+        public string? LastName { get; set; }
+
+        /// <summary>
+        /// The user's birth date.
+        /// </summary>
+        public DateOnly? BirthDate { get; set; }
+
+        /// <summary>
+        /// The user's gender.
+        /// </summary>
+        public GenderTypeDto Gender { get; set; } = GenderTypeDto.X;
+
+        /// <summary>
+        /// The user's profile photo in data URL format.
+        /// </summary>
+        public string? AvatarDataUrl { get; set; }
 
         /// <summary>
         /// The user's password.
         /// </summary>
         [LogMasked]
         public string? Password { get; set; }
-        
+
         /// <summary>
         /// The user's password.
         /// </summary>
@@ -36,17 +59,27 @@ public static partial class AccountRequest
         /// </summary>
         public int? OrganizationId { get; set; }
 
-        // Other needed stuff here, like Role(s), Firstname, lastname etc.
-
         /// <summary>
         /// Provides validation rules for the Register class fields such as email and password.
         /// </summary>
         public class Validator : AbstractValidator<Register>
         {
+            private const int MaxAvatarLength = 500000;
+
             public Validator()
             {
                 RuleFor(x => x.Email).NotEmpty().EmailAddress();
-                RuleFor(x => x.FullName).NotEmpty();
+                RuleFor(x => x.FirstName).NotEmpty();
+                RuleFor(x => x.LastName).NotEmpty();
+                RuleFor(x => x.BirthDate)
+                    .NotNull()
+                    .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today))
+                    .WithMessage("Geboortedatum mag niet in de toekomst liggen.");
+                RuleFor(x => x.Gender)
+                    .IsInEnum();
+                RuleFor(x => x.AvatarDataUrl)
+                    .NotEmpty()
+                    .MaximumLength(MaxAvatarLength);
                 RuleFor(x => x.Password).NotEmpty();
                 RuleFor(x => x.ConfirmPassword)
                     .Equal(x => x.Password)

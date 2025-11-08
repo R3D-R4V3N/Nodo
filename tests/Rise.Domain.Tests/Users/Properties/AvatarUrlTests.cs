@@ -43,7 +43,7 @@ public class AvatarUrlTests
 
         result.IsSuccess.ShouldBeFalse();
         result.Status.ShouldBe(ResultStatus.Conflict);
-        result.Errors.ShouldBe(["Avatar url is te lang."]);
+        result.Errors.ShouldBe([$"Avatar url is te lang. Maximum {AvatarUrl.MAX_LENGTH} tekens."]);
     }
 
     [Fact]
