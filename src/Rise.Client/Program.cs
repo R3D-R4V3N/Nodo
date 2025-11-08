@@ -55,22 +55,22 @@ try
     builder.Services.AddHttpClient<IUserConnectionService, UserConnectionService>(client =>
     {
         client.BaseAddress = backendUri;
-    });
+    }).AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<IUserContextService, UserContextService>(client =>
     {
         client.BaseAddress = backendUri;
-    });
+    }).AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<IUserService, UserService>(client =>
     {
         client.BaseAddress = backendUri;
-    });
+    }).AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<UserContextService>(client =>
     {
         client.BaseAddress = backendUri;
-    });
+    }).AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<IOrganizationService, OrganizationService>(client =>
     {
