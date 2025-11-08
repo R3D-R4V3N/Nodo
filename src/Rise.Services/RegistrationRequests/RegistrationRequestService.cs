@@ -3,6 +3,7 @@ using System.Linq;
 using Ardalis.Result;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Rise.Domain.Registrations;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Properties;
