@@ -63,15 +63,8 @@ public class RegistrationRequestService(
         }
 
         var supervisors = await supervisorsQuery
-            .OrderBy(s => s.FirstName.Value)
-            .ThenBy(s => s.LastName.Value)
-            .Select(s => new
-            {
-                s.Id,
-                s.OrganizationId,
-                FirstName = s.FirstName.Value,
-                LastName = s.LastName.Value,
-            })
+            .OrderBy(s => s.FirstName)
+            .ThenBy(s => s.LastName)
             .ToListAsync(ct);
 
         var supervisorLookup = supervisors
@@ -82,7 +75,7 @@ public class RegistrationRequestService(
                     .Select(s => new RegistrationRequestDto.SupervisorOption
                     {
                         Id = s.Id,
-                        Name = $"{s.FirstName} {s.LastName}",
+                        Name = $"{s.FirstName.Value} {s.LastName.Value}",
                     })
                     .ToList());
 
@@ -96,17 +89,8 @@ public class RegistrationRequestService(
         }
 
         var pendingRows = await pendingQuery
+            .Include(r => r.Organization)
             .OrderBy(r => r.CreatedAt)
-            .Select(r => new
-            {
-                r.Id,
-                r.Email,
-                r.FullName,
-                r.OrganizationId,
-                OrganizationName = r.Organization.Name,
-                r.CreatedAt,
-                r.AssignedSupervisorId,
-            })
             .ToListAsync(ct);
 
         var pendingRequests = pendingRows
@@ -116,7 +100,7 @@ public class RegistrationRequestService(
                 Email = r.Email,
                 FullName = r.FullName,
                 OrganizationId = r.OrganizationId,
-                OrganizationName = r.OrganizationName,
+                OrganizationName = r.Organization?.Name ?? string.Empty,
                 SubmittedAt = r.CreatedAt,
                 AssignedSupervisorId = r.AssignedSupervisorId,
                 Supervisors = supervisorLookup.TryGetValue(r.OrganizationId, out var options)
