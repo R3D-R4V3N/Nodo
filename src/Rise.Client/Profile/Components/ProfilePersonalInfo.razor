@@ -104,10 +104,20 @@
                     }
                 </select>
             }
-            else
-            {
-                <p class="mt-1 text-sm">@GenderDisplay(Gender)</p>
-            }
+        else
+        {
+            <p class="mt-1 text-sm">@GenderDisplay(Gender)</p>
+        }
+    </div>
+
+        <div class="rounded-2xl border border-neutral-200 bg-white px-3 py-2.5">
+            <label class="flex items-center gap-2 text-xs text-neutral-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 256 256">
+                    <path d="M216,40H200V32a8,8,0,0,0-16,0v8H152V32a8,8,0,0,0-16,0v8H120V32a8,8,0,0,0-16,0v8H72V32a8,8,0,0,0-16,0v8H40A16,16,0,0,0,24,56V216a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,176H40V104H216Zm0-128H40V56H56V64a8,8,0,0,0,16,0V56h32V64a8,8,0,0,0,16,0V56h16V64a8,8,0,0,0,16,0V56h32V64a8,8,0,0,0,16,0V56h16Z"></path>
+                </svg>
+                Geboortedatum
+            </label>
+            <p class="mt-1 text-sm">@BirthDayOrPlaceholder</p>
         </div>
     </div>
 </section>
@@ -117,6 +127,7 @@
     private string _lastName = string.Empty;
     private string _email = string.Empty;
     private string _bio = string.Empty;
+    private string _birthDay = string.Empty;
 
     [Parameter]
     public string FirstName
@@ -158,11 +169,18 @@
     public GenderTypeDto Gender { get; set; }
 
     [Parameter] public EventCallback<GenderTypeDto> GenderChanged { get; set; }
+    [Parameter]
+    public string BirthDay
+    {
+        get => _birthDay;
+        set => _birthDay = value ?? string.Empty;
+    }
     [Parameter] public bool IsEditing { get; set; }
 
     private string NameOrPlaceholder => string.IsNullOrWhiteSpace(FirstName) ? "–" : $"{FirstName} {LastName}";
     private string EmailOrPlaceholder => string.IsNullOrWhiteSpace(Email) ? "–" : Email;
     private string BioOrPlaceholder => string.IsNullOrWhiteSpace(Bio) ? "–" : Bio;
+    private string BirthDayOrPlaceholder => string.IsNullOrWhiteSpace(BirthDay) ? "–" : BirthDay;
     private int BioLength => Bio?.Length ?? 0;
 
     private string GenderDisplay(GenderTypeDto gender) => gender switch

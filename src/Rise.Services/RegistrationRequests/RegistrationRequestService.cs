@@ -13,6 +13,7 @@ using Rise.Services.Identity;
 using Rise.Shared.Assets;
 using Rise.Shared.Identity;
 using Rise.Shared.RegistrationRequests;
+using Rise.Shared.Users;
 
 namespace Rise.Services.RegistrationRequests;
 
@@ -99,6 +100,11 @@ public class RegistrationRequestService(
                 Id = r.Id,
                 Email = r.Email,
                 FullName = r.FullName,
+                FirstName = r.FirstName,
+                LastName = r.LastName,
+                BirthDate = r.BirthDate,
+                Gender = (GenderTypeDto)r.Gender,
+                AvatarUrl = r.AvatarUrl,
                 OrganizationId = r.OrganizationId,
                 OrganizationName = r.Organization?.Name ?? string.Empty,
                 SubmittedAt = r.CreatedAt,
@@ -206,17 +212,17 @@ public class RegistrationRequestService(
 
         await _userManager.AddToRoleAsync(identityUser, AppRoles.User);
 
-        var (firstName, lastName) = SplitName(registration.FullName);
-
         var newUser = new User
         {
             AccountId = identityUser.Id,
-            FirstName = FirstName.Create(firstName),
-            LastName = LastName.Create(lastName),
+            FirstName = FirstName.Create(registration.FirstName),
+            LastName = LastName.Create(registration.LastName),
             Biography = Biography.Create("Nieuw bij Nodo."),
-            AvatarUrl = AvatarUrl.Create(DefaultImages.GetProfile(identityUser.Email)),
-            BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-18)),
-            Gender = GenderType.X,
+            AvatarUrl = AvatarUrl.Create(string.IsNullOrWhiteSpace(registration.AvatarUrl)
+                ? DefaultImages.GetProfile(identityUser.Email)
+                : registration.AvatarUrl),
+            BirthDay = registration.BirthDate,
+            Gender = registration.Gender,
             UserSettings = new UserSetting
             {
                 FontSize = FontSize.Create(12),
@@ -249,20 +255,4 @@ public class RegistrationRequestService(
         });
     }
 
-    private static (string FirstName, string LastName) SplitName(string fullName)
-    {
-        if (string.IsNullOrWhiteSpace(fullName))
-        {
-            return ("Gebruiker", "Nodo");
-        }
-
-        var parts = fullName.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-
-        return parts.Length switch
-        {
-            0 => ("Gebruiker", "Nodo"),
-            1 => (parts[0], parts[0]),
-            _ => (parts[0], parts[1]),
-        };
-    }
 }

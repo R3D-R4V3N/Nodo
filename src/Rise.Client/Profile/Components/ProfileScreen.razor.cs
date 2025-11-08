@@ -204,6 +204,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private bool IsAddingCustomChatLine => _isAddingCustomChatLine;
     private bool IsCustomChatLineLimitReached => _chatLinePickerSelection.Count >= ChatLineSelectionLimit;
     private int CustomChatLineMaxLength => ChatLineTextMaxLength;
+    private string BirthDayDisplay => FormatBirthDay(_draft.BirthDay);
     private string PreferencePickerTitle => _preferencePickerMode switch
     {
         PreferencePickerMode.Likes => "Kies wat je leuk vindt",
@@ -486,7 +487,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         {
             //todo: rename avatar url to bytes tream
             //when it reaches endpoint, upload to file server and map that url to user
-            using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+            using var stream = file.OpenReadStream(maxAllowedSize: 300 * 1024);
             using var memory = new MemoryStream();
             await stream.CopyToAsync(memory);
             var base64 = Convert.ToBase64String(memory.ToArray());
@@ -995,6 +996,16 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         }
 
         return id;
+    }
+
+    private static string FormatBirthDay(DateOnly birthDay)
+    {
+        if (birthDay == default)
+        {
+            return "–";
+        }
+
+        return birthDay.ToString("dd MMMM yyyy", CultureInfo.CurrentCulture);
     }
 
     private IReadOnlyList<PreferenceChip> BuildPreferenceChips(IEnumerable<string> ids)

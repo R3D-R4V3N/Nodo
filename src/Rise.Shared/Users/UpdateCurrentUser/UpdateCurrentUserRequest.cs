@@ -20,7 +20,7 @@ public static partial class UserRequest
         public const int MaxHobbies = 3;
         private const int MaxNameLength = 200;
         private const int MaxBiographyLength = 500;
-        private const int MaxAvatarLength = 250;
+        private const int MaxAvatarLength = 500000;
         private const int MaxDefaultChatLines = 5;
         private const int MaxPreferences = 5;
         private const int MaxChatLineLength = 150;

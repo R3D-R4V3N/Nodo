@@ -1,7 +1,9 @@
+using System;
 using Ardalis.Result;
 using Rise.Domain.Common;
 using Rise.Domain.Organizations;
 using Rise.Domain.Users;
+using Rise.Domain.Users.Properties;
 
 namespace Rise.Domain.Registrations;
 
@@ -12,6 +14,12 @@ public class RegistrationRequest : Entity
     public string Email { get; private set; } = string.Empty;
     public string NormalizedEmail { get; private set; } = string.Empty;
     public string FullName { get; private set; } = string.Empty;
+    public string FirstName { get; private set; } = string.Empty;
+    public string LastName { get; private set; } = string.Empty;
+    public DateOnly BirthDate { get; private set; }
+        = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-18));
+    public GenderType Gender { get; private set; } = GenderType.X;
+    public string AvatarUrl { get; private set; } = string.Empty;
     public string PasswordHash { get; private set; } = string.Empty;
     public RegistrationStatus Status { get; private set; } = RegistrationStatus.Pending;
 
@@ -30,7 +38,11 @@ public class RegistrationRequest : Entity
     public static RegistrationRequest Create(
         string email,
         string normalizedEmail,
-        string fullName,
+        string firstName,
+        string lastName,
+        DateOnly birthDate,
+        GenderType gender,
+        string avatarUrl,
         string passwordHash,
         Organization organization)
     {
@@ -38,9 +50,15 @@ public class RegistrationRequest : Entity
         {
             Email = Guard.Against.NullOrWhiteSpace(email).Trim(),
             NormalizedEmail = Guard.Against.NullOrWhiteSpace(normalizedEmail).Trim(),
-            FullName = Guard.Against.NullOrWhiteSpace(fullName).Trim(),
+            FirstName = Guard.Against.NullOrWhiteSpace(firstName).Trim(),
+            LastName = Guard.Against.NullOrWhiteSpace(lastName).Trim(),
+            BirthDate = birthDate,
+            Gender = gender,
+            AvatarUrl = Guard.Against.NullOrWhiteSpace(avatarUrl).Trim(),
             PasswordHash = Guard.Against.NullOrWhiteSpace(passwordHash),
         };
+
+        request.FullName = $"{request.FirstName} {request.LastName}".Trim();
 
         request.AssignOrganization(organization);
         return request;

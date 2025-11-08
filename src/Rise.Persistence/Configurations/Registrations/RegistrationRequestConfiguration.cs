@@ -18,8 +18,26 @@ internal class RegistrationRequestConfiguration : EntityConfiguration<Registrati
         builder.Property(r => r.NormalizedEmail)
             .IsRequired();
 
+        builder.Property(r => r.FirstName)
+            .IsRequired()
+            .HasMaxLength(200);
+
+        builder.Property(r => r.LastName)
+            .IsRequired()
+            .HasMaxLength(200);
+
         builder.Property(r => r.FullName)
             .IsRequired();
+
+        builder.Property(r => r.BirthDate)
+            .IsRequired();
+
+        builder.Property(r => r.Gender)
+            .IsRequired();
+
+        builder.Property(r => r.AvatarUrl)
+            .IsRequired()
+            .HasColumnType("longtext");
 
         builder.Property(r => r.PasswordHash)
             .IsRequired();
