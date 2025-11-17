@@ -4,6 +4,7 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Rise.Client.Identity.Components;
+using Rise.Client.UserConnections.Components.FriendProfile;
 using Rise.Shared.Identity.Accounts;
 using Rise.Shared.Organizations;
 using Rise.Shared.Users;
@@ -41,6 +42,8 @@ public class RegisterFormShould : TestContext
         cut.Find("#register-birth-date");
         cut.Find("#register-gender");
         cut.Find("#register-avatar");
+
+        cut.Find("#next-slide").Click();
 
         // Controleer dat de submit button aanwezig is
         var submitButton = cut.Find("button[type='submit']");

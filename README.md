@@ -14,6 +14,7 @@
 - [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) - Frontend.
 - [ASP.NET 9](https://dotnet.microsoft.com/en-us/apps/aspnet) - Backend.
 - [Entity Framework 9](https://learn.microsoft.com/en-us/ef/) - Database Access with Unit Of Work and Repository patterns.
+- [Pomelo EF MySQL](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql) - EF Core Provider for MySQL, MariaDB, or other MySQL-compatible databases
 - [EntityFrameworkCore Triggered](https://github.com/koenbeuk/EntityFrameworkCore.Triggered) - Database Triggers which are agnostic to the database provider.
 - [User Secrets](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets) - Securely store secrets in DEV.
 - [GuardClauses](https://github.com/ardalis/GuardClauses) - Validation Helper.
@@ -30,39 +31,26 @@
 
 ## Software 
 1. Install [Rider](https://www.jetbrains.com/rider/) or [Visual Studio](https://visualstudio.microsoft.com/)
-2. Make sure you have [ASP.NET 9](https://dotnet.microsoft.com/en-us/download) installed (comes with Rider and Visual Studio) 
+2. Make sure you have [ASP.NET 9](https://dotnet.microsoft.com/en-us/download) installed (comes with Rider and Visual Studio)
+3. Either
+   - MySQL
+   - Docker + Docker Compose
 
 ## Installation Instructions
 
 1. Clone the repository
 
-2. Open the `Rise.sln` file in [Rider](https://www.jetbrains.com/rider/), [Visual Studio](https://visualstudio.microsoft.com/) or  [Visual Studio Code](https://code.visualstudio.com/). (we prefer Rider, but you're free to choose.)
+2. Create the MySQL database schema as either
+   - Local: You also have to set an environment setting with key `DB_CONNECTION` and value the connection string
+   - Run the docker compose
 
-3. Run the project using the `Rise.Server` project as the startup project
+4. Open the `Rise.sln` file in [Rider](https://www.jetbrains.com/rider/), [Visual Studio](https://visualstudio.microsoft.com/) or  [Visual Studio Code](https://code.visualstudio.com/). (we prefer Rider, but you're free to choose.)
 
-4. The project should open in your default browser on port 5001.
+5. Run the project using the `Rise.Server` project as the startup project
 
-5. The database (SQLite) will be created. However you will have to switch the database provider of your choosing 
+6. The project should open in your default browser on port 5001.
 
-   1. **SQL Server**
-
-      Package: Microsoft.EntityFrameworkCore.SqlServer
-
-      🔗 [NuGet Link](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore.SqlServer/)
-
-   2. **MariaDB**
-
-      Package: Pomelo.EntityFrameworkCore.MySql
-
-      🔗 [NuGet Link](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/)
-
-   3. **PostgreSQL**
-
-      Package: Npgsql.EntityFrameworkCore.PostgreSQL
-
-      🔗 [NuGet Link](https://www.nuget.org/packages/Npgsql.EntityFrameworkCore.PostgreSQL/)
-
-   4. Mongo etc... 
+7. The database will be created.
 
 ## Creation of the database
 
@@ -104,7 +92,7 @@ The `dotnet clean` command cleans the output of the previous build. It's impleme
 
 ## Authentication
 
-Authentication and authorization is present, you'll host and maintain the user accounts in your own database without any external identity provider. You can login with the following test users with the password `A1b2C3!`
+Authentication and authorization is present, you'll host and maintain the user accounts in your own database without any external identity provider. You can login with the following test users with the password `Nodo.1`
 
 ### Users
 
@@ -121,14 +109,7 @@ There are 3 built-in roles, but adjust as needed
 
 - Administrator
 - Supervisor
-- ChatUser
-
-### Use cases
-
-- Register
-- Login
-- Logout
-- GetInfo
+- User
 
 ## Solution Structure Overview
 

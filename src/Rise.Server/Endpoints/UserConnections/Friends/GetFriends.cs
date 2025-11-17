@@ -18,6 +18,6 @@ public class GetFriends(IUserConnectionService connectionService) : Endpoint<Que
 
     public override Task<Result<UserConnectionResponse.GetFriends>> ExecuteAsync(QueryRequest.SkipTake req, CancellationToken ct)
     {
-        return connectionService.GetFriendIndexAsync(req, ct);
+        return connectionService.GetFriendsAsync(req, ct);
     }
 }

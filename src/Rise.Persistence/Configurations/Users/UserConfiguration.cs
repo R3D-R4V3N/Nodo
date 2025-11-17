@@ -24,7 +24,7 @@ internal class UserConfiguration : EntityConfiguration<User>
         builder.HasMany(u => u.Connections)
             .WithOne(c => c.From)
             .HasForeignKey("FromId")
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.ClientCascade);
 
         // sentiments
         builder.Ignore(u => u.Likes);
@@ -63,5 +63,11 @@ internal class UserConfiguration : EntityConfiguration<User>
                        j.ToTable("UserHobbies");
                        j.HasKey(x => new { x.UserId, x.HobbyId });
                    });
+
+        // orga
+        builder.HasOne(u => u.Organization)
+            .WithMany(o => o.Members)
+            .HasForeignKey("OrganizationId")
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

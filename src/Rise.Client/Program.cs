@@ -12,6 +12,15 @@ using Rise.Shared.Chats;
 using Rise.Shared.UserConnections;
 using Rise.Shared.Users;
 using UserService = Rise.Client.Users.UserService;
+using Rise.Shared.Organizations;
+using Rise.Client.Organizations;
+using Rise.Shared.RegistrationRequests;
+using Rise.Client.RegistrationRequests;
+
+
+
+// For BACKEND_URL
+using System.Net.Http.Json; 
 
 try
 {
@@ -38,7 +47,12 @@ try
     // register the account management interface
     builder.Services.AddScoped(sp => (IAccountManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
-    var backendUri = new Uri(builder.Configuration["BackendUrl"] ?? "https://localhost:5001");
+    // Laadt config.json uit wwwroot om de backend URL dynamisch te halen; gebruikt fallback naar localhost als key ontbreekt.
+    using var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
+    var config = await http.GetFromJsonAsync<Dictionary<string, string>>("config.json");
+
+    var backendUrl = config?["backendUrl"] ?? "https://localhost:5001";
+    var backendUri = new Uri(backendUrl);
 
     // configure client for auth interactions
     builder.Services.AddHttpClient("SecureApi",opt => opt.BaseAddress = backendUri)
@@ -68,6 +82,17 @@ try
     {
         client.BaseAddress = backendUri;
     });
+    // Publieke API client (geen CookieHandler)
+    builder.Services.AddHttpClient<IOrganizationService, OrganizationService>(client =>
+    {
+        client.BaseAddress = backendUri; // bij jou bv. https://localhost:5001
+    });
+
+    builder.Services.AddHttpClient<IRegistrationRequestService, RegistrationRequestService>(client =>
+        {
+            client.BaseAddress = backendUri;
+        })
+        .AddHttpMessageHandler<CookieHandler>();
 
     // current user
     builder.Services.AddSingleton<UserState>();

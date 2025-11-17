@@ -25,12 +25,16 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="Xunit"/>
-        <Using Include="Shouldly"/>
+        <Using Include="Xunit" />
+        <Using Include="Shouldly" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\Rise.Services\Rise.Services.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Chat\" />
     </ItemGroup>
 
 </Project>

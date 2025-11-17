@@ -10,6 +10,7 @@ using Rise.Server.RealTime;
 using Rise.Services;
 using Rise.Services.Chats;
 using Rise.Services.Identity;
+using Rise.Services.UserConnections;
 using Rise.Shared.Chats;
 using Serilog.Events;
 using Rise.Server.Hubs;
@@ -25,33 +26,38 @@ try
     Log.Information("Starting web application");
     var builder = WebApplication.CreateBuilder(args);
 
+    // Trust X-Forwarded headers from NGINX
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders =
+            Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+            Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+    });
+
     // Serilog uit config
     builder.Host.UseSerilog((ctx, lc) => lc
         .ReadFrom.Configuration(ctx.Configuration)
         .Destructure.UsingAttributes());
 
-    // DbContext + Identity
-    builder.Services
-        .AddDbContext<ApplicationDbContext>(o =>
-        {
-            var cs = "Server=65.109.132.74;Port=3308;Database=nododb;User=chatuser;Password=chatuserpassword123;SslMode=None;";
-            cs ??= builder.Configuration.GetConnectionString("DatabaseConnection")
-                     ?? throw new InvalidOperationException("Connection string 'DatabaseConnection' not found.");
-            // Laat Pomelo zelf de serverversie detecteren.
-            o.UseMySql(cs, ServerVersion.AutoDetect(cs));
-            o.EnableDetailedErrors();
-            if (builder.Environment.IsDevelopment())
-                o.EnableSensitiveDataLogging();
+    builder.Services.AddDbContext<ApplicationDbContext>(o =>
+    {
+        var cs = Environment.GetEnvironmentVariable("DB_CONNECTION");
+        cs ??= builder.Configuration.GetConnectionString("DatabaseConnection")
+                 ?? throw new InvalidOperationException("No connection string found");
 
-            o.UseTriggers(options => options.AddTrigger<EntityBeforeSaveTrigger>());
-        });
+        o.UseMySql(cs, ServerVersion.AutoDetect(cs));
+        o.EnableDetailedErrors();
+        if (builder.Environment.IsDevelopment())
+            o.EnableSensitiveDataLogging();
+
+        o.UseTriggers(options => options.AddTrigger<EntityBeforeSaveTrigger>());
+    });
 
     builder.Services
         .AddIdentity<IdentityUser, IdentityRole>()
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
 
-    // Overige DI
     builder.Services
         .AddHttpContextAccessor()
         .AddScoped<ISessionContextProvider, HttpContextSessionProvider>()
@@ -68,17 +74,8 @@ try
         });
 
     builder.Services.AddSignalR();
-
-    builder.Services.AddCors(options =>
-    {
-        options.AddPolicy("AllowRiseClient", policy =>
-            policy.WithOrigins("https://localhost:5002") // poort van je Blazor client
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials());
-    });
-
     builder.Services.AddSingleton<IChatMessageDispatcher, SignalRChatMessageDispatcher>();
+    builder.Services.AddSingleton<IUserConnectionNotificationDispatcher, SignalRUserConnectionNotificationDispatcher>();
 
     var app = builder.Build();
 
@@ -88,15 +85,15 @@ try
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
 
-        db.Database.EnsureDeleted(); // Delete the database if it exists to clean it up if needed.
-        
+        db.Database.EnsureDeleted();
         db.Database.Migrate();
+
         await seeder.SeedAsync();
     }
 
     app.UseHttpsRedirection()
        .UseBlazorFrameworkFiles()
-       .UseStaticFiles()
+     .UseStaticFiles()
        .UseDefaultExceptionHandler()
        .UseAuthentication()
        .UseAuthorization()
@@ -111,9 +108,9 @@ try
            };
        })
        .UseSwaggerGen();
-    app.UseCors("AllowRiseClient"); // ✅ activeer CORS
 
-    app.MapHub<Chathub>("/chathub"); // ✅ route voor realtime chat
+    app.MapHub<Chathub>("/chathub");
+    app.MapHub<UserConnectionHub>("/connectionsHub");
 
     app.MapFallbackToFile("index.html");
 

@@ -1,4 +1,4 @@
-﻿namespace Rise.Client.RealTime;
+namespace Rise.Client.RealTime;
 
 public interface IHubClientFactory
 {

@@ -21,38 +21,39 @@ internal class BaseUserConfiguration : EntityConfiguration<BaseUser>
         builder.Property(x => x.AccountId).IsRequired().HasMaxLength(36);
         builder.HasIndex(x => x.AccountId).IsUnique();
 
-        builder.Property(x => x.FirstName)
-            .HasConversion(
-                new PropertyConverter<FirstName, string>()
-            ).IsRequired()
-            .HasMaxLength(FirstName.MAX_LENGTH);
+        builder.OwnsOne(m => m.FirstName, firstname =>
+        {
+            firstname.Property(t => t.Value)
+                .HasColumnName("FirstName")
+                .HasMaxLength(FirstName.MAX_LENGTH);
+        });
 
-        builder.Property(x => x.LastName)
-            .HasConversion(
-                new PropertyConverter<LastName, string>()
-            ).IsRequired()
-            .HasMaxLength(LastName.MAX_LENGTH);
+        builder.OwnsOne(m => m.LastName, lastName =>
+        {
+            lastName.Property(t => t.Value)
+                .HasColumnName("LastName")
+                .HasMaxLength(LastName.MAX_LENGTH);
+        });
 
-        builder.Property(x => x.Biography)
-            .HasConversion(
-                new PropertyConverter<Biography, string>()
-            ).IsRequired()
-            .HasMaxLength(Biography.MAX_LENGTH);
+        builder.OwnsOne(m => m.Biography, bio =>
+        {
+            bio.Property(t => t.Value)
+                .HasColumnName("Biography")
+                .HasMaxLength(Biography.MAX_LENGTH);
+        });
 
-        builder.Property(x => x.AvatarUrl)
-            .HasConversion(
-                new PropertyConverter<AvatarUrl, string>()
-            ).IsRequired()
-            .HasColumnType("longtext");
+        builder.OwnsOne(m => m.AvatarUrl, bio =>
+        {
+            bio.Property(t => t.Value)
+                .HasColumnName("AvatarUrl")
+                .HasMaxLength(AvatarUrl.MAX_LENGTH);
+        });
+
 
         builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.Gender)
             .HasDefaultValue(GenderType.X);
 
-        builder.HasOne(u => u.Organization)
-            .WithMany(o => o.Members)
-            .HasForeignKey(u => u.OrganizationId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         // settings
         builder.OwnsOne(u => u.UserSettings, userSettings =>
@@ -67,11 +68,12 @@ internal class BaseUserConfiguration : EntityConfiguration<BaseUser>
             userSettings.Property(s => s.IsDarkMode)
                 .HasDefaultValue(false);
 
-            userSettings.Property(s => s.FontSize)
-                .HasConversion(
-                    new PropertyConverter<FontSize, int>()
-                )
-                .HasDefaultValue(FontSize.Create(12).Value);
+            userSettings.OwnsOne(m => m.FontSize, fontSize =>
+            {
+                fontSize.Property(t => t.Value)
+                    .HasColumnName("FontSize")
+                    .HasDefaultValue(12);
+            });
 
             userSettings.OwnsMany(s => s.ChatTextLineSuggestions, nav =>
             {
@@ -79,12 +81,13 @@ internal class BaseUserConfiguration : EntityConfiguration<BaseUser>
                 nav.WithOwner()
                     .HasForeignKey("UserSettingsId");
 
-                nav.Property(p => p.Sentence)
-                    .HasConversion(
-                        new PropertyConverter<DefaultSentence, string>()
-                    ).IsRequired()
-                    .HasMaxLength(DefaultSentence.MAX_LENGTH)
-                    .HasColumnName("TextSuggestion");
+                nav.OwnsOne(m => m.Sentence, sentence =>
+                {
+                    sentence.Property(t => t.Value)
+                        .IsRequired()
+                        .HasMaxLength(DefaultSentence.MAX_LENGTH)
+                        .HasColumnName("TextSuggestion");
+                });
 
                 nav.Property(p => p.Rank)
                    .IsRequired();

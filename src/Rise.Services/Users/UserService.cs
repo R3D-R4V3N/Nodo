@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Rise.Domain.Common;
 using Rise.Domain.Users.Properties;
 using Rise.Persistence;
 using Rise.Services.Identity;

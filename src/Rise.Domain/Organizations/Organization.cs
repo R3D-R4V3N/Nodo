@@ -5,8 +5,7 @@ namespace Rise.Domain.Organizations;
 
 public class Organization : Entity
 {
-    private readonly List<BaseUser> _members = [];
-
+    // ef
     private Organization() { }
 
     public Organization(string name, string? description = null)
@@ -18,7 +17,10 @@ public class Organization : Entity
     public string Name { get; private set; } = string.Empty;
     public string? Description { get; private set; }
 
-    public IReadOnlyCollection<BaseUser> Members => _members.AsReadOnly();
+    private readonly List<User> _members = [];
+    public IReadOnlyCollection<User> Members => _members.AsReadOnly();
+    private readonly List<Supervisor> _workers = [];
+    public IReadOnlyCollection<Supervisor> Workers => _workers.AsReadOnly();
 
     public void UpdateDetails(string name, string? description)
     {
@@ -26,7 +28,7 @@ public class Organization : Entity
         Description = description?.Trim();
     }
 
-    internal void AddMember(BaseUser member)
+    internal void AddMember(User member)
     {
         if (_members.Contains(member))
         {
@@ -34,5 +36,24 @@ public class Organization : Entity
         }
 
         _members.Add(member);
+
+        if (member.Organization != this)
+        {
+            member.Organization = this;
+        }
+    }
+    internal void AddWorker(Supervisor worker)
+    {
+        if (_workers.Contains(worker))
+        {
+            return;
+        }
+
+        _workers.Add(worker);
+
+        if (worker.Organization != this)
+        {
+            worker.Organization = this;
+        }
     }
 }

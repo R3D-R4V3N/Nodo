@@ -7,7 +7,10 @@ public class Text : ValueObject, IProperty<Text, string>
     private Text() { }
     public const int MAX_LENGTH = 2_000;
 
-    public string Value { get; private set; }
+    private string _value;
+    public string Value => _value;
+    public string CleanedUpValue => IsSuspicious ? WordFilter.Censor(_value) : _value;
+    public bool IsSuspicious { get; private set; }
     public static Result<Text> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -15,14 +18,19 @@ public class Text : ValueObject, IProperty<Text, string>
             return Result.Conflict("Bericht is leeg.");
         }
 
-        if (value.Length > MAX_LENGTH)
+        var cleanedUpValue = value.Trim();
+
+        if (cleanedUpValue.Length > MAX_LENGTH)
         {
             return Result.Conflict("Bericht is te lang.");
         }
-
-        return Result.Success(new Text() { Value = value });
+        
+        return Result.Success(new Text() 
+        { 
+            _value = cleanedUpValue,
+            IsSuspicious = WordFilter.ContainsBlackListedWord(cleanedUpValue)
+        });
     }
-
 
     public static implicit operator string(Text value) => value.Value;
 
@@ -41,5 +49,5 @@ public class Text : ValueObject, IProperty<Text, string>
     {
         yield return Value;
     }
-    public override string ToString() => Value;
+    public override string ToString() => CleanedUpValue;
 }

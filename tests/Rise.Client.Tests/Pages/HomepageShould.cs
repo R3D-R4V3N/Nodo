@@ -1,21 +1,24 @@
 using Ardalis.Result;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR.Client;
 using NSubstitute;
+using Rise.Client.Faker;
 using Rise.Client.Home.Pages;
+using Rise.Client.RealTime;
 using Rise.Client.State;
 using Rise.Shared.Chats;
-using Rise.Shared.Identity;
 using System.Security.Claims;
 using Xunit.Abstractions;
 
 namespace Rise.Client.Tests.Pages;
 public class HomepageShould : TestContext
 {
-   
     public HomepageShould(ITestOutputHelper outputHelper)
     {
         Services.AddXunitLogger(outputHelper);
+        Services.AddSingleton<IHubClientFactory, FakeHubClientFactory>();
+        Services.AddSingleton<IHubClient, FakeHubClient>();
     }
 
     [Fact]

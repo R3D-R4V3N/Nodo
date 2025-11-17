@@ -1,5 +1,10 @@
 module.exports = {
-    content: ["./**/*.razor", "./wwwroot/index.html"],
+    content: [
+        "./**/*.html",
+        "./**/*.razor",
+        "./**/*.cshtml",
+        "./**/*.cs",
+    ],
     safelist: [
         "fixed", "bottom-6", "left-1/2", "-translate-x-1/2",
         "bg-[#127646]", "rounded-full", "shadow-lg",

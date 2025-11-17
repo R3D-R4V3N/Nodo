@@ -4,11 +4,10 @@ services:
     container_name: rise-mysql
     environment:
       MYSQL_ROOT_PASSWORD: rootpass123
-      MYSQL_DATABASE: myapp
-      MYSQL_USER: myuser
-      MYSQL_PASSWORD: userpass123
+      MYSQL_DATABASE: nododb
+      # Note: No non-root user is created here. The app connects as root via DB_CONNECTION.
     ports:
-      - "3306:3306"
+      - "50123:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -18,25 +17,6 @@ services:
       interval: 10s
     networks:
       - rise-network
-
-  rise-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: rise-server
-    environment:
-      DB_CONNECTION: "server=rise-mysql;port=3306;database=myapp;user=myuser;password=userpass123;"
-      ASPNETCORE_ENVIRONMENT: Production
-    ports:
-      - "5001:5001"
-    depends_on:
-      mysql:
-        condition: service_healthy
-    volumes:
-      - ./Logs:/app/Logs
-    networks:
-      - rise-network
-    restart: unless-stopped
 
 volumes:
   mysql_data:

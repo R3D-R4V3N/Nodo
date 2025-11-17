@@ -5,27 +5,32 @@
 @layout MainLayout
 
 
-<FriendsHeader OnBack="GoBack" />
+<div class="flex flex-col h-screen">
+    <FriendsHeader OnBack="GoBack" />
 
-<section class="bg-neutral-100 px-4 pt-4 pb-2">
-    <FriendsTabs Selected="@_selectedTab" OnChange="ChangeTab" />
-    <FriendSearch @bind-Value="_query" />
-</section>
-
-<FriendList Items="@_filteredConnections"
-            PageContext="@_selectedTab"
-            OnAccept="AcceptFriendRequest"
-            OnReject="RejectFriendRequest"
-            OnCancel="CancelFriendRequest"
-            OnAdd="AddFriend"
-            OnOpenChat="OpenChat"
-            OnRemove="RemoveFriend" />
-
-@code {
-    private string? _query;
-    private string? Query
-    {
-        get => _query;
-        set { _query = value; ApplyQuery(); }
-    }
+@if (!string.IsNullOrWhiteSpace(_connectionError))
+{
+    <div class="bg-amber-50 border border-amber-200 text-amber-700 text-xs mx-4 mt-2 px-3 py-2 rounded-lg">
+        @_connectionError
+    </div>
 }
+
+
+    <section class="bg-neutral-100 px-4 pt-4 pb-2">
+        <FriendsTabs Selected="@_selectedTab" OnChange="ChangeTab" />
+        <FriendSearch @bind-Value="_query" />
+    </section>
+
+    <div class="flex-1 overflow-y-auto">
+        <FriendList Items="@_filteredConnections"
+                    PageContext="@_selectedTab"
+                    OnAccept="AcceptFriendRequest"
+                    OnReject="RejectFriendRequest"
+                    OnCancel="CancelFriendRequest"
+                    OnAdd="AddFriend"
+                    OnOpenChat="OpenChat"
+                    OnRemove="RemoveFriend" />
+    </div>
+</div>
+
+

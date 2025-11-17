@@ -1,4 +1,6 @@
-namespace Rise.Services.Tests
+using Rise.Domain.Common;
+
+namespace Rise.Domain.Common.Tests
 {
     public class WordFilterTests
     {

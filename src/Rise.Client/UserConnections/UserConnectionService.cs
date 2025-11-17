@@ -7,10 +7,26 @@ namespace Rise.Client.UserConnections;
 public class UserConnectionService(HttpClient httpClient) : IUserConnectionService
 {
     public async Task<Result<UserConnectionResponse.GetFriends>> 
-        GetFriendIndexAsync(QueryRequest.SkipTake request, CancellationToken ctx = default)
+        GetFriendsAsync(QueryRequest.SkipTake request, CancellationToken ctx = default)
     {
         var result = await httpClient
             .GetFromJsonAsync<Result<UserConnectionResponse.GetFriends>>("/api/connections/friends", cancellationToken: ctx);
+        return result!;
+    }
+
+    public async Task<Result<UserConnectionResponse.GetSuggestions>>
+        GetSuggestedFriendsAsync(QueryRequest.SkipTake req, CancellationToken ctx = default)
+    {
+        var result = await httpClient
+            .GetFromJsonAsync<Result<UserConnectionResponse.GetSuggestions>>("/api/connections/friends/suggested", cancellationToken: ctx);
+        return result!;
+    }
+
+    public async Task<Result<UserConnectionResponse.GetFriendRequests>>
+        GetFriendRequestsAsync(QueryRequest.SkipTake request, CancellationToken ctx = default)
+    {
+        var result = await httpClient
+            .GetFromJsonAsync<Result<UserConnectionResponse.GetFriendRequests>>("/api/connections/friendrequests", cancellationToken: ctx);
         return result!;
     }
 
@@ -53,9 +69,7 @@ public class UserConnectionService(HttpClient httpClient) : IUserConnectionServi
     public async Task<Result<UserConnectionResponse.RejectFriendRequest>> 
         RejectFriendRequestAsync(string targetAccountId, CancellationToken ctx = default)
     {
-        var body = new UserConnectionRequest.RejectFriendRequest() { TargetAccountId = targetAccountId };
-    
-        var response = await httpClient.PostAsJsonAsync("/api/connections/friends/reject", body, ctx);
+        var response = await httpClient.DeleteAsync($"/api/connections/friends/reject?targetAccountId={targetAccountId}", ctx);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -68,28 +82,35 @@ public class UserConnectionService(HttpClient httpClient) : IUserConnectionServi
         
     }
 
-    public async Task<Result<UserConnectionResponse.GetSuggestions>>
-        GetSuggestedFriendsAsync(QueryRequest.SkipTake req, CancellationToken ctx = default)
+    public async Task<Result<UserConnectionResponse.CancelFriendRequest>> 
+        CancelFriendRequest(string targetAccountId, CancellationToken ctx = default)
     {
-        var result = await httpClient
-            .GetFromJsonAsync<Result<UserConnectionResponse.GetSuggestions>>("/api/connections/friends/suggested", cancellationToken: ctx);
-        return result!;
-    }
-
-    public async Task<Result<UserConnectionResponse.CancelFriendRequest>> CancelFriendRequest(string targetAccountId, CancellationToken ct = default)
-    {
-        var response = await httpClient.DeleteAsync($"/api/connections/cancel?targetAccountId={targetAccountId}", ct);
-
-        //var response = await httpClient.DeleteAsync(requestUrl, ct);
+        var response = await httpClient.DeleteAsync($"/api/connections/friends/cancel?targetAccountId={targetAccountId}", ctx);
 
         // Controleer of de API een geldige response gaf
         if (!response.IsSuccessStatusCode)
         {
-            var error = await response.Content.ReadAsStringAsync(ct);
+            var error = await response.Content.ReadAsStringAsync(ctx);
             return Result.Error($"Fout bij het annuleren van vriendschap: {error}");
         }
 
-        var result = await response.Content.ReadFromJsonAsync<Result<UserConnectionResponse.CancelFriendRequest>>(cancellationToken: ct);
+        var result = await response.Content.ReadFromJsonAsync<Result<UserConnectionResponse.CancelFriendRequest>>(cancellationToken: ctx);
+        return result!;
+    }
+
+    public async Task<Result<UserConnectionResponse.RemoveFriendRequest>> 
+        RemoveFriendAsync(string targetAccountId, CancellationToken ctx = default)
+    {
+        var response = await httpClient.DeleteAsync($"/api/connections/friends/remove?targetAccountId={targetAccountId}", ctx);
+
+        // Controleer of de API een geldige response gaf
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(ctx);
+            return Result.Error($"Fout bij het verwijderen van vriendschap: {error}");
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<Result<UserConnectionResponse.RemoveFriendRequest>>(cancellationToken: ctx);
         return result!;
     }
 }

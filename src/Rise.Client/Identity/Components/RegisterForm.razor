@@ -143,6 +143,7 @@
         <!-- Controls + submit -->
         <div class="mt-6 flex items-center justify-between">
             <button type="button"
+                    id="previous-slide"
                     class="inline-flex items-center justify-center rounded-full border-2 border-[#0B6532] px-6 py-2 text-sm font-semibold text-[#0B6532] bg-white transition hover:bg-[#e8f5ec] disabled:opacity-50 disabled:cursor-not-allowed"
                     @onclick="PrevSlide"
                     disabled="@(ActiveSlide == 0)">
@@ -153,6 +154,7 @@
             {
                 <!-- Op slide 1: enkel Volgende -->
                 <button type="button"
+                        id="next-slide"
                         class="inline-flex items-center justify-center rounded-full bg-[#0B6532] px-6 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#0a572b]"
                         @onclick="NextSlide">
                     Volgende

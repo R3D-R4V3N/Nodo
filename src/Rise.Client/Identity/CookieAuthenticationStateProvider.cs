@@ -129,14 +129,19 @@ namespace Rise.Client.Identity
                     authenticated = true;
                 }
             }
-            catch (HttpRequestException ex) when (ex.StatusCode != HttpStatusCode.Unauthorized)
+            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                // noop: laat user = unauthenticated
+            }
+            // andere HTTP-fouten wél loggen
+            catch (HttpRequestException ex)
             {
                 Log.Error(ex, "Could not GetAuthenticationStateAsync.");
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Could not GetAuthenticationStateAsync.");
-            }
+            }   
 
             return new AuthenticationState(user);
         }

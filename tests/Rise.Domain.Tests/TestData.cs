@@ -1,4 +1,5 @@
 ﻿using Rise.Domain.Chats;
+using Rise.Domain.Organizations;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Connections;
 using Rise.Domain.Users.Properties;
@@ -33,6 +34,8 @@ public static class TestData
     public static LastName ValidLastName() => LastName.Create($"Doe");
     public static Biography ValidBiography() => Biography.Create($"Dit is een bio.");
     public static AvatarUrl ValidAvatarUrl() => AvatarUrl.Create($"Dit is een img.");
+    public static Organization ValidOrganization() 
+        => new Organization("Nodo Centrum", "Ondersteuning vanuit het centrale team.");
     public static User ValidUser(int id) =>
         new User()
         {
@@ -43,7 +46,8 @@ public static class TestData
             AvatarUrl = ValidAvatarUrl(),
             BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
             Gender = GenderType.X,
-            UserSettings = ValidUserSettings()
+            UserSettings = ValidUserSettings(),
+            Organization = ValidOrganization()
         }.WithId(id);
 
     public static Supervisor ValidSupervisor(int id) =>
@@ -56,7 +60,8 @@ public static class TestData
             AvatarUrl = ValidAvatarUrl(),
             BirthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-40)),
             Gender = GenderType.X,
-            UserSettings = ValidUserSettings()
+            UserSettings = ValidUserSettings(),
+            Organization = ValidOrganization()
         }.WithId(id);
 
     private static T WithId<T>(this T user, int id) where T : BaseUser

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
 using Rise.Client.Chats.Components;
+using Rise.Client.RealTime;
 using Rise.Client.State;
 using Rise.Shared.Assets;
 using Rise.Shared.Chats;
@@ -16,7 +17,8 @@ public partial class Chat : IAsyncDisposable
 
     private ChatDto.GetChat? _chat;
     private readonly SemaphoreSlim _hubConnectionLock = new(1, 1);
-    private HubConnection? _hubConnection;
+    [Inject] private IHubClientFactory HubClientFactory { get; set; } = null!;
+    private IHubClient? _hubConnection;
     private int? _joinedChatId;
     private string? _draft = string.Empty;
     private string? _errorMessage;
@@ -133,10 +135,7 @@ public partial class Chat : IAsyncDisposable
         {
             if (_hubConnection is null)
             {
-                _hubConnection = new HubConnectionBuilder()
-                    .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
-                    .WithAutomaticReconnect()
-                    .Build();
+                _hubConnection = HubClientFactory.Create();
 
                 _hubConnection.On<MessageDto.Chat>("MessageCreated", dto =>
                     InvokeAsync(() => ProcessIncomingMessage(dto)));

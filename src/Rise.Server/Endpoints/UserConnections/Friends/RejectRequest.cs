@@ -8,7 +8,7 @@ public class RejectRequest(IUserConnectionService connectionService)
 {
     public override void Configure()
     {
-        Post("/api/connections/friends/reject");
+        Delete("/api/connections/friends/reject");
         Roles(AppRoles.User, AppRoles.Supervisor, AppRoles.Administrator);
     }
 

@@ -1,13 +1,14 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Rise.Client.RealTime;
 using Rise.Client.State;
 using Rise.Shared.Assets;
 using Rise.Shared.Chats;
 
 namespace Rise.Client.Home.Pages;
 
-public partial class Homepage
+public partial class Homepage : IDisposable
 {
     [Inject] public UserState UserState { get; set; }
     private readonly List<ChatDto.GetChats> _chats = new();
@@ -20,8 +21,10 @@ public partial class Homepage
     private bool _isLoading = true;
     private string? _loadError;
     private string? _searchTerm;
-    
-    private HubConnection? _hubConnection;
+
+    [Inject]
+    private IHubClientFactory HubClientFactory { get; set; } = null!;
+    private IHubClient? _hubConnection;
     private readonly HashSet<string> _onlineUsers = new();
 
     protected override async Task OnInitializedAsync()
@@ -45,10 +48,7 @@ public partial class Homepage
     
     private async Task InitializeHubAsync()
     {
-        _hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
-            .WithAutomaticReconnect()
-            .Build();
+        _hubConnection = HubClientFactory.Create();
 
         // Wanneer iemand online of offline gaat
         _hubConnection.On<string, bool>("UserStatusChanged", (userId, isOnline) =>
@@ -148,5 +148,10 @@ public partial class Homepage
             NavigationManager.NavigateTo($"/FriendProfilePage/{accountId}");
         }
     }
-    
+
+    public async void Dispose()
+    {
+        if (_hubConnection is not null)
+            await _hubConnection.DisposeAsync();
+    }
 }

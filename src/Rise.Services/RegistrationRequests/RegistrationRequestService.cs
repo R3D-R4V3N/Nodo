@@ -10,6 +10,7 @@ using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Settings;
 using Rise.Persistence;
 using Rise.Services.Identity;
+using Rise.Services.RegistrationRequests.Mapper;
 using Rise.Shared.Assets;
 using Rise.Shared.Identity;
 using Rise.Shared.RegistrationRequests;
@@ -55,39 +56,33 @@ public class RegistrationRequestService(
             return Result.Unauthorized();
         }
 
-        var supervisorsQuery = _dbContext.Supervisors
+        var supervisorsQuery = _dbContext
+            .Supervisors
             .AsNoTracking();
 
-        if (!isAdministrator && supervisor is not null)
-        {
-            supervisorsQuery = supervisorsQuery.Where(s => s.OrganizationId == supervisor.OrganizationId);
-        }
-
-        var supervisors = await supervisorsQuery
-            .OrderBy(s => s.FirstName)
-            .ThenBy(s => s.LastName)
-            .ToListAsync(ct);
-
-        var supervisorLookup = supervisors
-            .GroupBy(s => s.OrganizationId)
-            .ToDictionary(
-                g => g.Key,
-                g => g
-                    .Select(s => new RegistrationRequestDto.SupervisorOption
-                    {
-                        Id = s.Id,
-                        Name = $"{s.FirstName.Value} {s.LastName.Value}",
-                    })
-                    .ToList());
-
-        var pendingQuery = _dbContext.RegistrationRequests
+        var pendingQuery = _dbContext
+            .RegistrationRequests
             .AsNoTracking()
             .Where(r => r.Status == RegistrationStatus.Pending);
 
-        if (supervisor is not null && !isAdministrator)
+        if (supervisor is not null)
         {
-            pendingQuery = pendingQuery.Where(r => r.OrganizationId == supervisor.OrganizationId);
+            supervisorsQuery = supervisorsQuery
+                .Where(s => s.Organization.Id == supervisor.Organization.Id);
+
+            pendingQuery = pendingQuery
+                .Where(r => r.OrganizationId == supervisor.Organization.Id);
         }
+
+        var supervisorLookup = await supervisorsQuery
+            .OrderBy(s => s.FirstName.Value)
+            .ThenBy(s => s.LastName.Value)
+            .Include(s => s.Organization)
+            .GroupBy(s => s.Organization.Id)
+            .ToDictionaryAsync(
+                g => g.Key,
+                g => g.Select(RegistrationMapper.ToSupervisorOption).ToList(), 
+            ct);
 
         var pendingRows = await pendingQuery
             .Include(r => r.Organization)
@@ -95,30 +90,21 @@ public class RegistrationRequestService(
             .ToListAsync(ct);
 
         var pendingRequests = pendingRows
-            .Select(r => new RegistrationRequestDto.Pending
+            .Select(x => 
             {
-                Id = r.Id,
-                Email = r.Email,
-                FullName = r.FullName,
-                FirstName = r.FirstName,
-                LastName = r.LastName,
-                BirthDate = r.BirthDate,
-                Gender = (GenderTypeDto)r.Gender,
-                AvatarUrl = r.AvatarUrl,
-                OrganizationId = r.OrganizationId,
-                OrganizationName = r.Organization?.Name ?? string.Empty,
-                SubmittedAt = r.CreatedAt,
-                AssignedSupervisorId = r.AssignedSupervisorId,
-                Supervisors = supervisorLookup.TryGetValue(r.OrganizationId, out var options)
-                    ? options
-                    : Array.Empty<RegistrationRequestDto.SupervisorOption>()
-            })
-            .ToList();
+                var supervisorLst = supervisorLookup
+                    .TryGetValue(x.OrganizationId, out var options)
+                        ? options : [];
 
-        return Result.Success(new RegistrationRequestResponse.PendingList
-        {
-            Requests = pendingRequests,
-        });
+                return RegistrationMapper.ToPending(x, supervisorLst);
+            }).ToList();
+
+        return Result.Success(
+            new RegistrationRequestResponse.PendingList
+            {
+                Requests = pendingRequests,
+            }
+        );
     }
 
     public async Task<Result<RegistrationRequestResponse.Approve>> ApproveAsync(int requestId, RegistrationRequestRequest.Approve request, CancellationToken ct = default)
@@ -138,18 +124,18 @@ public class RegistrationRequestService(
             return Result.Unauthorized();
         }
 
-        var approver = string.IsNullOrWhiteSpace(approverAccountId)
-            ? null
-            : await _dbContext.Supervisors
-                .Include(s => s.Organization)
-                .SingleOrDefaultAsync(s => s.AccountId == approverAccountId, ct);
+        var approver = await _dbContext
+            .Supervisors
+            .Include(s => s.Organization)
+            .SingleOrDefaultAsync(s => s.AccountId == approverAccountId, ct);
 
         if (approver is null && !isAdministrator)
         {
             return Result.Unauthorized();
         }
 
-        var registration = await _dbContext.RegistrationRequests
+        var registration = await _dbContext
+            .RegistrationRequests
             .Include(r => r.Organization)
             .SingleOrDefaultAsync(r => r.Id == requestId, ct);
 
@@ -158,7 +144,7 @@ public class RegistrationRequestService(
             return Result.NotFound();
         }
 
-        if (approver is not null && registration.OrganizationId != approver.OrganizationId)
+        if (approver is not null && registration.OrganizationId != approver.Organization.Id)
         {
             return Result.Unauthorized();
         }
@@ -168,7 +154,8 @@ public class RegistrationRequestService(
             return Result.Conflict("Aanvraag werd al verwerkt.");
         }
 
-        var assignedSupervisor = await _dbContext.Supervisors
+        var assignedSupervisor = await _dbContext
+            .Supervisors
             .SingleOrDefaultAsync(s => s.Id == request.AssignedSupervisorId, ct);
 
         if (assignedSupervisor is null)
@@ -176,7 +163,7 @@ public class RegistrationRequestService(
             return Result.Invalid(new ValidationError(nameof(request.AssignedSupervisorId), "Begeleider werd niet gevonden."));
         }
 
-        if (assignedSupervisor.OrganizationId != registration.OrganizationId)
+        if (assignedSupervisor.Organization.Id != registration.OrganizationId)
         {
             return Result.Invalid(new ValidationError(nameof(request.AssignedSupervisorId), "Begeleider behoort niet tot dezelfde organisatie."));
         }
@@ -227,10 +214,9 @@ public class RegistrationRequestService(
             {
                 FontSize = FontSize.Create(12),
                 IsDarkMode = false,
-            }
+            },
+            Organization = registration.Organization,
         };
-
-        newUser.AssignOrganization(registration.Organization);
 
         var chatLineResults = new[]
         {

@@ -22,9 +22,7 @@ public abstract class BaseUser : Entity
     public required Biography Biography { get; set; }
     public required AvatarUrl AvatarUrl { get; set; }
     public required DateOnly BirthDay { get; set; }
-    public required GenderType Gender { get; set; }
-    public int OrganizationId { get; private set; }
-    public Organization Organization { get; private set; } = null!;
+    public required GenderType Gender { get; set; }    
     // settings
     private UserSetting _userSettings;
     public required UserSetting UserSettings
@@ -96,13 +94,6 @@ public abstract class BaseUser : Entity
         }
 
         return Result.Success();
-    }
-
-    public void AssignOrganization(Organization organization)
-    {
-        Organization = Guard.Against.Null(organization);
-        OrganizationId = organization.Id;
-        organization.AddMember(this);
     }
 
     public override string ToString()

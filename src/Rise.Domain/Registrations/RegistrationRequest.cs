@@ -73,7 +73,7 @@ public class RegistrationRequest : Entity
 
         var target = Guard.Against.Null(supervisor);
 
-        if (target.OrganizationId != OrganizationId)
+        if (target.Organization.Id != OrganizationId)
         {
             return Result.Invalid(
                 new ValidationError(nameof(AssignedSupervisorId), "Begeleider behoort niet tot dezelfde organisatie."));
@@ -94,7 +94,7 @@ public class RegistrationRequest : Entity
 
         var supervisor = Guard.Against.Null(approver);
 
-        if (supervisor.OrganizationId != OrganizationId)
+        if (supervisor.Organization.Id != OrganizationId)
         {
             return Result.Unauthorized();
         }
@@ -122,7 +122,7 @@ public class RegistrationRequest : Entity
 
         var supervisor = Guard.Against.Null(approver);
 
-        if (supervisor.OrganizationId != OrganizationId)
+        if (supervisor.Organization.Id != OrganizationId)
         {
             return Result.Unauthorized();
         }

@@ -23,12 +23,15 @@ internal class MessageConfiguration : EntityConfiguration<Message>
             .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Extra properties configureren (optioneel)
-        builder.Property(m => m.Text)
-            .HasConversion(
-                new PropertyConverter<Domain.Messages.Properties.Text, string>()
-            )
-            .HasMaxLength(Domain.Messages.Properties.Text.MAX_LENGTH);
+        builder.OwnsOne(m => m.Text, text =>
+        {
+            text.Property(t => t.Value)
+                .HasColumnName("Text")
+                .HasMaxLength(Domain.Messages.Properties.Text.MAX_LENGTH);
+
+            text.Property(t => t.IsSuspicious)
+                .HasColumnName("IsSuspicious");
+        });
 
         builder.Property(m => m.AudioContentType)
             .HasMaxLength(128);

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Rise.Client.RealTime;
 public class HubClient : IHubClient
@@ -37,7 +37,7 @@ public class HubClient : IHubClient
     public Task<T> InvokeAsync<T>(string methodName, params object[] args)
         => _connection.InvokeCoreAsync<T>(methodName, args);
     public void On<T>(string methodName, Action<T> handler)
-    => _connection.On(methodName, handler);
+        => _connection.On(methodName, handler);
     public void On<T1, T2>(string methodName, Action<T1, T2> handler)
         => _connection.On(methodName, handler);
     public void On<T1, T2, T3>(string methodName, Action<T1, T2, T3> handler)

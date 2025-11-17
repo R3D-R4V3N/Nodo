@@ -1,5 +1,6 @@
 @page "/registrations/pending"
 @using Microsoft.AspNetCore.Authorization
+@using Rise.Client.Dashboard.Components
 @using Rise.Shared.Assets
 @using Rise.Shared.Identity
 @using Rise.Shared.RegistrationRequests
@@ -8,92 +9,89 @@
 @inject IRegistrationRequestService RegistrationRequestService
 @using Serilog
 
-@layout MainLayout
+@layout EmptyLayout
 
 <PageTitle>Registratieaanvragen</PageTitle>
 
-<div class="min-h-dvh bg-neutral-100">
-    <TopBar UseHeaderElement="true" InnerClass="px-4 sm:px-6 lg:px-8 pt-6 pb-6 space-y-3">
-        <div class="space-y-1 text-center sm:text-left">
-            <h1 class="text-2xl sm:text-3xl font-semibold leading-tight">Inkomende registraties</h1>
-            <p class="text-sm text-white/80">Bevestig nieuwe aanvragen en wijs een begeleider toe.</p>
-        </div>
-    </TopBar>
+<div class="flex min-h-dvh bg-white overflow-hidden">
+    <Sidebar></Sidebar>
+    <div class="flex-1 p-6 space-y-6 bg-neutral-100 m-3 rounded-2xl">
+        <h1 class="text-4xl text-left font-semibold leading-tight">Registraties</h1>
+        <main class="mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+            <div class="space-y-4 sm:space-y-5">
+                @if (_isLoading)
+                {
+                    <div class="rounded-3xl border border-neutral-200 bg-white px-5 py-10 text-center shadow-sm">
+                        <p class="text-sm text-neutral-500">Aan het laden...</p>
+                    </div>
+                }
+                else if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">@_errorMessage</div>
+                }
+                else if (_requests.Count == 0)
+                {
+                    <div class="rounded-3xl border border-neutral-200 bg-white px-5 py-10 text-center shadow-sm">
+                        <p class="text-sm text-neutral-500">Er zijn momenteel geen openstaande registraties.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="space-y-4 sm:space-y-5">
+                        @foreach (var request in _requests)
+                        {
+                            var isProcessing = _approving.Contains(request.Id);
 
-    <main class="mx-auto w-full max-w-3xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
-        <div class="space-y-4 sm:space-y-5">
-            @if (_isLoading)
-            {
-                <div class="rounded-3xl border border-neutral-200 bg-white px-5 py-10 text-center shadow-sm">
-                    <p class="text-sm text-neutral-500">Aan het laden...</p>
-                </div>
-            }
-            else if (!string.IsNullOrEmpty(_errorMessage))
-            {
-                <div class="rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">@_errorMessage</div>
-            }
-            else if (_requests.Count == 0)
-            {
-                <div class="rounded-3xl border border-neutral-200 bg-white px-5 py-10 text-center shadow-sm">
-                    <p class="text-sm text-neutral-500">Er zijn momenteel geen openstaande registraties.</p>
-                </div>
-            }
-            else
-            {
-                <div class="space-y-4 sm:space-y-5">
-                    @foreach (var request in _requests)
-                    {
-                        var isProcessing = _approving.Contains(request.Id);
-
-                        <article class="rounded-3xl border border-neutral-200 bg-white px-5 py-6 shadow-sm">
-                            <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                                <div class="flex flex-1 gap-4">
-                                    <img class="h-16 w-16 rounded-full object-cover border border-neutral-200"
-                                         src="@GetAvatarUrl(request.AvatarUrl)"
-                                         alt="Profielfoto van @request.FullName" />
-                                    <div class="space-y-1">
-                                        <h2 class="text-lg font-semibold text-neutral-800">@request.FullName</h2>
-                                        <div class="text-sm text-neutral-600 space-y-1">
-                                            <p>@request.Email</p>
-                                            <p>Voornaam: <span class="font-medium text-neutral-700">@request.FirstName</span></p>
-                                            <p>Achternaam: <span class="font-medium text-neutral-700">@request.LastName</span></p>
-                                            <p>Geboortedatum: <span class="font-medium text-neutral-700">@request.BirthDate.ToString("dd/MM/yyyy")</span></p>
-                                            <p>Geslacht: <span class="font-medium text-neutral-700">@GetGenderLabel(request.Gender)</span></p>
-                                            <p class="text-neutral-500">Organisatie: <span class="font-medium text-neutral-700">@request.OrganizationName</span></p>
+                            <article class="rounded-3xl border border-neutral-200 bg-white px-5 py-6 shadow-sm">
+                                <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                                    <div class="flex flex-1 gap-4">
+                                        <img class="h-16 w-16 rounded-full object-cover border border-neutral-200"
+                                             src="@GetAvatarUrl(request.AvatarUrl)"
+                                             alt="Profielfoto van @request.FullName"/>
+                                        <div class="space-y-1">
+                                            <h2 class="text-lg font-semibold text-neutral-800">@request.FullName</h2>
+                                            <div class="text-sm text-neutral-600 space-y-1">
+                                                <p>@request.Email</p>
+                                                <p>Voornaam: <span class="font-medium text-neutral-700">@request.FirstName</span></p>
+                                                <p>Achternaam: <span class="font-medium text-neutral-700">@request.LastName</span></p>
+                                                <p>Geboortedatum: <span class="font-medium text-neutral-700">@request.BirthDate.ToString("dd/MM/yyyy")</span></p>
+                                                <p>Geslacht: <span class="font-medium text-neutral-700">@GetGenderLabel(request.Gender)</span></p>
+                                                <p class="text-neutral-500">Organisatie: <span class="font-medium text-neutral-700">@request.OrganizationName</span></p>
+                                            </div>
+                                            <p class="text-xs text-neutral-400">Ingediend op @request.SubmittedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
                                         </div>
-                                        <p class="text-xs text-neutral-400">Ingediend op @request.SubmittedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+                                    </div>
+                                    <div class="flex w-full flex-col gap-3 md:w-60">
+                                        <label class="text-xs font-medium uppercase tracking-wide text-neutral-500">Begeleider</label>
+                                        <select class="rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 focus:border-[#0B6532] focus:outline-none focus:ring-1 focus:ring-[#0B6532]"
+                                                @bind="_selectedSupervisors[request.Id]"
+                                                disabled="@(request.Supervisors.Count == 0 || isProcessing)">
+                                            <option value="" disabled>Kies een begeleider</option>
+                                            @foreach (var supervisor in request.Supervisors)
+                                            {
+                                                <option value="@supervisor.Id">@supervisor.Name</option>
+                                            }
+                                        </select>
+
+                                        <button class="rounded-xl bg-[#0B6532] px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-[#0a572b] disabled:cursor-not-allowed disabled:bg-[#9fc9b3]"
+                                                disabled="@(isProcessing || !_selectedSupervisors.ContainsKey(request.Id) || _selectedSupervisors[request.Id] is null)"
+                                                @onclick="() => ApproveAsync(request)">
+                                            @(isProcessing ? "Bezig..." : "Keur goed")
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="flex w-full flex-col gap-3 md:w-60">
-                                    <label class="text-xs font-medium uppercase tracking-wide text-neutral-500">Begeleider</label>
-                                    <select class="rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 focus:border-[#0B6532] focus:outline-none focus:ring-1 focus:ring-[#0B6532]"
-                                            @bind="_selectedSupervisors[request.Id]"
-                                            disabled="@(request.Supervisors.Count == 0 || isProcessing)">
-                                        <option value="" disabled>Kies een begeleider</option>
-                                        @foreach (var supervisor in request.Supervisors)
-                                        {
-                                            <option value="@supervisor.Id">@supervisor.Name</option>
-                                        }
-                                    </select>
+                            </article>
+                        }
+                    </div>
+                }
 
-                                    <button class="rounded-xl bg-[#0B6532] px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-[#0a572b] disabled:cursor-not-allowed disabled:bg-[#9fc9b3]"
-                                            disabled="@(isProcessing || !_selectedSupervisors.ContainsKey(request.Id) || _selectedSupervisors[request.Id] is null)"
-                                            @onclick="() => ApproveAsync(request)">
-                                        @(isProcessing ? "Bezig..." : "Keur goed")
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
-                    }
-                </div>
-            }
-
-            @if (!string.IsNullOrEmpty(_statusMessage))
-            {
-                <div class="rounded-3xl border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-700">@_statusMessage</div>
-            }
-        </div>
-    </main>
+                @if (!string.IsNullOrEmpty(_statusMessage))
+                {
+                    <div class="rounded-3xl border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-700">@_statusMessage</div>
+                }
+            </div>
+        </main>
+    </div>
 </div>
 
 @code {

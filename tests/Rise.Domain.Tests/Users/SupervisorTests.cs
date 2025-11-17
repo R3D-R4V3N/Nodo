@@ -1,5 +1,6 @@
 ﻿using Ardalis.Result;
 using Rise.Domain.Chats;
+using Rise.Domain.Organizations;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Properties;
 
@@ -17,6 +18,7 @@ public class SupervisorTests
         var birthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28)); 
         var gender = GenderType.X;
         var userSettings = TestData.ValidUserSettings();
+        var orga = TestData.ValidOrganization();
 
         var user = new Supervisor()
         {
@@ -27,7 +29,8 @@ public class SupervisorTests
             AvatarUrl = avatarUrl,
             BirthDay = birthDay,
             Gender = gender,
-            UserSettings = userSettings
+            UserSettings = userSettings,
+            Organization = orga,
         };
 
         user.AccountId.ShouldBe(accountId);
@@ -38,6 +41,7 @@ public class SupervisorTests
         user.BirthDay.ShouldBe(birthDay);
         user.Gender.ShouldBe(gender);
         user.UserSettings.ShouldBe(userSettings);
+        user.Organization.ShouldBe(orga);
     }
 
     [Theory]

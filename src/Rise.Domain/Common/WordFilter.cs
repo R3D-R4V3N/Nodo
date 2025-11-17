@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Rise.Services
+namespace Rise.Domain.Common
 {
     public static class WordFilter
     {
@@ -300,6 +300,14 @@ namespace Rise.Services
                 return string.Empty; //incase the user just spams alot of whitespaces
 
             return _blacklistRegex.Replace(input, m => new string('#', m.Value.Length));
+        }
+
+        public static bool ContainsBlackListedWord(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return false;
+
+            return _blacklistRegex.IsMatch(input);
         }
     }
 }

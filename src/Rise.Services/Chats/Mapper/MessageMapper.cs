@@ -14,7 +14,7 @@ internal static class MessageMapper
         {
             ChatId = message.Chat.Id,
             Id = message.Id,
-            Content = message.Text ?? string.Empty,
+            Content = message.Text?.CleanedUpValue ?? string.Empty,
             Timestamp = message.CreatedAt,
             User = UserMapper.ToMessageDto(message.Sender),
             AudioDataUrl = AudioHelperMethods.BuildAudioDataUrl(message),

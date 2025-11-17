@@ -318,10 +318,6 @@ namespace Rise.Persistence.Migrations
                     b.Property<int>("SenderId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Text")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
@@ -373,6 +369,103 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("Organizations", (string)null);
                 });
 
+            modelBuilder.Entity("Rise.Domain.Registrations.RegistrationRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int?>("ApprovedBySupervisorId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AssignedSupervisorId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("AvatarUrl")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("longtext");
+
+                    b.Property<DateOnly>("BirthDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.Property<string>("DeniedReason")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("NormalizedEmail")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovedBySupervisorId");
+
+                    b.HasIndex("AssignedSupervisorId");
+
+                    b.HasIndex("NormalizedEmail")
+                        .IsUnique();
+
+                    b.HasIndex("OrganizationId");
+
+                    b.ToTable("RegistrationRequests", (string)null);
+                });
+
             modelBuilder.Entity("Rise.Domain.Users.BaseUser", b =>
                 {
                     b.Property<int>("Id")
@@ -386,15 +479,6 @@ namespace Rise.Persistence.Migrations
                         .HasMaxLength(36)
                         .HasColumnType("varchar(36)");
 
-                    b.Property<string>("AvatarUrl")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Biography")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
-
                     b.Property<DateOnly>("BirthDay")
                         .HasColumnType("date");
 
@@ -403,28 +487,15 @@ namespace Rise.Persistence.Migrations
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("current_timestamp()");
 
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
                     b.Property<int>("Gender")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
-                    b.Property<int>("OrganizationId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -435,8 +506,6 @@ namespace Rise.Persistence.Migrations
 
                     b.HasIndex("AccountId")
                         .IsUnique();
-
-                    b.HasIndex("OrganizationId");
 
                     b.ToTable("BaseUsers", (string)null);
 
@@ -453,7 +522,7 @@ namespace Rise.Persistence.Migrations
 
                     b.Property<string>("ConnectionType")
                         .IsRequired()
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -480,8 +549,7 @@ namespace Rise.Persistence.Migrations
 
                     b.HasIndex("ToId");
 
-                    b.HasIndex("FromId", "ToId", "ConnectionType")
-                        .IsUnique();
+                    b.HasIndex("FromId", "ToId", "IsDeleted");
 
                     b.ToTable("UserConnections", (string)null);
                 });
@@ -595,6 +663,11 @@ namespace Rise.Persistence.Migrations
                 {
                     b.HasBaseType("Rise.Domain.Users.BaseUser");
 
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.HasIndex("OrganizationId");
+
                     b.ToTable("Supervisors", (string)null);
                 });
 
@@ -602,132 +675,12 @@ namespace Rise.Persistence.Migrations
                 {
                     b.HasBaseType("Rise.Domain.Users.BaseUser");
 
-                    b.ToTable("Users", (string)null);
-                });
-
-            modelBuilder.Entity("Rise.Domain.Registrations.RegistrationRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("ApprovedBySupervisorId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ApprovedAt")
-                        .HasColumnType("datetime");
-
-                    b.Property<int?>("AssignedSupervisorId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<string>("DeniedReason")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("AvatarUrl")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<DateOnly>("BirthDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<int>("Gender")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("NormalizedEmail")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
                     b.Property<int>("OrganizationId")
                         .HasColumnType("int");
 
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<int>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApprovedBySupervisorId");
-
-                    b.HasIndex("AssignedSupervisorId");
-
-                    b.HasIndex("NormalizedEmail")
-                        .IsUnique();
-
                     b.HasIndex("OrganizationId");
 
-                    b.ToTable("RegistrationRequests", (string)null);
-                });
-
-            modelBuilder.Entity("Rise.Domain.Registrations.RegistrationRequest", b =>
-                {
-                    b.HasOne("Rise.Domain.Users.Supervisor", "ApprovedBySupervisor")
-                        .WithMany()
-                        .HasForeignKey("ApprovedBySupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Rise.Domain.Users.Supervisor", "AssignedSupervisor")
-                        .WithMany()
-                        .HasForeignKey("AssignedSupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Rise.Domain.Organizations.Organization", "Organization")
-                        .WithMany()
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("ApprovedBySupervisor");
-
-                    b.Navigation("AssignedSupervisor");
-
-                    b.Navigation("Organization");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("BaseUserChat", b =>
@@ -810,13 +763,139 @@ namespace Rise.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.OwnsOne("Rise.Domain.Messages.Properties.Text", "Text", b1 =>
+                        {
+                            b1.Property<int>("MessageId")
+                                .HasColumnType("int");
+
+                            b1.Property<bool>("IsSuspicious")
+                                .HasColumnType("tinyint(1)")
+                                .HasColumnName("IsSuspicious");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(2000)
+                                .HasColumnType("varchar(2000)")
+                                .HasColumnName("Text");
+
+                            b1.HasKey("MessageId");
+
+                            b1.ToTable("Message");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MessageId");
+                        });
+
                     b.Navigation("Chat");
 
                     b.Navigation("Sender");
+
+                    b.Navigation("Text");
+                });
+
+            modelBuilder.Entity("Rise.Domain.Registrations.RegistrationRequest", b =>
+                {
+                    b.HasOne("Rise.Domain.Users.Supervisor", "ApprovedBySupervisor")
+                        .WithMany()
+                        .HasForeignKey("ApprovedBySupervisorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Rise.Domain.Users.Supervisor", "AssignedSupervisor")
+                        .WithMany()
+                        .HasForeignKey("AssignedSupervisorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Rise.Domain.Organizations.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ApprovedBySupervisor");
+
+                    b.Navigation("AssignedSupervisor");
+
+                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("Rise.Domain.Users.BaseUser", b =>
                 {
+                    b.OwnsOne("Rise.Domain.Users.Properties.AvatarUrl", "AvatarUrl", b1 =>
+                        {
+                            b1.Property<int>("BaseUserId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(500000)
+                                .HasColumnType("longtext")
+                                .HasColumnName("AvatarUrl");
+
+                            b1.HasKey("BaseUserId");
+
+                            b1.ToTable("BaseUsers");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BaseUserId");
+                        });
+
+                    b.OwnsOne("Rise.Domain.Users.Properties.Biography", "Biography", b1 =>
+                        {
+                            b1.Property<int>("BaseUserId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(500)
+                                .HasColumnType("varchar(500)")
+                                .HasColumnName("Biography");
+
+                            b1.HasKey("BaseUserId");
+
+                            b1.ToTable("BaseUsers");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BaseUserId");
+                        });
+
+                    b.OwnsOne("Rise.Domain.Users.Properties.FirstName", "FirstName", b1 =>
+                        {
+                            b1.Property<int>("BaseUserId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("varchar(100)")
+                                .HasColumnName("FirstName");
+
+                            b1.HasKey("BaseUserId");
+
+                            b1.ToTable("BaseUsers");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BaseUserId");
+                        });
+
+                    b.OwnsOne("Rise.Domain.Users.Properties.LastName", "LastName", b1 =>
+                        {
+                            b1.Property<int>("BaseUserId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("varchar(100)")
+                                .HasColumnName("LastName");
+
+                            b1.HasKey("BaseUserId");
+
+                            b1.ToTable("BaseUsers");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BaseUserId");
+                        });
+
                     b.OwnsOne("Rise.Domain.Users.Settings.UserSetting", "UserSettings", b1 =>
                         {
                             b1.Property<int>("Id")
@@ -824,11 +903,6 @@ namespace Rise.Persistence.Migrations
                                 .HasColumnType("int");
 
                             MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b1.Property<int>("Id"));
-
-                            b1.Property<int>("FontSize")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int")
-                                .HasDefaultValue(12);
 
                             b1.Property<bool>("IsDarkMode")
                                 .ValueGeneratedOnAdd()
@@ -848,6 +922,25 @@ namespace Rise.Persistence.Migrations
                             b1.WithOwner("User")
                                 .HasForeignKey("UserId");
 
+                            b1.OwnsOne("Rise.Domain.Users.Properties.FontSize", "FontSize", b2 =>
+                                {
+                                    b2.Property<int>("UserSettingId")
+                                        .HasColumnType("int");
+
+                                    b2.Property<int>("Value")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("int")
+                                        .HasDefaultValue(12)
+                                        .HasColumnName("FontSize");
+
+                                    b2.HasKey("UserSettingId");
+
+                                    b2.ToTable("UserSetting");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("UserSettingId");
+                                });
+
                             b1.OwnsMany("Rise.Domain.Users.Settings.UserSettingChatTextLineSuggestion", "ChatTextLineSuggestions", b2 =>
                                 {
                                     b2.Property<int>("UserSettingsId")
@@ -862,32 +955,58 @@ namespace Rise.Persistence.Migrations
                                     b2.Property<int>("Rank")
                                         .HasColumnType("int");
 
-                                    b2.Property<string>("Sentence")
-                                        .IsRequired()
-                                        .HasMaxLength(150)
-                                        .HasColumnType("varchar(150)")
-                                        .HasColumnName("TextSuggestion");
-
                                     b2.HasKey("UserSettingsId", "Id");
 
                                     b2.ToTable("UserSettingChatTextLineSuggestions", (string)null);
 
                                     b2.WithOwner()
                                         .HasForeignKey("UserSettingsId");
+
+                                    b2.OwnsOne("Rise.Domain.Users.Settings.Properties.DefaultSentence", "Sentence", b3 =>
+                                        {
+                                            b3.Property<int>("UserSettingChatTextLineSuggestionUserSettingsId")
+                                                .HasColumnType("int");
+
+                                            b3.Property<int>("UserSettingChatTextLineSuggestionId")
+                                                .HasColumnType("int");
+
+                                            b3.Property<string>("Value")
+                                                .IsRequired()
+                                                .HasMaxLength(150)
+                                                .HasColumnType("varchar(150)")
+                                                .HasColumnName("TextSuggestion");
+
+                                            b3.HasKey("UserSettingChatTextLineSuggestionUserSettingsId", "UserSettingChatTextLineSuggestionId");
+
+                                            b3.ToTable("UserSettingChatTextLineSuggestions");
+
+                                            b3.WithOwner()
+                                                .HasForeignKey("UserSettingChatTextLineSuggestionUserSettingsId", "UserSettingChatTextLineSuggestionId");
+                                        });
+
+                                    b2.Navigation("Sentence")
+                                        .IsRequired();
                                 });
 
                             b1.Navigation("ChatTextLineSuggestions");
 
+                            b1.Navigation("FontSize")
+                                .IsRequired();
+
                             b1.Navigation("User");
                         });
 
-                    b.HasOne("Rise.Domain.Organizations.Organization", "Organization")
-                        .WithMany()
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.Navigation("AvatarUrl")
                         .IsRequired();
 
-                    b.Navigation("Organization");
+                    b.Navigation("Biography")
+                        .IsRequired();
+
+                    b.Navigation("FirstName")
+                        .IsRequired();
+
+                    b.Navigation("LastName")
+                        .IsRequired();
 
                     b.Navigation("UserSettings")
                         .IsRequired();
@@ -898,7 +1017,7 @@ namespace Rise.Persistence.Migrations
                     b.HasOne("Rise.Domain.Users.User", "From")
                         .WithMany("Connections")
                         .HasForeignKey("FromId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
                     b.HasOne("Rise.Domain.Users.User", "To")
@@ -957,6 +1076,14 @@ namespace Rise.Persistence.Migrations
                         .HasForeignKey("Rise.Domain.Users.Supervisor", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Rise.Domain.Organizations.Organization", "Organization")
+                        .WithMany("Workers")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("Rise.Domain.Users.User", b =>
@@ -966,11 +1093,26 @@ namespace Rise.Persistence.Migrations
                         .HasForeignKey("Rise.Domain.Users.User", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Rise.Domain.Organizations.Organization", "Organization")
+                        .WithMany("Members")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("Rise.Domain.Chats.Chat", b =>
                 {
                     b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("Rise.Domain.Organizations.Organization", b =>
+                {
+                    b.Navigation("Members");
+
+                    b.Navigation("Workers");
                 });
 
             modelBuilder.Entity("Rise.Domain.Users.User", b =>

@@ -142,10 +142,6 @@ public class ChatService(
             return Result.NotFound($"Chat met id '{request.ChatId}' werd niet gevonden.");
         }
 
-        var trimmedContent = string.IsNullOrWhiteSpace(request.Content)
-            ? null
-            : WordFilter.Censor(request.Content.Trim());
-
         byte[]? audioBytes = null;
         string? audioContentType = null;
         double? audioDurationSeconds = null;
@@ -171,25 +167,29 @@ public class ChatService(
             }
         }
 
-        if (trimmedContent is null && audioBytes is null)
+        var textMessage = request.Content;
+        if (textMessage is null && audioBytes is null)
         {
             return Result.Invalid(new ValidationError(nameof(request.Content), "Een bericht moet tekst of audio bevatten."));
         }
+
+
 
         var message = new Message
         {
             Chat = chat,
             Sender = sender,
-            Text = Text.Create(trimmedContent!),
+            Text = Text.Create(textMessage!),
             AudioContentType = audioContentType,
             AudioData = audioBytes,
             AudioDurationSeconds = audioDurationSeconds
         };
 
-        _dbContext.Messages.Add(message);
+        chat.AddMessage(message);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        var dto = message.ToChatDto();
+        var dto = message.ToChatDto()!;
 
         if (_messageDispatcher is not null)
         {

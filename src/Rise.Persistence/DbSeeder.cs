@@ -197,7 +197,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = nodoCentrum
             }),
             new("user1@example.com", AppRoles.User, accountId => new User()
             {
@@ -212,7 +213,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = nodoCentrum
             }),
             new("user2@example.com", AppRoles.User, accountId => new User()
             {
@@ -227,7 +229,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = nodoCentrum
             }),
             new("admin@nodo.chat", AppRoles.Administrator, null),
             new("emma.supervisor@nodo.chat", AppRoles.Supervisor, accountId => new Supervisor()
@@ -243,7 +246,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = communityNoord
             }),
             new("jonas.supervisor@nodo.chat", AppRoles.Supervisor, accountId => new Supervisor()
             {
@@ -258,7 +262,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = communityNoord
             }),
             new("ella.supervisor@nodo.chat", AppRoles.Supervisor, accountId => new Supervisor()
             {
@@ -273,7 +278,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = communityZuid
             }),
             new("noor@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -288,7 +294,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = communityZuid
             }),
             new("milan@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -303,7 +310,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = communityZuid
             }),
             new("lina@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -318,7 +326,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = nodoCentrum
             }),
             new("kyandro@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -333,7 +342,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = nodoCentrum
             }),
             new("jasper@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -348,7 +358,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = nodoCentrum
             }),
             new("bjorn@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -363,7 +374,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = communityNoord
             }),
             new("thibo@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -378,7 +390,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = communityNoord
             }),
             new("saar@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -393,7 +406,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = communityNoord
             }),
             new("yassin@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -408,7 +422,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = communityZuid
             }),
             new("lotte@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -423,7 +438,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = communityZuid
             }),
             new("amina@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -438,29 +454,9 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
-                }
+                },
+                Organization = communityZuid
             }),
-        };
-
-        var organizationAssignments = new Dictionary<string, Organization>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["supervisor@example.com"] = nodoCentrum,
-            ["user1@example.com"] = nodoCentrum,
-            ["user2@example.com"] = nodoCentrum,
-            ["emma.supervisor@nodo.chat"] = communityNoord,
-            ["jonas.supervisor@nodo.chat"] = communityNoord,
-            ["ella.supervisor@nodo.chat"] = communityZuid,
-            ["noor@nodo.chat"] = nodoCentrum,
-            ["milan@nodo.chat"] = nodoCentrum,
-            ["lina@nodo.chat"] = nodoCentrum,
-            ["kyandro@nodo.chat"] = nodoCentrum,
-            ["jasper@nodo.chat"] = communityZuid,
-            ["bjorn@nodo.chat"] = communityNoord,
-            ["thibo@nodo.chat"] = communityNoord,
-            ["saar@nodo.chat"] = communityNoord,
-            ["yassin@nodo.chat"] = communityNoord,
-            ["lotte@nodo.chat"] = communityZuid,
-            ["amina@nodo.chat"] = communityZuid,
         };
 
         var existingProfiles = await dbContext.Set<BaseUser>()
@@ -501,11 +497,6 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             if (profile is null)
             {
                 continue;
-            }
-
-            if (organizationAssignments.TryGetValue(account.Email, out var organization))
-            {
-                profile.AssignOrganization(organization);
             }
 
             profile.UserSettings.AddChatTextLine("Kowabunga!");

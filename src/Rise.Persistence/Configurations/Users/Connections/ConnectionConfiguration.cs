@@ -14,7 +14,9 @@ internal class ConnectionConfiguration : EntityConfiguration<UserConnection>
     public override void Configure(EntityTypeBuilder<UserConnection> builder)
     {
         base.Configure(builder);
+
         builder.ToTable("UserConnections");
+        builder.HasQueryFilter(uc => !uc.IsDeleted);
 
         builder.HasOne(c => c.From)
             .WithMany()
@@ -32,7 +34,6 @@ internal class ConnectionConfiguration : EntityConfiguration<UserConnection>
             .HasConversion<string>()
             .IsRequired();
 
-        builder.HasIndex("FromId", "ToId", nameof(UserConnection.ConnectionType))
-            .IsUnique();
+        builder.HasIndex("FromId", "ToId", nameof(UserConnection.IsDeleted));
     }
 }
