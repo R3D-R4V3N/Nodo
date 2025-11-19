@@ -41,7 +41,8 @@ try
 
     builder.Services.AddDbContext<ApplicationDbContext>(o =>
     {
-        var cs = Environment.GetEnvironmentVariable("DB_CONNECTION");
+        var cs =
+            "Server=65.109.132.74;Port=3308;Database=nododb;User=chatuser;Password=chatuserpassword123;SslMode=None;";
         cs ??= builder.Configuration.GetConnectionString("DatabaseConnection")
                  ?? throw new InvalidOperationException("No connection string found");
 
