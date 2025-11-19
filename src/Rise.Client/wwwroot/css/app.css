@@ -70,7 +70,6 @@
     --container-sm: 24rem;
     --container-md: 28rem;
     --container-2xl: 42rem;
-    --container-3xl: 48rem;
     --text-xs: 0.75rem;
     --text-xs--line-height: calc(1 / 0.75);
     --text-sm: 0.875rem;
@@ -589,9 +588,6 @@
   }
   .w-max {
     width: max-content;
-  }
-  .max-w-3xl {
-    max-width: var(--container-3xl);
   }
   .max-w-\[80\%\] {
     max-width: 80%;
@@ -2001,11 +1997,6 @@
   .sm\:pb-7 {
     @media (width >= 40rem) {
       padding-bottom: calc(var(--spacing) * 7);
-    }
-  }
-  .sm\:text-left {
-    @media (width >= 40rem) {
-      text-align: left;
     }
   }
   .sm\:text-3xl {

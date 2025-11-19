@@ -1,0 +1,25 @@
+{
+  "name": "Nodo Chat",
+  "short_name": "Nodo",
+  "description": "Blijf in contact met je vrienden via Nodo, de chatervaring van Rise.",
+  "lang": "nl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F2F2F2",
+  "theme_color": "#111827",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

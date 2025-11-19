@@ -9,6 +9,10 @@
     <link href="css/app.css" rel="stylesheet" />
     <link href="css/style.css" rel="stylesheet" />
     <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="theme-color" content="#111827" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <link href="Rise.Client.styles.css" rel="stylesheet" />
 </head>
 
@@ -47,7 +51,18 @@
         };
 
     </script>
+    <script>
+        if ('serviceWorker' in navigator && window.isSecureContext) {
+            window.addEventListener('load', () => {
+                const baseHref = document.querySelector('base')?.getAttribute('href') ?? '/';
+                const normalizedBase = baseHref.endsWith('/') ? baseHref : `${baseHref}/`;
+                const serviceWorkerUrl = `${normalizedBase}service-worker.js`;
 
+                navigator.serviceWorker.register(serviceWorkerUrl)
+                    .catch(err => console.error('Service worker registration failed', err));
+            });
+        }
+    </script>
 </body>
 
 </html>
