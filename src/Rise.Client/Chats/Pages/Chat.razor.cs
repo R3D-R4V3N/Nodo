@@ -99,7 +99,7 @@ public partial class Chat : IAsyncDisposable
         await SendMessageAsync(request, "Het spraakbericht kon niet verzonden worden.");
     }
 
-    private async Task SendMessageAsync(ChatRequest.CreateMessage createRequest, string errorMessage) 
+    private async Task SendMessageAsync(ChatRequest.CreateMessage createRequest, string errorMessage)
     {
         try
         {
@@ -110,6 +110,12 @@ public partial class Chat : IAsyncDisposable
 
             if (result.IsSuccess)
             {
+                return;
+            }
+
+            if (IndicatesQueued(result))
+            {
+                AddPendingMessage(createRequest);
                 return;
             }
 
@@ -126,6 +132,46 @@ public partial class Chat : IAsyncDisposable
         {
             _isSending = false;
         }
+    }
+
+    private static bool IndicatesQueued(Result<MessageDto.Chat> result)
+    {
+        return result.Errors.Any(error =>
+            error.Contains("opgeslagen", StringComparison.OrdinalIgnoreCase)
+            && error.Contains("verbinding", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void AddPendingMessage(ChatRequest.CreateMessage createRequest)
+    {
+        if (_chat is null || UserState.User is null)
+        {
+            return;
+        }
+
+        var pendingMessage = new MessageDto.Chat
+        {
+            Id = -1 * (_chat.Messages.Count + 1),
+            ChatId = _chat.ChatId,
+            Content = createRequest.Content ?? string.Empty,
+            Timestamp = DateTime.UtcNow,
+            User = new UserDto.Message
+            {
+                Id = UserState.User.Id,
+                Name = $"{UserState.User.FirstName} {UserState.User.LastName}",
+                AccountId = UserState.User.AccountId,
+                AvatarUrl = UserState.User.AvatarUrl
+            },
+            AudioDataUrl = createRequest.AudioDataUrl,
+            AudioDuration = createRequest.AudioDurationSeconds.HasValue
+                ? TimeSpan.FromSeconds(createRequest.AudioDurationSeconds.Value)
+                : null,
+            IsPending = true
+        };
+
+        _chat.Messages.Add(pendingMessage);
+        ScheduleFooterMeasurement();
+        _shouldScrollToBottom = true;
+        StateHasChanged();
     }
 
     private async Task EnsureHubConnectionAsync()
@@ -189,12 +235,43 @@ public partial class Chat : IAsyncDisposable
         {
             return;
         }
+
+        RemovePendingPlaceholder(dto);
         if (TryAddMessage(dto))
         {
             ScheduleFooterMeasurement();
             _shouldScrollToBottom = true;
             StateHasChanged();
         }
+    }
+
+    private void RemovePendingPlaceholder(MessageDto.Chat dto)
+    {
+        if (_chat is null)
+        {
+            return;
+        }
+
+        var pendingMessage = _chat.Messages.FirstOrDefault(message =>
+            message.IsPending
+            && message.ChatId == dto.ChatId
+            && message.User.Id == dto.User.Id
+            && PendingContentMatches(dto, message));
+
+        if (pendingMessage is not null)
+        {
+            _chat.Messages.Remove(pendingMessage);
+        }
+    }
+
+    private static bool PendingContentMatches(MessageDto.Chat incoming, MessageDto.Chat pending)
+    {
+        if (!string.IsNullOrWhiteSpace(incoming.AudioDataUrl) || !string.IsNullOrWhiteSpace(pending.AudioDataUrl))
+        {
+            return string.Equals(incoming.AudioDataUrl, pending.AudioDataUrl, StringComparison.Ordinal);
+        }
+
+        return string.Equals(incoming.Content, pending.Content, StringComparison.Ordinal);
     }
 
     private async Task JoinCurrentChatAfterReconnectAsync()

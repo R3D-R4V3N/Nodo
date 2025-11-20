@@ -8,19 +8,23 @@ public partial class MessageBubble
     [Parameter] public string? AvatarUrl { get; set; }
     [Parameter] public string? AudioUrl { get; set; }
     [Parameter] public TimeSpan? AudioDuration { get; set; }
+    [Parameter] public bool IsPending { get; set; }
 
     private RenderFragment RenderContent() => builder =>
     {
         var seq = 0;
+        var isPendingOutgoing = IsOutgoing && IsPending;
         if (!string.IsNullOrWhiteSpace(AudioUrl))
         {
             var audioWrapperClasses = IsOutgoing
-                ? "flex flex-col gap-2 text-white"
+                ? isPendingOutgoing ? "flex flex-col gap-2" : "flex flex-col gap-2 text-white"
                 : "flex flex-col gap-2";
             var durationLabelClasses = IsOutgoing
-                ? "text-[10px] uppercase tracking-wide text-white/70"
+                ? isPendingOutgoing ? "text-[10px] uppercase tracking-wide text-neutral-600" : "text-[10px] uppercase tracking-wide text-white/70"
                 : "text-[10px] uppercase tracking-wide text-neutral-500";
-            var audioTextClasses = IsOutgoing ? "text-sm text-white" : "text-sm";
+            var audioTextClasses = IsOutgoing
+                ? isPendingOutgoing ? "text-sm text-neutral-900" : "text-sm text-white"
+                : "text-sm";
 
             builder.OpenElement(seq++, "div");
             builder.AddAttribute(seq++, "class", audioWrapperClasses);
@@ -60,9 +64,22 @@ public partial class MessageBubble
         ? "bg-white rounded-2xl rounded-tl-none px-4 py-3 shadow-sm text-sm max-w-[80%]"
         : "bg-white rounded-2xl rounded-tl-none px-4 py-2 shadow-sm text-sm max-w-[80%]";
 
-    private string OutgoingBubbleClasses => !string.IsNullOrWhiteSpace(AudioUrl)
-        ? "bg-[#127646] text-white rounded-2xl rounded-tr-none px-4 py-3 shadow-sm text-sm max-w-[80%]"
-        : "bg-[#127646] text-white rounded-2xl rounded-tr-none px-4 py-2 text-sm shadow-sm max-w-[80%]";
+    private string OutgoingBubbleClasses
+    {
+        get
+        {
+            if (IsPending)
+            {
+                return !string.IsNullOrWhiteSpace(AudioUrl)
+                    ? "bg-green-50 text-neutral-900 rounded-2xl rounded-tr-none px-4 py-3 shadow-sm text-sm max-w-[80%] border border-red-500 border-dotted"
+                    : "bg-green-50 text-neutral-900 rounded-2xl rounded-tr-none px-4 py-2 text-sm shadow-sm max-w-[80%] border border-red-500 border-dotted";
+            }
+
+            return !string.IsNullOrWhiteSpace(AudioUrl)
+                ? "bg-[#127646] text-white rounded-2xl rounded-tr-none px-4 py-3 shadow-sm text-sm max-w-[80%]"
+                : "bg-[#127646] text-white rounded-2xl rounded-tr-none px-4 py-2 text-sm shadow-sm max-w-[80%]";
+        }
+    }
 
     private string? DurationLabel => AudioDuration is { TotalSeconds: > 0 } duration
         ? duration.ToString(@"m\:ss")
