@@ -14,5 +14,6 @@ public static class MessageDto
         public string? AudioDataUrl { get; set; }
         public TimeSpan? AudioDuration { get; set; }
         public bool IsPending { get; set; }
+        public int? QueuedOperationId { get; set; }
     }
 }

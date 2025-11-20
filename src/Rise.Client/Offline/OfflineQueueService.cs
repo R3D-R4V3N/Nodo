@@ -105,7 +105,9 @@ public sealed class OfflineQueueService : IAsyncDisposable
             }
             catch
             {
-                break;
+                // If an item fails we keep the rest in the queue and continue trying the remaining operations.
+                // They will be retried on the next online event.
+                continue;
             }
         }
     }

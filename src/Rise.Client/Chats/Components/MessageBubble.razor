@@ -2,7 +2,7 @@
 @if (IsOutgoing)
 {
     <div class="flex justify-end items-center gap-2">
-        <div class="@OutgoingBubbleClasses">
+        <div class="@OutgoingBubbleClasses" @onclick="HandlePendingClick" role="@(CanCancelPending ? "button" : null)">
             @RenderContent()
         </div>
 

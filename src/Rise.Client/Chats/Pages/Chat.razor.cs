@@ -115,8 +115,6 @@ public partial class Chat : IAsyncDisposable
 
     private async Task SendMessageAsync(ChatRequest.CreateMessage createRequest, string errorMessage, bool isOnline)
     {
-        var pendingAdded = false;
-
         try
         {
             _isSending = isOnline;
@@ -124,8 +122,18 @@ public partial class Chat : IAsyncDisposable
 
             if (!isOnline)
             {
-                AddPendingMessage(createRequest);
-                pendingAdded = true;
+                var queuedResult = await ChatService.QueueMessageAsync(createRequest);
+                if (queuedResult.IsSuccess)
+                {
+                    AddPendingMessage(createRequest, queuedResult.Value);
+                    return;
+                }
+
+                _errorMessage = queuedResult.Errors.FirstOrDefault()
+                    ?? queuedResult.ValidationErrors.FirstOrDefault()?.ErrorMessage
+                    ?? errorMessage;
+
+                return;
             }
 
             var result = await ChatService.CreateMessageAsync(createRequest);
@@ -137,11 +145,6 @@ public partial class Chat : IAsyncDisposable
 
             if (IndicatesQueued(result))
             {
-                if (!pendingAdded)
-                {
-                    AddPendingMessage(createRequest);
-                }
-
                 return;
             }
 
@@ -156,11 +159,6 @@ public partial class Chat : IAsyncDisposable
         }
         catch
         {
-            if (!pendingAdded && !isOnline)
-            {
-                AddPendingMessage(createRequest);
-            }
-
             _errorMessage ??= errorMessage;
         }
         finally
@@ -176,7 +174,7 @@ public partial class Chat : IAsyncDisposable
             && error.Contains("verbinding", StringComparison.OrdinalIgnoreCase));
     }
 
-    private void AddPendingMessage(ChatRequest.CreateMessage createRequest)
+    private void AddPendingMessage(ChatRequest.CreateMessage createRequest, int queuedOperationId)
     {
         if (_chat is null || UserState.User is null)
         {
@@ -200,12 +198,37 @@ public partial class Chat : IAsyncDisposable
             AudioDuration = createRequest.AudioDurationSeconds.HasValue
                 ? TimeSpan.FromSeconds(createRequest.AudioDurationSeconds.Value)
                 : null,
-            IsPending = true
+            IsPending = true,
+            QueuedOperationId = queuedOperationId
         };
 
         _chat.Messages.Add(pendingMessage);
         ScheduleFooterMeasurement();
         _shouldScrollToBottom = true;
+        StateHasChanged();
+    }
+
+    private async Task CancelPendingMessageAsync(MessageDto.Chat message)
+    {
+        if (_chat is null || !message.IsPending)
+        {
+            return;
+        }
+
+        if (message.QueuedOperationId is int queuedId)
+        {
+            try
+            {
+                await OfflineQueueService.RemoveOperationAsync(queuedId);
+            }
+            catch
+            {
+                // Best-effort removal; if it fails the message will retry on reconnect.
+            }
+        }
+
+        _chat.Messages.Remove(message);
+        ScheduleFooterMeasurement();
         StateHasChanged();
     }
 
@@ -291,12 +314,17 @@ public partial class Chat : IAsyncDisposable
             message.IsPending
             && message.ChatId == dto.ChatId
             && message.User.Id == dto.User.Id
-            && PendingContentMatches(dto, message));
+            && (MatchesQueuedOperation(dto, message) || PendingContentMatches(dto, message)));
 
         if (pendingMessage is not null)
         {
             _chat.Messages.Remove(pendingMessage);
         }
+    }
+
+    private static bool MatchesQueuedOperation(MessageDto.Chat incoming, MessageDto.Chat pending)
+    {
+        return pending.QueuedOperationId.HasValue && incoming.QueuedOperationId == pending.QueuedOperationId;
     }
 
     private static bool PendingContentMatches(MessageDto.Chat incoming, MessageDto.Chat pending)

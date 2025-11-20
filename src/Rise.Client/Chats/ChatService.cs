@@ -23,16 +23,6 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
 
     public async Task<Result<MessageDto.Chat>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
     {
-        if (!await _offlineQueueService.IsOnlineAsync())
-        {
-            var queued = await TryQueueMessageAsync(request, cancellationToken);
-            var message = queued
-                ? "Geen netwerkverbinding: het bericht is opgeslagen en wordt verzonden zodra er verbinding is."
-                : "Geen netwerkverbinding: het bericht kon niet worden opgeslagen om later te verzenden.";
-
-            return Result<MessageDto.Chat>.Error(message);
-        }
-
         HttpResponseMessage response;
         try
         {
@@ -53,26 +43,28 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
         return result ?? Result.Error("Kon het serverantwoord niet verwerken.");
     }
 
-    private Task QueueMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken)
+    public async Task<Result<int>> QueueMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
     {
-        return _offlineQueueService.QueueOperationAsync(
-            _httpClient.BaseAddress?.ToString() ?? string.Empty,
-            $"/api/chats/{request.ChatId}/messages",
-            HttpMethod.Post,
-            request,
-            cancellationToken: cancellationToken);
+        try
+        {
+            var queuedId = await _offlineQueueService.QueueOperationAsync(
+                _httpClient.BaseAddress?.ToString() ?? string.Empty,
+                $"/api/chats/{request.ChatId}/messages",
+                HttpMethod.Post,
+                request,
+                cancellationToken: cancellationToken);
+
+            return Result.Success(queuedId);
+        }
+        catch
+        {
+            return Result.Error<int>("Het bericht kon niet offline opgeslagen worden.");
+        }
     }
 
     private async Task<bool> TryQueueMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken)
     {
-        try
-        {
-            await QueueMessageAsync(request, cancellationToken);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        var queueResult = await QueueMessageAsync(request, cancellationToken);
+        return queueResult.IsSuccess;
     }
 }
