@@ -25,8 +25,12 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
     {
         if (!await _offlineQueueService.IsOnlineAsync())
         {
-            await QueueMessageAsync(request, cancellationToken);
-            return Result<MessageDto.Chat>.Error("Geen netwerkverbinding: het bericht is opgeslagen en wordt verzonden zodra er verbinding is.");
+            var queued = await TryQueueMessageAsync(request, cancellationToken);
+            var message = queued
+                ? "Geen netwerkverbinding: het bericht is opgeslagen en wordt verzonden zodra er verbinding is."
+                : "Geen netwerkverbinding: het bericht kon niet worden opgeslagen om later te verzenden.";
+
+            return Result<MessageDto.Chat>.Error(message);
         }
 
         HttpResponseMessage response;
@@ -36,8 +40,12 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
         }
         catch (HttpRequestException)
         {
-            await QueueMessageAsync(request, cancellationToken);
-            return Result<MessageDto.Chat>.Error("Kon geen verbinding maken: het bericht is opgeslagen en wordt verzonden zodra de verbinding terug is.");
+            var queued = await TryQueueMessageAsync(request, cancellationToken);
+            var message = queued
+                ? "Kon geen verbinding maken: het bericht is opgeslagen en wordt verzonden zodra de verbinding terug is."
+                : "Kon geen verbinding maken: het bericht kon niet worden opgeslagen om later te verzenden.";
+
+            return Result<MessageDto.Chat>.Error(message);
         }
 
         var result = await response.Content.ReadFromJsonAsync<Result<MessageDto.Chat>>(cancellationToken: cancellationToken);
@@ -53,5 +61,18 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
             HttpMethod.Post,
             request,
             cancellationToken: cancellationToken);
+    }
+
+    private async Task<bool> TryQueueMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await QueueMessageAsync(request, cancellationToken);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

@@ -115,10 +115,18 @@ public partial class Chat : IAsyncDisposable
 
     private async Task SendMessageAsync(ChatRequest.CreateMessage createRequest, string errorMessage, bool isOnline)
     {
+        var pendingAdded = false;
+
         try
         {
             _isSending = isOnline;
             _errorMessage = null;
+
+            if (!isOnline)
+            {
+                AddPendingMessage(createRequest);
+                pendingAdded = true;
+            }
 
             var result = await ChatService.CreateMessageAsync(createRequest);
 
@@ -129,7 +137,11 @@ public partial class Chat : IAsyncDisposable
 
             if (IndicatesQueued(result))
             {
-                AddPendingMessage(createRequest);
+                if (!pendingAdded)
+                {
+                    AddPendingMessage(createRequest);
+                }
+
                 return;
             }
 
@@ -141,6 +153,15 @@ public partial class Chat : IAsyncDisposable
             _errorMessage = validationMessage
                 ?? result.Errors.FirstOrDefault()
                 ?? errorMessage;
+        }
+        catch
+        {
+            if (!pendingAdded && !isOnline)
+            {
+                AddPendingMessage(createRequest);
+            }
+
+            _errorMessage ??= errorMessage;
         }
         finally
         {
