@@ -71,8 +71,8 @@ public partial class MessageBubble
             if (IsPending)
             {
                 return !string.IsNullOrWhiteSpace(AudioUrl)
-                    ? "bg-green-50 text-neutral-900 rounded-2xl rounded-tr-none px-4 py-3 shadow-sm text-sm max-w-[80%] border border-red-500 border-dotted"
-                    : "bg-green-50 text-neutral-900 rounded-2xl rounded-tr-none px-4 py-2 text-sm shadow-sm max-w-[80%] border border-red-500 border-dotted";
+                    ? "bg-green-50 text-neutral-900 rounded-2xl rounded-tr-none px-4 py-3 shadow-sm text-sm max-w-[80%] border-2 border-red-500 border-dashed"
+                    : "bg-green-50 text-neutral-900 rounded-2xl rounded-tr-none px-4 py-2 text-sm shadow-sm max-w-[80%] border-2 border-red-500 border-dashed";
             }
 
             return !string.IsNullOrWhiteSpace(AudioUrl)

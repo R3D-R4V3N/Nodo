@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
 using Rise.Client.Chats.Components;
+using Rise.Client.Offline;
 using Rise.Client.RealTime;
 using Rise.Client.State;
 using Rise.Shared.Assets;
@@ -14,6 +15,7 @@ public partial class Chat : IAsyncDisposable
 {
     [Parameter] public int ChatId { get; set; }
     [Inject] public UserState UserState { get; set; }
+    [Inject] public OfflineQueueService OfflineQueueService { get; set; } = null!;
 
     private ChatDto.GetChat? _chat;
     private readonly SemaphoreSlim _hubConnectionLock = new(1, 1);
@@ -68,7 +70,13 @@ public partial class Chat : IAsyncDisposable
 
     private async Task HandleTextMessageAsync(string text)
     {
-        if (_chat is null || _isSending || string.IsNullOrWhiteSpace(text))
+        if (_chat is null || string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        var isOnline = await OfflineQueueService.IsOnlineAsync();
+        if (isOnline && _isSending)
         {
             return;
         }
@@ -79,12 +87,18 @@ public partial class Chat : IAsyncDisposable
             Content = text
         };
 
-        await SendMessageAsync(request, "Het bericht kon niet verzonden worden.");
+        await SendMessageAsync(request, "Het bericht kon niet verzonden worden.", isOnline);
     }
 
     private async Task HandleVoiceMessageAsync(RecordedAudio audio)
     {
-        if (_chat is null || _isSending)
+        if (_chat is null)
+        {
+            return;
+        }
+
+        var isOnline = await OfflineQueueService.IsOnlineAsync();
+        if (isOnline && _isSending)
         {
             return;
         }
@@ -96,14 +110,14 @@ public partial class Chat : IAsyncDisposable
             AudioDurationSeconds = audio.DurationSeconds
         };
 
-        await SendMessageAsync(request, "Het spraakbericht kon niet verzonden worden.");
+        await SendMessageAsync(request, "Het spraakbericht kon niet verzonden worden.", isOnline);
     }
 
-    private async Task SendMessageAsync(ChatRequest.CreateMessage createRequest, string errorMessage)
+    private async Task SendMessageAsync(ChatRequest.CreateMessage createRequest, string errorMessage, bool isOnline)
     {
         try
         {
-            _isSending = true;
+            _isSending = isOnline;
             _errorMessage = null;
 
             var result = await ChatService.CreateMessageAsync(createRequest);
