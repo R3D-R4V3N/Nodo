@@ -12,13 +12,13 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
     public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChats>>("api/chats", cancellationToken);
-        return result ?? Result.Error("Kon de chats niet laden.");
+        return result ?? Result<ChatResponse.GetChats>.Error("Kon de chats niet laden.");
     }
 
     public async Task<Result<ChatResponse.GetChat>> GetByIdAsync(int chatId, CancellationToken cancellationToken = default)
     {
         var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChat>>($"api/chats/{chatId}", cancellationToken);
-        return result ?? Result.Error("Kon het gesprek niet laden.");
+        return result ?? Result<ChatResponse.GetChat>.Error("Kon het gesprek niet laden.");
     }
 
     public async Task<Result<MessageDto.Chat>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
@@ -40,7 +40,7 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
 
         var result = await response.Content.ReadFromJsonAsync<Result<MessageDto.Chat>>(cancellationToken: cancellationToken);
 
-        return result ?? Result.Error("Kon het serverantwoord niet verwerken.");
+        return result ?? Result<MessageDto.Chat>.Error("Kon het serverantwoord niet verwerken.");
     }
 
     public async Task<Result<int>> QueueMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
@@ -58,7 +58,7 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
         }
         catch
         {
-            return Result.Error<int>("Het bericht kon niet offline opgeslagen worden.");
+            return Result<int>.Error("Het bericht kon niet offline opgeslagen worden.");
         }
     }
 
