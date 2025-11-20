@@ -2,8 +2,26 @@
 @if (IsOutgoing)
 {
     <div class="flex justify-end items-center gap-2">
-        <div class="@OutgoingBubbleClasses" @onclick="HandlePendingClick" role="@(CanCancelPending ? "button" : null)">
-            @RenderContent()
+        <div class="relative">
+            <div class="@OutgoingBubbleClasses"
+                 @onclick="HandlePendingClick"
+                 @onfocusout="HandleFocusOut"
+                 role="@(CanCancelPending ? "button" : null)"
+                 tabindex="@(CanCancelPending ? 0 : null)">
+                @RenderContent()
+
+                @if (_isCancelMenuOpen)
+                {
+                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg border border-neutral-200 shadow-lg z-10"
+                         @onclick:stopPropagation="true">
+                        <button type="button"
+                                class="block w-full text-left px-3 py-2 text-sm hover:bg-neutral-50"
+                                @onclick="CancelPendingAsync">
+                            Offline bericht annuleren
+                        </button>
+                    </div>
+                }
+            </div>
         </div>
 
         @if (IsPending)

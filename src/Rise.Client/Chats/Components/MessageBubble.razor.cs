@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Rise.Client.Chats.Components;
 public partial class MessageBubble
@@ -11,6 +12,8 @@ public partial class MessageBubble
     [Parameter] public bool IsPending { get; set; }
     [Parameter] public int? QueuedOperationId { get; set; }
     [Parameter] public EventCallback OnCancelPending { get; set; }
+
+    private bool _isCancelMenuOpen;
 
     private RenderFragment RenderContent() => builder =>
     {
@@ -94,7 +97,38 @@ public partial class MessageBubble
             return Task.CompletedTask;
         }
 
-        return OnCancelPending.InvokeAsync();
+        _isCancelMenuOpen = !_isCancelMenuOpen;
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+
+    private async Task CancelPendingAsync()
+    {
+        if (!CanCancelPending)
+        {
+            return;
+        }
+
+        _isCancelMenuOpen = false;
+
+        if (OnCancelPending.HasDelegate)
+        {
+            await OnCancelPending.InvokeAsync();
+        }
+
+        StateHasChanged();
+    }
+
+    private Task HandleFocusOut(FocusEventArgs _)
+    {
+        if (_isCancelMenuOpen)
+        {
+            _isCancelMenuOpen = false;
+            StateHasChanged();
+        }
+
+        return Task.CompletedTask;
     }
 
     private string? DurationLabel => AudioDuration is { TotalSeconds: > 0 } duration

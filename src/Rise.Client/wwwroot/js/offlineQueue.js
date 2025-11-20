@@ -36,7 +36,13 @@ export function isOnline() {
 }
 
 export async function enqueueOperation(operation) {
-    return withStore('readwrite', (store) => store.add({ ...operation, createdAt: operation.createdAt ?? new Date().toISOString() }));
+    const { id, ...rest } = operation ?? {};
+    const entry = { ...rest, createdAt: rest.createdAt ?? new Date().toISOString() };
+
+    // Ensure IndexedDB auto-increments the key by removing any provided id value (e.g. the C# default 0).
+    delete entry.id;
+
+    return withStore('readwrite', (store) => store.add(entry));
 }
 
 export async function getOperations() {
