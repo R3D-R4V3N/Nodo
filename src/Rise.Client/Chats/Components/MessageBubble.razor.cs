@@ -12,6 +12,8 @@ public partial class MessageBubble
     [Parameter] public int? QueuedOperationId { get; set; }
     [Parameter] public EventCallback OnCancelPending { get; set; }
 
+    private bool _showOptions;
+
     private RenderFragment RenderContent() => builder =>
     {
         var seq = 0;
@@ -87,14 +89,25 @@ public partial class MessageBubble
 
     private bool CanCancelPending => IsPending && OnCancelPending.HasDelegate;
 
-    private Task HandlePendingClick()
+    private void ToggleOptions()
     {
         if (!CanCancelPending)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        return OnCancelPending.InvokeAsync();
+        _showOptions = !_showOptions;
+    }
+
+    private async Task HandleCancelPending()
+    {
+        if (!CanCancelPending)
+        {
+            return;
+        }
+
+        _showOptions = false;
+        await OnCancelPending.InvokeAsync();
     }
 
     private string? DurationLabel => AudioDuration is { TotalSeconds: > 0 } duration

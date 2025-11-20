@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Microsoft.JSInterop;
+using System.Threading;
 
 namespace Rise.Client.Offline;
 
@@ -10,6 +11,8 @@ public sealed class OfflineQueueService : IAsyncDisposable
     private readonly IHttpClientFactory _httpClientFactory;
     private IJSObjectReference? _module;
     private DotNetObjectReference<OfflineQueueService>? _dotNetRef;
+    private readonly SemaphoreSlim _queueLock = new(1, 1);
+    private readonly SemaphoreSlim _processLock = new(1, 1);
     private readonly JsonSerializerOptions _serializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -58,20 +61,44 @@ public sealed class OfflineQueueService : IAsyncDisposable
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        return await _module!.InvokeAsync<int>("enqueueOperation", cancellationToken, operation);
+        await _queueLock.WaitAsync(cancellationToken);
+        try
+        {
+            return await _module!.InvokeAsync<int>("enqueueOperation", cancellationToken, operation);
+        }
+        finally
+        {
+            _queueLock.Release();
+        }
     }
 
     public async Task<IReadOnlyList<QueuedOperation>> GetOperationsAsync(CancellationToken cancellationToken = default)
     {
         await EnsureModuleAsync();
-        var operations = await _module!.InvokeAsync<QueuedOperation[]>("getOperations", cancellationToken);
-        return operations ?? Array.Empty<QueuedOperation>();
+        await _queueLock.WaitAsync(cancellationToken);
+        try
+        {
+            var operations = await _module!.InvokeAsync<QueuedOperation[]>("getOperations", cancellationToken);
+            return operations ?? Array.Empty<QueuedOperation>();
+        }
+        finally
+        {
+            _queueLock.Release();
+        }
     }
 
     public async Task RemoveOperationAsync(int id, CancellationToken cancellationToken = default)
     {
         await EnsureModuleAsync();
-        await _module!.InvokeVoidAsync("removeOperation", cancellationToken, id);
+        await _queueLock.WaitAsync(cancellationToken);
+        try
+        {
+            await _module!.InvokeVoidAsync("removeOperation", cancellationToken, id);
+        }
+        finally
+        {
+            _queueLock.Release();
+        }
     }
 
     [JSInvokable]
@@ -82,33 +109,41 @@ public sealed class OfflineQueueService : IAsyncDisposable
 
     public async Task ProcessQueueAsync(CancellationToken cancellationToken = default)
     {
-        if (!await IsOnlineAsync())
+        await _processLock.WaitAsync(cancellationToken);
+        try
         {
-            return;
-        }
-
-        var operations = await GetOperationsAsync(cancellationToken);
-
-        foreach (var operation in operations)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
+            if (!await IsOnlineAsync())
             {
-                using var request = BuildRequest(operation);
-                var client = _httpClientFactory.CreateClient("SecureApi");
-                var response = await client.SendAsync(request, cancellationToken);
+                return;
+            }
 
-                if (response.IsSuccessStatusCode)
+            var operations = await GetOperationsAsync(cancellationToken);
+
+            foreach (var operation in operations)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                try
                 {
-                    await RemoveOperationAsync(operation.Id, cancellationToken);
+                    using var request = BuildRequest(operation);
+                    var client = _httpClientFactory.CreateClient("SecureApi");
+                    var response = await client.SendAsync(request, cancellationToken);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        await RemoveOperationAsync(operation.Id, cancellationToken);
+                    }
+                }
+                catch
+                {
+                    // If an item fails we keep the rest in the queue and continue trying the remaining operations.
+                    // They will be retried on the next online event.
+                    continue;
                 }
             }
-            catch
-            {
-                // If an item fails we keep the rest in the queue and continue trying the remaining operations.
-                // They will be retried on the next online event.
-                continue;
-            }
+        }
+        finally
+        {
+            _processLock.Release();
         }
     }
 
@@ -159,5 +194,7 @@ public sealed class OfflineQueueService : IAsyncDisposable
         }
 
         _dotNetRef?.Dispose();
+        _queueLock.Dispose();
+        _processLock.Dispose();
     }
 }

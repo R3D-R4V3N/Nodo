@@ -2,8 +2,26 @@
 @if (IsOutgoing)
 {
     <div class="flex justify-end items-center gap-2">
-        <div class="@OutgoingBubbleClasses" @onclick="HandlePendingClick" role="@(CanCancelPending ? "button" : null)">
-            @RenderContent()
+        <div class="relative">
+            <button class="@OutgoingBubbleClasses"
+                    @onclick="ToggleOptions"
+                    tabindex="@(CanCancelPending ? 0 : -1)"
+                    type="button"
+                    role="@(CanCancelPending ? "button" : null)">
+                @RenderContent()
+            </button>
+
+            @if (IsPending && _showOptions)
+            {
+                <div class="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-neutral-800 text-left text-sm shadow-lg ring-1 ring-white/10 focus:outline-none">
+                    <button class="block w-full px-4 py-2 text-left text-gray-200 hover:bg-white/5 hover:text-white"
+                            type="button"
+                            @onclick:stopPropagation="true"
+                            @onclick="HandleCancelPending">
+                        Annuleer bericht
+                    </button>
+                </div>
+            }
         </div>
 
         @if (IsPending)
