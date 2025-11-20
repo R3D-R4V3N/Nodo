@@ -1,15 +1,33 @@
+using Rise.Client.Offline;
 using Rise.Shared.Users;
 using System.Net.Http.Json;
-using static System.Net.WebRequestMethods;
 
 namespace Rise.Client.Users;
 
-public class UserService(HttpClient httpClient) : IUserService
+public class UserService(HttpClient httpClient, OfflineQueueService offlineQueueService) : IUserService
 {
     private readonly HttpClient _http = httpClient;
+    private readonly OfflineQueueService _offlineQueueService = offlineQueueService;
     public async Task<Result<UserResponse.CurrentUser>> UpdateUserAsync(string accountId, UserRequest.UpdateCurrentUser request, CancellationToken ctx = default)
     {
-        var response = await _http.PutAsJsonAsync($"/api/users/{accountId}", request, ctx);
+        if (!await _offlineQueueService.IsOnlineAsync())
+        {
+            await _offlineQueueService.QueueOperationAsync(_http.BaseAddress?.ToString() ?? string.Empty,
+                $"/api/users/{accountId}", HttpMethod.Put, request, cancellationToken: ctx);
+            return Result<UserResponse.CurrentUser>.Error("Geen netwerkverbinding: de update is offline opgeslagen en wordt verstuurd zodra er verbinding is.");
+        }
+
+        HttpResponseMessage response;
+        try
+        {
+            response = await _http.PutAsJsonAsync($"/api/users/{accountId}", request, ctx);
+        }
+        catch (HttpRequestException)
+        {
+            await _offlineQueueService.QueueOperationAsync(_http.BaseAddress?.ToString() ?? string.Empty,
+                $"/api/users/{accountId}", HttpMethod.Put, request, cancellationToken: ctx);
+            return Result<UserResponse.CurrentUser>.Error("Kon geen verbinding maken: de update is opgeslagen en wordt verzonden zodra de verbinding terug is.");
+        }
 
         if (!response.IsSuccessStatusCode)
         {
