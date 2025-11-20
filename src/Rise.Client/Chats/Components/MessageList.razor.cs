@@ -8,6 +8,7 @@ public partial class MessageList
 {
     [Parameter] public IReadOnlyList<MessageDto.Chat> Messages { get; set; } = [];
     [Parameter] public string? TimestampText { get; set; } = "Nov 30, 2023, 9:41 AM";
+    [Parameter] public EventCallback<MessageDto.Chat> OnCancelPending { get; set; }
     [Inject] public UserState UserState { get; set; }
 
     private ElementReference _scrollHost;
@@ -44,5 +45,12 @@ public partial class MessageList
     {
         // scrol elke render automatisch naar onder
         await JS.InvokeVoidAsync("scrollToBottom", _scrollHost);
+    }
+
+    private Task HandleCancel(MessageDto.Chat message)
+    {
+        return OnCancelPending.HasDelegate
+            ? OnCancelPending.InvokeAsync(message)
+            : Task.CompletedTask;
     }
 }
