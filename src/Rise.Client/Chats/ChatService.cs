@@ -4,20 +4,71 @@ using Rise.Shared.Chats;
 
 namespace Rise.Client.Chats;
 
-public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueueService) : IChatService
+public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueueService, OfflineChatCacheService offlineChatCacheService) : IChatService
 {
     private readonly HttpClient _httpClient = httpClient;
     private readonly OfflineQueueService _offlineQueueService = offlineQueueService;
+    private readonly OfflineChatCacheService _offlineChatCacheService = offlineChatCacheService;
 
     public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChats>>("api/chats", cancellationToken);
+        Result<ChatResponse.GetChats>? result = null;
+
+        try
+        {
+            result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChats>>("api/chats", cancellationToken);
+
+            if (result?.IsSuccess is true && result.Value?.Chats is not null)
+            {
+                await _offlineChatCacheService.SaveChatsAsync(result.Value.Chats, cancellationToken);
+                return result;
+            }
+        }
+        catch (HttpRequestException)
+        {
+            // Intentionally ignored: we fall back to offline cache.
+        }
+
+        var cached = await _offlineChatCacheService.GetChatsAsync(cancellationToken);
+        if (cached.Count > 0)
+        {
+            return Result.Success(new ChatResponse.GetChats
+            {
+                Chats = cached.ToList()
+            });
+        }
+
         return result ?? Result<ChatResponse.GetChats>.Error("Kon de chats niet laden.");
     }
 
     public async Task<Result<ChatResponse.GetChat>> GetByIdAsync(int chatId, CancellationToken cancellationToken = default)
     {
-        var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChat>>($"api/chats/{chatId}", cancellationToken);
+        Result<ChatResponse.GetChat>? result = null;
+
+        try
+        {
+            result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChat>>($"api/chats/{chatId}", cancellationToken);
+
+            if (result?.IsSuccess is true && result.Value?.Chat is not null)
+            {
+                await _offlineChatCacheService.SaveChatAsync(result.Value.Chat, cancellationToken);
+                return result;
+            }
+        }
+        catch (HttpRequestException)
+        {
+            // Intentionally ignored: we fall back to offline cache.
+        }
+
+        var cached = await _offlineChatCacheService.GetChatAsync(chatId, cancellationToken);
+        if (cached is not null)
+        {
+            return Result.Success(new ChatResponse.GetChat
+            {
+                Chat = cached
+            });
+        }
+
         return result ?? Result<ChatResponse.GetChat>.Error("Kon het gesprek niet laden.");
     }
 

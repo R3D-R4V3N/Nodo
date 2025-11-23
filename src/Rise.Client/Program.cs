@@ -101,6 +101,7 @@ try
     builder.Services.AddSingleton<IHubClientFactory, HubClientFactory>();
     builder.Services.AddSingleton<IHubClient, HubClient>();
 
+    builder.Services.AddSingleton<OfflineChatCacheService>();
     builder.Services.AddSingleton<OfflineQueueService>();
 
     var host = builder.Build();

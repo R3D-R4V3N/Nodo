@@ -1,6 +1,7 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Rise.Client.Offline;
 using Rise.Client.RealTime;
 using Rise.Client.State;
 using Rise.Shared.Assets;
@@ -11,6 +12,7 @@ namespace Rise.Client.Home.Pages;
 public partial class Homepage : IDisposable
 {
     [Inject] public UserState UserState { get; set; }
+    [Inject] public OfflineQueueService OfflineQueueService { get; set; } = null!;
     private readonly List<ChatDto.GetChats> _chats = new();
     private List<ChatDto.GetChats> _filteredChats => string.IsNullOrWhiteSpace(_searchTerm)
         ? _chats
@@ -41,8 +43,11 @@ public partial class Homepage : IDisposable
         }
 
         _isLoading = false;
-        
-        await InitializeHubAsync();
+
+        if (await OfflineQueueService.IsOnlineAsync())
+        {
+            await InitializeHubAsync();
+        }
 
     }
     
