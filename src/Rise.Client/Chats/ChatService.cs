@@ -68,12 +68,8 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
         }
         catch (HttpRequestException)
         {
-            var queued = await TryQueueMessageAsync(request, cancellationToken);
-            var message = queued
-                ? "Kon geen verbinding maken: het bericht is opgeslagen en wordt verzonden zodra de verbinding terug is."
-                : "Kon geen verbinding maken: het bericht kon niet worden opgeslagen om later te verzenden.";
-
-            return Result<MessageDto.Chat>.Error(message);
+            return Result<MessageDto.Chat>.Error(
+                "Kon geen verbinding maken: probeer het later opnieuw of werk verder in offline modus.");
         }
 
         var result = await response.Content.ReadFromJsonAsync<Result<MessageDto.Chat>>(cancellationToken: cancellationToken);
@@ -98,11 +94,5 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
         {
             return Result<int>.Error("Het bericht kon niet offline opgeslagen worden.");
         }
-    }
-
-    private async Task<bool> TryQueueMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken)
-    {
-        var queueResult = await QueueMessageAsync(request, cancellationToken);
-        return queueResult.IsSuccess;
     }
 }

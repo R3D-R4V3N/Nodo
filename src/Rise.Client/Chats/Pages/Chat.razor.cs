@@ -120,21 +120,7 @@ public partial class Chat : IAsyncDisposable
             _isSending = isOnline;
             _errorMessage = null;
 
-            if (!isOnline)
-            {
-                var queuedResult = await ChatService.QueueMessageAsync(createRequest);
-                if (queuedResult.IsSuccess)
-                {
-                    AddPendingMessage(createRequest, queuedResult.Value);
-                    return;
-                }
-
-                _errorMessage = queuedResult.Errors.FirstOrDefault()
-                    ?? queuedResult.ValidationErrors.FirstOrDefault()?.ErrorMessage
-                    ?? errorMessage;
-
-                return;
-            }
+            if (!isOnline && await TryQueueAndAddPendingAsync(createRequest, errorMessage)) return;
 
             var result = await ChatService.CreateMessageAsync(createRequest);
 
@@ -143,10 +129,7 @@ public partial class Chat : IAsyncDisposable
                 return;
             }
 
-            if (IndicatesQueued(result))
-            {
-                return;
-            }
+            if (await TryQueueAndAddPendingAsync(createRequest, errorMessage)) return;
 
             var validationMessage = result
                 .ValidationErrors
@@ -159,6 +142,8 @@ public partial class Chat : IAsyncDisposable
         }
         catch
         {
+            if (await TryQueueAndAddPendingAsync(createRequest, errorMessage)) return;
+
             _errorMessage ??= errorMessage;
         }
         finally
@@ -167,11 +152,20 @@ public partial class Chat : IAsyncDisposable
         }
     }
 
-    private static bool IndicatesQueued(Result<MessageDto.Chat> result)
+    private async Task<bool> TryQueueAndAddPendingAsync(ChatRequest.CreateMessage createRequest, string? fallbackError = null)
     {
-        return result.Errors.Any(error =>
-            error.Contains("opgeslagen", StringComparison.OrdinalIgnoreCase)
-            && error.Contains("verbinding", StringComparison.OrdinalIgnoreCase));
+        var queuedResult = await ChatService.QueueMessageAsync(createRequest);
+        if (queuedResult.IsSuccess)
+        {
+            AddPendingMessage(createRequest, queuedResult.Value);
+            return true;
+        }
+
+        _errorMessage = queuedResult.Errors.FirstOrDefault()
+            ?? queuedResult.ValidationErrors.FirstOrDefault()?.ErrorMessage
+            ?? fallbackError;
+
+        return false;
     }
 
     private void AddPendingMessage(ChatRequest.CreateMessage createRequest, int queuedOperationId)
