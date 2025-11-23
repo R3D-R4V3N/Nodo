@@ -11,14 +11,52 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
 
     public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChats>>("api/chats", cancellationToken);
-        return result ?? Result<ChatResponse.GetChats>.Error("Kon de chats niet laden.");
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChats>>("api/chats", cancellationToken);
+            return result ?? Result<ChatResponse.GetChats>.Error("Kon de chats niet laden.");
+        }
+        catch (HttpRequestException)
+        {
+            var cached = await _offlineQueueService.GetCachedResponseAsync(_httpClient.BaseAddress?.ToString() ?? string.Empty,
+                "/api/chats", HttpMethod.Get, cancellationToken);
+
+            if (cached is not null)
+            {
+                var cachedResult = await cached.Content.ReadFromJsonAsync<Result<ChatResponse.GetChats>>(cancellationToken: cancellationToken);
+                if (cachedResult is not null)
+                {
+                    return cachedResult;
+                }
+            }
+
+            return Result<ChatResponse.GetChats>.Error("De chats kunnen offline niet geladen worden omdat er geen cache beschikbaar is.");
+        }
     }
 
     public async Task<Result<ChatResponse.GetChat>> GetByIdAsync(int chatId, CancellationToken cancellationToken = default)
     {
-        var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChat>>($"api/chats/{chatId}", cancellationToken);
-        return result ?? Result<ChatResponse.GetChat>.Error("Kon het gesprek niet laden.");
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChat>>($"api/chats/{chatId}", cancellationToken);
+            return result ?? Result<ChatResponse.GetChat>.Error("Kon het gesprek niet laden.");
+        }
+        catch (HttpRequestException)
+        {
+            var cached = await _offlineQueueService.GetCachedResponseAsync(_httpClient.BaseAddress?.ToString() ?? string.Empty,
+                $"/api/chats/{chatId}", HttpMethod.Get, cancellationToken);
+
+            if (cached is not null)
+            {
+                var cachedResult = await cached.Content.ReadFromJsonAsync<Result<ChatResponse.GetChat>>(cancellationToken: cancellationToken);
+                if (cachedResult is not null)
+                {
+                    return cachedResult;
+                }
+            }
+
+            return Result<ChatResponse.GetChat>.Error("Het gesprek is offline niet beschikbaar omdat er geen opgeslagen gegevens zijn.");
+        }
     }
 
     public async Task<Result<MessageDto.Chat>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)

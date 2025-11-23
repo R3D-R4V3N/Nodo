@@ -1,6 +1,7 @@
 const DB_NAME = 'rise-offline-queue';
-const STORE_NAME = 'operations';
-const DB_VERSION = 1;
+const OPERATION_STORE_NAME = 'operations';
+const RESPONSE_STORE_NAME = 'responses';
+const DB_VERSION = 2;
 
 function openDb() {
     return new Promise((resolve, reject) => {
@@ -8,8 +9,12 @@ function openDb() {
 
         request.onupgradeneeded = () => {
             const db = request.result;
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+            if (!db.objectStoreNames.contains(OPERATION_STORE_NAME)) {
+                db.createObjectStore(OPERATION_STORE_NAME, { keyPath: 'id', autoIncrement: true });
+            }
+
+            if (!db.objectStoreNames.contains(RESPONSE_STORE_NAME)) {
+                db.createObjectStore(RESPONSE_STORE_NAME, { keyPath: 'key' });
             }
         };
 
@@ -18,12 +23,12 @@ function openDb() {
     });
 }
 
-async function withStore(mode, callback) {
+async function withStore(storeName, mode, callback) {
     const db = await openDb();
 
     return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, mode);
-        const store = transaction.objectStore(STORE_NAME);
+        const transaction = db.transaction(storeName, mode);
+        const store = transaction.objectStore(storeName);
         const request = callback(store);
 
         request.onsuccess = () => resolve(request.result);
@@ -36,15 +41,15 @@ export function isOnline() {
 }
 
 export async function enqueueOperation(operation) {
-    return withStore('readwrite', (store) => store.add({ ...operation, createdAt: operation.createdAt ?? new Date().toISOString() }));
+    return withStore(OPERATION_STORE_NAME, 'readwrite', (store) => store.add({ ...operation, createdAt: operation.createdAt ?? new Date().toISOString() }));
 }
 
 export async function getOperations() {
     const db = await openDb();
 
     return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
+        const transaction = db.transaction(OPERATION_STORE_NAME, 'readonly');
+        const store = transaction.objectStore(OPERATION_STORE_NAME);
         const request = store.getAll();
 
         request.onsuccess = () => {
@@ -58,7 +63,7 @@ export async function getOperations() {
 }
 
 export async function removeOperation(id) {
-    return withStore('readwrite', (store) => store.delete(id));
+    return withStore(OPERATION_STORE_NAME, 'readwrite', (store) => store.delete(id));
 }
 
 export function registerOnlineCallback(dotNetRef) {
@@ -71,4 +76,15 @@ export function registerOnlineCallback(dotNetRef) {
     window.addEventListener('online', handler);
 
     return () => window.removeEventListener('online', handler);
+}
+
+export async function cacheResponse(entry) {
+    return withStore(RESPONSE_STORE_NAME, 'readwrite', (store) => store.put({
+        ...entry,
+        createdAt: entry.createdAt ?? new Date().toISOString()
+    }));
+}
+
+export async function getCachedResponse(key) {
+    return withStore(RESPONSE_STORE_NAME, 'readonly', (store) => store.get(key));
 }

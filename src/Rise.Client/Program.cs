@@ -39,6 +39,7 @@ try
 
     // register the cookie handler
     builder.Services.AddTransient<CookieHandler>();
+    builder.Services.AddTransient<OfflineCachingHandler>();
 
     // set up authorization
     builder.Services.AddAuthorizationCore();
@@ -57,42 +58,45 @@ try
 
     // configure client for auth interactions
     builder.Services.AddHttpClient("SecureApi",opt => opt.BaseAddress = backendUri)
+        .AddHttpMessageHandler<OfflineCachingHandler>()
         .AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<IChatService, ChatService>(client =>
     {
         client.BaseAddress = backendUri;
-    }).AddHttpMessageHandler<CookieHandler>();
+    }).AddHttpMessageHandler<OfflineCachingHandler>()
+        .AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<IUserConnectionService, UserConnectionService>(client =>
     {
         client.BaseAddress = backendUri;
-    });
+    }).AddHttpMessageHandler<OfflineCachingHandler>();
 
     builder.Services.AddHttpClient<IUserContextService, UserContextService>(client =>
     {
         client.BaseAddress = backendUri;
-    });
+    }).AddHttpMessageHandler<OfflineCachingHandler>();
 
     builder.Services.AddHttpClient<IUserService, UserService>(client =>
     {
         client.BaseAddress = backendUri;
-    });
+    }).AddHttpMessageHandler<OfflineCachingHandler>();
 
     builder.Services.AddHttpClient<UserContextService>(client =>
     {
         client.BaseAddress = backendUri;
-    });
+    }).AddHttpMessageHandler<OfflineCachingHandler>();
     // Publieke API client (geen CookieHandler)
     builder.Services.AddHttpClient<IOrganizationService, OrganizationService>(client =>
     {
         client.BaseAddress = backendUri; // bij jou bv. https://localhost:5001
-    });
+    }).AddHttpMessageHandler<OfflineCachingHandler>();
 
     builder.Services.AddHttpClient<IRegistrationRequestService, RegistrationRequestService>(client =>
         {
             client.BaseAddress = backendUri;
         })
+        .AddHttpMessageHandler<OfflineCachingHandler>()
         .AddHttpMessageHandler<CookieHandler>();
 
     // current user
