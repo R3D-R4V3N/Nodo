@@ -13,10 +13,21 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <meta name="theme-color" content="#111827" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+
     <link href="Rise.Client.styles.css" rel="stylesheet" />
 </head>
 
 <body class="bg-[#F2F2F2]">
+<style>
+    html, body {
+        touch-action: manipulation; /* voorkomt veel ongewenste gestures */
+    }
+
+</style>
     <div id="app">
         <div class="app-loading-screen">
             <div class="app-loading-card">
@@ -64,5 +75,4 @@
         }
     </script>
 </body>
-
 </html>
