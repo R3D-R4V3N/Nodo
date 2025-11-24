@@ -8,6 +8,7 @@ public partial class ChatInput
     [Parameter] public EventCallback<string?> ValueChanged { get; set; }
     [Parameter] public EventCallback<string> OnSend { get; set; }
     [Parameter] public EventCallback<RecordedAudio> OnSendVoice { get; set; }
+    [Parameter] public bool IsSending { get; set; }
 
     private IJSObjectReference? _module;
     private bool _isRecording;
@@ -17,6 +18,11 @@ public partial class ChatInput
 
     private async Task HandleSubmit()
     {
+        if (IsSending)
+        {
+            return;
+        }
+
         var text = Value?.Trim();
         if (!string.IsNullOrEmpty(text))
         {
@@ -137,6 +143,12 @@ public partial class ChatInput
             else
             {
                 classes.AddRange(new[] { "bg-blue-700", "hover:bg-blue-800" });
+            }
+
+            if (IsSending)
+            {
+                classes.Add("opacity-50");
+                classes.Add("cursor-wait");
             }
 
             if (_isProcessing)

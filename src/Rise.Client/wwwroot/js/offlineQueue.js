@@ -61,6 +61,10 @@ export async function removeOperation(id) {
     return withStore('readwrite', (store) => store.delete(id));
 }
 
+export async function getQueueLength() {
+    return withStore('readonly', (store) => store.count());
+}
+
 export function registerOnlineCallback(dotNetRef) {
     if (!dotNetRef) return;
 

@@ -15,5 +15,6 @@ public static class MessageDto
         public TimeSpan? AudioDuration { get; set; }
         public bool IsPending { get; set; }
         public int? QueuedOperationId { get; set; }
+        public Guid? ClientMessageId { get; set; }
     }
 }
