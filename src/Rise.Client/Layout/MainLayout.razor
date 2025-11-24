@@ -1,5 +1,16 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 <Rise.Client.Shared.OfflineAlert />
+
+@if (_canInstall)
+{
+    <div class="fixed top-4 right-4 z-50">
+        <button class="flex items-center gap-2 bg-white text-[#127646] font-semibold shadow-lg rounded-full px-4 py-2 hover:shadow-xl transition"
+                @onclick="PromptInstallAsync" disabled="@_isPrompting">
+            <span>App installeren</span>
+        </button>
+    </div>
+}
+
 <div>
     <main>
         <section class="section">
@@ -8,4 +19,3 @@
     </main>
     <NavBar />
 </div>
-
