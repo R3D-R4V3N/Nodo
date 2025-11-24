@@ -1,0 +1,89 @@
+
+.mask-to-t {
+    /* Voor Chrome, Safari, Edge */
+    -webkit-mask: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 1) 0%,      /* Vol blur onderaan */
+            rgba(0, 0, 0, 1) 25%,     /* Hou het wat langer sterk */
+            rgba(0, 0, 0, 0.7) 55%,   /* Begin af te nemen */
+            rgba(0, 0, 0, 0.3) 80%,   /* Nog zachter */
+            rgba(0, 0, 0, 0) 100%     /* Volledig weg bovenaan */
+    );
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: cover;
+
+    /* Standaard property voor andere browsers */
+    mask: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 1) 0%,
+            rgba(0, 0, 0, 1) 25%,
+            rgba(0, 0, 0, 0.7) 55%,
+            rgba(0, 0, 0, 0.3) 80%,
+            rgba(0, 0, 0, 0) 100%
+    );
+    mask-repeat: no-repeat;
+    mask-size: cover;
+}
+/* test class */
+.test-red {
+    @apply bg-testRed w-20 h-20;
+}
+
+
+#blazor-error-ui {
+    color-scheme: light only;
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+.app-loading-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #F5F4F0;
+}
+
+.app-loading-card {
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 24px;
+    padding: 2.5rem 2rem;
+    box-shadow: 0 20px 45px rgba(4, 50, 12, 0.12);
+    backdrop-filter: blur(6px);
+}
+
+.app-loading-title {
+    margin: 0;
+    font-size: 3rem;
+    font-weight: 600;
+    color: #04320C;
+    letter-spacing: -0.02em;
+}
+
+.app-loading-subtitle {
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #4b5563;
+}
+
+:focus {
+    outline: none;
+}

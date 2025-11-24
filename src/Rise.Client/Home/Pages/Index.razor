@@ -1,0 +1,14 @@
+@page "/"
+@using Rise.Client.Home.Components
+@layout EmptyLayout
+
+@if (!_isLoading)
+{
+    <PageTitle>Home</PageTitle>
+
+    <HomeScreen />
+}
+else
+{
+    <LoadingScreen />
+}

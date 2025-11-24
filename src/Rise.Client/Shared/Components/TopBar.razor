@@ -1,0 +1,150 @@
+@if (UseHeaderElement)
+{
+    <header class="@RootClasses" @attributes="AdditionalAttributes">
+        @RenderWrappedContent
+    </header>
+}
+else
+{
+    <div class="@RootClasses" @attributes="AdditionalAttributes">
+        @RenderWrappedContent
+    </div>
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? InnerClass { get; set; }
+    [Parameter] public bool ShowBackButton { get; set; }
+    [Parameter] public EventCallback OnBack { get; set; }
+    [Parameter] public string BackButtonAriaLabel { get; set; } = "Terug";
+    [Parameter] public RenderFragment? LeadingContent { get; set; }
+    [Parameter] public RenderFragment? MainContent { get; set; }
+    [Parameter] public RenderFragment? TrailingContent { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public bool UseHeaderElement { get; set; }
+    [Parameter] public bool WrapInnerContent { get; set; } = true;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private RenderFragment RenderWrappedContent => builder =>
+    {
+        if (WrapInnerContent)
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", InnerClasses);
+            builder.AddContent(2, RenderInnerContent);
+            builder.CloseElement();
+        }
+        else
+        {
+            builder.AddContent(0, RenderInnerContent);
+        }
+    };
+
+    private RenderFragment RenderInnerContent => builder =>
+    {
+        if (UseStructuredLayout)
+        {
+            var seq = 0;
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "flex items-center gap-3");
+
+            if (ShowBackButton || LeadingContent != null)
+            {
+                builder.OpenElement(seq++, "div");
+                builder.AddAttribute(seq++, "class", "flex items-center gap-3 shrink-0");
+
+                if (ShowBackButton)
+                {
+                    builder.OpenElement(seq++, "button");
+                    builder.AddAttribute(seq++, "type", "button");
+                    builder.AddAttribute(seq++, "class", BackButtonClasses);
+                    builder.AddAttribute(seq++, "aria-label", BackButtonAriaLabel);
+                    builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, HandleBackClickedAsync));
+                    builder.AddMarkupContent(seq++, BackButtonIconSvg);
+                    builder.CloseElement();
+                }
+
+                if (LeadingContent != null)
+                {
+                    builder.AddContent(seq++, LeadingContent);
+                }
+
+                builder.CloseElement();
+            }
+
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "min-w-0 flex-1");
+
+            if (MainContent != null)
+            {
+                builder.AddContent(seq++, MainContent);
+            }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(Title))
+                {
+                    builder.OpenElement(seq++, "h1");
+                    builder.AddAttribute(seq++, "class", "text-base font-semibold leading-5 truncate");
+                    builder.AddContent(seq++, Title);
+                    builder.CloseElement();
+                }
+
+                if (!string.IsNullOrWhiteSpace(Subtitle))
+                {
+                    builder.OpenElement(seq++, "p");
+                    builder.AddAttribute(seq++, "class", "text-xs text-white/80 truncate");
+                    builder.AddContent(seq++, Subtitle);
+                    builder.CloseElement();
+                }
+            }
+
+            builder.CloseElement();
+
+            if (TrailingContent != null)
+            {
+                builder.OpenElement(seq++, "div");
+                builder.AddAttribute(seq++, "class", "flex items-center gap-2 shrink-0");
+                builder.AddContent(seq++, TrailingContent);
+                builder.CloseElement();
+            }
+
+            builder.CloseElement();
+        }
+        else if (ChildContent != null)
+        {
+            builder.AddContent(0, ChildContent);
+        }
+    };
+
+    private string RootClasses => string.Join(" ", new[]
+    {
+        "bg-[#127646]",
+        "text-white",
+        "rounded-b-3xl",
+        Class
+    }.Where(static value => !string.IsNullOrWhiteSpace(value)));
+
+    private string InnerClasses => string.IsNullOrWhiteSpace(InnerClass)
+        ? "px-4 pb-4 pt-8"
+        : InnerClass!;
+
+    private string BackButtonClasses => "p-2 -ml-2 rounded-full text-white/90 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition";
+
+    private bool UseStructuredLayout => ShowBackButton || LeadingContent != null || MainContent != null || TrailingContent != null || !string.IsNullOrWhiteSpace(Title) || !string.IsNullOrWhiteSpace(Subtitle);
+
+    private Task HandleBackClickedAsync()
+    {
+        if (OnBack.HasDelegate)
+        {
+            return OnBack.InvokeAsync();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private const string BackButtonIconSvg = "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 19l-7-7 7-7\" /></svg>";
+}

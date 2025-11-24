@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ServiceWorker Include="wwwroot/service-worker.js" PublishedContent="wwwroot/service-worker.published.js" />
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Remove="censoring\**" />
+      <Compile Remove="Components\**" />
+      <Content Remove="censoring\**" />
+      <Content Remove="Components\**" />
+      <EmbeddedResource Remove="censoring\**" />
+      <EmbeddedResource Remove="Components\**" />
+      <None Remove="censoring\**" />
+      <None Remove="Components\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="UserConnections\Friends.razor.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="UserConnections\Pages\Friends\Index.razor.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Blazored.FluentValidation" Version="2.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.9" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.9" PrivateAssets="all" />
+        <PackageReference Include="Serilog.Sinks.BrowserConsole" Version="8.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Ardalis.Result" />
+        <Using Include="Serilog" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\Rise.Shared\Rise.Shared.csproj" />
+    </ItemGroup>
+
+</Project>
+

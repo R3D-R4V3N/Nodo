@@ -1,0 +1,36 @@
+@page "/login"
+@using Rise.Client.Identity.Components
+@using Rise.Client.Home.Components
+@layout EmptyLayout
+
+<PageTitle>Login</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <AuthLayout>
+            <HeaderContent>
+                <HomeLogo />
+                <HomeHeading />
+            </HeaderContent>
+            <ChildContent>
+                <div class="rounded-3xl bg-white/70 p-6 text-center shadow-xl backdrop-blur">
+                    <p class="text-lg font-semibold text-[#04320C]">
+                        Even geduld, we brengen je naar de homepage…
+                    </p>
+                </div>
+            </ChildContent>
+        </AuthLayout>
+    </Authorized>
+    <NotAuthorized>
+        <AuthLayout>
+            <HeaderContent>
+                <HomeLogo />
+                <HomeHeading />
+            </HeaderContent>
+            <ChildContent>
+                <AuthErrorList Errors="_result.Errors as IReadOnlyCollection<string>" />
+                <LoginForm Model="Model" OnSubmit="LoginUser" />
+            </ChildContent>
+        </AuthLayout>
+    </NotAuthorized>
+</AuthorizeView>

@@ -1,0 +1,53 @@
+@page "/testchat"
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager Nav
+
+<h3>Test Chatpagina</h3>
+
+<div>
+    <ul>
+        @foreach (var msg in messages)
+        {
+            <li>@msg</li>
+        }
+    </ul>
+</div>
+
+<input @bind="draft" placeholder="Typ je bericht..." />
+<button @onclick="SendMessage">Verstuur</button>
+
+@code {
+    private HubConnection? hubConnection;
+    private List<string> messages = new();
+    private string draft = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // URL van je server hub
+        var hubUrl = Nav.BaseUri.Replace(Nav.Uri, "https://localhost:5001/chathub");
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:5001/chathub") // vervang door juiste URL van server
+            .WithAutomaticReconnect()
+            .Build();
+
+        // Ontvangen berichten
+        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        {
+            messages.Add($"{user}: {message}");
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+        messages.Add("✅ Verbonden met chathub!");
+    }
+
+    private async Task SendMessage()
+    {
+        if (hubConnection is not null && !string.IsNullOrWhiteSpace(draft))
+        {
+            await hubConnection.SendAsync("SendMessage", "TestUser", draft);
+            draft = string.Empty;
+        }
+    }
+}

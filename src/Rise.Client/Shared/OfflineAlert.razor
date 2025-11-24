@@ -1,0 +1,223 @@
+@using System.Threading
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<div class="@BannerWrapperClasses" role="status" aria-live="polite" aria-hidden="@(!IsBannerVisible)">
+    <div class="mx-auto flex w-full max-w-4xl items-center justify-center gap-3 px-5 py-1 text-sm font-semibold text-white">
+        @* Icon afhankelijk van de state *@
+        @if (_bannerState == BannerState.BackOnline)
+        {
+            @* ONLINE ICON *@
+            <svg xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 256 256"
+                 class="shrink-0 w-4 h-4"
+                 fill="currentColor" aria-hidden="true">
+                <path d="M88.57,35A8,8,0,0,1,103.43,29l8,20A8,8,0,0,1,96.57,55ZM29,103.43l20,8A8,8,0,1,0,55,96.57l-20-8A8,8,0,0,0,29,103.43ZM227,152.57l-20-8A8,8,0,1,0,201,159.43l20,8A8,8,0,0,0,227,152.57ZM159.43,201A8,8,0,0,0,144.57,207l8,20A8,8,0,1,0,167.43,221ZM237.91,18.52a8,8,0,0,0-11.5-.18L174,70.75l-5.38-5.38a32,32,0,0,0-45.28,0L106.14,82.54a4,4,0,0,0,0,5.66l61.7,61.66a4,4,0,0,0,5.66,0l16.74-16.74a32.76,32.76,0,0,0,9.81-22.52,31.82,31.82,0,0,0-9.37-23.17l-5.38-5.37,52.2-52.17A8.22,8.22,0,0,0,237.91,18.52ZM85.64,90.34a8,8,0,0,0-11.49.18,8.22,8.22,0,0,0,.41,11.37L80.67,108,65.34,123.31A31.82,31.82,0,0,0,56,146.47,32.75,32.75,0,0,0,65.77,169l5,4.94L18.49,226.13a8.21,8.21,0,0,0-.61,11.1,8,8,0,0,0,11.72.43L82,185.25l5.37,5.38a32.1,32.1,0,0,0,45.29,0L148,175.31l6.34,6.35a8,8,0,0,0,11.32-11.32Z"></path>
+            </svg>
+        }
+        else if (_bannerState == BannerState.OfflineInitial || _bannerState == BannerState.OfflineSteady)
+        {
+            @* OFFLINE ICON *@
+            <svg xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 256 256"
+                  class="shrink-0 w-4 h-4"
+                 fill="currentColor" aria-hidden="true">
+                <path d="M149.66,149.66,131.31,168l18.35,18.34a8,8,0,0,1-11.32,11.32L132,191.31l-23.31,23.32a32.06,32.06,0,0,1-45.26,0l-5.37-5.38-28.4,28.41a8,8,0,0,1-11.32-11.32l28.41-28.4-5.38-5.37a32,32,0,0,1,0-45.26L64.69,124l-6.35-6.34a8,8,0,0,1,11.32-11.32L88,124.69l18.34-18.35a8,8,0,0,1,11.32,11.32L99.31,136,120,156.69l18.34-18.35a8,8,0,0,1,11.32,11.32Zm88-131.32a8,8,0,0,0-11.32,0l-28.4,28.41-5.37-5.38a32.05,32.05,0,0,0-45.26,0L124,64.69l-6.34-6.35a8,8,0,0,0-11.32,11.32l80,80a8,8,0,0,0,11.32-11.32L191.31,132l23.32-23.31a32,32,0,0,0,0-45.26l-5.38-5.37,28.41-28.4A8,8,0,0,0,237.66,18.34Z"></path>
+            </svg>
+        }
+
+        <span>@BannerMessage</span>
+    </div>
+</div>
+
+@code {
+    private enum BannerState
+    {
+        Hidden,
+        OfflineInitial,     
+        OfflineSteady,
+        BackOnline
+    }
+
+    private BannerState _bannerState = BannerState.Hidden;
+    private bool _isOnline = true;
+    private IJSObjectReference? _module;
+    private IJSObjectReference? _subscription;
+    private DotNetObjectReference<OfflineAlert>? _dotNetRef;
+    private CancellationTokenSource? _transitionCts;
+
+    private bool IsBannerVisible => _bannerState != BannerState.Hidden;
+
+    private string BannerMessage => _bannerState switch
+    {
+        BannerState.BackOnline => "Je bent terug online",
+        BannerState.Hidden => string.Empty,
+        _ => "Je bent offline"
+    };
+
+    private string BannerWrapperClasses
+    {
+        get
+        {
+            var translateClass = IsBannerVisible ? "translate-y-0" : "-translate-y-full";
+            var colorClass = _bannerState switch
+            {
+                BannerState.OfflineInitial => "bg-rose-600",
+                BannerState.OfflineSteady => "bg-[#127646]",
+                BannerState.BackOnline => "bg-sky-600",
+                _ => "bg-[#127646]"
+            };
+
+            return $"pointer-events-none fixed inset-x-0 top-0 z-50 transform transition-all duration-500 ease-out text-white {colorClass} {translateClass}";
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        _module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/offlineNotifier.js");
+        _dotNetRef = DotNetObjectReference.Create(this);
+        _subscription = await _module.InvokeAsync<IJSObjectReference>("registerStatusChanged", _dotNetRef);
+    }
+
+    [JSInvokable]
+    public Task UpdateOnlineStatus(bool isOnline)
+    {
+        if (_isOnline == isOnline)
+        {
+            return Task.CompletedTask;
+        }
+
+        _isOnline = isOnline;
+        return isOnline ? HandleOnlineAsync() : HandleOfflineAsync();
+    }
+
+    private Task HandleOfflineAsync()
+    {
+        var transitionCts = PrepareTransition();
+
+        return InvokeAsync(() =>
+        {
+            _bannerState = BannerState.OfflineInitial;
+            StateHasChanged();
+            _ = TransitionToSteadyAsync(transitionCts);
+        });
+    }
+
+    private Task HandleOnlineAsync()
+    {
+        var transitionCts = PrepareTransition();
+
+        return InvokeAsync(() =>
+        {
+            _bannerState = BannerState.BackOnline;
+            StateHasChanged();
+            _ = HideAfterOnlineAsync(transitionCts);
+        });
+    }
+
+    private async Task TransitionToSteadyAsync(CancellationTokenSource transitionCts)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(3), transitionCts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        if (transitionCts.IsCancellationRequested)
+        {
+            return;
+        }
+
+        await InvokeAsync(() =>
+        {
+            _bannerState = BannerState.OfflineSteady;
+            StateHasChanged();
+        });
+
+        ClearTransitionCts(transitionCts);
+    }
+
+    private async Task HideAfterOnlineAsync(CancellationTokenSource transitionCts)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(2.5), transitionCts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        if (transitionCts.IsCancellationRequested)
+        {
+            return;
+        }
+
+        await InvokeAsync(() =>
+        {
+            _bannerState = BannerState.Hidden;
+            StateHasChanged();
+        });
+
+        ClearTransitionCts(transitionCts);
+    }
+
+    private CancellationTokenSource PrepareTransition()
+    {
+        CancelPendingTransition();
+
+        var cts = new CancellationTokenSource();
+        _transitionCts = cts;
+        return cts;
+    }
+
+    private void CancelPendingTransition()
+    {
+        if (_transitionCts is null)
+        {
+            return;
+        }
+
+        _transitionCts.Cancel();
+        _transitionCts.Dispose();
+        _transitionCts = null;
+    }
+
+    private void ClearTransitionCts(CancellationTokenSource transitionCts)
+    {
+        if (!ReferenceEquals(_transitionCts, transitionCts))
+        {
+            transitionCts.Dispose();
+            return;
+        }
+
+        _transitionCts?.Dispose();
+        _transitionCts = null;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        CancelPendingTransition();
+
+        if (_subscription is not null)
+        {
+            await _subscription.InvokeVoidAsync("dispose");
+            await _subscription.DisposeAsync();
+        }
+
+        if (_module is not null)
+        {
+            await _module.DisposeAsync();
+        }
+
+        _dotNetRef?.Dispose();
+    }
+}

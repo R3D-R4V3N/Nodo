@@ -1,0 +1,27 @@
+<div role="tablist" class="flex items-center gap-2 px-1.5 py-2 rounded-full bg-white">
+    @foreach (var tab in _tabs)
+    {
+        var active = tab == Selected;
+        <button role="tab"
+                aria-selected="@active"
+                class=@($"tab-btn flex-1 rounded-full px-3 {(active ? "py-3 bg-[#127646] text-white shadow" : "py-2 text-slate-600")}")
+                                @onclick="(() => OnChange.InvokeAsync(tab))">
+            @Label(tab)
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter] public UserConnectionTypeDto Selected { get; set; }
+    [Parameter] public EventCallback<UserConnectionTypeDto> OnChange { get; set; }
+
+    private readonly UserConnectionTypeDto[] _tabs = [UserConnectionTypeDto.Friend, UserConnectionTypeDto.Request, UserConnectionTypeDto.AddFriends];
+
+    private static string Label(UserConnectionTypeDto s) => s switch
+    {
+        UserConnectionTypeDto.Friend => "Alle",
+        UserConnectionTypeDto.Request => "Verzoeken",
+        UserConnectionTypeDto.AddFriends => "Voeg toe",
+        _ => s.ToString()
+    };
+}

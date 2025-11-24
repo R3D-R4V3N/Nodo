@@ -1,0 +1,128 @@
+@using Microsoft.AspNetCore.Authorization
+@using Rise.Client.Profile.Models
+@attribute [Authorize]
+
+<div class="min-h-screen bg-neutral-50 text-neutral-900 antialiased overflow-x-hidden">
+    <ProfileHeader
+        Title="Profiel"
+        IsEditing="@IsEditing"
+        CanEdit="@(!IsLoading && !HasError)"
+        OnBack="NavigateBack"
+        OnEdit="BeginEdit"
+        OnCancel="CancelEdit"
+        OnSave="SaveEdit" />
+
+    @if (IsLoading)
+    {
+        <main class="mx-auto max-w-screen-sm px-4 pb-24 pt-6">
+            <div class="rounded-2xl border border-dashed border-neutral-300 bg-white/60 px-4 py-8 text-center text-sm text-neutral-600">
+                Profiel wordt geladen...
+            </div>
+        </main>
+    }
+    else if (HasError)
+    {
+        <main class="mx-auto max-w-screen-sm px-4 pb-24 pt-6">
+            <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-6 text-center text-sm text-rose-700">
+                @ErrorMessage
+            </div>
+        </main>
+    }
+    else
+    {
+        <main class="mx-auto max-w-screen-sm px-4 pb-24 pt-6">
+            <section class="text-center">
+                <ProfileAvatar
+                    AvatarUrl="@_draft.AvatarUrl"
+                    DisplayName="@DisplayName"
+                    MemberSince="@_model.MemberSince"
+                    OnAvatarChanged="OnAvatarChanged" />
+            </section>
+
+            <ProfilePersonalInfo
+                @bind-FirstName="_draft.FirstName"
+                @bind-LastName="_draft.LastName"
+                @bind-Email="_draft.Email"
+                @bind-Bio="_draft.Bio"
+                @bind-Gender="_draft.Gender"
+                BirthDay="@BirthDayDisplay"
+                IsEditing="@IsEditing" />
+
+            <ProfileInterestsSection
+                Likes="@LikeChips"
+                Dislikes="@DislikeChips"
+                Hobbies="@Hobbies"
+                DefaultChatLines="@ChatLineChips"
+                IsEditing="@IsEditing"
+                MaxLikes="@MaxLikes"
+                MaxDislikes="@MaxDislikes"
+                MaxHobbies="@MaxHobbies"
+                MaxChatLines="@MaxChatLines"
+                OnManageLikes="OpenLikesPicker"
+                OnManageDislikes="OpenDislikesPicker"
+                OnManageHobbies="OpenHobbiesPicker"
+                OnManageChatLines="OpenChatLinesPicker"
+                OnRemoveLike="RemoveLike"
+                OnRemoveDislike="RemoveDislike"
+                OnRemoveHobby="RemoveHobby"
+                OnRemoveChatLine="RemoveChatLine" />
+        </main>
+    }
+
+    <ProfileInterestsPicker
+        Interests="@HobbyOptions"
+        Selection="@PickerSelection"
+        SearchText="@PickerSearch"
+        MaxSelection="@MaxHobbies"
+        IsOpen="@IsPickerOpen"
+        OnToggle="TogglePickerSelection"
+        OnClear="ClearPickerSelection"
+        OnConfirm="ConfirmPickerSelection"
+        OnClose="ClosePicker"
+        SearchTextChanged="UpdatePickerSearch" />
+
+    <ProfilePreferencesPicker
+        Title="@PreferencePickerTitle"
+        SearchPlaceholder="@PreferencePickerPlaceholder"
+        Options="@PreferenceOptions"
+        Selection="@PreferencePickerSelection"
+        SearchText="@PreferencePickerSearch"
+        MaxSelection="@MaxPreferences"
+        IsOpen="@IsPreferencePickerOpen"
+        UseDislikeTheme="@IsDislikePicker"
+        OnToggle="TogglePreferencePickerSelection"
+        OnClear="ClearPreferencePickerSelection"
+        OnConfirm="ConfirmPreferencePickerSelection"
+        OnClose="ClosePreferencePicker"
+        SearchTextChanged="UpdatePreferencePickerSearch" />
+
+    <ProfilePreferencesPicker
+        Title="Kies je favoriete chatzinnen"
+        SearchPlaceholder="Zoek een zin…"
+        Options="@ChatLineOptions"
+        Selection="@ChatLinePickerSelection"
+        SearchText="@ChatLinePickerSearch"
+        MaxSelection="@MaxChatLines"
+        UseSingleColumnLayout="true"
+        IsOpen="@IsChatLinePickerOpen"
+        OnToggle="ToggleChatLinePickerSelection"
+        OnClear="ClearChatLinePickerSelection"
+        OnConfirm="ConfirmChatLinePickerSelection"
+        OnClose="CloseChatLinePicker"
+        SearchTextChanged="UpdateChatLinePickerSearch"
+        AllowCustomEntry="true"
+        CustomEntryLabel="Voeg je eigen zin toe"
+        CustomEntryPlaceholder="Typ een eigen zin…"
+        CustomEntryValue="@NewChatLineText"
+        CustomEntryValueChanged="UpdateNewChatLineText"
+        OnCreateCustomEntry="AddCustomChatLineAsync"
+        CustomEntryError="@NewChatLineError"
+        IsCustomEntryBusy="@IsAddingCustomChatLine"
+        IsCustomEntryDisabled="@IsCustomChatLineLimitReached"
+        CustomEntryMaxLength="@CustomChatLineMaxLength" />
+
+    <ProfileToast Message="@_toastMessage" Visible="@_isToastVisible" />
+</div>
+
+@code {
+}

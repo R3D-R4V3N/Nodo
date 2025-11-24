@@ -1,0 +1,17 @@
+@using Rise.Client.State
+<header class="flex justify-between items-center mt-4 ">
+    <h1 class="text-4xl text-left font-semibold leading-tight">Dashboard</h1>
+    <div class="flex items-center space-x-4">
+          
+        <img src="@UserState.User?.AvatarUrl" alt="user" class="w-10 h-10 rounded-full">
+        <div class="flex items-center space-x-4">
+            <p>@UserState.User?.Name</p>
+         
+        </div>
+    </div>
+</header>
+
+@code
+{
+    [Inject] public UserState UserState { get; set; }
+}

@@ -1,0 +1,97 @@
+@page "/dashboard/registrations"
+@using Rise.Shared.RegistrationRequests
+@inject IRegistrationRequestService RegistrationRequestService
+@using Rise.Shared.Assets
+@using Rise.Shared.Identity
+@using Serilog
+
+<div class="col-span-2 bg-white rounded-xl p-4">
+    <h3 class="font-semibold text-lg mb-4">Registraties</h3>
+
+    @if (_isLoading)
+    {
+        <p class="text-sm text-neutral-500">Aan het laden...</p>
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <p class="text-sm text-red-600">@_errorMessage</p>
+    }
+    else if (_latestRequests.Count == 0)
+    {
+        <p class="text-sm text-neutral-500">Geen recente registraties gevonden.</p>
+    }
+    else
+    {
+        <div class="space-y-3">
+            @foreach (var request in _latestRequests)
+            {
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="font-normal">@request.FirstName @request.LastName</p>
+                        <p class="text-xs text-neutral-500">@request.Email</p>
+                    </div>
+
+                    <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Pending</span>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<RegistrationRequestDto.Pending> _latestRequests = [];
+    private bool _isLoading = true;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var result = await RegistrationRequestService.GetPendingAsync();
+            if (result.IsSuccess)
+            {
+                // Pak de laatste 3 op basis van submitted date
+                _latestRequests = result.Value.Requests
+                    .OrderByDescending(r => r.SubmittedAt)
+                    .Take(3)
+                    .ToList();
+            }
+            else
+            {
+                _errorMessage = string.Join(Environment.NewLine, result.Errors);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Kon laatste registraties niet laden.");
+            _errorMessage = "Fout bij het laden van registraties.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private static string GetStatusLabel(string status)
+    {
+        // Pas deze labels aan volgens je echte statusvelden
+        return status switch
+        {
+            "Completed" => "Voltooid",
+            "InProgress" => "In behandeling",
+            "Pending" => "In afwachting",
+            _ => "Onbekend"
+        };
+    }
+
+    private static string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Completed" => "text-xs bg-green-100 text-green-700 px-2 py-1 rounded",
+            "InProgress" => "text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded",
+            "Pending" => "text-xs bg-red-100 text-red-700 px-2 py-1 rounded",
+            _ => "text-xs bg-neutral-100 text-neutral-700 px-2 py-1 rounded"
+        };
+    }
+}

@@ -1,0 +1,110 @@
+@page "/FriendProfilePage/{id:guid}"
+@layout EmptyLayout
+@using Rise.Client.Profile.Models
+@using Rise.Client.State
+@using Rise.Client.UserConnections.Components.FriendProfile
+@using Rise.Shared.Assets
+@using Rise.Shared.Users
+@using Rise.Shared.UserConnections
+@inject NavigationManager NavigationManager
+
+@if (user is null)
+{
+    <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600 animate-pulse">
+        <p>Profiel wordt geladen...</p>
+    </div>
+}
+else if (user?.User is null)
+{
+    <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600">
+        <p>Gebruiker niet gevonden.</p>
+    </div>
+}
+else
+{
+    <div class="relative flex min-h-screen flex-col bg-[#F2F2F2] text-neutral-900 antialiased md:flex-row animate-fade-in">
+       
+
+        <EmojiComponent Hobbies="@ProfileHobbies"/>
+        <BackButton/>
+
+        <header class="relative h-[65vh] md:h-auto md:w-1/2">
+            <ProfileImageComponent ImgSource="@user.User.AvatarUrl"/>
+            <BlurComponent/>
+
+            <div class="absolute inset-x-0 bottom-9 flex flex-col justify-end p-5 md:inset-y-0 md:left-0 md:justify-center md:p-10">
+                <NameAndBadgesComponent Name="@user.User.Name"
+                                        Age="@($"{CalculateAge(user.User.BirthDay)} jaar")"
+                                        Gender="@user.User.Gender.ToString()"/>
+
+            </div>
+        </header>
+
+        <!-- ✅ Geef de PageContext door aan de DescriptionComponent -->
+        <DescriptionComponent PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
+                              Description="@user.User.Biography"/>
+
+    </div>
+    
+}
+
+@code {
+    [Parameter] public Guid id { get; set; } 
+
+    [Inject] public UserState UserState { get; set; }
+
+    [Inject] private IUserService UserService { get; set; } = default!;
+
+    private UserResponse.CurrentUser? user;
+    private UserConnectionTypeDto PageContext = UserConnectionTypeDto.Friend;
+
+    private IReadOnlyList<ProfileHobbyModel> ProfileHobbies { get; set; } = Array.Empty<ProfileHobbyModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine($"Ontvangen id: {id}");
+
+        // 🔹 Haal querystring op en parse 'context' handmatig
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+        if (query.TryGetValue("context", out var contextValue))
+        {
+            if (Enum.TryParse<UserConnectionTypeDto>(contextValue, true, out var result))
+            {
+                PageContext = result;
+            }
+        }
+
+        user = await UserService.GetUserAsync(id.ToString());
+
+        if (user is null)
+        {
+            Console.WriteLine("Gebruiker niet gevonden!");
+        }
+
+        ProfileHobbies = user.User.Hobbies
+            .Select(h => new ProfileHobbyModel(h.Hobby.ToString(), h.Name, h.Emoji))
+            .ToList();
+        
+        Console.WriteLine($"Aantal hobby's: {user.User.Hobbies.Count}");
+        foreach (var h in user.User.Hobbies)
+        {
+            Console.WriteLine($"Hobby: {h.Name}, Emoji: {h.Emoji}, Id: {h.Hobby.ToString()}");
+        }
+    }
+    private int CalculateAge(DateOnly birthDate)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var age = today.Year - birthDate.Year;
+
+        // als verjaardag nog niet is geweest dit jaar → leeftijd -1
+        if (birthDate > today.AddYears(-age))
+        {
+            age--;
+        }
+
+        return age;
+    }
+
+
+}

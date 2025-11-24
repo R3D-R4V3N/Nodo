@@ -1,31 +1,45 @@
-# Logs
-logs
-*.log
+#vs
+
+.vs/
+
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+**/.DS_Store
+
+src/Rise.Client/wwwroot/css/app.css
+
+src/Rise.Server/Data/
+
+src/Rise.Server/Logs/
+
+Rise.sln.DotSettings.user
+
+src/Rise.Server/Rise.db
+
+src/Rise.Server/Rise.db-shm
+
+src/Rise.Server/Rise.db-wal
+# Node.js
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-.yarn/*
-node_modules
-dist
-dist-ssr
-*.local
+# Blazor / .NET
+bin/
+obj/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
+# VS / Rider
+.vscode/
+.idea/
 *.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+*.user
+*.userosscache
+*.sln.docstates
 
-.yarn/
-build/
-.vscode
-.env*
-coverage
+# Build outputs
+dist/
+wwwroot/css/app.css
