@@ -66,7 +66,7 @@ export async function getQueueLength() {
 }
 
 export function registerOnlineCallback(dotNetRef) {
-    if (!dotNetRef) return;
+    if (!dotNetRef) return null;
 
     const handler = () => {
         dotNetRef.invokeMethodAsync('OnBrowserOnline');
@@ -74,5 +74,34 @@ export function registerOnlineCallback(dotNetRef) {
 
     window.addEventListener('online', handler);
 
-    return () => window.removeEventListener('online', handler);
+    return {
+        dispose: () => window.removeEventListener('online', handler)
+    };
+}
+
+export function registerProcessingInterval(dotNetRef, intervalMs) {
+    if (!dotNetRef || !intervalMs) return null;
+
+    const invokeWhenOnlineAndVisible = () => {
+        if (document.visibilityState !== 'visible') return;
+        if (!navigator.onLine) return;
+
+        dotNetRef.invokeMethodAsync('OnBrowserOnline');
+    };
+
+    const intervalId = setInterval(invokeWhenOnlineAndVisible, intervalMs);
+    const visibilityHandler = () => {
+        if (document.visibilityState === 'visible') {
+            invokeWhenOnlineAndVisible();
+        }
+    };
+
+    document.addEventListener('visibilitychange', visibilityHandler);
+
+    return {
+        dispose: () => {
+            clearInterval(intervalId);
+            document.removeEventListener('visibilitychange', visibilityHandler);
+        }
+    };
 }

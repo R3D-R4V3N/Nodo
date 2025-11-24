@@ -11,8 +11,11 @@ public sealed class OfflineQueueService : IAsyncDisposable
 {
     private readonly IJSRuntime _jsRuntime;
     private readonly IHttpClientFactory _httpClientFactory;
+    private IJSObjectReference? _onlineCallbackDisposable;
+    private IJSObjectReference? _processingIntervalDisposable;
     private IJSObjectReference? _module;
     private DotNetObjectReference<OfflineQueueService>? _dotNetRef;
+    private static readonly TimeSpan ProcessingInterval = TimeSpan.FromSeconds(30);
     private readonly JsonSerializerOptions _serializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -33,7 +36,10 @@ public sealed class OfflineQueueService : IAsyncDisposable
         await EnsureModuleAsync();
 
         _dotNetRef = DotNetObjectReference.Create(this);
-        await _module!.InvokeVoidAsync("registerOnlineCallback", cancellationToken, _dotNetRef);
+        _onlineCallbackDisposable =
+            await _module!.InvokeAsync<IJSObjectReference?>("registerOnlineCallback", cancellationToken, _dotNetRef);
+        _processingIntervalDisposable = await _module.InvokeAsync<IJSObjectReference?>("registerProcessingInterval",
+            cancellationToken, _dotNetRef, (int)ProcessingInterval.TotalMilliseconds);
 
         await ProcessQueueAsync(cancellationToken);
     }
@@ -224,6 +230,16 @@ public sealed class OfflineQueueService : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (_onlineCallbackDisposable is not null)
+        {
+            await _onlineCallbackDisposable.DisposeAsync();
+        }
+
+        if (_processingIntervalDisposable is not null)
+        {
+            await _processingIntervalDisposable.DisposeAsync();
+        }
+
         if (_module is not null)
         {
             await _module.DisposeAsync();
