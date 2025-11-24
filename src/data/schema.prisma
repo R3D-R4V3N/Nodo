@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Site {
+  id           Int       @id @default(autoincrement())
+  name         String    @unique(map: "idx_site_name_unique")
+  country      String
+  city         String
+  streetName   String
+  streetNumber String
+  postalCode   String
+  latitude     String
+  longitude    String
+  isActive     Boolean
+  supervisor   Employee  @relation(fields: [supervisorId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_site_supervisor")
+  supervisorId Int
+  machines     Machine[]
+  logs         Log[]
+    Notification Notification[]
+}
+
+model Machine {
+  id                 Int                  @id @default(autoincrement())
+  code               String               @unique(map: "idx_machine_code_unique")
+  location           String
+  uptime             DateTime?            @default(now())
+  product            Product              @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_machine_product")
+  productId          Int
+  site               Site                 @relation(fields: [siteId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_machine_site")
+  siteId             Int
+  technician         Employee?            @relation(fields: [technicianId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_machine_technician")
+  technicianId       Int?
+  status             MachineStatus
+  productionStatus   ProductionStatus
+  maintenances       Maintenance[]
+  logs               Log[]
+  MachineStatusLog   MachineStatusLog[]
+  MachineDailyReport MachineDailyReport[]
+    Notification Notification[]
+}
+
+model MachineStatusLog {
+  id        Int           @id @default(autoincrement())
+  machine   Machine       @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  machineId Int
+  status    MachineStatus
+  timestamp DateTime      @default(now())
+}
+
+model MachineDailyReport {
+  id             Int      @id @default(autoincrement())
+  date           DateTime @default(now())
+  machine        Machine  @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  machineId      Int
+  amountProduced Int      @default(0)
+  uptime         Int      @default(0)
+  downtime       Int      @default(0)
+  scrap          Int      @default(0)
+}
+
+model Product {
+  id      Int       @id @default(autoincrement())
+  info    String
+  Machine Machine[] @relation(map: "fk_machine_product")
+}
+
+model Maintenance {
+  id                Int               @id @default(autoincrement())
+  datePlanned       DateTime
+  startTime         DateTime?
+  endTime           DateTime?
+  reason            String
+  maintenanceReport String?
+  comments          String?
+  status            MaintenanceStatus
+  machine           Machine           @relation(fields: [machineId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_maintenance_machine")
+  machineId         Int
+  technician        Employee          @relation(fields: [technicianId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_maintenance_technician")
+  technicianId      Int
+  logs              Log[]
+    Notification Notification[]
+}
+
+model Employee {
+  id           Int           @id @default(autoincrement())
+  firstName    String
+  lastName     String
+  dateOfBirth  DateTime
+  country      String
+  city         String
+  postalCode   String
+  streetName   String
+  streetNumber String
+  email        String        @unique(map: "idx_employee_email_unique")
+  phoneNumber  String?       @unique(map: "idx_employee_phone_unique")
+  role         Role
+  passwordHash String?
+  isActive     Boolean
+  Site         Site[]
+  Machine      Machine[]
+  Maintenance  Maintenance[]
+  logs         Log[]
+    Notification Notification[]
+}
+
+enum Role {
+  Technician
+  Supervisor
+  Manager
+  Administrator
+}
+
+model Log {
+  id            Int          @id @default(autoincrement())
+  date          DateTime     @default(now())
+  action        Action       @relation(fields: [actionId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_log_action")
+  actionId      Int
+  details       Json?
+  employee      Employee?    @relation(fields: [employeeId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "fk_log_employee")
+  employeeId    Int?
+  machine       Machine?     @relation(fields: [machineId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "fk_log_machine")
+  machineId     Int?
+  site          Site?        @relation(fields: [siteId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "fk_log_site")
+  siteId        Int?
+  maintenance   Maintenance? @relation(fields: [maintenanceId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "fk_log_maintenance")
+  maintenanceId Int?
+}
+
+model Action {
+  id   Int    @id @default(autoincrement())
+  name String @unique(map: "idx_action_name_unique")
+  logs Log[]
+}
+
+enum MachineStatus {
+  Running
+  Maintenance
+  Stopped
+  Ready
+}
+
+enum ProductionStatus {
+  Healthy
+  Critical
+  Failing
+}
+
+enum MaintenanceStatus {
+  Completed
+  Ongoing
+  Scheduled
+}
+model Notification {
+    id          Int              @id @default(autoincrement())
+    createdAt   DateTime         @default(now())
+    title       String
+    message     String
+    status      NotificationStatus
+    employee    Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+    employeeId  Int
+    machine     Machine?         @relation(fields: [machineId], references: [id], onDelete: SetNull)
+    machineId   Int?
+    site        Site?            @relation(fields: [siteId], references: [id], onDelete: SetNull)
+    siteId      Int?
+    maintenance Maintenance?     @relation(fields: [maintenanceId], references: [id], onDelete: SetNull)
+    maintenanceId Int?
+}
+
+enum NotificationStatus {
+    New
+    Unread
+    Read
+}

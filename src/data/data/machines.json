@@ -1,0 +1,970 @@
+{
+    "machineStatusLogs": [
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-06T00:00:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Stopped",
+            "timestamp": "2025-03-06T07:34:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-06T07:45:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Stopped",
+            "timestamp": "2025-03-06T08:34:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-06T08:47:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Maintenance",
+            "timestamp": "2025-03-06T13:56:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-06T15:03:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Stopped",
+            "timestamp": "2025-03-06T20:04:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-06T20:16:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Maintenance",
+            "timestamp": "2025-03-06T21:10:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-06T22:17:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-07T00:00:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Stopped",
+            "timestamp": "2025-03-07T10:35:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-07T10:46:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Stopped",
+            "timestamp": "2025-03-07T16:48:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-07T16:59:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Stopped",
+            "timestamp": "2025-03-07T17:09:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-07T17:23:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Stopped",
+            "timestamp": "2025-03-07T19:59:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-07T20:13:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Stopped",
+            "timestamp": "2025-03-08T06:28:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-08T06:42:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Stopped",
+            "timestamp": "2025-03-08T12:04:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-08T12:10:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Stopped",
+            "timestamp": "2025-03-09T14:24:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-09T14:35:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Maintenance",
+            "timestamp": "2025-03-09T15:18:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-09T16:12:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Stopped",
+            "timestamp": "2025-03-10T07:00:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-10T07:11:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Stopped",
+            "timestamp": "2025-03-11T21:57:00"
+        },
+        {
+            "machineId": 1,
+            "status": "Running",
+            "timestamp": "2025-03-11T22:12:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-06T00:00:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Stopped",
+            "timestamp": "2025-03-06T07:22:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-06T07:32:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Maintenance",
+            "timestamp": "2025-03-06T14:18:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-06T14:48:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-07T00:00:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Stopped",
+            "timestamp": "2025-03-07T07:10:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-07T07:19:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Stopped",
+            "timestamp": "2025-03-07T18:55:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-07T19:02:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Stopped",
+            "timestamp": "2025-03-08T12:14:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-08T12:28:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Stopped",
+            "timestamp": "2025-03-08T19:43:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-08T19:52:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Maintenance",
+            "timestamp": "2025-03-08T19:43:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-08T20:13:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Stopped",
+            "timestamp": "2025-03-08T20:51:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-08T21:00:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Stopped",
+            "timestamp": "2025-03-09T15:00:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-09T15:07:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Stopped",
+            "timestamp": "2025-03-09T15:02:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-09T15:15:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Stopped",
+            "timestamp": "2025-03-10T13:34:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-10T13:49:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Maintenance",
+            "timestamp": "2025-03-10T15:51:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-10T16:57:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Maintenance",
+            "timestamp": "2025-03-10T16:25:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-10T16:40:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Stopped",
+            "timestamp": "2025-03-10T19:10:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-10T19:17:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Stopped",
+            "timestamp": "2025-03-11T07:12:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-11T07:19:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Stopped",
+            "timestamp": "2025-03-11T13:11:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-11T13:20:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Stopped",
+            "timestamp": "2025-03-11T14:54:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-11T15:00:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Stopped",
+            "timestamp": "2025-03-11T16:07:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-11T16:13:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Stopped",
+            "timestamp": "2025-03-11T21:13:00"
+        },
+        {
+            "machineId": 2,
+            "status": "Running",
+            "timestamp": "2025-03-11T21:19:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-06T00:00:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Stopped",
+            "timestamp": "2025-03-06T07:48:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-06T07:55:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-07T00:00:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Stopped",
+            "timestamp": "2025-03-07T12:39:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-07T12:54:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Stopped",
+            "timestamp": "2025-03-07T17:01:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-07T17:08:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Stopped",
+            "timestamp": "2025-03-07T20:51:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-07T20:56:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Stopped",
+            "timestamp": "2025-03-07T21:41:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-07T21:55:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Stopped",
+            "timestamp": "2025-03-08T16:17:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-08T16:23:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Maintenance",
+            "timestamp": "2025-03-08T20:19:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-08T21:14:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Stopped",
+            "timestamp": "2025-03-09T12:22:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-09T12:28:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Stopped",
+            "timestamp": "2025-03-09T14:09:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-09T14:22:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Stopped",
+            "timestamp": "2025-03-09T15:06:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-09T15:16:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Stopped",
+            "timestamp": "2025-03-09T20:03:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-09T20:08:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Stopped",
+            "timestamp": "2025-03-10T11:45:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-10T11:57:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Stopped",
+            "timestamp": "2025-03-11T08:28:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-11T08:40:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Maintenance",
+            "timestamp": "2025-03-11T21:09:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-11T22:27:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Stopped",
+            "timestamp": "2025-03-12T12:47:00"
+        },
+        {
+            "machineId": 3,
+            "status": "Running",
+            "timestamp": "2025-03-12T12:58:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-06T00:00:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-06T06:04:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-06T06:19:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-06T06:34:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-06T06:41:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-06T09:33:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-06T09:48:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-06T14:40:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-06T14:51:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Maintenance",
+            "timestamp": "2025-03-06T21:14:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-06T22:49:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-07T00:00:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-07T06:28:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-07T06:36:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-07T10:48:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-07T10:54:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-08T11:33:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-08T11:41:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-08T12:37:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-08T12:46:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-08T16:00:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-08T16:13:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-08T19:51:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-08T20:01:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-09T11:48:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-09T12:03:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-09T11:57:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-09T12:11:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-10T06:39:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-10T06:52:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-10T10:13:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-10T10:27:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Maintenance",
+            "timestamp": "2025-03-10T12:06:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-10T12:15:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-10T19:41:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-10T19:47:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Maintenance",
+            "timestamp": "2025-03-10T21:27:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-10T21:45:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-11T13:41:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-11T13:51:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Stopped",
+            "timestamp": "2025-03-11T19:37:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-11T19:43:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Maintenance",
+            "timestamp": "2025-03-12T14:41:00"
+        },
+        {
+            "machineId": 4,
+            "status": "Running",
+            "timestamp": "2025-03-12T15:08:00"
+        }
+    ],
+    "machineDailyReports": [
+        {
+            "machineId": 1,
+            "date": "2025-03-06",
+            "amountProduced": 4592,
+            "uptime": 1270,
+            "downtime": 170,
+            "scrap": 166
+        },
+        {
+            "machineId": 1,
+            "date": "2025-03-07",
+            "amountProduced": 4693,
+            "uptime": 1390,
+            "downtime": 50,
+            "scrap": 88
+        },
+        {
+            "machineId": 1,
+            "date": "2025-03-08",
+            "amountProduced": 4819,
+            "uptime": 1420,
+            "downtime": 20,
+            "scrap": 98
+        },
+        {
+            "machineId": 1,
+            "date": "2025-03-09",
+            "amountProduced": 1308,
+            "uptime": 1375,
+            "downtime": 65,
+            "scrap": 109
+        },
+        {
+            "machineId": 1,
+            "date": "2025-03-10",
+            "amountProduced": 4377,
+            "uptime": 1429,
+            "downtime": 11,
+            "scrap": 186
+        },
+        {
+            "machineId": 1,
+            "date": "2025-03-11",
+            "amountProduced": 3245,
+            "uptime": 1425,
+            "downtime": 15,
+            "scrap": 113
+        },
+        {
+            "machineId": 1,
+            "date": "2025-03-12",
+            "amountProduced": 825,
+            "uptime": 1165,
+            "downtime": 0,
+            "scrap": 103
+        },
+        {
+            "machineId": 2,
+            "date": "2025-03-06",
+            "amountProduced": 4656,
+            "uptime": 1400,
+            "downtime": 40,
+            "scrap": 154
+        },
+        {
+            "machineId": 2,
+            "date": "2025-03-07",
+            "amountProduced": 4328,
+            "uptime": 1424,
+            "downtime": 16,
+            "scrap": 78
+        },
+        {
+            "machineId": 2,
+            "date": "2025-03-08",
+            "amountProduced": 4026,
+            "uptime": 1378,
+            "downtime": 62,
+            "scrap": 89
+        },
+        {
+            "machineId": 2,
+            "date": "2025-03-09",
+            "amountProduced": 1422,
+            "uptime": 1420,
+            "downtime": 20,
+            "scrap": 58
+        },
+        {
+            "machineId": 2,
+            "date": "2025-03-10",
+            "amountProduced": 2206,
+            "uptime": 1337,
+            "downtime": 103,
+            "scrap": 92
+        },
+        {
+            "machineId": 2,
+            "date": "2025-03-11",
+            "amountProduced": 2350,
+            "uptime": 1406,
+            "downtime": 34,
+            "scrap": 54
+        },
+        {
+            "machineId": 2,
+            "date": "2025-03-12",
+            "amountProduced": 2083,
+            "uptime": 1165,
+            "downtime": 0,
+            "scrap": 68
+        },
+        {
+            "machineId": 3,
+            "date": "2025-03-06",
+            "amountProduced": 2494,
+            "uptime": 1433,
+            "downtime": 7,
+            "scrap": 67
+        },
+        {
+            "machineId": 3,
+            "date": "2025-03-07",
+            "amountProduced": 3247,
+            "uptime": 1399,
+            "downtime": 41,
+            "scrap": 66
+        },
+        {
+            "machineId": 3,
+            "date": "2025-03-08",
+            "amountProduced": 3425,
+            "uptime": 1379,
+            "downtime": 61,
+            "scrap": 103
+        },
+        {
+            "machineId": 3,
+            "date": "2025-03-09",
+            "amountProduced": 4581,
+            "uptime": 1406,
+            "downtime": 34,
+            "scrap": 158
+        },
+        {
+            "machineId": 3,
+            "date": "2025-03-10",
+            "amountProduced": 3639,
+            "uptime": 1428,
+            "downtime": 12,
+            "scrap": 54
+        },
+        {
+            "machineId": 3,
+            "date": "2025-03-11",
+            "amountProduced": 1179,
+            "uptime": 1350,
+            "downtime": 90,
+            "scrap": 189
+        },
+        {
+            "machineId": 3,
+            "date": "2025-03-12",
+            "amountProduced": 3276,
+            "uptime": 1154,
+            "downtime": 11,
+            "scrap": 152
+        },
+        {
+            "machineId": 4,
+            "date": "2025-03-06",
+            "amountProduced": 1736,
+            "uptime": 1297,
+            "downtime": 143,
+            "scrap": 117
+        },
+        {
+            "machineId": 4,
+            "date": "2025-03-07",
+            "amountProduced": 1859,
+            "uptime": 1426,
+            "downtime": 14,
+            "scrap": 182
+        },
+        {
+            "machineId": 4,
+            "date": "2025-03-08",
+            "amountProduced": 1623,
+            "uptime": 1400,
+            "downtime": 40,
+            "scrap": 76
+        },
+        {
+            "machineId": 4,
+            "date": "2025-03-09",
+            "amountProduced": 3276,
+            "uptime": 1411,
+            "downtime": 29,
+            "scrap": 74
+        },
+        {
+            "machineId": 4,
+            "date": "2025-03-10",
+            "amountProduced": 3198,
+            "uptime": 1380,
+            "downtime": 60,
+            "scrap": 186
+        },
+        {
+            "machineId": 4,
+            "date": "2025-03-11",
+            "amountProduced": 4209,
+            "uptime": 1424,
+            "downtime": 16,
+            "scrap": 195
+        },
+        {
+            "machineId": 4,
+            "date": "2025-03-12",
+            "amountProduced": 2543,
+            "uptime": 1138,
+            "downtime": 27,
+            "scrap": 128
+        }
+    ]
+}
