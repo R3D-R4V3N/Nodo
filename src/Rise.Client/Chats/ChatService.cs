@@ -23,6 +23,8 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
 
     public async Task<Result<MessageDto.Chat>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
     {
+        request.ClientMessageId ??= Guid.NewGuid();
+
         HttpResponseMessage response;
         try
         {
@@ -45,6 +47,8 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
 
     public async Task<Result<int>> QueueMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
     {
+        request.ClientMessageId ??= Guid.NewGuid();
+
         try
         {
             var queuedId = await _offlineQueueService.QueueOperationAsync(
@@ -52,6 +56,8 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
                 $"/api/chats/{request.ChatId}/messages",
                 HttpMethod.Post,
                 request,
+                clientMessageId: request.ClientMessageId,
+                chatId: request.ChatId,
                 cancellationToken: cancellationToken);
 
             return Result.Success(queuedId);
