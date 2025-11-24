@@ -4,14 +4,49 @@ using Rise.Shared.Chats;
 
 namespace Rise.Client.Chats;
 
-public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueueService) : IChatService
+public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueueService, SessionCacheService sessionCacheService) : IChatService
 {
     private readonly HttpClient _httpClient = httpClient;
     private readonly OfflineQueueService _offlineQueueService = offlineQueueService;
+    private readonly SessionCacheService _sessionCacheService = sessionCacheService;
+    private static readonly TimeSpan CacheLifetime = TimeSpan.FromMinutes(30);
 
     public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
     {
+        ChatResponse.GetChats? cached = null;
+        try
+        {
+            var cachedChats = await _sessionCacheService.GetCachedChatsAsync(cancellationToken);
+            cached = new ChatResponse.GetChats
+            {
+                Chats = cachedChats
+            };
+        }
+        catch
+        {
+            // Ignore cache issues and fall back to network.
+        }
+
+        var isOnline = await _offlineQueueService.IsOnlineAsync();
+        if (!isOnline)
+        {
+            return cached is not null && cached.Chats.Any()
+                ? Result.Success(cached)
+                : Result<ChatResponse.GetChats>.Error("Kon de chats niet laden: offline.");
+        }
+
         var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChats>>("api/chats", cancellationToken);
+        if (result?.IsSuccess == true && result.Value is not null)
+        {
+            await _sessionCacheService.CacheChatsAsync(result.Value.Chats ?? [], CacheLifetime, cancellationToken);
+            return result;
+        }
+
+        if (cached is not null && cached.Chats.Any())
+        {
+            return Result.Success(cached);
+        }
+
         return result ?? Result<ChatResponse.GetChats>.Error("Kon de chats niet laden.");
     }
 

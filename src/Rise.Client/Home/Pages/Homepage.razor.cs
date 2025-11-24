@@ -1,6 +1,7 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Rise.Client.Offline;
 using Rise.Client.RealTime;
 using Rise.Client.State;
 using Rise.Shared.Assets;
@@ -11,6 +12,7 @@ namespace Rise.Client.Home.Pages;
 public partial class Homepage : IDisposable
 {
     [Inject] public UserState UserState { get; set; }
+    [Inject] public SessionCacheService SessionCacheService { get; set; } = null!;
     private readonly List<ChatDto.GetChats> _chats = new();
     private List<ChatDto.GetChats> _filteredChats => string.IsNullOrWhiteSpace(_searchTerm)
         ? _chats
@@ -29,11 +31,27 @@ public partial class Homepage : IDisposable
 
     protected override async Task OnInitializedAsync()
     {
+        try
+        {
+            var cachedChats = await SessionCacheService.GetCachedChatsAsync();
+            if (cachedChats.Count > 0)
+            {
+                _chats.Clear();
+                _chats.AddRange(cachedChats);
+                _isLoading = false;
+            }
+        }
+        catch
+        {
+            // If cache fails, we continue with the live request below.
+        }
+
         var result = await ChatService.GetAllAsync();
         if (result.IsSuccess && result.Value is not null)
         {
             _chats.Clear();
             _chats.AddRange(result.Value.Chats ?? []);
+            _loadError = null;
         }
         else
         {
@@ -41,7 +59,7 @@ public partial class Homepage : IDisposable
         }
 
         _isLoading = false;
-        
+
         await InitializeHubAsync();
 
     }

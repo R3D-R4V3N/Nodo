@@ -1,8 +1,26 @@
-﻿<div id="app">
+<div id="app">
     <div class="app-loading-screen">
         <div class="app-loading-card">
             <h1 class="app-loading-title">Nodo</h1>
             <p class="app-loading-subtitle">Hier is waar vriendschap begint</p>
+            @if (!string.IsNullOrWhiteSpace(UserName))
+            {
+                <p class="app-loading-meta">Welkom terug, @UserName</p>
+            }
+            @if (ChatCount is int count)
+            {
+                <p class="app-loading-meta">Chats beschikbaar offline: @count</p>
+            }
+            @if (IsOffline)
+            {
+                <p class="app-loading-offline">Offline modus geactiveerd. We laden je gegevens uit cache.</p>
+            }
         </div>
     </div>
 </div>
+
+@code {
+    [Parameter] public string? UserName { get; set; }
+    [Parameter] public int? ChatCount { get; set; }
+    [Parameter] public bool IsOffline { get; set; }
+}

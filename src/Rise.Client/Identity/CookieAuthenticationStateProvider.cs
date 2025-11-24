@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
+using Rise.Client.Offline;
 using Rise.Shared.Identity.Accounts;
 
 namespace Rise.Client.Identity
@@ -13,13 +14,20 @@ namespace Rise.Client.Identity
     /// Create a new instance of the auth provider.
     /// </remarks>
     /// <param name="httpClientFactory">Factory to retrieve auth client.</param>
-    public class CookieAuthenticationStateProvider(IHttpClientFactory httpClientFactory): AuthenticationStateProvider, IAccountManager
+    /// <param name="sessionCacheService">Persisted cache for auth payloads.</param>
+    /// <param name="offlineQueueService">Connectivity helper.</param>
+    public class CookieAuthenticationStateProvider(
+        IHttpClientFactory httpClientFactory,
+        SessionCacheService sessionCacheService,
+        OfflineQueueService offlineQueueService) : AuthenticationStateProvider, IAccountManager
     {
         /// <summary>
         /// Special auth client.
         /// </summary>
         private readonly HttpClient httpClient = httpClientFactory.CreateClient("SecureApi");
-        
+        private readonly SessionCacheService _sessionCache = sessionCacheService;
+        private readonly OfflineQueueService _offlineQueueService = offlineQueueService;
+
         /// <summary>
         /// Authentication state.
         /// </summary>
@@ -103,30 +111,42 @@ namespace Rise.Client.Identity
             authenticated = false;
             // default to not authenticated
             var user = unauthenticated;
+            AccountResponse.Info? cachedAuth = null;
 
             try
             {
-                var result = await httpClient.GetFromJsonAsync<Result<AccountResponse.Info>>("/api/identity/accounts/info");
-                
-                if (result!.IsSuccess)
+                cachedAuth = await _sessionCache.GetCachedAuthInfoAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Could not read cached authentication info.");
+            }
+
+            try
+            {
+                var isOnline = await _offlineQueueService.IsOnlineAsync();
+                if (!isOnline && cachedAuth is not null)
                 {
-                    var claims = new List<Claim>
-                    {
-                        new(ClaimTypes.Name, result.Value.Email),
-                        new(ClaimTypes.Email, result.Value.Email)
-                    };
-                
-                    claims.AddRange(
-                        result.Value.Claims
-                            .Where(c => c.Key is not (ClaimTypes.Name or ClaimTypes.Email or ClaimTypes.Role))
-                            .Select(c => new Claim(c.Key, c.Value))
-                    );
-                
-                    claims.AddRange(result.Value.Roles.Select(r => new Claim(ClaimTypes.Role, r)));
-                
-                    var identity = new ClaimsIdentity(claims, nameof(CookieAuthenticationStateProvider));
-                    user = new ClaimsPrincipal(identity);
+                    user = BuildPrincipal(cachedAuth);
                     authenticated = true;
+                    return new AuthenticationState(user);
+                }
+
+                var result = await httpClient.GetFromJsonAsync<Result<AccountResponse.Info>>("/api/identity/accounts/info");
+
+                if (result?.IsSuccess == true && result.Value is not null)
+                {
+                    await _sessionCache.CacheAuthInfoAsync(result.Value);
+                    user = BuildPrincipal(result.Value);
+                    authenticated = true;
+                    return new AuthenticationState(user);
+                }
+
+                if (cachedAuth is not null)
+                {
+                    user = BuildPrincipal(cachedAuth);
+                    authenticated = true;
+                    return new AuthenticationState(user);
                 }
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
@@ -137,11 +157,23 @@ namespace Rise.Client.Identity
             catch (HttpRequestException ex)
             {
                 Log.Error(ex, "Could not GetAuthenticationStateAsync.");
+                if (cachedAuth is not null)
+                {
+                    user = BuildPrincipal(cachedAuth);
+                    authenticated = true;
+                    return new AuthenticationState(user);
+                }
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Could not GetAuthenticationStateAsync.");
-            }   
+                if (cachedAuth is not null)
+                {
+                    user = BuildPrincipal(cachedAuth);
+                    authenticated = true;
+                    return new AuthenticationState(user);
+                }
+            }
 
             return new AuthenticationState(user);
         }
@@ -156,6 +188,26 @@ namespace Rise.Client.Identity
         {
             await GetAuthenticationStateAsync();
             return authenticated;
+        }
+
+        private static ClaimsPrincipal BuildPrincipal(AccountResponse.Info authInfo)
+        {
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.Name, authInfo.Email),
+                new(ClaimTypes.Email, authInfo.Email)
+            };
+
+            claims.AddRange(
+                authInfo.Claims
+                    .Where(c => c.Key is not (ClaimTypes.Name or ClaimTypes.Email or ClaimTypes.Role))
+                    .Select(c => new Claim(c.Key, c.Value))
+            );
+
+            claims.AddRange(authInfo.Roles.Select(r => new Claim(ClaimTypes.Role, r)));
+
+            var identity = new ClaimsIdentity(claims, nameof(CookieAuthenticationStateProvider));
+            return new ClaimsPrincipal(identity);
         }
     }
 }
