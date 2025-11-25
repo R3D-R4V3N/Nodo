@@ -1,4 +1,4 @@
-const DEV_CACHE = 'nodo-dev-cache-v2';
+const DEV_CACHE = 'nodo-dev-cache-v3';
 const toAbsoluteUrl = url => new URL(url, self.location.origin).toString();
 const PRECACHE_URLS = [
     './',
@@ -14,6 +14,8 @@ const PRECACHE_URLS = [
     'icon-512.png'
 ].map(toAbsoluteUrl);
 const offlineRoot = toAbsoluteUrl('./');
+const apiPattern = /\/api\//i;
+
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(DEV_CACHE)
@@ -34,15 +36,18 @@ self.addEventListener('activate', event => {
     );
 });
 
-const apiPattern = /\/api\//i;
-
 self.addEventListener('fetch', event => {
-    if (event.request.method !== 'GET' || apiPattern.test(event.request.url)) {
+    if (event.request.method !== 'GET') {
         return;
     }
 
     const requestUrl = new URL(event.request.url);
     if (requestUrl.origin !== self.location.origin) {
+        return;
+    }
+
+    if (apiPattern.test(requestUrl.pathname)) {
+        event.respondWith(handleApiRequest(event.request));
         return;
     }
 
@@ -71,3 +76,29 @@ self.addEventListener('fetch', event => {
         )
     );
 });
+
+async function handleApiRequest(request) {
+    const cache = await caches.open(DEV_CACHE);
+
+    try {
+        const networkResponse = await fetch(request);
+        if (networkResponse && networkResponse.ok) {
+            cache.put(request, networkResponse.clone());
+        }
+
+        return networkResponse;
+    }
+    catch (error) {
+        const cachedResponse = await cache.match(request);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+
+        return new Response(
+            JSON.stringify({ message: 'Offline: data is niet beschikbaar. Probeer opnieuw zodra je verbonden bent.' }),
+            {
+                status: 503,
+                headers: { 'Content-Type': 'application/json' }
+            });
+    }
+}

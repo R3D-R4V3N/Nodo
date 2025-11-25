@@ -11,14 +11,28 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
 
     public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChats>>("api/chats", cancellationToken);
-        return result ?? Result<ChatResponse.GetChats>.Error("Kon de chats niet laden.");
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChats>>("api/chats", cancellationToken);
+            return result ?? Result<ChatResponse.GetChats>.Error("Kon de chats niet laden.");
+        }
+        catch (HttpRequestException)
+        {
+            return Result<ChatResponse.GetChats>.Error("Offline: eerder geladen gesprekken worden getoond, maar nieuwe gegevens kunnen niet opgehaald worden.");
+        }
     }
 
     public async Task<Result<ChatResponse.GetChat>> GetByIdAsync(int chatId, CancellationToken cancellationToken = default)
     {
-        var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChat>>($"api/chats/{chatId}", cancellationToken);
-        return result ?? Result<ChatResponse.GetChat>.Error("Kon het gesprek niet laden.");
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChat>>($"api/chats/{chatId}", cancellationToken);
+            return result ?? Result<ChatResponse.GetChat>.Error("Kon het gesprek niet laden.");
+        }
+        catch (HttpRequestException)
+        {
+            return Result<ChatResponse.GetChat>.Error("Offline: het gesprek kan niet vernieuwd worden zonder verbinding.");
+        }
     }
 
     public async Task<Result<MessageDto.Chat>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
