@@ -61,12 +61,8 @@ export async function removeOperation(id) {
     return withStore('readwrite', (store) => store.delete(id));
 }
 
-export async function getQueueLength() {
-    return withStore('readonly', (store) => store.count());
-}
-
 export function registerOnlineCallback(dotNetRef) {
-    if (!dotNetRef) return null;
+    if (!dotNetRef) return;
 
     const handler = () => {
         dotNetRef.invokeMethodAsync('OnBrowserOnline');
@@ -74,34 +70,5 @@ export function registerOnlineCallback(dotNetRef) {
 
     window.addEventListener('online', handler);
 
-    return {
-        dispose: () => window.removeEventListener('online', handler)
-    };
-}
-
-export function registerProcessingInterval(dotNetRef, intervalMs) {
-    if (!dotNetRef || !intervalMs) return null;
-
-    const invokeWhenOnlineAndVisible = () => {
-        if (document.visibilityState !== 'visible') return;
-        if (!navigator.onLine) return;
-
-        dotNetRef.invokeMethodAsync('OnBrowserOnline');
-    };
-
-    const intervalId = setInterval(invokeWhenOnlineAndVisible, intervalMs);
-    const visibilityHandler = () => {
-        if (document.visibilityState === 'visible') {
-            invokeWhenOnlineAndVisible();
-        }
-    };
-
-    document.addEventListener('visibilitychange', visibilityHandler);
-
-    return {
-        dispose: () => {
-            clearInterval(intervalId);
-            document.removeEventListener('visibilitychange', visibilityHandler);
-        }
-    };
+    return () => window.removeEventListener('online', handler);
 }

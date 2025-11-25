@@ -190,7 +190,6 @@ public class ChatService(
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         var dto = message.ToChatDto()!;
-        dto.ClientMessageId = request.ClientMessageId;
 
         if (_messageDispatcher is not null)
         {

@@ -4,11 +4,10 @@ using System.Net.Http.Json;
 
 namespace Rise.Client.Users;
 
-public class UserService(HttpClient httpClient, OfflineQueueService offlineQueueService, CacheStoreService cacheStoreService) : IUserService
+public class UserService(HttpClient httpClient, OfflineQueueService offlineQueueService) : IUserService
 {
     private readonly HttpClient _http = httpClient;
     private readonly OfflineQueueService _offlineQueueService = offlineQueueService;
-    private readonly CacheStoreService _cacheStoreService = cacheStoreService;
     public async Task<Result<UserResponse.CurrentUser>> UpdateUserAsync(string accountId, UserRequest.UpdateCurrentUser request, CancellationToken ctx = default)
     {
         if (!await _offlineQueueService.IsOnlineAsync())
@@ -47,45 +46,10 @@ public class UserService(HttpClient httpClient, OfflineQueueService offlineQueue
     }
     public async Task<Result<UserResponse.CurrentUser>> GetUserAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var result = await _http.GetFromJsonAsync<Result<UserResponse.CurrentUser>>(
-                $"api/users/{accountId}", cancellationToken);
+        var result = await _http.GetFromJsonAsync<Result<UserResponse.CurrentUser>>(
+            $"api/users/{accountId}", cancellationToken);
 
-            if (result is null)
-            {
-                return await GetCachedUserAsync(accountId, cancellationToken);
-            }
-
-            if (result is { IsSuccess: true, Value: { } userResponse })
-            {
-                await _cacheStoreService.UpsertCurrentUserAsync(accountId, userResponse.User, cancellationToken);
-                await _cacheStoreService.UpsertContactsAsync([new UserDto.Chat
-                {
-                    AccountId = userResponse.User.AccountId,
-                    AvatarUrl = userResponse.User.AvatarUrl,
-                    Id = userResponse.User.Id,
-                    Name = userResponse.User.Name
-                }], cancellationToken);
-            }
-
-            // gebruik de correcte generieke Error-methode
-            return result ?? Result<UserResponse.CurrentUser>.Error("Kon de gebruikersinformatie niet laden.");
-        }
-        catch (HttpRequestException)
-        {
-            return await GetCachedUserAsync(accountId, cancellationToken);
-        }
-    }
-
-    private async Task<Result<UserResponse.CurrentUser>> GetCachedUserAsync(string accountId, CancellationToken cancellationToken)
-    {
-        var cachedUser = await _cacheStoreService.GetCurrentUserAsync(accountId, cancellationToken);
-        if (cachedUser is not null)
-        {
-            return Result.Success(new UserResponse.CurrentUser { User = cachedUser }).MarkCached();
-        }
-
-        return Result<UserResponse.CurrentUser>.Error("Kon de gebruikersinformatie niet laden.");
+        // gebruik de correcte generieke Error-methode
+        return result ?? Result<UserResponse.CurrentUser>.Error("Kon de gebruikersinformatie niet laden.");
     }
 }

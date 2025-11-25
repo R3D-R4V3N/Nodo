@@ -10,6 +10,4 @@ public record QueuedOperation
     public string? ContentType { get; init; }
     public Dictionary<string, string>? Headers { get; init; }
     public DateTimeOffset CreatedAt { get; init; }
-    public Guid? ClientMessageId { get; init; }
-    public int? ChatId { get; init; }
 }

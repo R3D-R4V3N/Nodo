@@ -8,7 +8,6 @@ public static partial class ChatRequest
         public string? Content { get; set; }
         public string? AudioDataUrl { get; set; }
         public double? AudioDurationSeconds { get; set; }
-        public Guid? ClientMessageId { get; set; }
 
         public class Validator : AbstractValidator<CreateMessage>
         {

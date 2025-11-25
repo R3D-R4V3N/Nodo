@@ -39,7 +39,6 @@ try
 
     // register the cookie handler
     builder.Services.AddTransient<CookieHandler>();
-    builder.Services.AddTransient<OfflineApiHandler>();
 
     // set up authorization
     builder.Services.AddAuthorizationCore();
@@ -58,34 +57,32 @@ try
 
     // configure client for auth interactions
     builder.Services.AddHttpClient("SecureApi",opt => opt.BaseAddress = backendUri)
-        .AddHttpMessageHandler<CookieHandler>()
-        .AddHttpMessageHandler<OfflineApiHandler>();
+        .AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<IChatService, ChatService>(client =>
     {
         client.BaseAddress = backendUri;
-    }).AddHttpMessageHandler<CookieHandler>()
-        .AddHttpMessageHandler<OfflineApiHandler>();
+    }).AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<IUserConnectionService, UserConnectionService>(client =>
     {
         client.BaseAddress = backendUri;
-    }).AddHttpMessageHandler<OfflineApiHandler>();
+    });
 
     builder.Services.AddHttpClient<IUserContextService, UserContextService>(client =>
     {
         client.BaseAddress = backendUri;
-    }).AddHttpMessageHandler<OfflineApiHandler>();
+    });
 
     builder.Services.AddHttpClient<IUserService, UserService>(client =>
     {
         client.BaseAddress = backendUri;
-    }).AddHttpMessageHandler<OfflineApiHandler>();
+    });
 
     builder.Services.AddHttpClient<UserContextService>(client =>
-    {    
+    {
         client.BaseAddress = backendUri;
-    }).AddHttpMessageHandler<OfflineApiHandler>();
+    });
     // Publieke API client (geen CookieHandler)
     builder.Services.AddHttpClient<IOrganizationService, OrganizationService>(client =>
     {
@@ -96,8 +93,7 @@ try
         {
             client.BaseAddress = backendUri;
         })
-        .AddHttpMessageHandler<CookieHandler>()
-        .AddHttpMessageHandler<OfflineApiHandler>();
+        .AddHttpMessageHandler<CookieHandler>();
 
     // current user
     builder.Services.AddSingleton<UserState>();
@@ -105,9 +101,7 @@ try
     builder.Services.AddSingleton<IHubClientFactory, HubClientFactory>();
     builder.Services.AddSingleton<IHubClient, HubClient>();
 
-    builder.Services.AddSingleton<CacheStoreService>();
     builder.Services.AddSingleton<OfflineQueueService>();
-    builder.Services.AddScoped<IndexedDbCacheService>();
 
     var host = builder.Build();
 
