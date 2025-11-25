@@ -5,7 +5,7 @@
 <form class="bg-white border-t border-neutral-200 px-3 py-2" @onsubmit="HandleSubmit">
     <div class="flex items-center gap-2">
         <label class="grid place-items-center h-12 w-12 rounded-xl bg-neutral-100 text-neutral-700 border border-neutral-200 cursor-pointer hover:bg-neutral-200">
-            <input type="file" class="hidden" @onchange="HandleFileChanged" />
+            <input type="file" class="hidden" @onchange="@EventCallback.Factory.Create<InputFileChangeEventArgs>(this, HandleFileChanged)" />
             <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12V7.5a3.75 3.75 0 1 1 7.5 0V12a6 6 0 1 1-12 0V8.25" /></svg>
             <span class="sr-only">Bijlage toevoegen</span>
         </label>

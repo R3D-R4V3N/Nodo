@@ -80,7 +80,7 @@ public class UserService(HttpClient httpClient, OfflineQueueService offlineQueue
 
     private async Task<Result<UserResponse.CurrentUser>> GetCachedUserAsync(string accountId, CancellationToken cancellationToken)
     {
-        var cachedUser = await _cacheStoreService.GetCurrentUserAsync(accountId, cancellationToken);
+        var cachedUser = await _cacheStoreService.GetCurrentUserAsync(accountId, cancellationToken: cancellationToken);
         if (cachedUser is not null)
         {
             return Result.Success(new UserResponse.CurrentUser { User = cachedUser }).MarkCached();
