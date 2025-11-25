@@ -13,6 +13,11 @@ const offlineResources = new Set(self.assetsManifest.assets
     .filter(asset => !asset.url.match(/^service-worker\./))
     .map(asset => toAbsoluteUrl(asset.url)));
 
+const frameworkResources = self.assetsManifest.assets
+    .filter(asset => asset.url.startsWith('_framework/'))
+    .map(asset => toAbsoluteUrl(asset.url));
+frameworkResources.forEach(resource => offlineResources.add(resource));
+
 const extraResources = [
     './',
     'index.html',
@@ -24,7 +29,11 @@ const extraResources = [
     'js/voiceRecorder.js',
     'favicon.png',
     'icon-192.png',
-    'icon-512.png'
+    'icon-512.png',
+    '_framework/blazor.webassembly.js',
+    '_framework/blazor.boot.json',
+    'api/identity/accounts/info',
+    'api/users/current'
 ];
 extraResources.map(toAbsoluteUrl).forEach(resource => offlineResources.add(resource));
 const offlineRoot = toAbsoluteUrl('index.html');

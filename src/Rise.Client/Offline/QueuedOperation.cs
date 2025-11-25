@@ -12,4 +12,7 @@ public record QueuedOperation
     public DateTimeOffset CreatedAt { get; init; }
     public Guid? ClientMessageId { get; init; }
     public int? ChatId { get; init; }
+    public string? AttachmentFileName { get; init; }
+    public string? AttachmentContentType { get; init; }
+    public string? AttachmentBlobKey { get; init; }
 }

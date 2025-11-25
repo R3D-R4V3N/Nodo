@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Net.Http.Headers;
 using Microsoft.JSInterop;
 using Rise.Shared.Chats;
 using Rise.Shared.Common;
@@ -52,7 +53,7 @@ public sealed class OfflineQueueService : IAsyncDisposable
 
     public async Task<int> QueueOperationAsync(string baseAddress, string path, HttpMethod method, object? payload,
         Dictionary<string, string>? headers = null, string? contentType = "application/json", Guid? clientMessageId = null,
-        int? chatId = null, CancellationToken cancellationToken = default)
+        int? chatId = null, AttachmentMetadata? attachment = null, CancellationToken cancellationToken = default)
     {
         await EnsureModuleAsync();
 
@@ -70,7 +71,10 @@ public sealed class OfflineQueueService : IAsyncDisposable
             Headers = headers is null ? null : new Dictionary<string, string>(headers),
             CreatedAt = DateTimeOffset.UtcNow,
             ClientMessageId = clientMessageId,
-            ChatId = chatId
+            ChatId = chatId,
+            AttachmentBlobKey = attachment?.BlobKey,
+            AttachmentFileName = attachment?.FileName,
+            AttachmentContentType = attachment?.ContentType
         };
 
         return await _module!.InvokeAsync<int>("enqueueOperation", cancellationToken, operation);
@@ -95,6 +99,24 @@ public sealed class OfflineQueueService : IAsyncDisposable
         await _module!.InvokeVoidAsync("removeOperation", cancellationToken, id);
     }
 
+    public async Task StoreBlobAsync(string key, byte[] data, CancellationToken cancellationToken = default)
+    {
+        await EnsureModuleAsync();
+        await _module!.InvokeVoidAsync("putBlob", cancellationToken, key, data);
+    }
+
+    public async Task<string?> CreateBlobUrlAsync(string key, string? contentType = null, CancellationToken cancellationToken = default)
+    {
+        await EnsureModuleAsync();
+        return await _module!.InvokeAsync<string?>("createBlobUrl", cancellationToken, key, contentType);
+    }
+
+    public async Task RemoveBlobAsync(string key, CancellationToken cancellationToken = default)
+    {
+        await EnsureModuleAsync();
+        await _module!.InvokeVoidAsync("deleteBlob", cancellationToken, key);
+    }
+
     [JSInvokable]
     public async Task OnBrowserOnline()
     {
@@ -115,7 +137,7 @@ public sealed class OfflineQueueService : IAsyncDisposable
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                using var request = BuildRequest(operation);
+                using var request = await BuildRequestAsync(operation, cancellationToken);
                 var client = _httpClientFactory.CreateClient("SecureApi");
                 using var response = await client.SendAsync(request, cancellationToken);
 
@@ -128,6 +150,17 @@ public sealed class OfflineQueueService : IAsyncDisposable
                 if (IsPermanentFailure(response))
                 {
                     await RemoveOperationAsync(operation.Id, cancellationToken);
+                    if (operation.AttachmentBlobKey is not null)
+                    {
+                        try
+                        {
+                            await RemoveBlobAsync(operation.AttachmentBlobKey, cancellationToken);
+                        }
+                        catch
+                        {
+                            // ignore cleanup errors
+                        }
+                    }
                     await NotifyPermanentFailureAsync(response, operation);
                 }
             }
@@ -163,6 +196,18 @@ public sealed class OfflineQueueService : IAsyncDisposable
         }
 
         await RemoveOperationAsync(operation.Id, cancellationToken);
+
+        if (operation.AttachmentBlobKey is not null)
+        {
+            try
+            {
+                await RemoveBlobAsync(operation.AttachmentBlobKey, cancellationToken);
+            }
+            catch
+            {
+                // best-effort cleanup
+            }
+        }
     }
 
     private static bool IsPermanentFailure(HttpResponseMessage response)
@@ -197,11 +242,6 @@ public sealed class OfflineQueueService : IAsyncDisposable
             : new Uri(baseUri, operation.Path);
         var request = new HttpRequestMessage(new HttpMethod(operation.Method), uri);
 
-        if (operation.Body is not null)
-        {
-            request.Content = new StringContent(operation.Body, Encoding.UTF8, operation.ContentType ?? "application/json");
-        }
-
         if (operation.Headers is not null)
         {
             foreach (var header in operation.Headers)
@@ -211,6 +251,44 @@ public sealed class OfflineQueueService : IAsyncDisposable
                     request.Content ??= new StringContent(string.Empty);
                     request.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
                 }
+            }
+        }
+
+        if (operation.AttachmentBlobKey is not null)
+        {
+            request.Content = new MultipartFormDataContent();
+
+            if (operation.Body is not null)
+            {
+                request.Content.Add(new StringContent(operation.Body, Encoding.UTF8, operation.ContentType ?? "application/json"),
+                    "payload");
+            }
+        }
+        else if (operation.Body is not null)
+        {
+            request.Content = new StringContent(operation.Body, Encoding.UTF8, operation.ContentType ?? "application/json");
+        }
+
+        return request;
+    }
+
+    private async Task<HttpRequestMessage> BuildRequestAsync(QueuedOperation operation, CancellationToken cancellationToken)
+    {
+        await EnsureModuleAsync();
+        var request = BuildRequest(operation);
+
+        if (operation.AttachmentBlobKey is not null)
+        {
+            var blobBytes = await _module!.InvokeAsync<byte[]?>("getBlob", cancellationToken, operation.AttachmentBlobKey);
+            if (blobBytes is not null && request.Content is MultipartFormDataContent multipart)
+            {
+                var attachment = new ByteArrayContent(blobBytes);
+                if (!string.IsNullOrWhiteSpace(operation.AttachmentContentType))
+                {
+                    attachment.Headers.ContentType = MediaTypeHeaderValue.Parse(operation.AttachmentContentType);
+                }
+
+                multipart.Add(attachment, "file", operation.AttachmentFileName ?? "attachment");
             }
         }
 

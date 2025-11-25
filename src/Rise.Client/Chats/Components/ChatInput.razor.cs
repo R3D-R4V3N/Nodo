@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 
 namespace Rise.Client.Chats.Components;
@@ -8,6 +9,7 @@ public partial class ChatInput
     [Parameter] public EventCallback<string?> ValueChanged { get; set; }
     [Parameter] public EventCallback<string> OnSend { get; set; }
     [Parameter] public EventCallback<RecordedAudio> OnSendVoice { get; set; }
+    [Parameter] public EventCallback<IBrowserFile> OnAttach { get; set; }
     [Parameter] public bool IsSending { get; set; }
 
     private IJSObjectReference? _module;
@@ -161,6 +163,16 @@ public partial class ChatInput
 
             return string.Join(' ', classes);
         }
+    }
+
+    private async Task HandleFileChanged(InputFileChangeEventArgs args)
+    {
+        if (args.File is null || !OnAttach.HasDelegate)
+        {
+            return;
+        }
+
+        await OnAttach.InvokeAsync(args.File);
     }
 
     public async ValueTask DisposeAsync()

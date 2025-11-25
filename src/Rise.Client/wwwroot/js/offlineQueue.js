@@ -1,6 +1,7 @@
 const DB_NAME = 'rise-offline-queue';
 const STORE_NAME = 'operations';
-const DB_VERSION = 1;
+const BLOB_STORE_NAME = 'blobs';
+const DB_VERSION = 2;
 
 function openDb() {
     return new Promise((resolve, reject) => {
@@ -10,6 +11,10 @@ function openDb() {
             const db = request.result;
             if (!db.objectStoreNames.contains(STORE_NAME)) {
                 db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+            }
+
+            if (!db.objectStoreNames.contains(BLOB_STORE_NAME)) {
+                db.createObjectStore(BLOB_STORE_NAME, { keyPath: 'key' });
             }
         };
 
@@ -63,6 +68,50 @@ export async function removeOperation(id) {
 
 export async function getQueueLength() {
     return withStore('readonly', (store) => store.count());
+}
+
+export async function putBlob(key, bytes) {
+    const db = await openDb();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(BLOB_STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(BLOB_STORE_NAME);
+        const request = store.put({ key, blob: bytes });
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+export async function getBlob(key) {
+    const db = await openDb();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(BLOB_STORE_NAME, 'readonly');
+        const store = transaction.objectStore(BLOB_STORE_NAME);
+        const request = store.get(key);
+
+        request.onsuccess = () => resolve(request.result?.blob ?? null);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+export async function deleteBlob(key) {
+    const db = await openDb();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(BLOB_STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(BLOB_STORE_NAME);
+        const request = store.delete(key);
+
+        request.onsuccess = () => resolve(true);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+export async function createBlobUrl(key, contentType) {
+    const blobBytes = await getBlob(key);
+    if (!blobBytes) return null;
+
+    const blob = new Blob([blobBytes], { type: contentType ?? 'application/octet-stream' });
+    return URL.createObjectURL(blob);
 }
 
 export function registerOnlineCallback(dotNetRef) {

@@ -1,6 +1,6 @@
 const DB_NAME = 'rise-cache';
-const DEFAULT_VERSION = 1;
-const BASE_STORES = ['chats', 'contacts'];
+const DEFAULT_VERSION = 2;
+const BASE_STORES = ['chats', 'contacts', 'contact-profiles', 'organizations', 'auth-sessions'];
 
 let dbPromise = null;
 

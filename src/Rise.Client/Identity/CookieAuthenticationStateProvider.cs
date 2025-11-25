@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
+using Rise.Client.Offline;
 using Rise.Shared.Identity.Accounts;
 
 namespace Rise.Client.Identity
@@ -13,22 +14,22 @@ namespace Rise.Client.Identity
     /// Create a new instance of the auth provider.
     /// </remarks>
     /// <param name="httpClientFactory">Factory to retrieve auth client.</param>
-    public class CookieAuthenticationStateProvider(IHttpClientFactory httpClientFactory): AuthenticationStateProvider, IAccountManager
+    public class CookieAuthenticationStateProvider(IHttpClientFactory httpClientFactory, CacheStoreService cacheStoreService, OfflineQueueService offlineQueueService): AuthenticationStateProvider, IAccountManager
     {
         /// <summary>
         /// Special auth client.
         /// </summary>
         private readonly HttpClient httpClient = httpClientFactory.CreateClient("SecureApi");
+        private readonly CacheStoreService _cacheStoreService = cacheStoreService;
+        private readonly OfflineQueueService _offlineQueueService = offlineQueueService;
         
         /// <summary>
         /// Authentication state.
         /// </summary>
         private bool authenticated = false;
 
-        /// <summary>
-        /// Default principal for anonymous (not authenticated) users.
-        /// </summary>
         private readonly ClaimsPrincipal unauthenticated = new(new ClaimsIdentity());
+        private static readonly TimeSpan SessionCacheTtl = TimeSpan.FromHours(12);
 
         /// <summary>
         /// Register a new user.
@@ -104,29 +105,24 @@ namespace Rise.Client.Identity
             // default to not authenticated
             var user = unauthenticated;
 
+            var cachedSession = await _cacheStoreService.GetAuthSessionAsync(SessionCacheTtl);
+            var isOnline = await _offlineQueueService.IsOnlineAsync();
+
             try
             {
                 var result = await httpClient.GetFromJsonAsync<Result<AccountResponse.Info>>("/api/identity/accounts/info");
-                
+
                 if (result!.IsSuccess)
                 {
-                    var claims = new List<Claim>
-                    {
-                        new(ClaimTypes.Name, result.Value.Email),
-                        new(ClaimTypes.Email, result.Value.Email)
-                    };
-                
-                    claims.AddRange(
-                        result.Value.Claims
-                            .Where(c => c.Key is not (ClaimTypes.Name or ClaimTypes.Email or ClaimTypes.Role))
-                            .Select(c => new Claim(c.Key, c.Value))
-                    );
-                
-                    claims.AddRange(result.Value.Roles.Select(r => new Claim(ClaimTypes.Role, r)));
-                
-                    var identity = new ClaimsIdentity(claims, nameof(CookieAuthenticationStateProvider));
-                    user = new ClaimsPrincipal(identity);
+                    user = BuildPrincipal(result.Value);
                     authenticated = true;
+
+                    await _cacheStoreService.UpsertAuthSessionAsync(new CachedSession
+                    {
+                        AccountInfo = result.Value,
+                        AccountId = cachedSession?.AccountId,
+                        User = cachedSession?.User
+                    });
                 }
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
@@ -137,11 +133,22 @@ namespace Rise.Client.Identity
             catch (HttpRequestException ex)
             {
                 Log.Error(ex, "Could not GetAuthenticationStateAsync.");
+                if (!isOnline && cachedSession?.AccountInfo is not null)
+                {
+                    user = BuildPrincipal(cachedSession.AccountInfo);
+                    authenticated = true;
+                }
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Could not GetAuthenticationStateAsync.");
-            }   
+            }
+
+            if (!authenticated && cachedSession?.AccountInfo is not null)
+            {
+                user = BuildPrincipal(cachedSession.AccountInfo);
+                authenticated = true;
+            }
 
             return new AuthenticationState(user);
         }
@@ -156,6 +163,26 @@ namespace Rise.Client.Identity
         {
             await GetAuthenticationStateAsync();
             return authenticated;
+        }
+
+        private static ClaimsPrincipal BuildPrincipal(AccountResponse.Info info)
+        {
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.Name, info.Email),
+                new(ClaimTypes.Email, info.Email)
+            };
+
+            claims.AddRange(
+                info.Claims
+                    .Where(c => c.Key is not (ClaimTypes.Name or ClaimTypes.Email or ClaimTypes.Role))
+                    .Select(c => new Claim(c.Key, c.Value))
+            );
+
+            claims.AddRange(info.Roles.Select(r => new Claim(ClaimTypes.Role, r)));
+
+            var identity = new ClaimsIdentity(claims, nameof(CookieAuthenticationStateProvider));
+            return new ClaimsPrincipal(identity);
         }
     }
 }

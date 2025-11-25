@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
 using Rise.Client.Chats.Components;
@@ -9,6 +10,7 @@ using Rise.Shared.Assets;
 using Rise.Shared.Chats;
 using Rise.Shared.Users;
 using System.Globalization;
+using System.IO;
 using System.Text.Json;
 
 namespace Rise.Client.Chats.Pages;
@@ -36,6 +38,7 @@ public partial class Chat : IAsyncDisposable
     private bool _footerMeasurementPending = true;
     private const double _footerPaddingBuffer = 24;
     private string? _queueError;
+    private const long _maxAttachmentSizeBytes = 10 * 1024 * 1024;
     private readonly JsonSerializerOptions _pendingSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -98,7 +101,7 @@ public partial class Chat : IAsyncDisposable
 
         foreach (var operation in pending)
         {
-            var pendingMessage = BuildPendingMessageFromOperation(operation);
+            var pendingMessage = await BuildPendingMessageFromOperationAsync(operation);
             if (pendingMessage is null)
             {
                 continue;
@@ -170,7 +173,68 @@ public partial class Chat : IAsyncDisposable
         await SendMessageAsync(request, "Het spraakbericht kon niet verzonden worden.", isOnline);
     }
 
-    private MessageDto.Chat? BuildPendingMessageFromOperation(QueuedOperation operation)
+    private async Task HandleAttachmentAsync(IBrowserFile file)
+    {
+        if (_chat is null)
+        {
+            return;
+        }
+
+        _errorMessage = null;
+
+        try
+        {
+            await using var readStream = file.OpenReadStream(_maxAttachmentSizeBytes);
+            using var memoryStream = new MemoryStream();
+            await readStream.CopyToAsync(memoryStream);
+            var bytes = memoryStream.ToArray();
+
+            var blobKey = $"attachment-{Guid.NewGuid()}";
+            await OfflineQueueService.StoreBlobAsync(blobKey, bytes);
+
+            var attachment = new AttachmentMetadata
+            {
+                BlobKey = blobKey,
+                ContentType = string.IsNullOrWhiteSpace(file.ContentType) ? "application/octet-stream" : file.ContentType,
+                FileName = file.Name
+            };
+
+            var request = new ChatRequest.CreateMessage
+            {
+                ChatId = _chat.ChatId,
+                Content = string.IsNullOrWhiteSpace(_draft) ? $"Bijlage: {file.Name}" : _draft,
+                Attachment = attachment,
+                ClientMessageId = Guid.NewGuid()
+            };
+
+            var queuedResult = await ChatService.QueueMessageAsync(request);
+            if (queuedResult.IsSuccess)
+            {
+                var localUrl = await OfflineQueueService.CreateBlobUrlAsync(blobKey, attachment.ContentType);
+                await AddPendingMessage(request, queuedResult.Value, localUrl);
+                _draft = string.Empty;
+
+                if (await OfflineQueueService.IsOnlineAsync())
+                {
+                    _ = OfflineQueueService.ProcessQueueAsync();
+                }
+
+                return;
+            }
+
+            _errorMessage = queuedResult.Errors.FirstOrDefault()
+                ?? queuedResult.ValidationErrors.FirstOrDefault()?.ErrorMessage
+                ?? "Het bijlagebericht kon niet worden opgeslagen.";
+        }
+        catch
+        {
+            _errorMessage ??= "Het bijlagebestand kon niet verwerkt worden.";
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task<MessageDto.Chat?> BuildPendingMessageFromOperationAsync(QueuedOperation operation)
     {
         if (_chat is null || UserState.User is null || string.IsNullOrWhiteSpace(operation.Body))
         {
@@ -186,6 +250,7 @@ public partial class Chat : IAsyncDisposable
             }
 
             var clientMessageId = operation.ClientMessageId ?? request.ClientMessageId ?? Guid.NewGuid();
+            var attachment = await BuildAttachmentFromOperationAsync(operation, request);
 
             return new MessageDto.Chat
             {
@@ -204,6 +269,7 @@ public partial class Chat : IAsyncDisposable
                 AudioDuration = request.AudioDurationSeconds.HasValue
                     ? TimeSpan.FromSeconds(request.AudioDurationSeconds.Value)
                     : null,
+                Attachment = attachment,
                 IsPending = true,
                 QueuedOperationId = operation.Id,
                 ClientMessageId = clientMessageId
@@ -228,7 +294,7 @@ public partial class Chat : IAsyncDisposable
                 var queuedResult = await ChatService.QueueMessageAsync(createRequest);
                 if (queuedResult.IsSuccess)
                 {
-                    AddPendingMessage(createRequest, queuedResult.Value);
+                    await AddPendingMessage(createRequest, queuedResult.Value);
                     return;
                 }
 
@@ -277,7 +343,26 @@ public partial class Chat : IAsyncDisposable
             && error.Contains("verbinding", StringComparison.OrdinalIgnoreCase));
     }
 
-    private void AddPendingMessage(ChatRequest.CreateMessage createRequest, int queuedOperationId)
+    private async Task<MessageAttachment?> BuildAttachmentFromOperationAsync(QueuedOperation operation, ChatRequest.CreateMessage request)
+    {
+        var blobKey = request.Attachment?.BlobKey ?? operation.AttachmentBlobKey;
+        if (string.IsNullOrWhiteSpace(blobKey))
+        {
+            return null;
+        }
+
+        var localUrl = await OfflineQueueService.CreateBlobUrlAsync(blobKey, request.Attachment?.ContentType ?? operation.AttachmentContentType);
+
+        return new MessageAttachment
+        {
+            BlobKey = blobKey,
+            ContentType = request.Attachment?.ContentType ?? operation.AttachmentContentType,
+            FileName = request.Attachment?.FileName ?? operation.AttachmentFileName,
+            Url = localUrl
+        };
+    }
+
+    private async Task AddPendingMessage(ChatRequest.CreateMessage createRequest, int queuedOperationId, string? attachmentUrl = null)
     {
         if (_chat is null || UserState.User is null)
         {
@@ -285,6 +370,25 @@ public partial class Chat : IAsyncDisposable
         }
 
         var clientMessageId = createRequest.ClientMessageId ?? Guid.NewGuid();
+
+        MessageAttachment? attachment = null;
+        if (createRequest.Attachment is not null)
+        {
+            var url = attachmentUrl;
+
+            if (string.IsNullOrWhiteSpace(url) && !string.IsNullOrWhiteSpace(createRequest.Attachment.BlobKey))
+            {
+                url = await OfflineQueueService.CreateBlobUrlAsync(createRequest.Attachment.BlobKey, createRequest.Attachment.ContentType);
+            }
+
+            attachment = new MessageAttachment
+            {
+                BlobKey = createRequest.Attachment.BlobKey,
+                ContentType = createRequest.Attachment.ContentType,
+                FileName = createRequest.Attachment.FileName,
+                Url = url
+            };
+        }
 
         var pendingMessage = new MessageDto.Chat
         {
@@ -303,6 +407,7 @@ public partial class Chat : IAsyncDisposable
             AudioDuration = createRequest.AudioDurationSeconds.HasValue
                 ? TimeSpan.FromSeconds(createRequest.AudioDurationSeconds.Value)
                 : null,
+            Attachment = attachment,
             IsPending = true,
             QueuedOperationId = queuedOperationId,
             ClientMessageId = clientMessageId

@@ -9,6 +9,7 @@ public static partial class ChatRequest
         public string? AudioDataUrl { get; set; }
         public double? AudioDurationSeconds { get; set; }
         public Guid? ClientMessageId { get; set; }
+        public AttachmentMetadata? Attachment { get; set; }
 
         public class Validator : AbstractValidator<CreateMessage>
         {
@@ -21,8 +22,9 @@ public static partial class ChatRequest
                 RuleFor(x => x)
                     .Must(request =>
                         !string.IsNullOrWhiteSpace(request.Content) ||
-                        !string.IsNullOrWhiteSpace(request.AudioDataUrl))
-                    .WithMessage("Een bericht moet tekst of audio bevatten.");
+                        !string.IsNullOrWhiteSpace(request.AudioDataUrl) ||
+                        request.Attachment is not null)
+                    .WithMessage("Een bericht moet tekst, audio of een bijlage bevatten.");
 
                 RuleFor(x => x.AudioDurationSeconds)
                     .GreaterThan(0)

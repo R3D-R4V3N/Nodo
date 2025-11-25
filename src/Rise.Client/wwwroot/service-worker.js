@@ -17,8 +17,11 @@ const PRECACHE_URLS = [
     'js/voiceRecorder.js',
     'favicon.png',
     'icon-192.png',
-    'icon-512.png'
+    'icon-512.png',
+    '_framework/blazor.webassembly.js',
+    '_framework/blazor.boot.json'
 ].map(toAbsoluteUrl);
+const AUTH_URLS = ['api/identity/accounts/info', 'api/users/current'].map(toAbsoluteUrl);
 const offlineRoot = toAbsoluteUrl('index.html');
 
 const offlineFallback = new Response(
@@ -35,7 +38,22 @@ const shortLivedSeconds = 60;
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(PRECACHE)
-            .then(cache => cache.addAll(PRECACHE_URLS))
+            .then(cache => cache.addAll([...PRECACHE_URLS, ...AUTH_URLS]))
+            .then(async cache => {
+                try {
+                    const bootResponse = await fetch('/_framework/blazor.boot.json', { cache: 'no-cache' });
+                    if (bootResponse.ok) {
+                        const manifest = await bootResponse.clone().json();
+                        const frameworkResources = Object.values(manifest.resources || {})
+                            .flatMap(resource => Object.values(resource))
+                            .filter(Boolean)
+                            .map(url => toAbsoluteUrl(`/_framework/${url}`));
+                        await cache.addAll(frameworkResources);
+                    }
+                } catch { /* ignore boot precache failures */ }
+
+                return cache;
+            })
             .then(() => self.skipWaiting())
     );
 });

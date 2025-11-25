@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Rise.Shared.Chats;
 
 namespace Rise.Client.Chats.Components;
 public partial class MessageBubble
@@ -11,12 +12,71 @@ public partial class MessageBubble
     [Parameter] public bool IsPending { get; set; }
     [Parameter] public int? QueuedOperationId { get; set; }
     [Parameter] public EventCallback OnCancelPending { get; set; }
+    [Parameter] public MessageAttachment? Attachment { get; set; }
 
     private RenderFragment RenderContent() => builder =>
     {
         var seq = 0;
         var isPendingOutgoing = IsOutgoing && IsPending;
-        if (!string.IsNullOrWhiteSpace(AudioUrl))
+        if (Attachment is not null)
+        {
+            var attachmentWrapper = IsOutgoing
+                ? isPendingOutgoing ? "flex flex-col gap-2" : "flex flex-col gap-2 text-white"
+                : "flex flex-col gap-2";
+            var linkClasses = IsOutgoing && !isPendingOutgoing ? "text-white underline" : "text-blue-700 underline";
+
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", attachmentWrapper);
+
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "flex items-center gap-2 text-sm");
+            builder.OpenElement(seq++, "svg");
+            builder.AddAttribute(seq++, "class", "h-5 w-5");
+            builder.AddAttribute(seq++, "xmlns", "http://www.w3.org/2000/svg");
+            builder.AddAttribute(seq++, "fill", "none");
+            builder.AddAttribute(seq++, "viewBox", "0 0 24 24");
+            builder.AddAttribute(seq++, "stroke-width", "1.5");
+            builder.AddAttribute(seq++, "stroke", "currentColor");
+            builder.AddMarkupContent(seq++, "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M9 12V7.5a3.75 3.75 0 1 1 7.5 0V12a6 6 0 1 1-12 0V8.25\" />");
+            builder.CloseElement();
+
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "flex flex-col");
+            builder.OpenElement(seq++, "span");
+            builder.AddAttribute(seq++, "class", "text-xs uppercase tracking-wide");
+            builder.AddContent(seq++, Attachment.ContentType);
+            builder.CloseElement();
+
+            if (!string.IsNullOrWhiteSpace(Attachment.Url))
+            {
+                builder.OpenElement(seq++, "a");
+                builder.AddAttribute(seq++, "class", linkClasses);
+                builder.AddAttribute(seq++, "href", Attachment.Url);
+                builder.AddAttribute(seq++, "target", "_blank");
+                builder.AddContent(seq++, Attachment.FileName ?? "bijlage");
+                builder.CloseElement();
+            }
+            else
+            {
+                builder.OpenElement(seq++, "span");
+                builder.AddAttribute(seq++, "class", "text-sm");
+                builder.AddContent(seq++, Attachment.FileName ?? "bijlage");
+                builder.CloseElement();
+            }
+
+            builder.CloseElement();
+
+            builder.CloseElement();
+
+            if (!string.IsNullOrWhiteSpace(Text))
+            {
+                builder.OpenElement(seq++, "p");
+                builder.AddAttribute(seq++, "class", "text-sm");
+                builder.AddContent(seq++, Text);
+                builder.CloseElement();
+            }
+        }
+        else if (!string.IsNullOrWhiteSpace(AudioUrl))
         {
             var audioWrapperClasses = IsOutgoing
                 ? isPendingOutgoing ? "flex flex-col gap-2" : "flex flex-col gap-2 text-white"

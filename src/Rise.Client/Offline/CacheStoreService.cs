@@ -12,6 +12,8 @@ public sealed class CacheStoreService : IAsyncDisposable
     private const string ContactsStore = "contacts";
     private const string CurrentUserStore = "contact-profiles";
     private const string OrganizationsStore = "organizations";
+    private const string AuthSessionStore = "auth-sessions";
+    private const string CurrentSessionId = "current-session";
 
     private readonly IJSRuntime _jsRuntime;
     private IJSObjectReference? _module;
@@ -94,7 +96,7 @@ public sealed class CacheStoreService : IAsyncDisposable
         await _module!.InvokeVoidAsync("upsertMany", cancellationToken, CurrentUserStore, new[] { payload });
     }
 
-    public async Task<UserDto.CurrentUser?> GetCurrentUserAsync(string? accountId, CancellationToken cancellationToken = default)
+    public async Task<UserDto.CurrentUser?> GetCurrentUserAsync(string? accountId, TimeSpan? maxAge = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(accountId))
         {
@@ -105,7 +107,19 @@ public sealed class CacheStoreService : IAsyncDisposable
         var cached = await _module!
             .InvokeAsync<CacheEnvelope<UserDto.CurrentUser>[]>("getAll", cancellationToken, CurrentUserStore);
 
-        return cached?.FirstOrDefault(contact => contact.Id == accountId)?.Value;
+        var entry = cached?.FirstOrDefault(contact => contact.Id == accountId);
+
+        if (entry is null)
+        {
+            return null;
+        }
+
+        if (maxAge is TimeSpan maxAgeValue && entry.UpdatedAt < DateTimeOffset.UtcNow.Subtract(maxAgeValue))
+        {
+            return null;
+        }
+
+        return entry.Value;
     }
 
     public async Task UpsertOrganizationsAsync(IEnumerable<OrganizationDto.Summary> organizations, CancellationToken cancellationToken = default)
@@ -124,6 +138,35 @@ public sealed class CacheStoreService : IAsyncDisposable
             .InvokeAsync<CacheEnvelope<OrganizationDto.Summary>[]>("getAll", cancellationToken, OrganizationsStore);
 
         return cached?.Select(entry => entry.Value).ToList() ?? [];
+    }
+
+    public async Task UpsertAuthSessionAsync(CachedSession session, CancellationToken cancellationToken = default)
+    {
+        await EnsureModuleAsync();
+        var payload = CreateEnvelope(CurrentSessionId, session);
+
+        await _module!.InvokeVoidAsync("upsertMany", cancellationToken, AuthSessionStore, new[] { payload });
+    }
+
+    public async Task<CachedSession?> GetAuthSessionAsync(TimeSpan? maxAge = null, CancellationToken cancellationToken = default)
+    {
+        await EnsureModuleAsync();
+        var cached = await _module!
+            .InvokeAsync<CacheEnvelope<CachedSession>[]>("getAll", cancellationToken, AuthSessionStore);
+
+        var session = cached?.FirstOrDefault(entry => entry.Id == CurrentSessionId);
+
+        if (session is null)
+        {
+            return null;
+        }
+
+        if (maxAge is TimeSpan maxAgeValue && session.UpdatedAt < DateTimeOffset.UtcNow.Subtract(maxAgeValue))
+        {
+            return null;
+        }
+
+        return session.Value;
     }
 
     private static string BuildMessagesStoreName(int chatId) => $"messages-{chatId}";

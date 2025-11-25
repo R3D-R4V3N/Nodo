@@ -116,6 +116,17 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
     {
         request.ClientMessageId ??= Guid.NewGuid();
 
+        AttachmentMetadata? attachment = null;
+        if (request.Attachment is not null)
+        {
+            attachment = new AttachmentMetadata
+            {
+                BlobKey = request.Attachment.BlobKey,
+                ContentType = request.Attachment.ContentType,
+                FileName = request.Attachment.FileName
+            };
+        }
+
         try
         {
             var queuedId = await _offlineQueueService.QueueOperationAsync(
@@ -125,6 +136,7 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
                 request,
                 clientMessageId: request.ClientMessageId,
                 chatId: request.ChatId,
+                attachment: attachment,
                 cancellationToken: cancellationToken);
 
             return Result.Success(queuedId);

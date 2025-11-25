@@ -13,6 +13,7 @@ public static class MessageDto
         public required UserDto.Message User { get; set; }
         public string? AudioDataUrl { get; set; }
         public TimeSpan? AudioDuration { get; set; }
+        public MessageAttachment? Attachment { get; set; }
         public bool IsPending { get; set; }
         public int? QueuedOperationId { get; set; }
         public Guid? ClientMessageId { get; set; }
