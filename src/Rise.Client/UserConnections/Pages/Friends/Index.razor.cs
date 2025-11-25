@@ -4,6 +4,7 @@ using System.Threading;
 using Ardalis.Result;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Rise.Client.Offline;
 using Rise.Client.State;
 using Rise.Shared.Common;
 using Rise.Shared.UserConnections;
@@ -27,6 +28,7 @@ public partial class Index : IAsyncDisposable
 
     [Inject] private NavigationManager Nav { get; set; } = default!;
     [Inject] public required IUserConnectionService ConnectionService { get; set; }
+    [Inject] public required OfflineQueueService OfflineQueueService { get; set; }
     [Inject] public required UserState UserState { get; set; }
 
     private string? Query
@@ -47,7 +49,11 @@ public partial class Index : IAsyncDisposable
     protected override async Task OnInitializedAsync()
     {
         await ApplyFilterAsync();
-        await EnsureHubConnectionAsync();
+
+        if (await OfflineQueueService.IsOnlineAsync())
+        {
+            await EnsureHubConnectionAsync();
+        }
     }
 
     private async Task ChangeTab(UserConnectionTypeDto tab)
@@ -174,6 +180,11 @@ public partial class Index : IAsyncDisposable
             _dataLock.Release();
         }
 
+        if (await OfflineQueueService.IsOnlineAsync())
+        {
+            await EnsureHubConnectionAsync();
+        }
+
         await InvokeAsync(StateHasChanged);
     }
 
@@ -200,6 +211,12 @@ public partial class Index : IAsyncDisposable
             return;
         }
 
+        if (!await OfflineQueueService.IsOnlineAsync())
+        {
+            _connectionError = null;
+            return;
+        }
+
         await _hubConnectionLock.WaitAsync();
         try
         {
@@ -213,10 +230,16 @@ public partial class Index : IAsyncDisposable
                 _hubConnection.On<string>("FriendConnectionsChanged", accountId =>
                     InvokeAsync(() => HandleFriendConnectionsChangedAsync(accountId)));
 
-                _hubConnection.Reconnecting += _ =>
+                _hubConnection.Reconnecting += async _ =>
                 {
+                    if (!await OfflineQueueService.IsOnlineAsync())
+                    {
+                        _connectionError = null;
+                        return;
+                    }
+
                     _connectionError = "Realtime verbinding wordt hersteld…";
-                    return InvokeAsync(StateHasChanged);
+                    await InvokeAsync(StateHasChanged);
                 };
 
                 _hubConnection.Reconnected += _ =>
@@ -226,11 +249,19 @@ public partial class Index : IAsyncDisposable
                     return InvokeAsync(JoinRealtimeGroupAfterReconnectAsync);
                 };
 
-                _hubConnection.Closed += _ =>
+                _hubConnection.Closed += async _ =>
                 {
                     _joinedRealtimeGroup = false;
-                    _connectionError = "Realtime verbinding werd verbroken. Vernieuw de pagina om opnieuw te verbinden.";
-                    return InvokeAsync(StateHasChanged);
+
+                    if (await OfflineQueueService.IsOnlineAsync())
+                    {
+                        _connectionError = "Realtime verbinding werd verbroken. Vernieuw de pagina om opnieuw te verbinden.";
+                        await InvokeAsync(StateHasChanged);
+                    }
+                    else
+                    {
+                        _connectionError = null;
+                    }
                 };
             }
 
@@ -246,8 +277,11 @@ public partial class Index : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _connectionError = $"Realtime verbinding mislukt: {ex.Message}";
-            await InvokeAsync(StateHasChanged);
+            if (await OfflineQueueService.IsOnlineAsync())
+            {
+                _connectionError = $"Realtime verbinding mislukt: {ex.Message}";
+                await InvokeAsync(StateHasChanged);
+            }
         }
         finally
         {
