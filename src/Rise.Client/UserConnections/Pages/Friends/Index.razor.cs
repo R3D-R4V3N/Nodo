@@ -184,9 +184,10 @@ public partial class Index : IAsyncDisposable
             return null;
         }
 
-        if (result.Errors?.Count > 0)
+        var firstError = result.Errors?.FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(firstError))
         {
-            return result.Errors[0];
+            return firstError;
         }
 
         return fallback;
