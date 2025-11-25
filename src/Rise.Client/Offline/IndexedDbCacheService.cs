@@ -47,6 +47,7 @@ public sealed class IndexedDbCacheService : IAsyncDisposable
             new CachedResponse
             {
                 Url = request.RequestUri.ToString(),
+                Method = request.Method.Method,
                 Status = (int)response.StatusCode,
                 Body = content,
                 Headers = headers,
@@ -63,7 +64,11 @@ public sealed class IndexedDbCacheService : IAsyncDisposable
 
         await EnsureModuleAsync();
 
-        var cached = await _module!.InvokeAsync<CachedResponse?>("getCachedResponse", cancellationToken, request.RequestUri.ToString());
+        var cached = await _module!.InvokeAsync<CachedResponse?>(
+            "getCachedResponse",
+            cancellationToken,
+            request.RequestUri.ToString(),
+            request.Method.Method);
 
         if (cached is null)
         {
@@ -116,6 +121,7 @@ public sealed class IndexedDbCacheService : IAsyncDisposable
     private sealed class CachedResponse
     {
         public string? Url { get; set; }
+        public string? Method { get; set; }
         public int Status { get; set; }
         public string? Body { get; set; }
         public string? ContentType { get; set; }
