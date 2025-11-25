@@ -58,7 +58,11 @@ public partial class Chat : IAsyncDisposable
         _isLoading = false;
         _shouldScrollToBottom = true;
 
-        await EnsureHubConnectionAsync();
+        var isOnline = await OfflineQueueService.IsOnlineAsync();
+        if (isOnline)
+        {
+            await EnsureHubConnectionAsync();
+        }
     }
 
     private Task ApplySuggestion(string text)

@@ -19,6 +19,7 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
     };
 
     private const string ChatsCacheKey = "offline-cache:chats";
+    private const string ChatDetailCacheKeyPrefix = "offline-cache:chat:";
 
     public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -49,10 +50,21 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
         try
         {
             var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChat>>($"api/chats/{chatId}", cancellationToken);
+            if (result is not null && result.IsSuccess && result.Value is not null)
+            {
+                await CacheChatAsync(result.Value, cancellationToken);
+            }
+
             return result ?? Result<ChatResponse.GetChat>.Error("Kon het gesprek niet laden.");
         }
         catch (HttpRequestException)
         {
+            var cachedDetail = await TryGetCachedChatAsync(chatId, cancellationToken);
+            if (cachedDetail is not null)
+            {
+                return Result<ChatResponse.GetChat>.Success(cachedDetail, "Offline: gesprek geladen vanuit cache.");
+            }
+
             var cached = await TryGetCachedChatsAsync(cancellationToken);
             var chat = cached?.Chats.FirstOrDefault(c => c.ChatId == chatId);
 
@@ -133,6 +145,19 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
         }
     }
 
+    private async Task CacheChatAsync(ChatResponse.GetChat chat, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var payload = JsonSerializer.Serialize(chat, _serializerOptions);
+            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", cancellationToken, GetChatCacheKey(chat.Chat.ChatId), payload);
+        }
+        catch
+        {
+            // Failing to cache should not break the UX.
+        }
+    }
+
     private async Task<ChatResponse.GetChats?> TryGetCachedChatsAsync(CancellationToken cancellationToken)
     {
         try
@@ -150,4 +175,24 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
             return null;
         }
     }
+
+    private async Task<ChatResponse.GetChat?> TryGetCachedChatAsync(int chatId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var cached = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", cancellationToken, GetChatCacheKey(chatId));
+            if (string.IsNullOrWhiteSpace(cached))
+            {
+                return null;
+            }
+
+            return JsonSerializer.Deserialize<ChatResponse.GetChat>(cached, _serializerOptions);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string GetChatCacheKey(int chatId) => $"{ChatDetailCacheKeyPrefix}{chatId}";
 }
