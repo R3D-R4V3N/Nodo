@@ -102,6 +102,7 @@ try
     builder.Services.AddSingleton<IHubClient, HubClient>();
 
     builder.Services.AddSingleton<OfflineQueueService>();
+    builder.Services.AddSingleton<OfflineCacheService>();
 
     var host = builder.Build();
 

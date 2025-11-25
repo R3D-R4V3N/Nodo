@@ -7,6 +7,7 @@ const PRECACHE_URLS = [
     'css/app.css',
     'css/style.css',
     'Rise.Client.styles.css',
+    'js/offlineData.js',
     'js/offlineNotifier.js',
     'js/voiceRecorder.js',
     'favicon.png',
