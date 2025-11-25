@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Microsoft.JSInterop;
+using System.Linq;
 
 namespace Rise.Client.Offline;
 
@@ -15,6 +16,8 @@ public sealed class OfflineQueueService : IAsyncDisposable
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
     };
+
+    public event Func<Task>? WentOnline;
 
     public OfflineQueueService(IJSRuntime jsRuntime, IHttpClientFactory httpClientFactory)
     {
@@ -77,7 +80,18 @@ public sealed class OfflineQueueService : IAsyncDisposable
     [JSInvokable]
     public async Task OnBrowserOnline()
     {
-        await ProcessQueueAsync();
+        await HandleOnlineAsync();
+    }
+
+    public async Task HandleOnlineAsync(CancellationToken cancellationToken = default)
+    {
+        if (!await IsOnlineAsync())
+        {
+            return;
+        }
+
+        await InvokeWentOnlineHandlersAsync(cancellationToken);
+        await ProcessQueueAsync(cancellationToken);
     }
 
     public async Task ProcessQueueAsync(CancellationToken cancellationToken = default)
@@ -138,6 +152,28 @@ public sealed class OfflineQueueService : IAsyncDisposable
         }
 
         return request;
+    }
+
+    private async Task InvokeWentOnlineHandlersAsync(CancellationToken cancellationToken)
+    {
+        var handlers = WentOnline;
+        if (handlers is null)
+        {
+            return;
+        }
+
+        foreach (var handler in handlers.GetInvocationList().OfType<Func<Task>>())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                await handler();
+            }
+            catch
+            {
+                // Ignore handler failures to avoid blocking other subscribers or queue processing.
+            }
+        }
     }
 
     private async Task EnsureModuleAsync()
