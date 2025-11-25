@@ -9,6 +9,7 @@ using Rise.Shared.Assets;
 using Rise.Shared.Chats;
 using Rise.Shared.Users;
 using System.Globalization;
+using System.Text.Json;
 
 namespace Rise.Client.Chats.Pages;
 public partial class Chat : IAsyncDisposable
@@ -34,6 +35,18 @@ public partial class Chat : IAsyncDisposable
     private double _footerHeight = 200;
     private bool _footerMeasurementPending = true;
     private const double _footerPaddingBuffer = 24;
+    private string? _queueError;
+    private readonly JsonSerializerOptions _pendingSerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
+    protected override void OnInitialized()
+    {
+        OfflineQueueService.MessageFlushed += HandleQueuedMessageDeliveredAsync;
+        OfflineQueueService.PermanentFailure += HandlePermanentQueueFailureAsync;
+        base.OnInitialized();
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -47,6 +60,7 @@ public partial class Chat : IAsyncDisposable
         if (result.IsSuccess && result.Value is not null)
         {
             _chat = result.Value.Chat;
+            await LoadPendingMessagesAsync();
         }
         else
         {
@@ -68,6 +82,47 @@ public partial class Chat : IAsyncDisposable
         return Task.CompletedTask;
     }
 
+    private async Task LoadPendingMessagesAsync()
+    {
+        if (_chat is null || UserState.User is null)
+        {
+            return;
+        }
+
+        var operations = await OfflineQueueService.GetOperationsAsync();
+        var pending = operations
+            .Where(op => op.ChatId == _chat.ChatId)
+            .ToList();
+
+        var added = false;
+
+        foreach (var operation in pending)
+        {
+            var pendingMessage = BuildPendingMessageFromOperation(operation);
+            if (pendingMessage is null)
+            {
+                continue;
+            }
+
+            if (_chat.Messages.Any(m =>
+                    m.ClientMessageId.HasValue
+                    && pendingMessage.ClientMessageId.HasValue
+                    && m.ClientMessageId == pendingMessage.ClientMessageId))
+            {
+                continue;
+            }
+
+            _chat.Messages.Add(pendingMessage);
+            added = true;
+        }
+
+        if (added)
+        {
+            ScheduleFooterMeasurement();
+            _shouldScrollToBottom = true;
+        }
+    }
+
     private async Task HandleTextMessageAsync(string text)
     {
         if (_chat is null || string.IsNullOrWhiteSpace(text))
@@ -84,7 +139,8 @@ public partial class Chat : IAsyncDisposable
         var request = new ChatRequest.CreateMessage
         {
             ChatId = _chat.ChatId,
-            Content = text
+            Content = text,
+            ClientMessageId = Guid.NewGuid()
         };
 
         await SendMessageAsync(request, "Het bericht kon niet verzonden worden.", isOnline);
@@ -107,10 +163,56 @@ public partial class Chat : IAsyncDisposable
         {
             ChatId = _chat.ChatId,
             AudioDataUrl = audio.DataUrl,
-            AudioDurationSeconds = audio.DurationSeconds
+            AudioDurationSeconds = audio.DurationSeconds,
+            ClientMessageId = Guid.NewGuid()
         };
 
         await SendMessageAsync(request, "Het spraakbericht kon niet verzonden worden.", isOnline);
+    }
+
+    private MessageDto.Chat? BuildPendingMessageFromOperation(QueuedOperation operation)
+    {
+        if (_chat is null || UserState.User is null || string.IsNullOrWhiteSpace(operation.Body))
+        {
+            return null;
+        }
+
+        try
+        {
+            var request = JsonSerializer.Deserialize<ChatRequest.CreateMessage>(operation.Body, _pendingSerializerOptions);
+            if (request is null)
+            {
+                return null;
+            }
+
+            var clientMessageId = operation.ClientMessageId ?? request.ClientMessageId ?? Guid.NewGuid();
+
+            return new MessageDto.Chat
+            {
+                Id = -1 * (operation.Id + 1),
+                ChatId = request.ChatId,
+                Content = request.Content ?? string.Empty,
+                Timestamp = operation.CreatedAt.UtcDateTime,
+                User = new UserDto.Message
+                {
+                    Id = UserState.User.Id,
+                    Name = $"{UserState.User.FirstName} {UserState.User.LastName}",
+                    AccountId = UserState.User.AccountId,
+                    AvatarUrl = UserState.User.AvatarUrl
+                },
+                AudioDataUrl = request.AudioDataUrl,
+                AudioDuration = request.AudioDurationSeconds.HasValue
+                    ? TimeSpan.FromSeconds(request.AudioDurationSeconds.Value)
+                    : null,
+                IsPending = true,
+                QueuedOperationId = operation.Id,
+                ClientMessageId = clientMessageId
+            };
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private async Task SendMessageAsync(ChatRequest.CreateMessage createRequest, string errorMessage, bool isOnline)
@@ -119,6 +221,7 @@ public partial class Chat : IAsyncDisposable
         {
             _isSending = isOnline;
             _errorMessage = null;
+            _queueError = null;
 
             if (!isOnline)
             {
@@ -181,6 +284,8 @@ public partial class Chat : IAsyncDisposable
             return;
         }
 
+        var clientMessageId = createRequest.ClientMessageId ?? Guid.NewGuid();
+
         var pendingMessage = new MessageDto.Chat
         {
             Id = -1 * (_chat.Messages.Count + 1),
@@ -199,7 +304,8 @@ public partial class Chat : IAsyncDisposable
                 ? TimeSpan.FromSeconds(createRequest.AudioDurationSeconds.Value)
                 : null,
             IsPending = true,
-            QueuedOperationId = queuedOperationId
+            QueuedOperationId = queuedOperationId,
+            ClientMessageId = clientMessageId
         };
 
         _chat.Messages.Add(pendingMessage);
@@ -314,7 +420,7 @@ public partial class Chat : IAsyncDisposable
             message.IsPending
             && message.ChatId == dto.ChatId
             && message.User.Id == dto.User.Id
-            && (MatchesQueuedOperation(dto, message) || PendingContentMatches(dto, message)));
+            && (MatchesClientMessage(dto, message) || MatchesQueuedOperation(dto, message) || PendingContentMatches(dto, message)));
 
         if (pendingMessage is not null)
         {
@@ -322,9 +428,47 @@ public partial class Chat : IAsyncDisposable
         }
     }
 
+    private Task HandleQueuedMessageDeliveredAsync(MessageDto.Chat message)
+    {
+        if (_chat is null || message.ChatId != _chat.ChatId)
+        {
+            return Task.CompletedTask;
+        }
+
+        var pendingMessage = _chat.Messages.FirstOrDefault(m => m.IsPending && (MatchesClientMessage(message, m) || MatchesQueuedOperation(message, m)));
+        if (pendingMessage is not null)
+        {
+            _chat.Messages.Remove(pendingMessage);
+        }
+
+        if (_chat.Messages.All(m => m.Id != message.Id))
+        {
+            _chat.Messages.Add(message);
+        }
+
+        ScheduleFooterMeasurement();
+        _shouldScrollToBottom = true;
+        _queueError = null;
+
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private Task HandlePermanentQueueFailureAsync(string message)
+    {
+        _queueError = message;
+        return InvokeAsync(StateHasChanged);
+    }
+
     private static bool MatchesQueuedOperation(MessageDto.Chat incoming, MessageDto.Chat pending)
     {
         return pending.QueuedOperationId.HasValue && incoming.QueuedOperationId == pending.QueuedOperationId;
+    }
+
+    private static bool MatchesClientMessage(MessageDto.Chat incoming, MessageDto.Chat pending)
+    {
+        return pending.ClientMessageId.HasValue
+            && incoming.ClientMessageId.HasValue
+            && incoming.ClientMessageId == pending.ClientMessageId;
     }
 
     private static bool PendingContentMatches(MessageDto.Chat incoming, MessageDto.Chat pending)
@@ -515,6 +659,9 @@ public partial class Chat : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        OfflineQueueService.MessageFlushed -= HandleQueuedMessageDeliveredAsync;
+        OfflineQueueService.PermanentFailure -= HandlePermanentQueueFailureAsync;
+
         await LeaveCurrentChatAsync();
         if (_hubConnection is not null)
         {

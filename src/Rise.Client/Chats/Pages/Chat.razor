@@ -61,6 +61,13 @@
             </div>
         }
 
+        @if (!string.IsNullOrWhiteSpace(_queueError))
+        {
+            <div class="px-6 py-2 text-xs text-red-700 bg-red-50 border-b border-red-200">
+                @_queueError
+            </div>
+        }
+
         <!-- Scrollable messages -->
         <div class="flex-1 overflow-y-auto px-3 no-scrollbar" style="@GetMessageHostPaddingStyle()" @ref="_messagesHost">
             <MessageList Messages="_chat?.Messages"
@@ -73,6 +80,7 @@
             <div class="mx-auto px-3">
                 <SuggestionChips Suggestions="UserState.User!.DefaultChatLines" OnPick="ApplySuggestion" />
                 <ChatInput @bind-Value="_draft"
+                           IsSending="_isSending"
                            OnSend="HandleTextMessageAsync"
                            OnSendVoice="HandleVoiceMessageAsync" />
                 @if (!string.IsNullOrWhiteSpace(_errorMessage))
