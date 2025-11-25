@@ -42,6 +42,11 @@
         }
       </div>
 
+      @if (!string.IsNullOrWhiteSpace(_statusMessage))
+      {
+        <p class="text-sm text-amber-600 px-1 mb-2">@_statusMessage</p>
+      }
+
       @if (_isLoading)
       {
         <p class="text-sm text-neutral-500 px-1">Chats laden…</p>

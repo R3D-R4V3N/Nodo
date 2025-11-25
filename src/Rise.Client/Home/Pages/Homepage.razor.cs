@@ -21,6 +21,7 @@ public partial class Homepage : IDisposable
 
     private bool _isLoading = true;
     private string? _loadError;
+    private string? _statusMessage;
     private string? _searchTerm;
 
     [Inject]
@@ -75,7 +76,7 @@ public partial class Homepage : IDisposable
         }
         catch (HttpRequestException)
         {
-            _loadError ??= "Offline: live status updates zijn niet beschikbaar.";
+            _statusMessage ??= "Offline: live status updates zijn niet beschikbaar.";
         }
     }
 
