@@ -1,24 +1,46 @@
 using System.Net.Http.Json;
+using System.Text.Json;
+using Ardalis.Result;
+using Microsoft.JSInterop;
 using Rise.Client.Offline;
 using Rise.Shared.Chats;
 
 namespace Rise.Client.Chats;
 
-public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueueService) : IChatService
+public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueueService, IJSRuntime jsRuntime) : IChatService
 {
     private readonly HttpClient _httpClient = httpClient;
     private readonly OfflineQueueService _offlineQueueService = offlineQueueService;
+    private readonly IJSRuntime _jsRuntime = jsRuntime;
+    private readonly JsonSerializerOptions _serializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
+
+    private const string ChatsCacheKey = "offline-cache:chats";
 
     public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChats>>("api/chats", cancellationToken);
+            if (result is not null && result.IsSuccess && result.Value is not null)
+            {
+                await CacheChatsAsync(result.Value, cancellationToken);
+            }
+
             return result ?? Result<ChatResponse.GetChats>.Error("Kon de chats niet laden.");
         }
         catch (HttpRequestException)
         {
-            return Result<ChatResponse.GetChats>.Error("Offline: eerder geladen gesprekken worden getoond, maar nieuwe gegevens kunnen niet opgehaald worden.");
+            var cached = await TryGetCachedChatsAsync(cancellationToken);
+            if (cached is not null)
+            {
+                return Result<ChatResponse.GetChats>.Success(cached, "Offline: eerder geladen gesprekken worden getoond.");
+            }
+
+            return Result<ChatResponse.GetChats>.Error("Offline: gesprekken zijn niet beschikbaar zonder eerder geladen data.");
         }
     }
 
@@ -31,6 +53,22 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
         }
         catch (HttpRequestException)
         {
+            var cached = await TryGetCachedChatsAsync(cancellationToken);
+            var chat = cached?.Chats.FirstOrDefault(c => c.ChatId == chatId);
+
+            if (chat is not null)
+            {
+                return Result<ChatResponse.GetChat>.Success(new ChatResponse.GetChat
+                {
+                    Chat = new ChatDto.GetChat
+                    {
+                        ChatId = chat.ChatId,
+                        Users = chat.Users,
+                        Messages = []
+                    }
+                }, "Offline: beperkte gegevens worden uit cache getoond.");
+            }
+
             return Result<ChatResponse.GetChat>.Error("Offline: het gesprek kan niet vernieuwd worden zonder verbinding.");
         }
     }
@@ -80,5 +118,36 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
     {
         var queueResult = await QueueMessageAsync(request, cancellationToken);
         return queueResult.IsSuccess;
+    }
+
+    private async Task CacheChatsAsync(ChatResponse.GetChats chats, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var payload = JsonSerializer.Serialize(chats, _serializerOptions);
+            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", cancellationToken, ChatsCacheKey, payload);
+        }
+        catch
+        {
+            // Failing to cache should not break the UX.
+        }
+    }
+
+    private async Task<ChatResponse.GetChats?> TryGetCachedChatsAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var cached = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", cancellationToken, ChatsCacheKey);
+            if (string.IsNullOrWhiteSpace(cached))
+            {
+                return null;
+            }
+
+            return JsonSerializer.Deserialize<ChatResponse.GetChats>(cached, _serializerOptions);
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

@@ -1,4 +1,4 @@
-const DEV_CACHE = 'nodo-dev-cache-v3';
+const DEV_CACHE = 'nodo-dev-cache-v4';
 const toAbsoluteUrl = url => new URL(url, self.location.origin).toString();
 const PRECACHE_URLS = [
     './',
@@ -79,17 +79,20 @@ self.addEventListener('fetch', event => {
 
 async function handleApiRequest(request) {
     const cache = await caches.open(DEV_CACHE);
+    const normalizedRequest = new Request(request.url);
 
     try {
         const networkResponse = await fetch(request);
         if (networkResponse && networkResponse.ok) {
             cache.put(request, networkResponse.clone());
+            cache.put(normalizedRequest, networkResponse.clone());
         }
 
         return networkResponse;
     }
     catch (error) {
-        const cachedResponse = await cache.match(request);
+        const cachedResponse = await cache.match(request, { ignoreVary: true })
+            || await cache.match(normalizedRequest);
         if (cachedResponse) {
             return cachedResponse;
         }

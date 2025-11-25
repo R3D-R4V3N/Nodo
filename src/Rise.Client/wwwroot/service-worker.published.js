@@ -93,17 +93,20 @@ self.addEventListener('fetch', event => {
 
 async function handleApiRequest(request) {
     const cache = await caches.open(cacheName);
+    const normalizedRequest = new Request(request.url);
 
     try {
         const networkResponse = await fetch(request);
         if (networkResponse && networkResponse.ok) {
             cache.put(request, networkResponse.clone());
+            cache.put(normalizedRequest, networkResponse.clone());
         }
 
         return networkResponse;
     }
     catch (error) {
-        const cachedResponse = await cache.match(request);
+        const cachedResponse = await cache.match(request, { ignoreVary: true })
+            || await cache.match(normalizedRequest);
         if (cachedResponse) {
             return cachedResponse;
         }
