@@ -1,20 +1,17 @@
-@page "/DashboardHomepage"
-@attribute [Authorize]
+@page "/dashboard"
+@attribute [Authorize(Roles = $"{AppRoles.Supervisor},{AppRoles.Administrator}")]
 @using Rise.Client.Chats
 @using Rise.Shared.Assets
 @using Rise.Shared.Chats
 @using Microsoft.AspNetCore.SignalR.Client
 @using Rise.Client.Dashboard.Components
 @using Rise.Client.State
+@using Rise.Shared.Identity
 
 
 @layout EmptyLayout
 @inject IChatService ChatService
 @inject NavigationManager NavigationManager
-
-
-
-
 
 
 <div class="bg-white">

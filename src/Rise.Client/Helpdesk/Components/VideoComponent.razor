@@ -1,0 +1,55 @@
+<button class="rounded-2xl bg-white w-11/12 md:w-6/10 md:mt-8 md:mb-8 m-4 p-0 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg">
+    <div class="flex flex-col items-center space-y-0">
+        <div class="flex justify-center w-full"> 
+            <iframe 
+                class="rounded-t-xl w-full aspect-video"
+                src=@ToEmbedUrl(Url)
+                title="@Titel"
+                frameborder="0"
+                allowfullscreen
+            >
+            </iframe>
+                
+        </div>
+        <h2 class="text-gray-800 font-bold text-lg text-center md:text-2xl p-4 ">@Titel</h2>
+    </div>
+</button>
+
+@code {
+    [Parameter] public string Titel { get; set; } = string.Empty;
+    [Parameter] public string Url { get; set; } = string.Empty;
+
+    private string ToEmbedUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return "";
+
+        Uri uri = new Uri(url);
+
+        return uri.Host switch
+        {
+            string host when host.Contains("youtube.com") =>
+                GetYoutubeLongFormEmbed(uri),
+
+            string host when host.Contains("youtu.be") =>
+                GetYoutubeShortFormEmbed(uri),
+            _ => url 
+        };
+    }
+
+    private string GetYoutubeLongFormEmbed(Uri uri)
+    {
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var v = query.Get("v");
+
+        return string.IsNullOrEmpty(v)
+            ? uri.ToString()
+            : $"https://www.youtube.com/embed/{v}?rel=0&playsinline=1&modestbranding=1";
+    }
+
+    private string GetYoutubeShortFormEmbed(Uri uri)
+    {
+        var videoId = uri.AbsolutePath.Trim('/');
+        return $"https://www.youtube.com/embed/{videoId}?rel=0&playsinline=1&modestbranding=1";
+    }
+}

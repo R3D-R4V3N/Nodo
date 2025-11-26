@@ -1,23 +1,67 @@
 @using Rise.Client.Profile.Models
 
 
-<div class="absolute top-[67%] left-1/2 z-[60] w-full max-w-[400px] -translate-x-1/2 -translate-y-1/2">
-    <div class="grid grid-cols-3 items-center justify-center gap-6 p-9">
-        @foreach (var hobby in Hobbies.Take(3))
-        {
-            <button type="button" class="group focus:outline-none">
-                <div class="flex h-24 flex-col items-center justify-center rounded-2xl bg-neutral-50 transition group-active:scale-[0.98]">
-                    <div class="text-3xl leading-none">@hobby.Emoji</div>
-                    <span class="mt-1 text-sm font-medium text-neutral-800">@hobby.Name</span>
+    <div class="relative overflow-hidden w-full"
+         @onclick="NextSlide">  <!-- klik hier brengt naar volgende slide -->
+
+        <div class="flex transition-transform duration-500 ease-in-out"
+             style="@($"transform: translateX(-{currentIndex * 100}%);")">
+
+            <!-- Slide 1 -->
+            <div class="min-w-full flex justify-center ">
+                <div class="grid grid-cols-3 items-center justify-center gap-6 p-9 md:pr-0 md:pl-0 max-w-[650px] w-full">
+                    @foreach (var hobby in Hobbies.Take(3))
+                    {
+                        <div class="flex h-24 flex-col items-center justify-center rounded-2xl bg-neutral-50 transition group-active:scale-[0.98]">
+                            <div class="text-3xl leading-none">@hobby.Emoji</div>
+                            <span class="mt-1 text-sm font-medium text-neutral-800">@hobby.Name</span>
+                        </div>
+                    }
                 </div>
-            </button>
-        }
+            </div>
+
+
+            <!-- Slide 2 -->
+            <div class="min-w-full flex justify-center ">
+                <div class="grid grid-cols-3 items-center justify-center gap-6 p-9 md:pr-0 md:pl-0 max-w-[650px] w-full">
+                    @foreach (var hobby in Hobbies.Take(3))
+                    {
+                        <div class="flex h-24 flex-col items-center justify-center rounded-2xl bg-neutral-50 transition group-active:scale-[0.98]">
+                            <div class="text-3xl leading-none">@hobby.Emoji</div>
+                            <span class="mt-1 text-sm font-medium text-neutral-800">@hobby.Name</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="min-w-full grid grid-cols-3 items-center justify-center gap-6 p-9 md:max-w-[650px]">
+                @foreach (var dislike in Dislikes.Take(3))
+                {
+                    
+                        <div class="flex h-24 flex-col items-center justify-center rounded-2xl bg-neutral-50 transition group-active:scale-[0.98] ">
+                            <div class="text-3xl leading-none">@dislike.Emoji</div>
+                            <span class="mt-1 text-sm font-medium text-neutral-800">@dislike.Name</span>
+                        </div>
+     
+                }
+            </div>
+
+        </div>
     </div>
 
-   
-
-</div>
 
 @code {
     [Parameter] public IReadOnlyList<ProfileHobbyModel> Hobbies { get; set; } = Array.Empty<ProfileHobbyModel>();
+    [Parameter] public IReadOnlyList<ProfileInterestModel> Likes { get; set; } = Array.Empty<ProfileInterestModel>();
+    [Parameter] public IReadOnlyList<ProfileHobbyModel> Dislikes { get; set; } = Array.Empty<ProfileHobbyModel>();
+
+    private int currentIndex = 0;
+    private const int SlidesCount = 3;
+
+    private void NextSlide()
+    {
+        currentIndex = (currentIndex + 1) % SlidesCount;
+        StateHasChanged();
+    }
 }

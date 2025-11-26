@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Common;
-using Rise.Domain.Users.Properties;
+using Rise.Domain.Common.ValueObjects;
 using Rise.Persistence;
+using Rise.Services.Hobbies.Mapper;
 using Rise.Services.Identity;
+using Rise.Services.Sentiments.Mapper;
 using Rise.Services.Users.Mapper;
 using Rise.Shared.Common;
 using Rise.Shared.Identity;
@@ -14,29 +16,33 @@ public class UserService(
     ApplicationDbContext dbContext,
     ISessionContextProvider sessionContextProvider) : IUserService
 {
-
-    private readonly ApplicationDbContext _dbContext = dbContext;
-    private readonly ISessionContextProvider _sessionContextProvider = sessionContextProvider;
-
-    public async Task<Result<UserResponse.CurrentUser>> GetUserAsync(string accountId, CancellationToken cancellationToken = default)
+    public async Task<Result<UserResponse.CurrentUser>> GetUserAsync(string accountId, CancellationToken ctx = default)
     {
+        var loggedInUserId = sessionContextProvider.User!.GetUserId();
+
+        var loggedInUser = await dbContext.Users
+            .SingleOrDefaultAsync(x => x.AccountId == loggedInUserId, ctx);
+
+        if (loggedInUser is null)
+            return Result.Unauthorized("U heeft geen toegang om een gebruiker te verkrijgen.");
+
         if (string.IsNullOrWhiteSpace(accountId))
         {
-            return Result.Unauthorized();
+            return Result.NotFound();
         }
 
-        var currentUser = await _dbContext
+        var currentUser = await dbContext
             .Users
             .Include(u => u.Hobbies)
-            .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+            .SingleOrDefaultAsync(u => u.AccountId == accountId, ctx);
 
         if (currentUser is null)
         {
-            return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
+            return Result.NotFound("Meegegeven ID heeft geen geldig profiel.");
         }
 
-        var email = (await _dbContext.IdentityUsers
-                        .SingleOrDefaultAsync(u => u.Id == accountId, cancellationToken)
+        var email = (await dbContext.IdentityUsers
+                        .SingleOrDefaultAsync(u => u.Id == accountId, ctx)
                     )?.Email
                     ?? string.Empty;
 
@@ -51,14 +57,14 @@ public class UserService(
         UserRequest.UpdateCurrentUser request,
         CancellationToken cancellationToken = default)
     {
-        var changerId = _sessionContextProvider.User?.GetUserId();
+        var loggedInUserId = sessionContextProvider.User?.GetUserId();
 
-        if (string.IsNullOrWhiteSpace(userToChangeAccountId) || string.IsNullOrWhiteSpace(changerId))
+        if (string.IsNullOrWhiteSpace(userToChangeAccountId) || string.IsNullOrWhiteSpace(loggedInUserId))
         {
             return Result.Unauthorized();
         }
 
-        var userToChange = await _dbContext
+        var userToChange = await dbContext
             .Users
             .Include(u => u.Sentiments)
             .Include(u => u.Hobbies)
@@ -66,16 +72,16 @@ public class UserService(
 
         if (userToChange is null)
         {
-            return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
+            return Result.Unauthorized("Meegegeven id heeft geen geldig profiel.");
         }
 
-        if (!userToChangeAccountId.Equals(changerId))
+        if (!userToChangeAccountId.Equals(loggedInUserId))
         {
-            var changer = await _dbContext
+            var loggedInUser = await dbContext
                 .Supervisors
-                .SingleOrDefaultAsync(u => u.AccountId == changerId, cancellationToken);
+                .SingleOrDefaultAsync(u => u.AccountId == loggedInUserId, cancellationToken);
 
-            if (changer is null)
+            if (loggedInUser is null)
             {
                 return Result.Unauthorized();
             }
@@ -88,7 +94,7 @@ public class UserService(
         userToChange.Gender = request.Gender.ToDomain();
 
         // can use IAsyncEnumerable but a pain to work with
-        var hobbiesResult = await HobbyMapper.ToDomainAsync(request.Hobbies, _dbContext, cancellationToken);
+        var hobbiesResult = await HobbyMapper.ToDomainAsync(request.Hobbies, dbContext, cancellationToken);
 
         if (!hobbiesResult.IsSuccess)
         {
@@ -108,7 +114,7 @@ public class UserService(
             return Result.Invalid(new ValidationError(nameof(request.Sentiments), updateError));
         }
 
-        var sentimentsResult = await SentimentMapper.ToDomainAsync(request.Sentiments, _dbContext, cancellationToken);
+        var sentimentsResult = await SentimentMapper.ToDomainAsync(request.Sentiments, dbContext, cancellationToken);
         if (!sentimentsResult.IsSuccess)
         {
             if (sentimentsResult.ValidationErrors.Any())
@@ -146,7 +152,7 @@ public class UserService(
             }
         }
 
-        var identityUser = await _dbContext
+        var identityUser = await dbContext
             .IdentityUsers
             .SingleOrDefaultAsync(u => u.Id == userToChangeAccountId, cancellationToken);
 
@@ -164,7 +170,7 @@ public class UserService(
             identityUser.NormalizedUserName = normalized;
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         var email = identityUser?.Email ?? string.Empty;
 

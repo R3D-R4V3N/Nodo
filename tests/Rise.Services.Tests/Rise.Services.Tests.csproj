@@ -17,6 +17,7 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
         <PackageReference Include="NSubstitute" Version="5.3.0" />
         <PackageReference Include="Shouldly" Version="4.3.0" />
+        <PackageReference Include="Testcontainers.MySql" Version="4.8.1" />
         <PackageReference Include="xunit" Version="2.9.3" />
         <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4">
           <PrivateAssets>all</PrivateAssets>
@@ -30,6 +31,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Rise.Tests.Shared\Rise.Tests.Shared.csproj" />
       <ProjectReference Include="..\..\src\Rise.Services\Rise.Services.csproj" />
     </ItemGroup>
 

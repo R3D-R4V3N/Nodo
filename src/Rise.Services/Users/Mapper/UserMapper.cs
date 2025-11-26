@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rise.Domain.Users;
+using Rise.Services.Hobbies.Mapper;
+using Rise.Services.Sentiments.Mapper;
+using Rise.Shared.Hobbies;
+using Rise.Shared.Sentiments;
 using Rise.Shared.Users;
 
 namespace Rise.Services.Users.Mapper;
@@ -42,6 +46,16 @@ internal static class UserMapper
             AccountId = user.AccountId,
             Age = CalculateAge(user.BirthDay),
             AvatarUrl = user.AvatarUrl,
+        };
+    public static UserDto.Connection ToConnectionDto(this User user, int chatId) =>
+        new UserDto.Connection
+        {
+            Id = user.Id,
+            Name = $"{user.FirstName} {user.LastName}",
+            AccountId = user.AccountId,
+            Age = CalculateAge(user.BirthDay),
+            AvatarUrl = user.AvatarUrl,
+            ChatId = chatId == default ? string.Empty : chatId.ToString(),
         };
     public static UserDto.CurrentUser ToCurrentUserDto(this User user, string email) =>
         ((BaseUser)user).ToCurrentUserDto(

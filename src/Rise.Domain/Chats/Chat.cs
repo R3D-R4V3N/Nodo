@@ -1,10 +1,9 @@
 using Ardalis.Result;
 using Rise.Domain.Users;
 using Rise.Domain.Messages;
-using Rise.Domain.Messages.Properties;
+using Rise.Domain.Common.ValueObjects;
 
 namespace Rise.Domain.Chats;
-
 public class Chat : Entity
 {
     // ef
@@ -15,8 +14,9 @@ public class Chat : Entity
     
     private readonly List<Message> _messages = [];
     public IReadOnlyList<Message> Messages => _messages.AsReadOnly();
+    public ChatType ChatType { get; private set; }
 
-    public static Result<Chat> CreateChat(BaseUser baseUser1, BaseUser baseUser2)
+    public static Result<Chat> CreatePrivateChat(BaseUser baseUser1, BaseUser baseUser2)
     {
         if (baseUser1 is User user1 && baseUser2 is User user2)
         {
@@ -28,7 +28,10 @@ public class Chat : Entity
             }
         }
 
-        Chat chat = new Chat();
+        Chat chat = new Chat()
+        {
+            ChatType = ChatType.Private,
+        };
 
         chat._users.Add(baseUser1);
         chat._users.Add(baseUser2);
@@ -39,8 +42,47 @@ public class Chat : Entity
         return Result.Success(chat);
     }
 
+    public static Result<Chat> CreateGroupChat(BaseUser chatOwner, params BaseUser[] users)
+    {
+        foreach (var user in users)
+        {
+            if (chatOwner is User user1 && user is User user2)
+            {
+                if (!user1.IsFriend(user2) || !user2.IsFriend(user1))
+                {
+                    return Result.Conflict(
+                        $"Chat kan niet worden gemaakt omdat {user1} en {user2} elkaar niet bevriend zijn"
+                    );
+                }
+            }
+        }
+
+        Chat chat = new Chat()
+        { 
+            ChatType = ChatType.Group,
+        };
+
+        chat._users.Add(chatOwner);
+        chat._users.AddRange(users);
+
+        var temp = users.First();
+
+        chatOwner.AddChat(temp, chat);
+        foreach (var user in users)
+        {
+            user.AddChat(chatOwner, chat);
+        }
+
+        return Result.Success(chat);
+    }
+
     public Result AddUser(BaseUser chatOwner, BaseUser user)
     {
+        if (chatOwner is not Supervisor && user is not Supervisor && ChatType.Equals(ChatType.Private))
+        { 
+            return Result.Conflict($"Er kunnen geen gebruikers toegevoegd worden aan een private chat");
+        }
+
         if (chatOwner is not Supervisor && !_users.Contains(chatOwner))
         {
             return Result.Conflict($"Meegegeven gebruiker: {chatOwner} is geen chat eigenaar");
@@ -66,13 +108,18 @@ public class Chat : Entity
 
     public Result RemoveUser(BaseUser chatOwner, BaseUser user)
     {
+        if (chatOwner is not Supervisor && ChatType.Equals(ChatType.Private))
+        {
+            return Result.Conflict($"Er kunnen geen gebruikers verwijderd worden van een private chat");
+        }
+
         if (chatOwner is not Supervisor && !_users.Contains(chatOwner))
         {
             return Result.Conflict($"Meegegeven gebruiker: {chatOwner} is geen chat eigenaar");
         }
         if (!_users.Contains(user))
         {
-            return Result.Conflict($"Chat bevat deze gebruiker niet {user}");
+            return Result.Conflict($"Chat bevat {user} niet");
         }
 
         _users.Remove(user);
@@ -103,7 +150,7 @@ public class Chat : Entity
 
         var message = new Message()
         {
-            Text = Text.Create(text),
+            Text = TextMessage.Create(text),
             Sender = user,
             Chat = this
         };

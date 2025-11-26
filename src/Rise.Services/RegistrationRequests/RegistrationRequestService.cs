@@ -1,12 +1,9 @@
-using System;
-using System.Linq;
-using Ardalis.Result;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Rise.Domain.Common.ValueObjects;
 using Rise.Domain.Registrations;
 using Rise.Domain.Users;
-using Rise.Domain.Users.Properties;
 using Rise.Domain.Users.Settings;
 using Rise.Persistence;
 using Rise.Services.Identity;
@@ -14,7 +11,8 @@ using Rise.Services.RegistrationRequests.Mapper;
 using Rise.Shared.Assets;
 using Rise.Shared.Identity;
 using Rise.Shared.RegistrationRequests;
-using Rise.Shared.Users;
+using Rise.Shared.Identity.Accounts;
+using Rise.Services.Users.Mapper;
 
 namespace Rise.Services.RegistrationRequests;
 
@@ -22,16 +20,78 @@ public class RegistrationRequestService(
     ApplicationDbContext dbContext,
     UserManager<IdentityUser> userManager,
     ISessionContextProvider sessionContextProvider,
-    ILogger<RegistrationRequestService> logger) : IRegistrationRequestService
+    ILogger<RegistrationRequestService> logger,
+    IPasswordHasher<IdentityUser> passwordHasher) : IRegistrationRequestService
 {
-    private readonly ApplicationDbContext _dbContext = dbContext;
-    private readonly UserManager<IdentityUser> _userManager = userManager;
-    private readonly ISessionContextProvider _sessionContextProvider = sessionContextProvider;
-    private readonly ILogger<RegistrationRequestService> _logger = logger;
+    public async Task<Result> CreateAsync(AccountRequest.Register request, CancellationToken ctx = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+        {
+            return Result.Invalid(new ValidationError(nameof(request.Email), "Ongeldige gegevens."));
+        }
+
+        var normalizedEmail = userManager.NormalizeEmail(request.Email);
+
+        if (string.IsNullOrWhiteSpace(normalizedEmail))
+        {
+            return Result.Invalid(new ValidationError(nameof(request.Email), "Ongeldig e-mailadres."));
+        }
+
+        if (await userManager.FindByEmailAsync(normalizedEmail) is not null)
+        {
+            return Result.Conflict("Er bestaat al een account met dit e-mailadres.");
+        }
+
+        var hasPendingRequest = await dbContext
+            .RegistrationRequests
+            .AnyAsync(r => r.Email.Value == Email.Create(request.Email).Value.Value
+                && r.Status.StatusType == RegistrationStatusType.Pending, ctx);
+
+        if (hasPendingRequest)
+        {
+            return Result.Conflict("Er is al een lopende registratieaanvraag voor dit e-mailadres.");
+        }
+
+        var organization = await dbContext
+            .Organizations
+            .SingleOrDefaultAsync(o => o.Id == request.OrganizationId, ctx);
+
+        if (organization is null)
+        {
+            return Result.Invalid(new ValidationError(nameof(request.OrganizationId), "Ongeldige organisatie geselecteerd."));
+        }
+
+        var identityUser = new IdentityUser 
+        {
+            UserName = request.Email, 
+            Email = request.Email 
+        };
+        var hashedPassword = passwordHasher.HashPassword(identityUser, request.Password);
+
+        var registration = RegistrationRequest.Create(
+            request.Email,
+            request.FirstName!,
+            request.LastName!,
+            request.BirthDate ?? DateOnly.FromDateTime(DateTime.UtcNow),
+            request.Gender.ToDomain(),
+            request.AvatarDataUrl!,
+            hashedPassword,
+            organization
+        );
+
+        registration.AvatarUrl ??= AvatarUrl.Create(DefaultImages.GetProfile(request.Email));
+
+        dbContext.RegistrationRequests.Add(registration);
+
+        await dbContext.SaveChangesAsync(ctx);
+
+        return Result.SuccessWithMessage("Uw aanvraag is ingediend en wacht op goedkeuring door een begeleider.");
+
+    }
 
     public async Task<Result<RegistrationRequestResponse.PendingList>> GetPendingAsync(CancellationToken ct = default)
     {
-        var principal = _sessionContextProvider.User;
+        var principal = sessionContextProvider.User;
 
         if (principal is null)
         {
@@ -45,7 +105,7 @@ public class RegistrationRequestService(
             return Result.Unauthorized();
         }
 
-        var supervisor = await _dbContext.Supervisors
+        var supervisor = await dbContext.Supervisors
             .AsNoTracking()
             .SingleOrDefaultAsync(s => s.AccountId == accountId, ct);
 
@@ -56,14 +116,14 @@ public class RegistrationRequestService(
             return Result.Unauthorized();
         }
 
-        var supervisorsQuery = _dbContext
+        var supervisorsQuery = dbContext
             .Supervisors
             .AsNoTracking();
 
-        var pendingQuery = _dbContext
+        var pendingQuery = dbContext
             .RegistrationRequests
             .AsNoTracking()
-            .Where(r => r.Status == RegistrationStatus.Pending);
+            .Where(r => r.Status.StatusType == RegistrationStatusType.Pending);
 
         if (supervisor is not null)
         {
@@ -71,7 +131,7 @@ public class RegistrationRequestService(
                 .Where(s => s.Organization.Id == supervisor.Organization.Id);
 
             pendingQuery = pendingQuery
-                .Where(r => r.OrganizationId == supervisor.Organization.Id);
+                .Where(r => r.Organization.Id == supervisor.Organization.Id);
         }
 
         var supervisorLookup = await supervisorsQuery
@@ -93,7 +153,7 @@ public class RegistrationRequestService(
             .Select(x => 
             {
                 var supervisorLst = supervisorLookup
-                    .TryGetValue(x.OrganizationId, out var options)
+                    .TryGetValue(x.Organization.Id, out var options)
                         ? options : [];
 
                 return RegistrationMapper.ToPending(x, supervisorLst);
@@ -109,7 +169,7 @@ public class RegistrationRequestService(
 
     public async Task<Result<RegistrationRequestResponse.Approve>> ApproveAsync(int requestId, RegistrationRequestRequest.Approve request, CancellationToken ct = default)
     {
-        var principal = _sessionContextProvider.User;
+        var principal = sessionContextProvider.User;
 
         if (principal is null)
         {
@@ -124,7 +184,7 @@ public class RegistrationRequestService(
             return Result.Unauthorized();
         }
 
-        var approver = await _dbContext
+        var approver = await dbContext
             .Supervisors
             .Include(s => s.Organization)
             .SingleOrDefaultAsync(s => s.AccountId == approverAccountId, ct);
@@ -134,7 +194,7 @@ public class RegistrationRequestService(
             return Result.Unauthorized();
         }
 
-        var registration = await _dbContext
+        var registration = await dbContext
             .RegistrationRequests
             .Include(r => r.Organization)
             .SingleOrDefaultAsync(r => r.Id == requestId, ct);
@@ -144,17 +204,17 @@ public class RegistrationRequestService(
             return Result.NotFound();
         }
 
-        if (approver is not null && registration.OrganizationId != approver.Organization.Id)
+        if (approver is not null && registration.Organization.Id != approver.Organization.Id)
         {
             return Result.Unauthorized();
         }
 
-        if (registration.Status != RegistrationStatus.Pending)
+        if (registration.Status is not { StatusType: RegistrationStatusType.Pending })
         {
             return Result.Conflict("Aanvraag werd al verwerkt.");
         }
 
-        var assignedSupervisor = await _dbContext
+        var assignedSupervisor = await dbContext
             .Supervisors
             .SingleOrDefaultAsync(s => s.Id == request.AssignedSupervisorId, ct);
 
@@ -163,7 +223,7 @@ public class RegistrationRequestService(
             return Result.Invalid(new ValidationError(nameof(request.AssignedSupervisorId), "Begeleider werd niet gevonden."));
         }
 
-        if (assignedSupervisor.Organization.Id != registration.OrganizationId)
+        if (assignedSupervisor.Organization.Id != registration.Organization.Id)
         {
             return Result.Invalid(new ValidationError(nameof(request.AssignedSupervisorId), "Begeleider behoort niet tot dezelfde organisatie."));
         }
@@ -174,10 +234,12 @@ public class RegistrationRequestService(
             return Result.Conflict(approvalResult.Errors.ToArray());
         }
 
-        if (await _userManager.FindByEmailAsync(registration.Email) is not null)
+        if (await userManager.FindByEmailAsync(registration.Email) is not null)
         {
             return Result.Error("Er bestaat al een account met dit e-mailadres.");
         }
+
+        var normalizedEmail = userManager.NormalizeEmail(registration.Email);
 
         var identityUser = new IdentityUser
         {
@@ -185,19 +247,22 @@ public class RegistrationRequestService(
             Email = registration.Email,
             EmailConfirmed = true,
             PasswordHash = registration.PasswordHash,
-            NormalizedEmail = registration.NormalizedEmail,
-            NormalizedUserName = registration.NormalizedEmail,
+            NormalizedEmail = normalizedEmail,
+            NormalizedUserName = normalizedEmail,
         };
 
-        var createResult = await _userManager.CreateAsync(identityUser);
+        using var trans = await dbContext.Database.BeginTransactionAsync(ct);
+
+        var createResult = await userManager.CreateAsync(identityUser);
 
         if (!createResult.Succeeded)
         {
-            _logger.LogError("Kon IdentityUser niet aanmaken voor registratie {RegistrationId}: {Errors}", requestId, string.Join(',', createResult.Errors.Select(e => e.Description)));
+            logger.LogError("Kon IdentityUser niet aanmaken voor registratie {RegistrationId}: {Errors}", requestId, string.Join(',', createResult.Errors.Select(e => e.Description)));
             return Result.Error("Kon het account niet aanmaken.");
         }
 
-        await _userManager.AddToRoleAsync(identityUser, AppRoles.User);
+
+        await userManager.AddToRoleAsync(identityUser, AppRoles.User);
 
         var newUser = new User
         {
@@ -208,7 +273,7 @@ public class RegistrationRequestService(
             AvatarUrl = AvatarUrl.Create(string.IsNullOrWhiteSpace(registration.AvatarUrl)
                 ? DefaultImages.GetProfile(identityUser.Email)
                 : registration.AvatarUrl),
-            BirthDay = registration.BirthDate,
+            BirthDay = BirthDay.Create(registration.BirthDay),
             Gender = registration.Gender,
             UserSettings = new UserSetting
             {
@@ -231,14 +296,15 @@ public class RegistrationRequestService(
             return Result.Error(errorMessage);
         }
 
-        _dbContext.Users.Add(newUser);
+        dbContext.Users.Add(newUser);
 
-        await _dbContext.SaveChangesAsync(ct);
+        await dbContext.SaveChangesAsync(ct);
+
+        await trans.CommitAsync(ct);
 
         return Result.Success(new RegistrationRequestResponse.Approve
         {
             RegistrationRequestId = registration.Id,
         });
     }
-
 }

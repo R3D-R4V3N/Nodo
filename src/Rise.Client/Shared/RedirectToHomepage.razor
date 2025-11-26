@@ -1,0 +1,19 @@
+﻿@using Rise.Shared.Identity
+
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        if (authenticationState.User.IsInRole(AppRoles.User))
+        {
+            Navigation.NavigateTo("/homepage");
+        }
+        else
+        {
+            Navigation.NavigateTo($"/dashboard");
+        }
+    }
+}

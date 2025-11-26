@@ -12,11 +12,12 @@ else
 }
 
 @code {
+    [Inject] IJSRuntime JSRuntime { get; set; }
+
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public string? Class { get; set; }
     [Parameter] public string? InnerClass { get; set; }
     [Parameter] public bool ShowBackButton { get; set; }
-    [Parameter] public EventCallback OnBack { get; set; }
     [Parameter] public string BackButtonAriaLabel { get; set; } = "Terug";
     [Parameter] public RenderFragment? LeadingContent { get; set; }
     [Parameter] public RenderFragment? MainContent { get; set; }
@@ -63,7 +64,8 @@ else
                     builder.AddAttribute(seq++, "type", "button");
                     builder.AddAttribute(seq++, "class", BackButtonClasses);
                     builder.AddAttribute(seq++, "aria-label", BackButtonAriaLabel);
-                    builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, HandleBackClickedAsync));
+                    builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, HandleNavigateBack));
+                    builder.AddEventStopPropagationAttribute(seq++, "onclick", true);
                     builder.AddMarkupContent(seq++, BackButtonIconSvg);
                     builder.CloseElement();
                 }
@@ -136,14 +138,9 @@ else
 
     private bool UseStructuredLayout => ShowBackButton || LeadingContent != null || MainContent != null || TrailingContent != null || !string.IsNullOrWhiteSpace(Title) || !string.IsNullOrWhiteSpace(Subtitle);
 
-    private Task HandleBackClickedAsync()
+    private async Task HandleNavigateBack()
     {
-        if (OnBack.HasDelegate)
-        {
-            return OnBack.InvokeAsync();
-        }
-
-        return Task.CompletedTask;
+        await JSRuntime.InvokeVoidAsync("history.back");
     }
 
     private const string BackButtonIconSvg = "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 19l-7-7 7-7\" /></svg>";

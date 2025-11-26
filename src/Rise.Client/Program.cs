@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Rise.Client;
 using Rise.Client.Chats;
+using Rise.Client.Events;
 using Rise.Client.Identity;
 using Rise.Client.RealTime;
 using Rise.Client.State;
@@ -10,6 +11,7 @@ using Rise.Client.UserConnections;
 using Rise.Client.Users;
 using Rise.Client.Offline;
 using Rise.Shared.Chats;
+using Rise.Shared.Events;
 using Rise.Shared.UserConnections;
 using Rise.Shared.Users;
 using UserService = Rise.Client.Users.UserService;
@@ -88,6 +90,11 @@ try
     {
         client.BaseAddress = backendUri; // bij jou bv. https://localhost:5001
     });
+
+    builder.Services.AddHttpClient<IEventService, EventService>(client =>
+    {
+        client.BaseAddress = backendUri;
+    }).AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<IRegistrationRequestService, RegistrationRequestService>(client =>
         {

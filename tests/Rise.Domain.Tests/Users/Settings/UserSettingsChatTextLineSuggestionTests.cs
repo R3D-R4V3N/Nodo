@@ -1,11 +1,5 @@
-﻿using Rise.Domain.Users.Settings.Properties;
-using Rise.Domain.Users.Settings;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Rise.Domain.Tests.Users.Settings.Properties;
+﻿using Rise.Domain.Users.Settings;
+using Rise.Tests.Shared;
 
 namespace Rise.Domain.Tests.Users.Settings;
 
@@ -17,7 +11,7 @@ public class UserSettingsChatTextLineSuggestionTests
     [InlineData(1)]
     public void Constructor_ShouldCreateInstance_WhenRequiredPropertiesAreSet(int rank)
     {
-        var defaultSentence = TestData.ValidDefaultSentence();
+        var defaultSentence = DomainData.ValidDefaultSentence();
 
         var suggestion = new UserSettingChatTextLineSuggestion
         {
@@ -32,8 +26,8 @@ public class UserSettingsChatTextLineSuggestionTests
     [Fact]
     public void SettingProperties_ShouldUpdateValues()
     {
-        var sentence1 = TestData.ValidDefaultSentence();
-        var sentence2 = TestData.ValidDefaultSentence(1);
+        var sentence1 = DomainData.ValidDefaultSentence();
+        var sentence2 = DomainData.ValidDefaultSentence(1);
         var suggestion = new UserSettingChatTextLineSuggestion
         {
             Rank = 1,

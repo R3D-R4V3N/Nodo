@@ -1,8 +1,7 @@
-﻿using Ardalis.Result;
-using Rise.Domain.Chats;
-using Rise.Domain.Organizations;
+﻿using Rise.Domain.Chats;
+using Rise.Domain.Common.ValueObjects;
 using Rise.Domain.Users;
-using Rise.Domain.Users.Properties;
+using Rise.Tests.Shared;
 
 namespace Rise.Domain.Tests.Users;
 public class SupervisorTests
@@ -11,14 +10,14 @@ public class SupervisorTests
     public void Constructor_ShouldSetPropertiesCorrectly()
     {
         var accountId = "id";
-        var firstName = TestData.ValidFirstName();
-        var lastName = TestData.ValidLastName();
-        var biography = TestData.ValidBiography();
-        var avatarUrl = TestData.ValidAvatarUrl();
-        var birthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28)); 
+        var firstName = DomainData.ValidFirstName();
+        var lastName = DomainData.ValidLastName();
+        var biography = DomainData.ValidBiography();
+        var avatarUrl = DomainData.ValidAvatarUrl();
+        var birthDay = DomainData.ValidBirthDay(); 
         var gender = GenderType.X;
-        var userSettings = TestData.ValidUserSettings();
-        var orga = TestData.ValidOrganization();
+        var userSettings = DomainData.ValidUserSettings();
+        var orga = DomainData.ValidOrganization();
 
         var user = new Supervisor()
         {
@@ -49,15 +48,15 @@ public class SupervisorTests
     [InlineData(true)] 
     public void AddChat_SupervisorCanAdd_WithoutFriendship(bool isSelfOwner)
     {
-        var user1 = TestData.ValidUser(1);
-        var user2 = TestData.ValidUser(2);
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
 
-        Chat chat = Chat.CreateChat(user1, user2);
+        Chat chat = Chat.CreatePrivateChat(user1, user2);
 
-        var supervisor = TestData.ValidSupervisor(3);
+        var supervisor = DomainData.ValidSupervisor(3);
         BaseUser owner = isSelfOwner ? supervisor : user1;
 
         var result = supervisor.AddChat(owner, chat);
@@ -71,14 +70,14 @@ public class SupervisorTests
     [Fact]
     public void RemoveChat_SupervisorCanRemove_WhenNotInChat()
     {
-        User user1 = TestData.ValidUser(1);
-        User user2 = TestData.ValidUser(2);
+        User user1 = DomainData.ValidUser(1);
+        User user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
 
-        Chat chat = Chat.CreateChat(user1, user2);
-        var supervisor = TestData.ValidSupervisor(3);
+        Chat chat = Chat.CreatePrivateChat(user1, user2);
+        var supervisor = DomainData.ValidSupervisor(3);
 
         var result = user1.RemoveChat(supervisor, chat);
 

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
+using Rise.Domain.Events;
 using Rise.Domain.Messages;
 using Rise.Domain.Organizations;
 using Rise.Domain.Registrations;
@@ -29,11 +30,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> opts) :
     public DbSet<IdentityUser> IdentityUsers => Set<IdentityUser>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Supervisor> Supervisors => Set<Supervisor>();
+    public DbSet<Admin> Admins => Set<Admin>();
     public DbSet<UserConnection> UserConnections => Set<UserConnection>();
     public DbSet<UserHobby> Hobbies => Set<UserHobby>();
     public DbSet<UserSentiment> Sentiments => Set<UserSentiment>();
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<RegistrationRequest> RegistrationRequests => Set<RegistrationRequest>();
+    public DbSet<Event> Events => Set<Event>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {

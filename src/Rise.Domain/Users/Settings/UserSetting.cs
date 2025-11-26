@@ -1,6 +1,5 @@
 using Ardalis.Result;
-using Rise.Domain.Users.Properties;
-using Rise.Domain.Users.Settings.Properties;
+using Rise.Domain.Common.ValueObjects;
 
 namespace Rise.Domain.Users.Settings;
 

@@ -1,43 +1,47 @@
-using System;
 using Ardalis.Result;
-using Rise.Domain.Common;
+using Rise.Domain.Common.ValueObjects;
 using Rise.Domain.Organizations;
 using Rise.Domain.Users;
-using Rise.Domain.Users.Properties;
 
 namespace Rise.Domain.Registrations;
 
-public class RegistrationRequest : Entity
+public partial class RegistrationRequest : Entity
 {
     private RegistrationRequest() { }
 
-    public string Email { get; private set; } = string.Empty;
-    public string NormalizedEmail { get; private set; } = string.Empty;
-    public string FullName { get; private set; } = string.Empty;
-    public string FirstName { get; private set; } = string.Empty;
-    public string LastName { get; private set; } = string.Empty;
-    public DateOnly BirthDate { get; private set; }
-        = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-18));
-    public GenderType Gender { get; private set; } = GenderType.X;
-    public string AvatarUrl { get; private set; } = string.Empty;
-    public string PasswordHash { get; private set; } = string.Empty;
-    public RegistrationStatus Status { get; private set; } = RegistrationStatus.Pending;
+    public Email Email { get; set; }
+    public FirstName FirstName { get; set; }
+    public LastName LastName { get; set; }
+    public BirthDay BirthDay { get; set; }
+    public GenderType Gender { get; set; }
+    public AvatarUrl AvatarUrl { get; set; }
+    public string PasswordHash { get; set; }
+    
+    // organization
+    public Organization Organization { get; set; }
 
-    public int OrganizationId { get; private set; }
-    public Organization Organization { get; private set; } = null!;
+    // supervisor
+    public Supervisor? AssignedSupervisor { get; set; }
 
-    public int? AssignedSupervisorId { get; private set; }
-    public Supervisor? AssignedSupervisor { get; private set; }
+    // registration status
+    private RegistrationStatus _status;
+    public required RegistrationStatus Status
+    {
+        get => _status;
+        set
+        {
+            if (_status == value) return;
 
-    public int? ApprovedBySupervisorId { get; private set; }
-    public Supervisor? ApprovedBySupervisor { get; private set; }
-
-    public DateTime? ApprovedAt { get; private set; }
-    public string? DeniedReason { get; private set; }
+            _status = Guard.Against.Null(value);
+            if (_status.Request != this)
+            {
+                _status.Request = this;
+            }
+        }
+    }
 
     public static RegistrationRequest Create(
         string email,
-        string normalizedEmail,
         string firstName,
         string lastName,
         DateOnly birthDate,
@@ -48,53 +52,53 @@ public class RegistrationRequest : Entity
     {
         var request = new RegistrationRequest
         {
-            Email = Guard.Against.NullOrWhiteSpace(email).Trim(),
-            NormalizedEmail = Guard.Against.NullOrWhiteSpace(normalizedEmail).Trim(),
-            FirstName = Guard.Against.NullOrWhiteSpace(firstName).Trim(),
-            LastName = Guard.Against.NullOrWhiteSpace(lastName).Trim(),
-            BirthDate = birthDate,
+            Email = Email.Create(email),
+            FirstName = FirstName.Create(firstName),
+            LastName = LastName.Create(lastName),
+            BirthDay = BirthDay.Create(birthDate),
             Gender = gender,
-            AvatarUrl = Guard.Against.NullOrWhiteSpace(avatarUrl).Trim(),
+            AvatarUrl = AvatarUrl.Create(avatarUrl),
             PasswordHash = Guard.Against.NullOrWhiteSpace(passwordHash),
+            Organization = Guard.Against.Null(organization),
+            Status = new RegistrationStatus()
+            {
+                StatusType = RegistrationStatusType.Pending,
+            }
         };
 
-        request.FullName = $"{request.FirstName} {request.LastName}".Trim();
-
-        request.AssignOrganization(organization);
         return request;
     }
 
     public Result AssignSupervisor(Supervisor supervisor)
     {
-        if (Status is not RegistrationStatus.Pending)
+        if (Status is not { StatusType: RegistrationStatusType.Pending })
         {
             return Result.Conflict("Aanvraag werd al verwerkt.");
         }
 
-        var target = Guard.Against.Null(supervisor);
+        supervisor = Guard.Against.Null(supervisor);
 
-        if (target.Organization.Id != OrganizationId)
+        if (supervisor.Organization.Id != Organization.Id)
         {
             return Result.Invalid(
-                new ValidationError(nameof(AssignedSupervisorId), "Begeleider behoort niet tot dezelfde organisatie."));
+                new ValidationError(nameof(supervisor), "Begeleider behoort niet tot dezelfde organisatie."));
         }
 
-        AssignedSupervisor = target;
-        AssignedSupervisorId = target.Id;
+        AssignedSupervisor = supervisor;
 
         return Result.Success();
     }
 
     public Result Approve(Supervisor approver, Supervisor assignedSupervisor)
     {
-        if (Status is not RegistrationStatus.Pending)
+        if (Status is not { StatusType: RegistrationStatusType.Pending })
         {
             return Result.Conflict("Aanvraag werd al verwerkt.");
         }
 
-        var supervisor = Guard.Against.Null(approver);
+        approver = Guard.Against.Null(approver);
 
-        if (supervisor.Organization.Id != OrganizationId)
+        if (approver.Organization.Id != Organization.Id)
         {
             return Result.Unauthorized();
         }
@@ -105,40 +109,38 @@ public class RegistrationRequest : Entity
             return assignResult;
         }
 
-        ApprovedBySupervisor = supervisor;
-        ApprovedBySupervisorId = supervisor.Id;
-        ApprovedAt = DateTime.UtcNow;
-        Status = RegistrationStatus.Approved;
+        Status = new RegistrationStatus()
+        {
+            HandledBy = approver,
+            HandledDate = DateTime.UtcNow,
+            StatusType = RegistrationStatusType.Approved,
+        };
 
         return Result.Success();
     }
 
     public Result Reject(Supervisor approver, string? reason = null)
     {
-        if (Status is not RegistrationStatus.Pending)
+        if (Status is not { StatusType: RegistrationStatusType.Pending })
         {
             return Result.Conflict("Aanvraag werd al verwerkt.");
         }
 
-        var supervisor = Guard.Against.Null(approver);
+        approver = Guard.Against.Null(approver);
 
-        if (supervisor.Organization.Id != OrganizationId)
+        if (approver.Organization.Id != Organization.Id)
         {
             return Result.Unauthorized();
         }
 
-        Status = RegistrationStatus.Rejected;
-        ApprovedBySupervisor = supervisor;
-        ApprovedBySupervisorId = supervisor.Id;
-        ApprovedAt = DateTime.UtcNow;
-        DeniedReason = reason?.Trim();
+        Status = new RegistrationStatus()
+        {
+            HandledBy = approver,
+            HandledDate = DateTime.UtcNow,
+            StatusType = RegistrationStatusType.Rejected,
+            Note = string.IsNullOrWhiteSpace(reason) ? null : RegistrationNote.Create(reason)
+        };
 
         return Result.Success();
-    }
-
-    private void AssignOrganization(Organization organization)
-    {
-        Organization = Guard.Against.Null(organization);
-        OrganizationId = organization.Id;
     }
 }

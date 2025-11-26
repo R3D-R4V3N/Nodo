@@ -1,5 +1,5 @@
+using Rise.Domain.Common.ValueObjects;
 using Rise.Domain.Users.Hobbys;
-using Rise.Domain.Users.Properties;
 using Rise.Shared.Users;
 
 namespace Rise.Services.Users.Mapper;

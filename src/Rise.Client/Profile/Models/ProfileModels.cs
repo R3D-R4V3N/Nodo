@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rise.Shared.Sentiments;
 using Rise.Shared.Users;
 
 namespace Rise.Client.Profile.Models;

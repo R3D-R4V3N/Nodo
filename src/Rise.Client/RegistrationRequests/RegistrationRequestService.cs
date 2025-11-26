@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using Rise.Client.Offline;
+using Rise.Shared.Identity.Accounts;
 using Rise.Shared.RegistrationRequests;
 using System.Net.Http.Json;
 
@@ -8,6 +9,12 @@ namespace Rise.Client.RegistrationRequests;
 public class RegistrationRequestService(HttpClient httpClient, OfflineQueueService offlineQueueService) : IRegistrationRequestService
 {
     private readonly OfflineQueueService _offlineQueueService = offlineQueueService;
+    public Task<Result> CreateAsync(AccountRequest.Register request, CancellationToken ct = default)
+    {
+        // dont implement, '/api/identity/accounts/register' makes use of the interface
+        throw new NotImplementedException();
+    }
+
     public async Task<Result<RegistrationRequestResponse.PendingList>> GetPendingAsync(CancellationToken ct = default)
     {
         try

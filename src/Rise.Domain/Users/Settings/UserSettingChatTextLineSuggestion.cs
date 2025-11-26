@@ -1,4 +1,4 @@
-using Rise.Domain.Users.Settings.Properties;
+using Rise.Domain.Common.ValueObjects;
 
 namespace Rise.Domain.Users.Settings;
 

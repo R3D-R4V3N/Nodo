@@ -1,0 +1,68 @@
+@page "/events"
+@attribute [Authorize(Roles = $"{AppRoles.User}")]
+@using Rise.Client.Events.Components
+@using Rise.Shared.Identity
+@layout MainLayout
+
+<div class="flex flex-col h-screen">
+    <div class="flex-shrink-0">
+        <TopBar 
+            Title="Evenementen"
+            Class="text-center"
+        />
+    </div>
+    
+    <div class="flex-1 overflow-y-auto pb-24">
+        @if (_errorMessage != null)
+        {
+            <div class="mx-4 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                @_errorMessage
+            </div>
+        }
+        
+        @if (_events == null)
+        {
+            <p class="text-center text-neutral-500 mt-6">Evenementen laden...</p>
+        }
+        else if (!_events.Any())
+        {
+            <p class="text-center text-neutral-500 mt-6">Geen evenementen gevonden.</p>
+        }
+        else
+        {
+            @foreach (var e in _events)
+            {
+                <EventCard EventId="@e.Id"
+                           ImageUrl="@e.ImageUrl"
+                           Title="@e.Name"
+                           Location="@e.Location"
+                           DateText="@e.Date.ToString("d MMM 'om' HH:mm", new System.Globalization.CultureInfo("nl-BE"))"
+                           InterestedUsers="@e.InterestedUsers"
+                           IsInterested="@IsUserInterested(e)"
+                           Price="@e.Price"
+                           OnToggleInterest="@HandleToggleInterest" />
+            }
+        }
+    </div>
+</div>
+    
+    @* <EventCard *@
+    @*     ImageUrl="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=800&q=80" *@
+    @*     Title="Rock for specials" *@
+    @*     Location="9940 Evergem" *@
+    @*     DateText="zo, 2 mrt. om 09:00" *@
+    @*     AttendeeImage="https://randomuser.me/api/portraits/women/44.jpg" *@
+    @*     AttendeeText="Alyssa, Silke en 4 vrienden zijn geïnteresseerd" *@
+    @*     Price="12.50" *@
+    @* /> *@
+    @* *@
+    @* <EventCard *@
+    @*     ImageUrl="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=800&q=80" *@
+    @*     Title="Rock for specials" *@
+    @*     Location="9940 Evergem" *@
+    @*     DateText="zo, 2 mrt. om 09:00" *@
+    @*     AttendeeImage="https://randomuser.me/api/portraits/women/44.jpg" *@
+    @*     AttendeeText="Alyssa, Silke en 4 vrienden zijn geïnteresseerd" *@
+    @*     Price="12.50" *@
+    @* /> *@
+    

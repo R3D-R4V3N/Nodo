@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Rise.Shared.Identity;
 using Rise.Shared.Identity.Accounts;
 
 namespace Rise.Client.Identity;
@@ -21,7 +22,14 @@ public partial class Login
 
         if (authenticationState.User.Identity?.IsAuthenticated == true)
         {
-            Navigation.NavigateTo("/homepage");
+            if (authenticationState.User.IsInRole(AppRoles.Supervisor) || authenticationState.User.IsInRole(AppRoles.Administrator))
+            {
+                Navigation.NavigateTo("/dashboard");
+            }
+            else
+            {
+                Navigation.NavigateTo("/homepage");
+            }
         }
     }
 
@@ -35,7 +43,15 @@ public partial class Login
         }
         else if (_result.IsSuccess)
         {
-            Navigation.NavigateTo("/homepage");
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            if (authenticationState.User.IsInRole(AppRoles.Supervisor) || authenticationState.User.IsInRole(AppRoles.Administrator))
+            {
+                Navigation.NavigateTo("/dashboard");
+            }
+            else
+            {
+                Navigation.NavigateTo("/homepage");
+            }
         }
     }
 }

@@ -67,9 +67,9 @@ pipeline {
                 sh '''
                 cd dev-repo
 
-                if [ "$(docker ps -aq -f name=rise-server)" ]; then
+                if [ "$(docker ps -aq -f name=^rise-server$)" ]; then
                     echo "rise-server is running. Stopping and removing..."
-                    docker rm -f $(docker ps -aq -f name=rise-server)
+                    docker rm -f $(docker ps -aq -f name=^rise-server$)
                 else
                     echo "rise-server is not running. Nothing to stop."
                 fi

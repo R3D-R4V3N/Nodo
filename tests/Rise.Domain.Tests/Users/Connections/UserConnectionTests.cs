@@ -1,5 +1,6 @@
 ﻿using Rise.Domain.Users;
 using Rise.Domain.Users.Connections;
+using Rise.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +14,8 @@ public class UserConnectionTests
     [Fact]
     public void Constructor_ShouldSetPropertiesCorrectly()
     {
-        var user1 = TestData.ValidUser(1);
-        var user2 = TestData.ValidUser(2);
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
         var connectionType = UserConnectionType.Friend;
         var createdAt = DateTime.UtcNow;
 
@@ -35,8 +36,8 @@ public class UserConnectionTests
     [Fact]
     public void TwoConnections_WithSameValues_ShouldBeEqual()
     {
-        var user1 = TestData.ValidUser(1);
-        var user2 = TestData.ValidUser(2);
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         var c1 = new UserConnection
         {
@@ -61,14 +62,14 @@ public class UserConnectionTests
     {
         var c1 = new UserConnection
         {
-            From = TestData.ValidUser(1),
-            To = TestData.ValidUser(2),
+            From = DomainData.ValidUser(1),
+            To = DomainData.ValidUser(2),
             ConnectionType = UserConnectionType.Friend
         };
         var c2 = new UserConnection
         {
-            From = TestData.ValidUser(2),
-            To = TestData.ValidUser(1),
+            From = DomainData.ValidUser(2),
+            To = DomainData.ValidUser(1),
             ConnectionType = UserConnectionType.Friend
         };
 
@@ -78,8 +79,8 @@ public class UserConnectionTests
     [Fact]
     public void TwoConnections_WithDifferentConnectionType_ShouldNotBeEqual()
     {
-        var user1 = TestData.ValidUser(1);
-        var user2 = TestData.ValidUser(2);
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         var c1 = new UserConnection
         {

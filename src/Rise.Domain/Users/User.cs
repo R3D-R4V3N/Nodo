@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using Rise.Domain.Chats;
+using Rise.Domain.Events;
 using Rise.Domain.Helper;
 using Rise.Domain.Organizations;
 using Rise.Domain.Users.Connections;
@@ -24,7 +25,7 @@ public class User : BaseUser
         .Where(x => x.Type.Equals(SentimentType.Dislike));
 
     // hobbies
-    private readonly HashSet<UserHobby> _hobbies = [];
+    private readonly List<UserHobby> _hobbies = [];
     public IReadOnlyCollection<UserHobby> Hobbies => _hobbies;
 
     //// connections
@@ -36,6 +37,10 @@ public class User : BaseUser
         .Where(x => x.ConnectionType is UserConnectionType.RequestIncoming or UserConnectionType.RequestOutgoing);
     public IEnumerable<UserConnection> BlockedUsers => _connections
         .Where(x => x.ConnectionType is UserConnectionType.Blocked);
+
+    // events
+    private readonly List<Event> _interestedInEvents = [];
+    public IReadOnlyCollection<Event> InterestedInEvents => _interestedInEvents;
 
     public bool IsFriend(User req) 
         => (GetConnection(req)?.ConnectionType ?? UserConnectionType.None) == UserConnectionType.Friend;
@@ -150,6 +155,13 @@ public class User : BaseUser
 
     public Result<User> RemoveFriend(User friend)
     {
+        UserConnection? conn = GetConnection(friend);
+
+        if (conn is null || conn.ConnectionType != UserConnectionType.Friend)
+        {
+            return Result.NotFound($"Je bent niet bevriend met {friend}");
+        }
+
         Span<User> span =
         [
             this, friend
@@ -229,8 +241,7 @@ public class User : BaseUser
 
     public Result UpdateSentiments(IEnumerable<UserSentiment> sentiments)
     {
-        if (sentiments is null)
-            return Result.Conflict("Gevoelens is null");
+        sentiments ??= [];
 
         // if performance becomes an issue and you know SentimentType
         // will be nicely indexed, use stackalloc
@@ -242,7 +253,7 @@ public class User : BaseUser
         foreach (var sentiment in sentiments)
         {
             if (sentiment is null)
-                return Result.Conflict("Gevoelens is null");
+                return Result.Conflict("Gevoelens bevat een null value");
 
             if (tempLst.Contains(sentiment))
                 continue;
@@ -268,23 +279,25 @@ public class User : BaseUser
 
     public Result UpdateHobbies(IEnumerable<UserHobby> hobbies)
     {
-        if (hobbies is null)
-            return Result.Conflict("Gevoelens is null");
-
+        hobbies ??= [];
+        
         var hobbiesLst = hobbies as List<UserHobby> ?? hobbies.ToList();
 
         if (hobbiesLst.Count > MAX_HOBBIES)
             return Result.Conflict($"Mag maximaal {MAX_HOBBIES} hobbies hebben.");
 
-        _hobbies.Clear();
+        List<UserHobby> tempLst = [];
 
         foreach (var hobby in hobbiesLst)
         {
             if (hobby is null)
-                return Result.Conflict("Hobby is null");
+                return Result.Conflict("Hobbies bevat een null waarde");
 
-            _hobbies.Add(hobby);
+            tempLst.Add(hobby);
         }
+
+        _hobbies.Clear();
+        _hobbies.AddRange(tempLst);
 
         return Result.Success();
     }

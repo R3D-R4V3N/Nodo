@@ -6,7 +6,7 @@ public static partial class ChatRequest
     {
         public int ChatId { get; set; }
         public string? Content { get; set; }
-        public string? AudioDataUrl { get; set; }
+        public string? AudioDataBlob { get; set; }
         public double? AudioDurationSeconds { get; set; }
 
         public class Validator : AbstractValidator<CreateMessage>
@@ -20,12 +20,12 @@ public static partial class ChatRequest
                 RuleFor(x => x)
                     .Must(request =>
                         !string.IsNullOrWhiteSpace(request.Content) ||
-                        !string.IsNullOrWhiteSpace(request.AudioDataUrl))
+                        !string.IsNullOrWhiteSpace(request.AudioDataBlob))
                     .WithMessage("Een bericht moet tekst of audio bevatten.");
 
                 RuleFor(x => x.AudioDurationSeconds)
                     .GreaterThan(0)
-                    .When(x => !string.IsNullOrWhiteSpace(x.AudioDataUrl));
+                    .When(x => !string.IsNullOrWhiteSpace(x.AudioDataBlob));
             }
         }
     }

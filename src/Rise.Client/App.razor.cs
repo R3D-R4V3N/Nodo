@@ -14,35 +14,34 @@ public partial class App : IDisposable
     protected override async Task OnInitializedAsync()
     {
         AuthStateProvider.AuthenticationStateChanged += OnAuthStateChanged;
-        await UpdateCurrentUserAsync();
-    }
-
-    private async void OnAuthStateChanged(Task<AuthenticationState> task)
-    {
-        await UpdateCurrentUserAsync();
-        StateHasChanged();
-    }
-
-    private async Task UpdateCurrentUserAsync()
-    {
         _isLoading = true;
         try
         {
-            var currentUser = await UserContext.InitializeAsync();
-            UserState.User = currentUser;
-        }
-        catch
-        {
-            UserState.User = null;
+            await UserContext.SetUserStateAsync();
         }
         finally
         {
             _isLoading = false;
         }
+        StateHasChanged();
+    }
+
+    private async void OnAuthStateChanged(Task<AuthenticationState> task)
+    {
+        _isLoading = true;
+        try
+        {
+            await UserContext.UpdateUserStateAsync();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+        StateHasChanged();
     }
 
     public void Dispose()
     {
-        AuthStateProvider.AuthenticationStateChanged -= OnAuthStateChanged;
+        AuthStateProvider.AuthenticationStateChanged += OnAuthStateChanged;
     }
 }

@@ -1,3 +1,6 @@
+using Rise.Shared.Hobbies;
+using Rise.Shared.Sentiments;
+
 namespace Rise.Shared.Users;
 
 public static partial class UserRequest

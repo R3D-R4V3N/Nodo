@@ -5,4 +5,7 @@ public partial class SuggestionChips
 {
     [Parameter] public required IEnumerable<string> Suggestions { get; set; } 
     [Parameter] public EventCallback<string> OnPick { get; set; }
+    
+    [Parameter] public EventCallback<string> OnSelect { get; set; }
+
 }

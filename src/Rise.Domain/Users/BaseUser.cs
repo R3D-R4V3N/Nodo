@@ -1,9 +1,6 @@
 using Ardalis.Result;
 using Rise.Domain.Chats;
-using Rise.Domain.Organizations;
-using Rise.Domain.Users.Hobbys;
-using Rise.Domain.Users.Properties;
-using Rise.Domain.Users.Sentiment;
+using Rise.Domain.Common.ValueObjects;
 using Rise.Domain.Users.Settings;
 
 namespace Rise.Domain.Users;
@@ -21,7 +18,7 @@ public abstract class BaseUser : Entity
     public required LastName LastName { get; set; }
     public required Biography Biography { get; set; }
     public required AvatarUrl AvatarUrl { get; set; }
-    public required DateOnly BirthDay { get; set; }
+    public required BirthDay BirthDay { get; set; }
     public required GenderType Gender { get; set; }    
     // settings
     private UserSetting _userSettings;

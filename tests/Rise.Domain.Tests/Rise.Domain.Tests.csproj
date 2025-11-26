@@ -28,6 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Rise.Tests.Shared\Rise.Tests.Shared.csproj" />
       <ProjectReference Include="..\..\src\Rise.Domain\Rise.Domain.csproj" />
     </ItemGroup>
 

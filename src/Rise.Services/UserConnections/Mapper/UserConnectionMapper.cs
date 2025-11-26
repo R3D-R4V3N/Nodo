@@ -6,6 +6,12 @@ using Rise.Shared.UserConnections;
 namespace Rise.Services.UserConnections.Mapper;
 public static class UserConnectionMapper
 {
+    public static UserConnectionDto.Get ToGetDto(this UserConnection user, int chatId) =>
+        new UserConnectionDto.Get
+        {
+            User = user.To.ToConnectionDto(chatId),
+            State = user.ConnectionType.MapToDto(),
+        };
     public static UserConnectionDto.Get ToGetDto(this UserConnection user) =>
         new UserConnectionDto.Get
         {

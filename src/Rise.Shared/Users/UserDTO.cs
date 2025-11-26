@@ -1,3 +1,5 @@
+using Rise.Shared.Hobbies;
+using Rise.Shared.Sentiments;
 using System.Collections.Generic;
 
 namespace Rise.Shared.Users;
@@ -29,6 +31,7 @@ public static class UserDto
         public string AccountId { get; init; } = string.Empty;
         public int Age { get; init; }
         public string AvatarUrl { get; init; } = string.Empty;
+        public string ChatId { get; init; } = string.Empty;
     }
 
     public record Chat

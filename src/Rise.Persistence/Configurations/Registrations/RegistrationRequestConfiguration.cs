@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Rise.Domain.Common.ValueObjects;
 using Rise.Domain.Registrations;
 
 namespace Rise.Persistence.Configurations.Registrations;
@@ -12,52 +13,83 @@ internal class RegistrationRequestConfiguration : EntityConfiguration<Registrati
 
         builder.ToTable("RegistrationRequests");
 
-        builder.Property(r => r.Email)
-            .IsRequired();
+        builder.OwnsOne(m => m.Email, email =>
+        {
+            email.Property(t => t.Value)
+                .HasColumnName("Email")
+                .HasMaxLength(Email.MAX_LENGTH);
+        });
 
-        builder.Property(r => r.NormalizedEmail)
-            .IsRequired();
+        builder.OwnsOne(m => m.FirstName, firstname =>
+        {
+            firstname.Property(t => t.Value)
+                .HasColumnName("FirstName")
+                .HasMaxLength(FirstName.MAX_LENGTH);
+        });
 
-        builder.Property(r => r.FirstName)
-            .IsRequired()
-            .HasMaxLength(200);
+        builder.OwnsOne(m => m.LastName, lastName =>
+        {
+            lastName.Property(t => t.Value)
+                .HasColumnName("LastName")
+                .HasMaxLength(LastName.MAX_LENGTH);
+        });
 
-        builder.Property(r => r.LastName)
-            .IsRequired()
-            .HasMaxLength(200);
+        builder.OwnsOne(m => m.AvatarUrl, bio =>
+        {
+            bio.Property(t => t.Value)
+                .HasColumnName("AvatarUrl")
+                .HasMaxLength(AvatarUrl.MAX_LENGTH);
+        });
 
-        builder.Property(r => r.FullName)
-            .IsRequired();
-
-        builder.Property(r => r.BirthDate)
-            .IsRequired();
+        builder.OwnsOne(m => m.BirthDay, bd =>
+        {
+            bd.Property(t => t.Value)
+                .HasColumnName("BirthDay")
+                .HasMaxLength(BirthDay.MAX_LENGTH);
+        });
 
         builder.Property(r => r.Gender)
             .IsRequired();
 
-        builder.Property(r => r.AvatarUrl)
-            .IsRequired()
-            .HasColumnType("longtext");
-
         builder.Property(r => r.PasswordHash)
             .IsRequired();
 
-        builder.HasIndex(r => r.NormalizedEmail)
-            .IsUnique();
-
         builder.HasOne(r => r.Organization)
             .WithMany()
-            .HasForeignKey(r => r.OrganizationId)
+            .HasForeignKey("OrganizationId")
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(r => r.AssignedSupervisor)
             .WithMany()
-            .HasForeignKey(r => r.AssignedSupervisorId)
+            .HasForeignKey("AssignedSupervisorId")
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(r => r.ApprovedBySupervisor)
-            .WithMany()
-            .HasForeignKey(r => r.ApprovedBySupervisorId)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.OwnsOne(u => u.Status, status =>
+        {
+            status.WithOwner(s => s.Request)
+                .HasForeignKey("RequestId");
+
+            status.Property(s => s.StatusType)
+                .HasDefaultValue(RegistrationStatusType.Pending)
+                .HasColumnName("StatusType");
+
+            status.HasOne(s => s.HandledBy)
+                .WithMany()
+                .HasForeignKey("HandledById");
+
+            status.Property<int?>("HandledById")
+                .HasColumnName("HandledById");
+
+            status.Property(s => s.HandledDate)
+                .HasDefaultValue(DateTime.UtcNow)
+                .HasColumnName("HandledDate");
+
+            status.OwnsOne(m => m.Note, note =>
+            {
+                note.Property(t => t.Value)
+                    .HasMaxLength(RegistrationNote.MAX_LENGTH)
+                    .HasColumnName("Note");
+            });
+        });
     }
 }

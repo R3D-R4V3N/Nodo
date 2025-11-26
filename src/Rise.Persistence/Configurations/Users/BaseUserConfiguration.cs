@@ -1,10 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Rise.Domain.Organizations;
+using Rise.Domain.Common.ValueObjects;
 using Rise.Domain.Users;
-using Rise.Domain.Users.Properties;
-using Rise.Domain.Users.Settings;
-using Rise.Domain.Users.Settings.Properties;
 
 
 namespace Rise.Persistence.Configurations.Users;
@@ -49,8 +46,13 @@ internal class BaseUserConfiguration : EntityConfiguration<BaseUser>
                 .HasMaxLength(AvatarUrl.MAX_LENGTH);
         });
 
+        builder.OwnsOne(m => m.BirthDay, bd =>
+        {
+            bd.Property(t => t.Value)
+                .HasColumnName("BirthDay")
+                .HasMaxLength(BirthDay.MAX_LENGTH);
+        });
 
-        builder.Property(x => x.BirthDay).IsRequired();
         builder.Property(x => x.Gender)
             .HasDefaultValue(GenderType.X);
 

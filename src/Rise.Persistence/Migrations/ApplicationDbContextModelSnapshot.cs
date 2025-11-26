@@ -37,6 +37,21 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("BaseUserChat");
                 });
 
+            modelBuilder.Entity("EventInterestedUser", b =>
+                {
+                    b.Property<int>("EventId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("EventId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EventInterestedUsers", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -264,6 +279,10 @@ namespace Rise.Persistence.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ChatType")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
@@ -281,7 +300,64 @@ namespace Rise.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ChatType");
+
                     b.ToTable("Chat", (string)null);
+                });
+
+            modelBuilder.Entity("Rise.Domain.Events.Event", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("varchar(2048)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("varchar(1024)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<double>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("double");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Event", (string)null);
                 });
 
             modelBuilder.Entity("Rise.Domain.Messages.Message", b =>
@@ -377,46 +453,13 @@ namespace Rise.Persistence.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("ApprovedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int?>("ApprovedBySupervisorId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("AssignedSupervisorId")
                         .HasColumnType("int");
-
-                    b.Property<string>("AvatarUrl")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("longtext");
-
-                    b.Property<DateOnly>("BirthDate")
-                        .HasColumnType("date");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("current_timestamp()");
-
-                    b.Property<string>("DeniedReason")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
 
                     b.Property<int>("Gender")
                         .HasColumnType("int");
@@ -426,16 +469,6 @@ namespace Rise.Persistence.Migrations
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("NormalizedEmail")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
                     b.Property<int>("OrganizationId")
                         .HasColumnType("int");
 
@@ -444,9 +477,6 @@ namespace Rise.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
@@ -454,12 +484,7 @@ namespace Rise.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ApprovedBySupervisorId");
-
                     b.HasIndex("AssignedSupervisorId");
-
-                    b.HasIndex("NormalizedEmail")
-                        .IsUnique();
 
                     b.HasIndex("OrganizationId");
 
@@ -478,9 +503,6 @@ namespace Rise.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(36)
                         .HasColumnType("varchar(36)");
-
-                    b.Property<DateOnly>("BirthDay")
-                        .HasColumnType("date");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -659,6 +681,13 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("UserSentiments", (string)null);
                 });
 
+            modelBuilder.Entity("Rise.Domain.Users.Admin", b =>
+                {
+                    b.HasBaseType("Rise.Domain.Users.BaseUser");
+
+                    b.ToTable("Admins", (string)null);
+                });
+
             modelBuilder.Entity("Rise.Domain.Users.Supervisor", b =>
                 {
                     b.HasBaseType("Rise.Domain.Users.BaseUser");
@@ -694,6 +723,21 @@ namespace Rise.Persistence.Migrations
                     b.HasOne("Rise.Domain.Users.BaseUser", null)
                         .WithMany()
                         .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EventInterestedUser", b =>
+                {
+                    b.HasOne("Rise.Domain.Events.Event", null)
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Rise.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -763,7 +807,7 @@ namespace Rise.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.OwnsOne("Rise.Domain.Messages.Properties.Text", "Text", b1 =>
+                    b.OwnsOne("Rise.Domain.Common.ValueObjects.TextMessage", "Text", b1 =>
                         {
                             b1.Property<int>("MessageId")
                                 .HasColumnType("int");
@@ -795,11 +839,6 @@ namespace Rise.Persistence.Migrations
 
             modelBuilder.Entity("Rise.Domain.Registrations.RegistrationRequest", b =>
                 {
-                    b.HasOne("Rise.Domain.Users.Supervisor", "ApprovedBySupervisor")
-                        .WithMany()
-                        .HasForeignKey("ApprovedBySupervisorId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Rise.Domain.Users.Supervisor", "AssignedSupervisor")
                         .WithMany()
                         .HasForeignKey("AssignedSupervisorId")
@@ -811,35 +850,186 @@ namespace Rise.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("ApprovedBySupervisor");
-
-                    b.Navigation("AssignedSupervisor");
-
-                    b.Navigation("Organization");
-                });
-
-            modelBuilder.Entity("Rise.Domain.Users.BaseUser", b =>
-                {
-                    b.OwnsOne("Rise.Domain.Users.Properties.AvatarUrl", "AvatarUrl", b1 =>
+                    b.OwnsOne("Rise.Domain.Common.ValueObjects.Email", "Email", b1 =>
                         {
-                            b1.Property<int>("BaseUserId")
+                            b1.Property<int>("RegistrationRequestId")
                                 .HasColumnType("int");
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasMaxLength(500000)
-                                .HasColumnType("longtext")
-                                .HasColumnName("AvatarUrl");
+                                .HasMaxLength(255)
+                                .HasColumnType("varchar(255)")
+                                .HasColumnName("Email");
 
-                            b1.HasKey("BaseUserId");
+                            b1.HasKey("RegistrationRequestId");
 
-                            b1.ToTable("BaseUsers");
+                            b1.ToTable("RegistrationRequests");
 
                             b1.WithOwner()
-                                .HasForeignKey("BaseUserId");
+                                .HasForeignKey("RegistrationRequestId");
                         });
 
-                    b.OwnsOne("Rise.Domain.Users.Properties.Biography", "Biography", b1 =>
+                    b.OwnsOne("Rise.Domain.Common.ValueObjects.AvatarUrl", "AvatarUrl", b1 =>
+                        {
+                            b1.Property<int>("RegistrationRequestId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(500)
+                                .HasColumnType("varchar(500)")
+                                .HasColumnName("AvatarUrl");
+
+                            b1.HasKey("RegistrationRequestId");
+
+                            b1.ToTable("RegistrationRequests");
+
+                            b1.WithOwner()
+                                .HasForeignKey("RegistrationRequestId");
+                        });
+
+                    b.OwnsOne("Rise.Domain.Common.ValueObjects.BirthDay", "BirthDay", b1 =>
+                        {
+                            b1.Property<int>("RegistrationRequestId")
+                                .HasColumnType("int");
+
+                            b1.Property<DateOnly>("Value")
+                                .HasMaxLength(255)
+                                .HasColumnType("date")
+                                .HasColumnName("BirthDay");
+
+                            b1.HasKey("RegistrationRequestId");
+
+                            b1.ToTable("RegistrationRequests");
+
+                            b1.WithOwner()
+                                .HasForeignKey("RegistrationRequestId");
+                        });
+
+                    b.OwnsOne("Rise.Domain.Common.ValueObjects.FirstName", "FirstName", b1 =>
+                        {
+                            b1.Property<int>("RegistrationRequestId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("varchar(100)")
+                                .HasColumnName("FirstName");
+
+                            b1.HasKey("RegistrationRequestId");
+
+                            b1.ToTable("RegistrationRequests");
+
+                            b1.WithOwner()
+                                .HasForeignKey("RegistrationRequestId");
+                        });
+
+                    b.OwnsOne("Rise.Domain.Common.ValueObjects.LastName", "LastName", b1 =>
+                        {
+                            b1.Property<int>("RegistrationRequestId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("varchar(100)")
+                                .HasColumnName("LastName");
+
+                            b1.HasKey("RegistrationRequestId");
+
+                            b1.ToTable("RegistrationRequests");
+
+                            b1.WithOwner()
+                                .HasForeignKey("RegistrationRequestId");
+                        });
+
+                    b.OwnsOne("Rise.Domain.Registrations.RegistrationStatus", "Status", b1 =>
+                        {
+                            b1.Property<int>("RequestId")
+                                .HasColumnType("int");
+
+                            b1.Property<int?>("HandledById")
+                                .HasColumnType("int")
+                                .HasColumnName("HandledById");
+
+                            b1.Property<DateTime?>("HandledDate")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("datetime(6)")
+                                .HasDefaultValue(new DateTime(2025, 11, 24, 18, 53, 29, 58, DateTimeKind.Utc).AddTicks(4190))
+                                .HasColumnName("HandledDate");
+
+                            b1.Property<int>("StatusType")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasDefaultValue(0)
+                                .HasColumnName("StatusType");
+
+                            b1.HasKey("RequestId");
+
+                            b1.HasIndex("HandledById");
+
+                            b1.ToTable("RegistrationRequests");
+
+                            b1.HasOne("Rise.Domain.Users.Supervisor", "HandledBy")
+                                .WithMany()
+                                .HasForeignKey("HandledById");
+
+                            b1.WithOwner("Request")
+                                .HasForeignKey("RequestId");
+
+                            b1.OwnsOne("Rise.Domain.Common.ValueObjects.RegistrationNote", "Note", b2 =>
+                                {
+                                    b2.Property<int>("RegistrationStatusRequestId")
+                                        .HasColumnType("int");
+
+                                    b2.Property<string>("Value")
+                                        .IsRequired()
+                                        .HasMaxLength(200)
+                                        .HasColumnType("varchar(200)")
+                                        .HasColumnName("Note");
+
+                                    b2.HasKey("RegistrationStatusRequestId");
+
+                                    b2.ToTable("RegistrationRequests");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("RegistrationStatusRequestId");
+                                });
+
+                            b1.Navigation("HandledBy");
+
+                            b1.Navigation("Note");
+
+                            b1.Navigation("Request");
+                        });
+
+                    b.Navigation("AssignedSupervisor");
+
+                    b.Navigation("AvatarUrl")
+                        .IsRequired();
+
+                    b.Navigation("BirthDay")
+                        .IsRequired();
+
+                    b.Navigation("Email")
+                        .IsRequired();
+
+                    b.Navigation("FirstName")
+                        .IsRequired();
+
+                    b.Navigation("LastName")
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+
+                    b.Navigation("Status")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Rise.Domain.Users.BaseUser", b =>
+                {
+                    b.OwnsOne("Rise.Domain.Common.ValueObjects.Biography", "Biography", b1 =>
                         {
                             b1.Property<int>("BaseUserId")
                                 .HasColumnType("int");
@@ -858,7 +1048,44 @@ namespace Rise.Persistence.Migrations
                                 .HasForeignKey("BaseUserId");
                         });
 
-                    b.OwnsOne("Rise.Domain.Users.Properties.FirstName", "FirstName", b1 =>
+                    b.OwnsOne("Rise.Domain.Common.ValueObjects.AvatarUrl", "AvatarUrl", b1 =>
+                        {
+                            b1.Property<int>("BaseUserId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(500)
+                                .HasColumnType("varchar(500)")
+                                .HasColumnName("AvatarUrl");
+
+                            b1.HasKey("BaseUserId");
+
+                            b1.ToTable("BaseUsers");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BaseUserId");
+                        });
+
+                    b.OwnsOne("Rise.Domain.Common.ValueObjects.BirthDay", "BirthDay", b1 =>
+                        {
+                            b1.Property<int>("BaseUserId")
+                                .HasColumnType("int");
+
+                            b1.Property<DateOnly>("Value")
+                                .HasMaxLength(255)
+                                .HasColumnType("date")
+                                .HasColumnName("BirthDay");
+
+                            b1.HasKey("BaseUserId");
+
+                            b1.ToTable("BaseUsers");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BaseUserId");
+                        });
+
+                    b.OwnsOne("Rise.Domain.Common.ValueObjects.FirstName", "FirstName", b1 =>
                         {
                             b1.Property<int>("BaseUserId")
                                 .HasColumnType("int");
@@ -877,7 +1104,7 @@ namespace Rise.Persistence.Migrations
                                 .HasForeignKey("BaseUserId");
                         });
 
-                    b.OwnsOne("Rise.Domain.Users.Properties.LastName", "LastName", b1 =>
+                    b.OwnsOne("Rise.Domain.Common.ValueObjects.LastName", "LastName", b1 =>
                         {
                             b1.Property<int>("BaseUserId")
                                 .HasColumnType("int");
@@ -922,7 +1149,7 @@ namespace Rise.Persistence.Migrations
                             b1.WithOwner("User")
                                 .HasForeignKey("UserId");
 
-                            b1.OwnsOne("Rise.Domain.Users.Properties.FontSize", "FontSize", b2 =>
+                            b1.OwnsOne("Rise.Domain.Common.ValueObjects.FontSize", "FontSize", b2 =>
                                 {
                                     b2.Property<int>("UserSettingId")
                                         .HasColumnType("int");
@@ -962,7 +1189,7 @@ namespace Rise.Persistence.Migrations
                                     b2.WithOwner()
                                         .HasForeignKey("UserSettingsId");
 
-                                    b2.OwnsOne("Rise.Domain.Users.Settings.Properties.DefaultSentence", "Sentence", b3 =>
+                                    b2.OwnsOne("Rise.Domain.Common.ValueObjects.DefaultSentence", "Sentence", b3 =>
                                         {
                                             b3.Property<int>("UserSettingChatTextLineSuggestionUserSettingsId")
                                                 .HasColumnType("int");
@@ -1000,6 +1227,9 @@ namespace Rise.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Biography")
+                        .IsRequired();
+
+                    b.Navigation("BirthDay")
                         .IsRequired();
 
                     b.Navigation("FirstName")
@@ -1067,6 +1297,15 @@ namespace Rise.Persistence.Migrations
                     b.Navigation("Sentiment");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Rise.Domain.Users.Admin", b =>
+                {
+                    b.HasOne("Rise.Domain.Users.BaseUser", null)
+                        .WithOne()
+                        .HasForeignKey("Rise.Domain.Users.Admin", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Rise.Domain.Users.Supervisor", b =>

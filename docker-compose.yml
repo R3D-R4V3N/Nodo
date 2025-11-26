@@ -18,6 +18,22 @@ services:
     networks:
       - rise-network
 
+    # Fileserver in Docker
+  samba:
+    image: dockurr/samba
+    container_name: samba
+    environment:
+      NAME: "Data"
+      USER: "samba"
+      PASS: "secret"
+    ports:
+      - 50124:445
+    volumes:
+      - /var/lib/samba:/storage
+    restart: always
+    networks:
+      - rise-network
+
 volumes:
   mysql_data:
 

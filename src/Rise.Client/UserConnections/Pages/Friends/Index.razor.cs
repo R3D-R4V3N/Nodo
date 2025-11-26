@@ -63,9 +63,9 @@ public partial class Index : IAsyncDisposable
         await ApplyFilterAsync();
     }
 
-    private Task OpenChat(UserConnectionDto.Get _)
+    private Task OpenChat(UserConnectionDto.Get f)
     {
-        Nav.NavigateTo("/chat"); // TODO: use chat id
+        Nav.NavigateTo($"/chat/{f.User.ChatId}"); 
         return Task.CompletedTask;
     }
 

@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
 using Rise.Domain.Messages;
-using Rise.Domain.Messages.Properties;
 using Rise.Domain.Users;
 using Rise.Persistence;
 using Rise.Services.Chats.Mapper;
@@ -9,6 +8,7 @@ using Rise.Services.Identity;
 using Rise.Shared.Common;
 using Rise.Shared.Chats;
 using Rise.Shared.Identity;
+using Rise.Domain.Common.ValueObjects;
 
 namespace Rise.Services.Chats;
 
@@ -146,15 +146,15 @@ public class ChatService(
         string? audioContentType = null;
         double? audioDurationSeconds = null;
 
-        var audioDataUrl = string.IsNullOrWhiteSpace(request.AudioDataUrl)
+        var audioDataUrl = string.IsNullOrWhiteSpace(request.AudioDataBlob)
             ? null
-            : request.AudioDataUrl.Trim();
+            : request.AudioDataBlob.Trim();
 
         if (!string.IsNullOrWhiteSpace(audioDataUrl))
         {
             if (!AudioHelperMethods.TryParseAudioDataUrl(audioDataUrl, out audioContentType, out audioBytes, out var parseError))
             {
-                return Result.Invalid(new ValidationError(nameof(request.AudioDataUrl), parseError ?? "Ongeldige audio data-URL."));
+                return Result.Invalid(new ValidationError(nameof(request.AudioDataBlob), parseError ?? "Ongeldige audio data-URL."));
             }
 
             if (request.AudioDurationSeconds.HasValue)
@@ -179,7 +179,7 @@ public class ChatService(
         {
             Chat = chat,
             Sender = sender,
-            Text = Text.Create(textMessage!),
+            Text = TextMessage.Create(textMessage!),
             AudioContentType = audioContentType,
             AudioData = audioBytes,
             AudioDurationSeconds = audioDurationSeconds

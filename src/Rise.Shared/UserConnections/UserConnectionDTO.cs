@@ -13,7 +13,7 @@ public static class UserConnectionDto
         public UserConnectionTypeDto State { get; set; }
     }
 
-    public record getProfile
+    public record GetProfile
     {
         public UserDto.ConnectionProfile User { get; set; } = default!;
         public UserConnectionTypeDto State { get; set; } = default!;

@@ -41,16 +41,21 @@
 1. Clone the repository
 
 2. Create the MySQL database schema as either
-   - Local: You also have to set an environment setting with key `DB_CONNECTION` and value the connection string
-   - Run the docker compose
+   - local: You also have to set an environment variable with key `DB_CONNECTION` and value the connection string
+   - docker compose: the connection string is already set in `appsettings.Development.json`
 
-4. Open the `Rise.sln` file in [Rider](https://www.jetbrains.com/rider/), [Visual Studio](https://visualstudio.microsoft.com/) or  [Visual Studio Code](https://code.visualstudio.com/). (we prefer Rider, but you're free to choose.)
+3. Build the tailwind css
+   1. open a terminal and navigate to `\Rise.Client`
+   2. run `npm i` of `npm install`
+   3. run `npm run tw:build` 
 
-5. Run the project using the `Rise.Server` project as the startup project
+5. Open the `Rise.sln` file in [Rider](https://www.jetbrains.com/rider/), [Visual Studio](https://visualstudio.microsoft.com/) or  [Visual Studio Code](https://code.visualstudio.com/). (we prefer Rider, but you're free to choose.)
 
-6. The project should open in your default browser on port 5001.
+6. Run the project using the `Rise.Server` project as the startup project
 
-7. The database will be created.
+7. The project should open in your default browser on port 5001.
+
+8. The database will be created.
 
 ## Creation of the database
 
@@ -73,6 +78,27 @@ And then update the database using the following command, or run the `Rise.Serve
 ```
 dotnet ef database update --startup-project Rise.Server --project Rise.Persistence
 ```
+
+## Migration Console Tool
+
+This project includes a console helper for managing database migrations and resets.
+Each command will also automatically run the database seeder after applying changes.
+
+### Commands
+
+Apply pending migrations
+```
+dotnet run -- migrate
+```
+This will run all outstanding EF Core migrations and then execute the seeder.
+
+
+Reset the database
+```
+dotnet run -- reset
+```
+This drops the existing database, recreates it, applies all migrations from scratch, and runs the seeder.
+
 
 ## Usefull Commands
 
@@ -250,24 +276,6 @@ By separating the tests into their own projects, you ensure that they remain mai
 In some solutions, you may see additional projects or services to handle **cross-cutting concerns** like **logging**, **caching**, **authorization**, or **exception handling**. These concerns can be plugged into multiple layers of the solution but are typically handled in the **Persistence** / **Infrastructure** and **Server** projects.
 
 ------
-
-### Key Concepts Explained
-
-1. **Separation of Concerns (SoC)**: Each project in the solution has a single, well-defined responsibility. By separating concerns, changes in one part of the system (e.g., switching databases) do not ripple through the entire codebase.
-2. **Dependency Injection (DI)**: This design pattern is used to inject dependencies into classes. The **API** project often configures DI, so classes get the services or repositories they need without creating them directly. This promotes loose coupling and makes the code easier to test.
-3. **Domain-Driven Design (DDD)**: The structure of the **Domain** project follows DDD principles, where the business rules and logic are core to the application and should be isolated from infrastructure concerns. This keeps your business logic intact even as external technologies evolve.
-
-------
-
-### Conclusion
-
-The `dotnet-template` solution is structured to encourage scalability, maintainability, and testability. Each project serves a distinct purpose:
-
-- **Domain** defines core business logic.
-- **Services** manages use cases and orchestrates the flow of information.
-- **Persistence** handles the interaction with external systems and data storage.
-- **API** exposes the functionality to the outside world via HTTP.
-- **Client** a User Interface that could be swapped if need be.
 
 ## Course
 

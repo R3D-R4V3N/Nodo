@@ -1,6 +1,7 @@
 ﻿using Ardalis.Result;
+using Rise.Domain.Common.ValueObjects;
 using Rise.Domain.Users.Settings;
-using Rise.Domain.Users.Settings.Properties;
+using Rise.Tests.Shared;
 
 namespace Rise.Domain.Tests.Users.Settings;
 
@@ -9,7 +10,7 @@ public class UserSettingTests
     [Fact]
     public void AddChatTextLine_ShouldAddNewSuggestion()
     {
-        var setting = TestData.ValidUserSettings();
+        var setting = DomainData.ValidUserSettings();
         var line = "Cowabunga.";
 
         var result = setting.AddChatTextLine(line);
@@ -23,7 +24,7 @@ public class UserSettingTests
     [Fact]
     public void AddChatTextLine_ShouldReturnConflict_WhenDuplicate()
     {
-        var setting = TestData.ValidUserSettings();
+        var setting = DomainData.ValidUserSettings();
         var line = "Cowabunga.";
         setting.AddChatTextLine(line);
 
@@ -36,7 +37,7 @@ public class UserSettingTests
     [Fact]
     public void AddChatTextLine_ShouldReturnConflict_WhenExceedingMax()
     {
-        var setting = TestData.ValidUserSettings();
+        var setting = DomainData.ValidUserSettings();
         int n = UserSetting.MAX_DEFAULT_CHAT_LINE_COUNT;
 
         for (int i = 0; i < n; i++)
@@ -53,7 +54,7 @@ public class UserSettingTests
     [Fact]
     public void AddChatTextLine_ShouldInsertAtCorrectRank()
     {
-        var setting = TestData.ValidUserSettings();
+        var setting = DomainData.ValidUserSettings();
         setting.AddChatTextLine("Line 0");
         setting.AddChatTextLine("Line 1");
         setting.AddChatTextLine("Line 2");
@@ -74,7 +75,7 @@ public class UserSettingTests
     [Fact]
     public void RemoveChatTextLine_ShouldRemoveExistingSuggestion()
     {
-        var setting = TestData.ValidUserSettings();
+        var setting = DomainData.ValidUserSettings();
         setting.AddChatTextLine("Line 0");
         setting.AddChatTextLine("Line 1");
         setting.AddChatTextLine("Line 2");
@@ -99,7 +100,7 @@ public class UserSettingTests
     [Fact]
     public void RemoveChatTextLine_ShouldReturnConflict_WhenNotFound()
     {
-        var setting = TestData.ValidUserSettings();
+        var setting = DomainData.ValidUserSettings();
         setting.AddChatTextLine("Existing");
 
         var result = setting.RemoveChatTextLine("Missing");
@@ -111,8 +112,8 @@ public class UserSettingTests
     [Fact]
     public void SettingUser_ShouldLinkBackToUserSettings()
     {
-        var user = TestData.ValidUser(1);
-        var setting = TestData.ValidUserSettings();
+        var user = DomainData.ValidUser(1);
+        var setting = DomainData.ValidUserSettings();
 
         setting.User = user;
 
@@ -125,8 +126,8 @@ public class UserSettingTests
     [Fact]
     public void SettingUser_ShouldIgnoreIfAlreadyAssigned()
     {
-        var user = TestData.ValidUser(1);
-        var setting = TestData.ValidUserSettings();
+        var user = DomainData.ValidUser(1);
+        var setting = DomainData.ValidUserSettings();
 
         setting.User = user;
         var originalSettings = user.UserSettings;

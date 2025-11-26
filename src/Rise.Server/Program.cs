@@ -14,6 +14,7 @@ using Rise.Services.UserConnections;
 using Rise.Shared.Chats;
 using Serilog.Events;
 using Rise.Server.Hubs;
+using Rise.Storage;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -63,6 +64,7 @@ try
         .AddHttpContextAccessor()
         .AddScoped<ISessionContextProvider, HttpContextSessionProvider>()
         .AddApplicationServices()
+        .AddBlobStorageServices()
         .AddAuthorization()
         .AddFastEndpoints(opt =>
         {
@@ -80,21 +82,21 @@ try
 
     var app = builder.Build();
 
-    if (app.Environment.IsDevelopment())
-    {
+    //if (app.Environment.IsDevelopment())
+    //{
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
 
-        db.Database.EnsureDeleted();
+        //db.Database.EnsureDeleted();
         db.Database.Migrate();
 
         await seeder.SeedAsync();
-    }
+    //}
 
     app.UseHttpsRedirection()
        .UseBlazorFrameworkFiles()
-     .UseStaticFiles()
+       .UseStaticFiles()
        .UseDefaultExceptionHandler()
        .UseAuthentication()
        .UseAuthorization()

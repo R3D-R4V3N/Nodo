@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Rise.Domain.Common.ValueObjects;
 using Rise.Domain.Messages;
 
 namespace Rise.Persistence.Configurations.Messages;
@@ -27,7 +28,7 @@ internal class MessageConfiguration : EntityConfiguration<Message>
         {
             text.Property(t => t.Value)
                 .HasColumnName("Text")
-                .HasMaxLength(Domain.Messages.Properties.Text.MAX_LENGTH);
+                .HasMaxLength(TextMessage.MAX_LENGTH);
 
             text.Property(t => t.IsSuspicious)
                 .HasColumnName("IsSuspicious");

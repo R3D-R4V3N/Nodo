@@ -115,7 +115,7 @@ public partial class Chat : IAsyncDisposable
         var request = new ChatRequest.CreateMessage
         {
             ChatId = _chat.ChatId,
-            AudioDataUrl = audio.DataUrl,
+            AudioDataBlob = audio.DataUrl,
             AudioDurationSeconds = audio.DurationSeconds
         };
 
@@ -212,7 +212,7 @@ public partial class Chat : IAsyncDisposable
                 AccountId = UserState.User.AccountId,
                 AvatarUrl = UserState.User.AvatarUrl
             },
-            AudioDataUrl = createRequest.AudioDataUrl,
+            AudioDataBlob = createRequest.AudioDataBlob,
             AudioDuration = createRequest.AudioDurationSeconds.HasValue
                 ? TimeSpan.FromSeconds(createRequest.AudioDurationSeconds.Value)
                 : null,
@@ -347,9 +347,9 @@ public partial class Chat : IAsyncDisposable
 
     private static bool PendingContentMatches(MessageDto.Chat incoming, MessageDto.Chat pending)
     {
-        if (!string.IsNullOrWhiteSpace(incoming.AudioDataUrl) || !string.IsNullOrWhiteSpace(pending.AudioDataUrl))
+        if (!string.IsNullOrWhiteSpace(incoming.AudioDataBlob) || !string.IsNullOrWhiteSpace(pending.AudioDataBlob))
         {
-            return string.Equals(incoming.AudioDataUrl, pending.AudioDataUrl, StringComparison.Ordinal);
+            return string.Equals(incoming.AudioDataBlob, pending.AudioDataBlob, StringComparison.Ordinal);
         }
 
         return string.Equals(incoming.Content, pending.Content, StringComparison.Ordinal);
@@ -560,7 +560,7 @@ public partial class Chat : IAsyncDisposable
             }
         }
     }
-    private void NavigateToFriendProfileFromChat()
+    private void HandleOtherUserProfileNavigation()
     {
         if (_chat is null || _chat.Users is null || UserState.User is null)
             return;
@@ -573,6 +573,4 @@ public partial class Chat : IAsyncDisposable
 
         NavigationManager.NavigateTo($"/FriendProfilePage/{otherUser.AccountId}");
     }
-
-
 }

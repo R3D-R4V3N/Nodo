@@ -1,7 +1,6 @@
-﻿using Ardalis.Result;
-using Rise.Domain.Chats;
+﻿using Rise.Domain.Common.ValueObjects;
 using Rise.Domain.Users;
-using Rise.Domain.Users.Properties;
+using Rise.Tests.Shared;
 
 namespace Rise.Domain.Tests.Users;
 public class BaseUserTests
@@ -11,13 +10,13 @@ public class BaseUserTests
     public void Constructor_ShouldSetPropertiesCorrectly()
     {
         var accountId = "id";
-        var firstName = TestData.ValidFirstName();
-        var lastName = TestData.ValidLastName();
-        var biography = TestData.ValidBiography();
-        var avatarUrl = TestData.ValidAvatarUrl();
-        var birthDay = DateOnly.FromDateTime(DateTime.Today.AddYears(-28));
+        var firstName = DomainData.ValidFirstName();
+        var lastName = DomainData.ValidLastName();
+        var biography = DomainData.ValidBiography();
+        var avatarUrl = DomainData.ValidAvatarUrl();
+        var birthDay = DomainData.ValidBirthDay();
         var gender = GenderType.X;
-        var userSettings = TestData.ValidUserSettings();
+        var userSettings = DomainData.ValidUserSettings();
 
         var user = new DummyUser()
         {

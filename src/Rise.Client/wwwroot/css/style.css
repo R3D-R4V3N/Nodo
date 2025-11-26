@@ -87,3 +87,13 @@
 :focus {
     outline: none;
 }
+
+@keyframes click-pop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(0.93); }
+    100% { transform: scale(1); }
+}
+
+.btn-click-anim:active {
+    animation: click-pop 150ms ease-out;
+}

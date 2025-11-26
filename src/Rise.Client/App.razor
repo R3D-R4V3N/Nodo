@@ -9,6 +9,10 @@
                         {
                             <Rise.Client.Shared.RedirectToLogin />
                         }
+                        else
+                        {
+                            <Rise.Client.Shared.RedirectToHomepage />    
+                        }
                     </NotAuthorized>
                 </AuthorizeRouteView>
                 <FocusOnNavigate RouteData="routeData" Selector="h1" />
