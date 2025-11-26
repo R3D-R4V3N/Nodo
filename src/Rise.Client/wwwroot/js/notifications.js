@@ -41,8 +41,8 @@
         }
 
         const notificationPayload = {
-            title: payload?.title ?? 'Nodo push demo',
-            body: payload?.body ?? 'Zo ziet een web push notificatie eruit.',
+            title: payload?.senderName || payload?.sender || payload?.title || 'Nodo push demo',
+            body: payload?.message || payload?.body || 'Zo ziet een web push notificatie eruit.',
             icon: toAbsolute(payload?.icon ?? '/icon-192.png'),
             badge: toAbsolute(payload?.badge ?? '/icon-192.png'),
             data: payload?.data ?? { url: '/' }

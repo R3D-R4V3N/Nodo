@@ -95,16 +95,18 @@ self.addEventListener('fetch', event => {
 
 self.addEventListener('push', event => {
     const data = event.data?.json?.() ?? {};
-    const title = data.title || 'Nodo';
+    const title = data.senderName || data.sender || data.title || 'Nodo';
+    const body = data.message || data.body || 'Je hebt een nieuwe melding.';
     const options = {
-        body: data.body || 'Je hebt een nieuwe melding.',
+        body,
         icon: toAbsoluteUrl(data.icon || defaultNotificationIcon),
         badge: toAbsoluteUrl(data.badge || defaultNotificationIcon),
         data: data.data || { url: '/' }
     };
 
     event.waitUntil(
-        self.registration.showNotification(title, options)
+        shouldSuppressNotification(options.data?.url)
+            .then(skip => skip ? Promise.resolve() : self.registration.showNotification(title, options))
     );
 });
 
@@ -124,6 +126,21 @@ self.addEventListener('notificationclick', event => {
         })
     );
 });
+
+async function shouldSuppressNotification(targetUrl) {
+    const windowClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const isChatUrl = url => {
+        try {
+            const pathname = new URL(url).pathname;
+            return pathname.startsWith('/chat');
+        } catch {
+            return false;
+        }
+    };
+
+    return windowClients.some(client => client.visibilityState === 'visible' && isChatUrl(client.url))
+        || (targetUrl && windowClients.some(client => client.visibilityState === 'visible' && client.url === toAbsoluteUrl(targetUrl)));
+}
 
 async function handleApiRequest(request) {
     const cache = await caches.open(cacheName);
