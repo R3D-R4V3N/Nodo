@@ -23,6 +23,20 @@ public class ChatNotificationService
         _activeChatId = chatId;
     }
 
+    public async Task RequestPermissionAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _jsRuntime.InvokeVoidAsync(
+                "notifications.requestPermission",
+                cancellationToken);
+        }
+        catch (JSException)
+        {
+            // If the browser blocks permission prompts, continue without interrupting the login/register flow.
+        }
+    }
+
     public async Task NotifyMessageAsync(MessageDto.Chat message, CancellationToken cancellationToken = default)
     {
         if (ShouldSkipNotification(message))
