@@ -9,12 +9,14 @@ const PRECACHE_URLS = [
     'Rise.Client.styles.css',
     'js/offlineNotifier.js',
     'js/voiceRecorder.js',
+    'js/notifications.js',
     'favicon.png',
     'icon-192.png',
     'icon-512.png'
 ].map(toAbsoluteUrl);
 const offlineRoot = toAbsoluteUrl('./');
 const apiPattern = /\/api\//i;
+const defaultNotificationIcon = toAbsoluteUrl('icon-192.png');
 
 self.addEventListener('install', event => {
     event.waitUntil(
@@ -74,6 +76,38 @@ self.addEventListener('fetch', event => {
                 return cachedResponse || networkFetch;
             })
         )
+    );
+});
+
+self.addEventListener('push', event => {
+    const data = event.data?.json?.() ?? {};
+    const title = data.title || 'Nodo';
+    const options = {
+        body: data.body || 'Je hebt een nieuwe melding.',
+        icon: toAbsoluteUrl(data.icon || defaultNotificationIcon),
+        badge: toAbsoluteUrl(data.badge || defaultNotificationIcon),
+        data: data.data || { url: '/' }
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(title, options)
+    );
+});
+
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+    const targetUrl = event.notification.data?.url || '/';
+    const absoluteUrl = toAbsoluteUrl(targetUrl);
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+            const matchingClient = clientList.find(client => client.url === absoluteUrl);
+            if (matchingClient) {
+                return matchingClient.focus();
+            }
+
+            return clients.openWindow(absoluteUrl);
+        })
     );
 });
 
