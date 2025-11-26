@@ -46,10 +46,17 @@ public class UserService(HttpClient httpClient, OfflineQueueService offlineQueue
     }
     public async Task<Result<UserResponse.CurrentUser>> GetUserAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        var result = await _http.GetFromJsonAsync<Result<UserResponse.CurrentUser>>(
-            $"api/users/{accountId}", cancellationToken);
+        try
+        {
+            var result = await _http.GetFromJsonAsync<Result<UserResponse.CurrentUser>>(
+                $"api/users/{accountId}", cancellationToken);
 
-        // gebruik de correcte generieke Error-methode
-        return result ?? Result<UserResponse.CurrentUser>.Error("Kon de gebruikersinformatie niet laden.");
+            // gebruik de correcte generieke Error-methode
+            return result ?? Result<UserResponse.CurrentUser>.Error("Kon de gebruikersinformatie niet laden.");
+        }
+        catch (HttpRequestException)
+        {
+            return Result<UserResponse.CurrentUser>.Error("Offline: gebruikersgegevens kunnen niet vernieuwd worden zonder verbinding.");
+        }
     }
 }

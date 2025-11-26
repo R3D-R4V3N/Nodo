@@ -1,7 +1,10 @@
 using System;
+using System.Linq;
 using System.Threading;
+using Ardalis.Result;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Rise.Client.Offline;
 using Rise.Client.State;
 using Rise.Shared.Common;
 using Rise.Shared.UserConnections;
@@ -20,10 +23,12 @@ public partial class Index : IAsyncDisposable
     private HubConnection? _hubConnection;
     private string? _query;
     private string? _connectionError;
+    private string? _dataError;
     private bool _joinedRealtimeGroup;
 
     [Inject] private NavigationManager Nav { get; set; } = default!;
     [Inject] public required IUserConnectionService ConnectionService { get; set; }
+    [Inject] public required OfflineQueueService OfflineQueueService { get; set; }
     [Inject] public required UserState UserState { get; set; }
 
     private string? Query
@@ -44,7 +49,11 @@ public partial class Index : IAsyncDisposable
     protected override async Task OnInitializedAsync()
     {
         await ApplyFilterAsync();
-        await EnsureHubConnectionAsync();
+
+        if (await OfflineQueueService.IsOnlineAsync())
+        {
+            await EnsureHubConnectionAsync();
+        }
     }
 
     private async Task ChangeTab(UserConnectionTypeDto tab)
@@ -98,6 +107,7 @@ public partial class Index : IAsyncDisposable
 
     private async Task ReloadDataAsync()
     {
+        _dataError = null;
         var request = new QueryRequest.SkipTake
         {
             Skip = 0,
@@ -110,9 +120,36 @@ public partial class Index : IAsyncDisposable
 
         await Task.WhenAll(friendsTask, requestsTask, suggestionsTask);
 
-        _friends = friendsTask.Result.Value.Connections;
-        _requests = requestsTask.Result.Value.Connections;
-        _suggestions = suggestionsTask.Result.Value.Users;
+        var friendsResult = friendsTask.Result;
+        var requestsResult = requestsTask.Result;
+        var suggestionsResult = suggestionsTask.Result;
+
+        if (friendsResult.IsSuccess && friendsResult.Value is not null)
+        {
+            _friends = friendsResult.Value.Connections;
+        }
+        else
+        {
+            _dataError ??= ExtractErrorMessage(friendsResult, "Kon de vriendenlijst niet laden.");
+        }
+
+        if (requestsResult.IsSuccess && requestsResult.Value is not null)
+        {
+            _requests = requestsResult.Value.Connections;
+        }
+        else
+        {
+            _dataError ??= ExtractErrorMessage(requestsResult, "Kon de vriendschapsverzoeken niet laden.");
+        }
+
+        if (suggestionsResult.IsSuccess && suggestionsResult.Value is not null)
+        {
+            _suggestions = suggestionsResult.Value.Users;
+        }
+        else
+        {
+            _dataError ??= ExtractErrorMessage(suggestionsResult, "Kon de suggesties niet laden.");
+        }
     }
 
     private async Task ApplyFilterAsync()
@@ -143,13 +180,40 @@ public partial class Index : IAsyncDisposable
             _dataLock.Release();
         }
 
+        if (await OfflineQueueService.IsOnlineAsync())
+        {
+            await EnsureHubConnectionAsync();
+        }
+
         await InvokeAsync(StateHasChanged);
+    }
+
+    private static string? ExtractErrorMessage<T>(Result<T> result, string fallback)
+    {
+        if (result.IsSuccess)
+        {
+            return null;
+        }
+
+        var firstError = result.Errors?.FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(firstError))
+        {
+            return firstError;
+        }
+
+        return fallback;
     }
 
     private async Task EnsureHubConnectionAsync()
     {
         if (UserState.User?.AccountId is null)
         {
+            return;
+        }
+
+        if (!await OfflineQueueService.IsOnlineAsync())
+        {
+            _connectionError = null;
             return;
         }
 
@@ -166,10 +230,16 @@ public partial class Index : IAsyncDisposable
                 _hubConnection.On<string>("FriendConnectionsChanged", accountId =>
                     InvokeAsync(() => HandleFriendConnectionsChangedAsync(accountId)));
 
-                _hubConnection.Reconnecting += _ =>
+                _hubConnection.Reconnecting += async _ =>
                 {
+                    if (!await OfflineQueueService.IsOnlineAsync())
+                    {
+                        _connectionError = null;
+                        return;
+                    }
+
                     _connectionError = "Realtime verbinding wordt hersteld…";
-                    return InvokeAsync(StateHasChanged);
+                    await InvokeAsync(StateHasChanged);
                 };
 
                 _hubConnection.Reconnected += _ =>
@@ -179,11 +249,19 @@ public partial class Index : IAsyncDisposable
                     return InvokeAsync(JoinRealtimeGroupAfterReconnectAsync);
                 };
 
-                _hubConnection.Closed += _ =>
+                _hubConnection.Closed += async _ =>
                 {
                     _joinedRealtimeGroup = false;
-                    _connectionError = "Realtime verbinding werd verbroken. Vernieuw de pagina om opnieuw te verbinden.";
-                    return InvokeAsync(StateHasChanged);
+
+                    if (await OfflineQueueService.IsOnlineAsync())
+                    {
+                        _connectionError = "Realtime verbinding werd verbroken. Vernieuw de pagina om opnieuw te verbinden.";
+                        await InvokeAsync(StateHasChanged);
+                    }
+                    else
+                    {
+                        _connectionError = null;
+                    }
                 };
             }
 
@@ -199,8 +277,11 @@ public partial class Index : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _connectionError = $"Realtime verbinding mislukt: {ex.Message}";
-            await InvokeAsync(StateHasChanged);
+            if (await OfflineQueueService.IsOnlineAsync())
+            {
+                _connectionError = $"Realtime verbinding mislukt: {ex.Message}";
+                await InvokeAsync(StateHasChanged);
+            }
         }
         finally
         {

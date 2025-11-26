@@ -35,6 +35,11 @@ public partial class Chat : IAsyncDisposable
     private bool _footerMeasurementPending = true;
     private const double _footerPaddingBuffer = 24;
 
+    protected override void OnInitialized()
+    {
+        OfflineQueueService.WentOnline += HandleWentOnlineAsync;
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         _loadError = null;
@@ -58,7 +63,11 @@ public partial class Chat : IAsyncDisposable
         _isLoading = false;
         _shouldScrollToBottom = true;
 
-        await EnsureHubConnectionAsync();
+        var isOnline = await OfflineQueueService.IsOnlineAsync();
+        if (isOnline)
+        {
+            await EnsureHubConnectionAsync();
+        }
     }
 
     private Task ApplySuggestion(string text)
@@ -111,6 +120,15 @@ public partial class Chat : IAsyncDisposable
         };
 
         await SendMessageAsync(request, "Het spraakbericht kon niet verzonden worden.", isOnline);
+    }
+
+    private Task HandleWentOnlineAsync()
+    {
+        return InvokeAsync(async () =>
+        {
+            _connectionError = null;
+            await EnsureHubConnectionAsync();
+        });
     }
 
     private async Task SendMessageAsync(ChatRequest.CreateMessage createRequest, string errorMessage, bool isOnline)
@@ -515,6 +533,7 @@ public partial class Chat : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        OfflineQueueService.WentOnline -= HandleWentOnlineAsync;
         await LeaveCurrentChatAsync();
         if (_hubConnection is not null)
         {

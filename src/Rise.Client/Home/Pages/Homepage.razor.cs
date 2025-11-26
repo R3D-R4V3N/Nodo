@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net.Http;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Rise.Client.RealTime;
@@ -41,34 +42,41 @@ public partial class Homepage : IDisposable
         }
 
         _isLoading = false;
-        
+
         await InitializeHubAsync();
 
     }
     
     private async Task InitializeHubAsync()
     {
-        _hubConnection = HubClientFactory.Create();
-
-        // Wanneer iemand online of offline gaat
-        _hubConnection.On<string, bool>("UserStatusChanged", (userId, isOnline) =>
+        try
         {
-            if (isOnline)
-                _onlineUsers.Add(userId);
-            else
-                _onlineUsers.Remove(userId);
+            _hubConnection = HubClientFactory.Create();
 
-            InvokeAsync(StateHasChanged); // UI updaten
-        });
+            // Wanneer iemand online of offline gaat
+            _hubConnection.On<string, bool>("UserStatusChanged", (userId, isOnline) =>
+            {
+                if (isOnline)
+                    _onlineUsers.Add(userId);
+                else
+                    _onlineUsers.Remove(userId);
 
-        await _hubConnection.StartAsync();
+                InvokeAsync(StateHasChanged); // UI updaten
+            });
 
-        // Vraag de huidige online users op
-        var onlineNow = await _hubConnection.InvokeAsync<List<string>>("GetOnlineUsers");
-        foreach (var id in onlineNow)
-            _onlineUsers.Add(id);
+            await _hubConnection.StartAsync();
 
-        StateHasChanged();
+            // Vraag de huidige online users op
+            var onlineNow = await _hubConnection.InvokeAsync<List<string>>("GetOnlineUsers");
+            foreach (var id in onlineNow)
+                _onlineUsers.Add(id);
+
+            StateHasChanged();
+        }
+        catch (HttpRequestException)
+        {
+            // Offline status updates are optional; continue rendering cached chats without a notice.
+        }
     }
 
 

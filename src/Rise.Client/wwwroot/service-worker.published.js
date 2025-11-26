@@ -22,13 +22,15 @@ const extraResources = [
 ];
 extraResources.map(toAbsoluteUrl).forEach(resource => offlineResources.add(resource));
 const offlineRoot = toAbsoluteUrl('./');
+const apiPattern = /\/api\//i;
+
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(cacheName)
             .then(cache => cache.addAll(Array.from(offlineResources).map(resource => new Request(resource, { cache: 'no-cache' }))))
             .then(() => self.skipWaiting())
     );
-}); 
+});
 
 self.addEventListener('activate', event => {
     event.waitUntil(
@@ -39,16 +41,19 @@ self.addEventListener('activate', event => {
     );
 });
 
-
-const apiPattern = /\/api\//i;
 self.addEventListener('fetch', event => {
-    if (event.request.method !== 'GET' || apiPattern.test(event.request.url)) {
+    if (event.request.method !== 'GET') {
         return;
     }
 
     const requestUrl = new URL(event.request.url);
 
     if (requestUrl.origin !== self.location.origin) {
+        return;
+    }
+
+    if (apiPattern.test(requestUrl.pathname)) {
+        event.respondWith(handleApiRequest(event.request));
         return;
     }
 
@@ -85,3 +90,32 @@ self.addEventListener('fetch', event => {
         );
     }
 });
+
+async function handleApiRequest(request) {
+    const cache = await caches.open(cacheName);
+    const normalizedRequest = new Request(request.url);
+
+    try {
+        const networkResponse = await fetch(request);
+        if (networkResponse && networkResponse.ok) {
+            cache.put(request, networkResponse.clone());
+            cache.put(normalizedRequest, networkResponse.clone());
+        }
+
+        return networkResponse;
+    }
+    catch (error) {
+        const cachedResponse = await cache.match(request, { ignoreVary: true })
+            || await cache.match(normalizedRequest);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+
+        return new Response(
+            JSON.stringify({ message: 'Offline: data is niet beschikbaar. Probeer opnieuw zodra je verbonden bent.' }),
+            {
+                status: 503,
+                headers: { 'Content-Type': 'application/json' }
+            });
+    }
+}

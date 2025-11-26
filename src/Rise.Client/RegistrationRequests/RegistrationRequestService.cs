@@ -10,9 +10,16 @@ public class RegistrationRequestService(HttpClient httpClient, OfflineQueueServi
     private readonly OfflineQueueService _offlineQueueService = offlineQueueService;
     public async Task<Result<RegistrationRequestResponse.PendingList>> GetPendingAsync(CancellationToken ct = default)
     {
-        var result = await httpClient.GetFromJsonAsync<Result<RegistrationRequestResponse.PendingList>>("/api/registrations/pending", cancellationToken: ct);
+        try
+        {
+            var result = await httpClient.GetFromJsonAsync<Result<RegistrationRequestResponse.PendingList>>("/api/registrations/pending", cancellationToken: ct);
 
-        return result ?? Result<RegistrationRequestResponse.PendingList>.Error("Kon de aanvragen niet laden.");
+            return result ?? Result<RegistrationRequestResponse.PendingList>.Error("Kon de aanvragen niet laden.");
+        }
+        catch (HttpRequestException)
+        {
+            return Result<RegistrationRequestResponse.PendingList>.Error("Offline: openstaande aanvragen kunnen niet vernieuwd worden zonder verbinding.");
+        }
     }
 
     public async Task<Result<RegistrationRequestResponse.Approve>> ApproveAsync(int requestId, RegistrationRequestRequest.Approve request, CancellationToken ct = default)
