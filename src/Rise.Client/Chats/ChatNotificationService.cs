@@ -37,9 +37,12 @@ public class ChatNotificationService
         }
     }
 
-    public async Task NotifyMessageAsync(MessageDto.Chat message, CancellationToken cancellationToken = default)
+    public async Task NotifyMessageAsync(
+        MessageDto.Chat message,
+        bool force = false,
+        CancellationToken cancellationToken = default)
     {
-        if (ShouldSkipNotification(message))
+        if (ShouldSkipNotification(message, force))
         {
             return;
         }
@@ -65,8 +68,13 @@ public class ChatNotificationService
         }
     }
 
-    private bool ShouldSkipNotification(MessageDto.Chat message)
+    private bool ShouldSkipNotification(MessageDto.Chat message, bool force)
     {
+        if (force)
+        {
+            return false;
+        }
+
         var currentUserId = _userState.User?.Id;
         if (currentUserId.HasValue && message.User.Id == currentUserId)
         {
