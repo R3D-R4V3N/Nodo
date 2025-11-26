@@ -15,6 +15,7 @@ const extraResources = [
     'css/style.css',
     'Rise.Client.styles.css',
     'js/offlineNotifier.js',
+    'js/notifications.js',
     'js/voiceRecorder.js',
     'favicon.png',
     'icon-192.png',

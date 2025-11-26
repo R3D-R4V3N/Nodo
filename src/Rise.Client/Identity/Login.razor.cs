@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.JSInterop;
 using Rise.Shared.Identity;
 using Rise.Shared.Identity.Accounts;
 
@@ -15,6 +16,7 @@ public partial class Login
     [Inject] public required IAccountManager AccountManager { get; set; }
     [Inject] public required NavigationManager Navigation { get; set; }
     [Inject] public required AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+    [Inject] public required IJSRuntime JSRuntime { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -35,6 +37,8 @@ public partial class Login
 
     public async Task LoginUser()
     {
+        await RequestNotificationPermission();
+
         _result = await AccountManager.LoginAsync(Model.Email!, Model.Password!);
 
         if (_result.IsSuccess && !string.IsNullOrEmpty(ReturnUrl))
@@ -52,6 +56,18 @@ public partial class Login
             {
                 Navigation.NavigateTo("/homepage");
             }
+        }
+    }
+
+    private async Task RequestNotificationPermission()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("nodoNotifications.requestPermission");
+        }
+        catch
+        {
+            // If permissions cannot be requested, continue with login silently.
         }
     }
 }
