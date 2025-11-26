@@ -130,17 +130,13 @@ self.addEventListener('notificationclick', event => {
 
 async function shouldSuppressNotification(targetUrl) {
     const windowClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
-    const isChatUrl = url => {
-        try {
-            const pathname = new URL(url).pathname;
-            return pathname.startsWith('/chat');
-        } catch {
-            return false;
-        }
-    };
+    const targetChatId = extractChatId(targetUrl);
 
-    return windowClients.some(client => client.visibilityState === 'visible' && isChatUrl(client.url))
-        || (targetUrl && windowClients.some(client => client.visibilityState === 'visible' && client.url === toAbsoluteUrl(targetUrl)));
+    if (!targetChatId) {
+        return false;
+    }
+
+    return windowClients.some(client => client.visibilityState === 'visible' && extractChatId(client.url) === targetChatId);
 }
 
 function normalizeNotificationData(payload) {
@@ -153,6 +149,25 @@ function normalizeNotificationData(payload) {
 
     data.url = targetUrl;
     return data;
+}
+
+function extractChatId(url) {
+    if (!url) {
+        return null;
+    }
+
+    try {
+        const pathname = new URL(url, self.location.origin).pathname;
+        const segments = pathname.split('/').filter(Boolean);
+
+        if (segments[0] === 'chat' && segments[1]) {
+            return segments[1];
+        }
+    } catch {
+        // ignore malformed URLs
+    }
+
+    return null;
 }
 
 async function handleApiRequest(request) {
