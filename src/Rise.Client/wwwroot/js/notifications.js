@@ -22,6 +22,16 @@
         return registration;
     }
 
+    function buildNotificationPayload(payload) {
+        return {
+            title: payload?.title ?? 'Nodo',
+            body: payload?.body ?? 'Je hebt een nieuwe melding.',
+            icon: toAbsolute(payload?.icon ?? '/icon-192.png'),
+            badge: toAbsolute(payload?.badge ?? '/icon-192.png'),
+            data: payload?.data ?? { url: '/' }
+        };
+    }
+
     async function requestPermission() {
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
@@ -32,7 +42,7 @@
         return permission;
     }
 
-    async function showDemoNotification(payload) {
+    async function showNotification(payload) {
         const registration = await ensureReady();
         const permission = await Notification.requestPermission();
 
@@ -40,13 +50,7 @@
             return permission;
         }
 
-        const notificationPayload = {
-            title: payload?.title ?? 'Nodo push demo',
-            body: payload?.body ?? 'Zo ziet een web push notificatie eruit.',
-            icon: toAbsolute(payload?.icon ?? '/icon-192.png'),
-            badge: toAbsolute(payload?.badge ?? '/icon-192.png'),
-            data: payload?.data ?? { url: '/' }
-        };
+        const notificationPayload = buildNotificationPayload(payload);
 
         await registration.showNotification(notificationPayload.title, {
             body: notificationPayload.body,
@@ -58,11 +62,28 @@
         return 'shown';
     }
 
+    async function showMessageNotification(messagePayload) {
+        const { chatId, senderName, contentPreview } = messagePayload ?? {};
+        const notificationData = {
+            title: senderName ? `Nieuw bericht van ${senderName}` : 'Nieuw bericht',
+            body: contentPreview || 'Je hebt een nieuw bericht.',
+            data: {
+                url: messagePayload?.data?.url ?? `/chat/${chatId ?? ''}`
+            }
+        };
+
+        return await showNotification(notificationData);
+    }
+
     window.notifications = {
         requestPermission,
-        showDemoNotification,
+        showDemoNotification: showNotification,
         async requestAndNotify(payload) {
-            const result = await showDemoNotification(payload);
+            const result = await showNotification(payload);
+            return result;
+        },
+        async showMessageNotification(payload) {
+            const result = await showMessageNotification(payload);
             return result;
         }
     };

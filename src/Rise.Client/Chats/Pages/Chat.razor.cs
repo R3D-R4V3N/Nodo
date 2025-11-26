@@ -16,6 +16,7 @@ public partial class Chat : IAsyncDisposable
     [Parameter] public int ChatId { get; set; }
     [Inject] public UserState UserState { get; set; }
     [Inject] public OfflineQueueService OfflineQueueService { get; set; } = null!;
+    [Inject] public ChatNotificationService ChatNotificationService { get; set; } = null!;
 
     private ChatDto.GetChat? _chat;
     private readonly SemaphoreSlim _hubConnectionLock = new(1, 1);
@@ -56,9 +57,11 @@ public partial class Chat : IAsyncDisposable
         else
         {
             _chat = null;
-            _loadError = result.Errors.FirstOrDefault() 
+            _loadError = result.Errors.FirstOrDefault()
                 ?? "Het gesprek kon niet geladen worden.";
         }
+
+        ChatNotificationService.SetActiveChat(_chat?.ChatId);
 
         _isLoading = false;
         _shouldScrollToBottom = true;
@@ -534,6 +537,7 @@ public partial class Chat : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         OfflineQueueService.WentOnline -= HandleWentOnlineAsync;
+        ChatNotificationService.SetActiveChat(null);
         await LeaveCurrentChatAsync();
         if (_hubConnection is not null)
         {

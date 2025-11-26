@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net.Http;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Rise.Client.Chats;
 using Rise.Client.RealTime;
 using Rise.Client.State;
 using Rise.Shared.Assets;
@@ -26,6 +27,7 @@ public partial class Homepage : IDisposable
     [Inject]
     private IHubClientFactory HubClientFactory { get; set; } = null!;
     private IHubClient? _hubConnection;
+    [Inject] private ChatNotificationService ChatNotificationService { get; set; } = null!;
     private readonly HashSet<string> _onlineUsers = new();
 
     protected override async Task OnInitializedAsync()
@@ -127,6 +129,8 @@ public partial class Homepage : IDisposable
             chat.LastMessage = dto;
             _chats.Remove(chat);
             _chats.Insert(0, chat);
+
+            _ = ChatNotificationService.NotifyMessageAsync(dto);
 
             StateHasChanged();
         });

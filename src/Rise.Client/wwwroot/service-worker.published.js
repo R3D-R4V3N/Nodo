@@ -96,11 +96,12 @@ self.addEventListener('fetch', event => {
 self.addEventListener('push', event => {
     const data = event.data?.json?.() ?? {};
     const title = data.title || 'Nodo';
+    const targetUrl = data?.data?.url || (data?.chatId ? `/chat/${data.chatId}` : '/');
     const options = {
         body: data.body || 'Je hebt een nieuwe melding.',
         icon: toAbsoluteUrl(data.icon || defaultNotificationIcon),
         badge: toAbsoluteUrl(data.badge || defaultNotificationIcon),
-        data: data.data || { url: '/' }
+        data: data.data || { url: targetUrl }
     };
 
     event.waitUntil(
