@@ -16,7 +16,6 @@ const extraResources = [
     'Rise.Client.styles.css',
     'js/offlineNotifier.js',
     'js/voiceRecorder.js',
-    'js/notifications.js',
     'favicon.png',
     'icon-192.png',
     'icon-512.png'
@@ -97,11 +96,12 @@ self.addEventListener('push', event => {
     const data = event.data?.json?.() ?? {};
     const title = data.senderName || data.sender || data.title || 'Nodo';
     const body = data.message || data.body || 'Je hebt een nieuwe melding.';
+    const payloadData = normalizeNotificationData(data);
     const options = {
         body,
         icon: toAbsoluteUrl(data.icon || defaultNotificationIcon),
         badge: toAbsoluteUrl(data.badge || defaultNotificationIcon),
-        data: data.data || { url: '/' }
+        data: payloadData
     };
 
     event.waitUntil(
@@ -140,6 +140,18 @@ async function shouldSuppressNotification(targetUrl) {
 
     return windowClients.some(client => client.visibilityState === 'visible' && isChatUrl(client.url))
         || (targetUrl && windowClients.some(client => client.visibilityState === 'visible' && client.url === toAbsoluteUrl(targetUrl)));
+}
+
+function normalizeNotificationData(payload) {
+    const data = payload.data ? { ...payload.data } : {};
+    const targetUrl = data.url
+        || payload.chatUrl
+        || (payload.chatId ? `/chat/${payload.chatId}` : null)
+        || payload.url
+        || '/';
+
+    data.url = targetUrl;
+    return data;
 }
 
 async function handleApiRequest(request) {
