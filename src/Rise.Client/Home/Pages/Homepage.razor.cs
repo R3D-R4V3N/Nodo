@@ -64,14 +64,21 @@ public partial class Homepage : IDisposable
                 InvokeAsync(StateHasChanged); // UI updaten
             });
 
+            _hubConnection.On<MessageDto.Chat>("MessageCreated", dto =>
+            {
+                _ = HandleIncomingMessageAsync(dto);
+            });
+
+            _hubConnection.Reconnected += _ => InvokeAsync(async () =>
+            {
+                await RefreshOnlineUsersAsync();
+                await JoinChatGroupsAsync();
+            });
+
             await _hubConnection.StartAsync();
 
-            // Vraag de huidige online users op
-            var onlineNow = await _hubConnection.InvokeAsync<List<string>>("GetOnlineUsers");
-            foreach (var id in onlineNow)
-                _onlineUsers.Add(id);
-
-            StateHasChanged();
+            await RefreshOnlineUsersAsync();
+            await JoinChatGroupsAsync();
         }
         catch (HttpRequestException)
         {
@@ -79,8 +86,54 @@ public partial class Homepage : IDisposable
         }
     }
 
+    private async Task RefreshOnlineUsersAsync()
+    {
+        if (_hubConnection is null || _hubConnection.State != HubConnectionState.Connected)
+        {
+            return;
+        }
 
-    private void NavigateToChat(ChatDto.GetChats chat) 
+        var onlineNow = await _hubConnection.InvokeAsync<List<string>>("GetOnlineUsers");
+        _onlineUsers.Clear();
+        foreach (var id in onlineNow)
+            _onlineUsers.Add(id);
+
+        StateHasChanged();
+    }
+
+    private async Task JoinChatGroupsAsync()
+    {
+        if (_hubConnection is null || _hubConnection.State != HubConnectionState.Connected)
+        {
+            return;
+        }
+
+        foreach (var chatId in _chats.Select(chat => chat.ChatId))
+        {
+            await _hubConnection.SendAsync("JoinChat", chatId);
+        }
+    }
+
+    private Task HandleIncomingMessageAsync(MessageDto.Chat dto)
+    {
+        return InvokeAsync(() =>
+        {
+            var chat = _chats.FirstOrDefault(c => c.ChatId == dto.ChatId);
+            if (chat is null)
+            {
+                return;
+            }
+
+            chat.LastMessage = dto;
+            _chats.Remove(chat);
+            _chats.Insert(0, chat);
+
+            StateHasChanged();
+        });
+    }
+
+
+    private void NavigateToChat(ChatDto.GetChats chat)
         => NavigationManager.NavigateTo($"/chat/{chat.ChatId}");
 
     private string GetChatTitle(ChatDto.GetChats chat)
