@@ -99,7 +99,7 @@ public class ChatService(
             .Select(chat =>
             {
                 unreadCounts.TryGetValue(chat.Id, out var unread);
-                return ChatMapper.ToGetChatsDto(chat, unread ?? 0);
+                return ChatMapper.ToGetChatsDto(chat, unread);
             })
             .ToList();
 
