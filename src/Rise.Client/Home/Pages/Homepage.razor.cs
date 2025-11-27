@@ -144,8 +144,6 @@ public partial class Homepage : IDisposable
             _chats.Remove(chat);
             _chats.Insert(0, chat);
 
-            _ = ChatNotificationService.NotifyMessageAsync(dto);
-
             StateHasChanged();
         });
     }

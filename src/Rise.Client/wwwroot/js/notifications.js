@@ -1,4 +1,6 @@
 (function () {
+    const PERIODIC_SYNC_TAG = 'nodo-periodic-chat-wakeup';
+    const PERIODIC_SYNC_MIN_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
     const isSupported = () => 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
 
     const toAbsolute = (path) => {
@@ -39,6 +41,7 @@
         }
 
         await ensureReady();
+        await registerPeriodicSync();
         return permission;
     }
 
@@ -75,6 +78,39 @@
         return await showNotification(notificationData);
     }
 
+    async function registerPeriodicSync() {
+        if (!('serviceWorker' in navigator)) {
+            return false;
+        }
+
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            if (!registration?.periodicSync) {
+                return false;
+            }
+
+            try {
+                if ('permissions' in navigator && navigator.permissions?.query) {
+                    const status = await navigator.permissions.query({ name: 'periodic-background-sync' });
+                    if (status.state === 'denied') {
+                        return false;
+                    }
+                }
+            } catch {
+                // If permissions API is unsupported we continue best-effort.
+            }
+
+            await registration.periodicSync.register(PERIODIC_SYNC_TAG, {
+                minInterval: PERIODIC_SYNC_MIN_INTERVAL,
+                networkState: 'any'
+            });
+
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     window.notifications = {
         requestPermission,
         showDemoNotification: showNotification,
@@ -85,6 +121,7 @@
         async showMessageNotification(payload) {
             const result = await showMessageNotification(payload);
             return result;
-        }
+        },
+        registerPeriodicSync
     };
 })();

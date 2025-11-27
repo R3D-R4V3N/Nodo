@@ -17,6 +17,12 @@ const PRECACHE_URLS = [
 const offlineRoot = toAbsoluteUrl('./');
 const apiPattern = /\/api\//i;
 const defaultNotificationIcon = toAbsoluteUrl('icon-192.png');
+const periodicSyncTag = 'nodo-periodic-chat-wakeup';
+const periodicSyncNotification = {
+    title: 'Nodo',
+    body: 'We houden je chatmeldingen actief.',
+    data: { url: '/' }
+};
 
 self.addEventListener('install', event => {
     event.waitUntil(
@@ -108,6 +114,21 @@ self.addEventListener('notificationclick', event => {
             }
 
             return clients.openWindow(absoluteUrl);
+        })
+    );
+});
+
+self.addEventListener('periodicsync', event => {
+    if (event.tag !== periodicSyncTag) {
+        return;
+    }
+
+    event.waitUntil(
+        self.registration.showNotification(periodicSyncNotification.title, {
+            body: periodicSyncNotification.body,
+            icon: defaultNotificationIcon,
+            badge: defaultNotificationIcon,
+            data: periodicSyncNotification.data
         })
     );
 });

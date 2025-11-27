@@ -79,6 +79,11 @@ public class ChatNotificationService
         {
             return true;
         }
+
+        if (_activeChatId.HasValue && message.ChatId == _activeChatId)
+        {
+            return true;
+        }
         return false;
     }
 
