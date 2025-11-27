@@ -162,11 +162,6 @@ public partial class Chat : IAsyncDisposable
             if (result.IsSuccess)
             {
                 var sentMessage = result.Value;
-                if (sentMessage is not null)
-                {
-                    await ChatNotificationService.NotifyMessageAsync(sentMessage, force: true);
-                }
-
                 return;
             }
 
