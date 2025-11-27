@@ -28,7 +28,11 @@ internal static class ChatMapper
                 .Users
                 .Select(UserMapper.ToChatDto)
                 .ToList(),
-            LastMessage = MessageMapper.ToChatDto(chat.Messages.FirstOrDefault()),
+            LastMessage = MessageMapper.ToChatDto(
+                chat.Messages
+                    .OrderByDescending(m => m.CreatedAt)
+                    .ThenByDescending(m => m.Id)
+                    .FirstOrDefault()),
             UnreadCount = unreadCount
         };
     }

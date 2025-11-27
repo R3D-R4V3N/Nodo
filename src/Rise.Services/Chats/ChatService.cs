@@ -69,13 +69,14 @@ public class ChatService(
             .Select(h => new
             {
                 ChatId = h.Chat.Id,
-                LastReadAt = (DateTime?)h.LastReadMessage.CreatedAt
+                LastReadAt = (DateTime?)h.LastReadMessage.CreatedAt,
+                LastReadMessageId = (int?)h.LastReadMessage.Id
             })
-            .ToDictionaryAsync(x => x.ChatId, x => x.LastReadAt, cancellationToken);
+            .ToDictionaryAsync(x => x.ChatId, x => x, cancellationToken);
 
         var messageGroups = await _dbContext.Messages
             .Where(m => chatIds.Contains(m.Chat.Id))
-            .Select(m => new { ChatId = m.Chat.Id, m.CreatedAt })
+            .Select(m => new { ChatId = m.Chat.Id, m.Id, m.CreatedAt })
             .ToListAsync(cancellationToken);
 
         var unreadCounts = messageGroups
@@ -84,12 +85,14 @@ public class ChatService(
                 g => g.Key,
                 g =>
                 {
-                    if (!lastReadLookup.TryGetValue(g.Key, out var lastReadAt) || lastReadAt is null)
+                    if (!lastReadLookup.TryGetValue(g.Key, out var lastRead) || lastRead is null)
                     {
                         return g.Count();
                     }
 
-                    return g.Count(m => m.CreatedAt > lastReadAt.Value);
+                    return g.Count(m =>
+                        m.CreatedAt > lastRead.LastReadAt!.Value ||
+                        (m.CreatedAt == lastRead.LastReadAt!.Value && m.Id > lastRead.LastReadMessageId));
                 });
 
         var chatDtos = chatsFromDb
