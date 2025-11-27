@@ -16,6 +16,13 @@
     </div>
 }
 
+@if (!string.IsNullOrWhiteSpace(_dataError))
+{
+    <div class="bg-amber-50 border border-amber-200 text-amber-700 text-xs mx-4 mt-2 px-3 py-2 rounded-lg">
+        @_dataError
+    </div>
+}
+
 
     <section class="bg-neutral-100 px-4 pt-4 pb-2">
         <FriendsTabs Selected="@_selectedTab" OnChange="ChangeTab" />

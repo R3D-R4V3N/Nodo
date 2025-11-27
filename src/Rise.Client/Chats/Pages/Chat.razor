@@ -61,7 +61,9 @@
 
         <!-- Scrollable messages -->
         <div class="flex-1 overflow-y-auto px-3 no-scrollbar" style="@GetMessageHostPaddingStyle()" @ref="_messagesHost">
-            <MessageList Messages="_chat?.Messages" TimestampText="@GetConversationDateLabel()" />
+            <MessageList Messages="_chat?.Messages"
+                         TimestampText="@GetConversationDateLabel()"
+                         OnCancelPending="CancelPendingMessageAsync" />
         </div>
 
         <!-- Fixed input bar -->

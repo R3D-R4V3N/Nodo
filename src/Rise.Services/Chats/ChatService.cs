@@ -290,6 +290,12 @@ public class ChatService(
         return true;
     }
 
+    public Task<Result<int>> QueueMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
+    {
+        // Server-side queuing is not supported; offline queuing is a client-only concern.
+        return Task.FromResult(Result<int>.Error("Offline wachtrij is enkel beschikbaar in de client."));
+    }
+
     private async Task<BaseUser?> FindProfileByAccountIdAsync(string accountId, CancellationToken cancellationToken)
     {
         var profile = await _dbContext
