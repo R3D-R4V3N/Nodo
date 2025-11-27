@@ -9,7 +9,6 @@ using Rise.Client.RealTime;
 using Rise.Client.State;
 using Rise.Client.UserConnections;
 using Rise.Client.Users;
-using Rise.Client.Offline;
 using Rise.Shared.Chats;
 using Rise.Shared.Events;
 using Rise.Shared.UserConnections;
@@ -108,14 +107,7 @@ try
     builder.Services.AddSingleton<IHubClientFactory, HubClientFactory>();
     builder.Services.AddSingleton<IHubClient, HubClient>();
 
-    builder.Services.AddSingleton<OfflineQueueService>();
-
-    var host = builder.Build();
-
-    var offlineQueue = host.Services.GetRequiredService<OfflineQueueService>();
-    await offlineQueue.StartAsync();
-
-    await host.RunAsync();
+    await builder.Build().RunAsync();
 }
 catch (Exception ex)
 {

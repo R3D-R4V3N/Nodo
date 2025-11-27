@@ -14,7 +14,7 @@
 
 <div class="min-h-dvh bg-neutral-100 overflow-x-hidden">
   <!-- Header -->
-  <TopBar UseHeaderElement="true" Class="shadow" InnerClass="px-4 sm:px-6 lg:px-8 py-8 sm:pb-7 space-y-4">
+  <TopBar UseHeaderElement="true" Class="shadow" InnerClass="px-4 sm:px-6 lg:px-8 pt-6 pb-6 sm:pb-7 space-y-4 sm:space-y-5">
     <h1 class="text-2xl sm:text-3xl text-center lg:text-4xl font-semibold leading-tight">
       Goeiemorgen @UserState.User?.Name
     </h1>
@@ -65,7 +65,7 @@
               <button type="button"
                       class="w-full text-left"
                       @onclick="() => NavigateToChat(chat)">
-                <div class="bg-white rounded-3xl p-4 sm:p-5 shadow hover:shadow-md active:scale-[0.99] transition flex items-start gap-3 sm:gap-4">
+                <div class="bg-white rounded-3xl p-4 sm:p-5 shadow hover:shadow-md active:scale-[0.99] transition flex items-start gap-3 sm:gap-4 relative">
                   <!-- Avatar -->
                   @if (IsGroupChat(chat))
                   {
@@ -88,8 +88,8 @@
                         @(isOnline ? "bg-green-500" : "invisible")"></span>
                     </div>
                   }
- 
-                  
+
+
                   <!-- Texts -->
                   <div class="min-w-0 flex-1">
                     <div class="flex items-baseline justify-between gap-2">
@@ -98,6 +98,13 @@
                     </div>
                     <p class="mt-0.5 text-xs sm:text-sm text-neutral-500 truncate">@GetLastMessagePreview(chat)</p>
                   </div>
+
+                  @if (chat.UnreadCount > 0)
+                  {
+                    <span class="absolute bg-red-600 text-red-100 px-2 py-1 text-[11px] sm:text-xs font-bold rounded-full -top-2 -right-2">
+                      @FormatUnreadLabel(chat.UnreadCount)
+                    </span>
+                  }
                 </div>
               </button>
             </li>

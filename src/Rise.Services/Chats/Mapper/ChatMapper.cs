@@ -16,7 +16,7 @@ internal static class ChatMapper
                 .ToList()!
         };
 
-    public static ChatDto.GetChats? ToGetChatsDto(this Chat chat)
+    public static ChatDto.GetChats? ToGetChatsDto(this Chat chat, int unreadCount = 0)
     {
         if (chat is null)
             return null;
@@ -28,7 +28,12 @@ internal static class ChatMapper
                 .Users
                 .Select(UserMapper.ToChatDto)
                 .ToList(),
-            LastMessage = MessageMapper.ToChatDto(chat.Messages.FirstOrDefault()),
+            LastMessage = MessageMapper.ToChatDto(
+                chat.Messages
+                    .OrderByDescending(m => m.CreatedAt)
+                    .ThenByDescending(m => m.Id)
+                    .FirstOrDefault()),
+            UnreadCount = unreadCount
         };
     }
 }

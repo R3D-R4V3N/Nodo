@@ -27,11 +27,8 @@
             <MessageBubble Text="@message.Content"
                            IsOutgoing="isOutgoing"
                            AvatarUrl="@avatarUrl"
-                           AudioUrl="@message.AudioDataBlob"
-                           AudioDuration="@message.AudioDuration"
-                           IsPending="@message.IsPending"
-                           QueuedOperationId="@message.QueuedOperationId"
-                           OnCancelPending="() => HandleCancel(message)" />
+                           AudioUrl="@message.AudioDataUrl"
+                           AudioDuration="@message.AudioDuration" />
         </div>
     }
 </section>

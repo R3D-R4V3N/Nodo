@@ -125,6 +125,10 @@ public partial class Homepage : IDisposable
             }
 
             chat.LastMessage = dto;
+            if (!string.Equals(dto.User.AccountId, UserState.User?.AccountId, StringComparison.Ordinal))
+            {
+                chat.UnreadCount++;
+            }
             _chats.Remove(chat);
             _chats.Insert(0, chat);
 
@@ -195,6 +199,16 @@ public partial class Homepage : IDisposable
     private bool IsGroupChat(ChatDto.GetChats chat)
     {
         return chat.Users.Count > 2;
+    }
+
+    private static string FormatUnreadLabel(int unreadCount)
+    {
+        if (unreadCount <= 0)
+        {
+            return string.Empty;
+        }
+
+        return unreadCount > 99 ? "99+" : unreadCount.ToString(CultureInfo.InvariantCulture);
     }
 
     private void NavigateToFriendProfile(ChatDto.GetChats chat)

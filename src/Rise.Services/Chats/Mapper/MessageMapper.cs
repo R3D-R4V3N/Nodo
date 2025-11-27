@@ -17,7 +17,7 @@ internal static class MessageMapper
             Content = message.Text?.CleanedUpValue ?? string.Empty,
             Timestamp = message.CreatedAt,
             User = UserMapper.ToMessageDto(message.Sender),
-            AudioDataBlob = AudioHelperMethods.BuildAudioDataUrl(message),
+            AudioDataUrl = AudioHelperMethods.BuildAudioDataUrl(message),
             AudioDuration = message.AudioDurationSeconds.HasValue
                 ? TimeSpan.FromSeconds(message.AudioDurationSeconds.Value)
                 : null,
