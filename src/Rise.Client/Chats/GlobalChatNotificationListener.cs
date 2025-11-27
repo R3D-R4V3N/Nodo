@@ -18,6 +18,7 @@ public class GlobalChatNotificationListener : IAsyncDisposable
     private readonly UserState _userState;
 
     private readonly SemaphoreSlim _syncLock = new(1, 1);
+    private CancellationTokenSource? _keepAliveCts;
     private IHubClient? _hubClient;
     private IReadOnlyCollection<int> _joinedChatIds = Array.Empty<int>();
     private bool _started;
@@ -51,6 +52,7 @@ public class GlobalChatNotificationListener : IAsyncDisposable
 
             _started = true;
             await EnsureHubConnectionAsync(cancellationToken);
+            StartKeepAliveLoop();
         }
         finally
         {
@@ -64,6 +66,9 @@ public class GlobalChatNotificationListener : IAsyncDisposable
         try
         {
             _started = false;
+            _keepAliveCts?.Cancel();
+            _keepAliveCts?.Dispose();
+            _keepAliveCts = null;
             if (_hubClient is null)
             {
                 return;
@@ -85,7 +90,15 @@ public class GlobalChatNotificationListener : IAsyncDisposable
 
         if (_hubClient.State == HubConnectionState.Disconnected)
         {
-            await _hubClient.StartAsync();
+            try
+            {
+                await _hubClient.StartAsync();
+            }
+            catch
+            {
+                _joinedChatIds = Array.Empty<int>();
+                throw;
+            }
         }
 
         if (_hubClient.State == HubConnectionState.Connected)
@@ -139,6 +152,40 @@ public class GlobalChatNotificationListener : IAsyncDisposable
         {
             await _hubClient!.SendAsync("JoinChat", chatId);
         }
+    }
+
+    private void StartKeepAliveLoop()
+    {
+        _keepAliveCts?.Cancel();
+        _keepAliveCts = new CancellationTokenSource();
+        var token = _keepAliveCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    if (_started)
+                    {
+                        await EnsureHubConnectionAsync(token);
+                    }
+                }
+                catch
+                {
+                    // Ignore transient connection issues; the loop will retry.
+                }
+
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(30), token);
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
+            }
+        }, token);
     }
 
     public async ValueTask DisposeAsync()
