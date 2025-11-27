@@ -108,6 +108,8 @@ try
     // current user
     builder.Services.AddSingleton<UserState>();
 
+    builder.Services.AddScoped<IVoiceRecorderService, VoiceRecorderService>();
+
     builder.Services.AddSingleton<IHubClientFactory, HubClientFactory>();
     builder.Services.AddSingleton<IHubClient, HubClient>();
 
