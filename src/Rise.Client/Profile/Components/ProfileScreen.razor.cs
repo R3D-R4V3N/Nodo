@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -21,7 +21,7 @@ namespace Rise.Client.Profile.Components;
 // Component is veel te groot, rework!
 
 [Authorize]
-public partial class ProfileScreen : ComponentBase, IDisposable
+public partial class ProfileScreen : ComponentBase
 {
     private static readonly IReadOnlyList<HobbyOption> _hobbyOptions = Enum.GetValues<HobbyTypeDto>()
         .Select(x =>
@@ -135,10 +135,6 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private string _newChatLineError = string.Empty;
     private bool _isAddingCustomChatLine;
 
-    private bool _isToastVisible;
-    private string _toastMessage = string.Empty;
-    private CancellationTokenSource? _toastCts;
-
     private enum PreferencePickerMode
     {
         None,
@@ -155,6 +151,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
     [Inject] private IUserService UserService { get; set; } = default!;
     [Inject] private UserState UserState { get; set; } = default!;
+    [Inject] private IToastService ToastService { get; set; } = default!;
 
     private bool IsEditing => _isEditing;
     private bool IsLoading => _isLoading;
@@ -466,12 +463,12 @@ public partial class ProfileScreen : ComponentBase, IDisposable
                     ?? result.Errors.FirstOrDefault()
                     ?? "Opslaan is mislukt.";
 
-                await ShowToastAsync(errorMessage);
+                await ShowToastAsync(errorMessage, isError: true);
             }
         }
-        catch (Exception ex)
+        catch
         {
-            await ShowToastAsync("Opslaan is mislukt.");
+            await ShowToastAsync("Opslaan is mislukt.", isError: true);
         }
         finally
         {
@@ -1165,31 +1162,22 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
     // todo: export it to a helper function
     // work like a lib/framework
-    private async Task ShowToastAsync(string message)
+    private Task ShowToastAsync(string message, bool isError = false)
     {
-        _toastCts?.Cancel();
-        _toastCts?.Dispose();
-        _toastCts = new CancellationTokenSource();
-        _toastMessage = message;
-        _isToastVisible = true;
-        await InvokeAsync(StateHasChanged);
-
-        try
+        if (string.IsNullOrWhiteSpace(message))
         {
-            await Task.Delay(TimeSpan.FromSeconds(1.4), _toastCts.Token);
-        }
-        catch (TaskCanceledException)
-        {
-            return;
+            return Task.CompletedTask;
         }
 
-        _isToastVisible = false;
-        await InvokeAsync(StateHasChanged);
-    }
+        if (isError)
+        {
+            ToastService.ShowError(message);
+        }
+        else
+        {
+            ToastService.ShowSuccess(message);
+        }
 
-    public void Dispose()
-    {
-        _toastCts?.Cancel();
-        _toastCts?.Dispose();
+        return Task.CompletedTask;
     }
 }
