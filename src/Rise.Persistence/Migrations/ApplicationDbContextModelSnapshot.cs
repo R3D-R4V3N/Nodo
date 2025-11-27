@@ -37,7 +37,7 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("BaseUserChat");
                 });
 
-            modelBuilder.Entity("EventInterestedUsers", b =>
+            modelBuilder.Entity("EventInterestedUser", b =>
                 {
                     b.Property<int>("EventId")
                         .HasColumnType("int");
@@ -303,43 +303,6 @@ namespace Rise.Persistence.Migrations
                     b.HasIndex("ChatType");
 
                     b.ToTable("Chat", (string)null);
-                });
-
-            modelBuilder.Entity("Rise.Domain.Chats.MessageHistoryItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ChatId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<int>("LastReadMessageId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChatId");
-
-                    b.HasIndex("LastReadMessageId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("MessageHistoryItems", (string)null);
                 });
 
             modelBuilder.Entity("Rise.Domain.Events.Event", b =>
@@ -764,7 +727,7 @@ namespace Rise.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("EventInterestedUsers", b =>
+            modelBuilder.Entity("EventInterestedUser", b =>
                 {
                     b.HasOne("Rise.Domain.Events.Event", null)
                         .WithMany()
@@ -828,33 +791,6 @@ namespace Rise.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Rise.Domain.Chats.MessageHistoryItem", b =>
-                {
-                    b.HasOne("Rise.Domain.Chats.Chat", "Chat")
-                        .WithMany("ReadHistory")
-                        .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Rise.Domain.Messages.Message", "LastReadMessage")
-                        .WithMany()
-                        .HasForeignKey("LastReadMessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Rise.Domain.Users.BaseUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Chat");
-
-                    b.Navigation("LastReadMessage");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Rise.Domain.Messages.Message", b =>
@@ -1020,7 +956,7 @@ namespace Rise.Persistence.Migrations
                             b1.Property<DateTime?>("HandledDate")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("datetime(6)")
-                                .HasDefaultValue(new DateTime(2025, 11, 26, 21, 35, 7, 616, DateTimeKind.Utc).AddTicks(3407))
+                                .HasDefaultValue(new DateTime(2025, 11, 24, 18, 53, 29, 58, DateTimeKind.Utc).AddTicks(4190))
                                 .HasColumnName("HandledDate");
 
                             b1.Property<int>("StatusType")
@@ -1409,8 +1345,6 @@ namespace Rise.Persistence.Migrations
             modelBuilder.Entity("Rise.Domain.Chats.Chat", b =>
                 {
                     b.Navigation("Messages");
-
-                    b.Navigation("ReadHistory");
                 });
 
             modelBuilder.Entity("Rise.Domain.Organizations.Organization", b =>

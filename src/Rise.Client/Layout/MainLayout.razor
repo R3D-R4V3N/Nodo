@@ -1,11 +1,13 @@
-﻿@inherits LayoutComponentBase
+﻿@using Blazored.Toast.Configuration
+@inherits LayoutComponentBase
 <Rise.Client.Shared.OfflineAlert />
 <div>
+    <BlazoredToasts />
     <main>
         <section class="section">
             @Body
         </section>
     </main>
-    <NavBar />
+    <NavBar/>
 </div>
 

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Rise.Client.Chats;
 using Rise.Shared.Identity;
 using Rise.Shared.Identity.Accounts;
 
@@ -16,7 +15,6 @@ public partial class Login
     [Inject] public required IAccountManager AccountManager { get; set; }
     [Inject] public required NavigationManager Navigation { get; set; }
     [Inject] public required AuthenticationStateProvider AuthenticationStateProvider { get; set; }
-    [Inject] private ChatNotificationService ChatNotificationService { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -37,8 +35,6 @@ public partial class Login
 
     public async Task LoginUser()
     {
-        await ChatNotificationService.RequestPermissionAsync();
-
         _result = await AccountManager.LoginAsync(Model.Email!, Model.Password!);
 
         if (_result.IsSuccess && !string.IsNullOrEmpty(ReturnUrl))

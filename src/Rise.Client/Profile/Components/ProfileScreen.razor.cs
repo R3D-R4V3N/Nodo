@@ -18,6 +18,8 @@ using Rise.Shared.Users;
 
 namespace Rise.Client.Profile.Components;
 
+// Component is veel te groot, rework!
+
 [Authorize]
 public partial class ProfileScreen : ComponentBase, IDisposable
 {
