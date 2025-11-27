@@ -109,6 +109,7 @@ try
     builder.Services.AddSingleton<IHubClient, HubClient>();
 
     builder.Services.AddSingleton<ChatNotificationService>();
+    builder.Services.AddSingleton<GlobalChatNotificationListener>();
     builder.Services.AddSingleton<OfflineQueueService>();
 
     var host = builder.Build();
