@@ -26,7 +26,6 @@ namespace Rise.Persistence;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> opts) : IdentityDbContext<IdentityUser>(opts)
 {
     public DbSet<Chat> Chats => Set<Chat>();
-    public DbSet<MessageHistoryItem> ChatMessageHistory => Set<MessageHistoryItem>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<IdentityUser> IdentityUsers => Set<IdentityUser>();
     public DbSet<User> Users => Set<User>();

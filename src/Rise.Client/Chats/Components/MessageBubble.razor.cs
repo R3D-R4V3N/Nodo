@@ -14,6 +14,7 @@ public partial class MessageBubble
 
     private RenderFragment RenderContent() => builder =>
     {
+        // https://learn.microsoft.com/en-us/aspnet/core/blazor/advanced-scenarios?view=aspnetcore-10.0
         var seq = 0;
         var isPendingOutgoing = IsOutgoing && IsPending;
         if (!string.IsNullOrWhiteSpace(AudioUrl))
@@ -73,8 +74,8 @@ public partial class MessageBubble
             if (IsPending)
             {
                 var pendingClasses = !string.IsNullOrWhiteSpace(AudioUrl)
-                    ? "bg-green-50 text-neutral-900 rounded-2xl rounded-tr-none px-4 py-3 shadow-sm text-sm max-w-[80%] border-2 border-red-500 border-dashed focus:outline-none focus:ring-2 focus:ring-red-300"
-                    : "bg-green-50 text-neutral-900 rounded-2xl rounded-tr-none px-4 py-2 text-sm shadow-sm max-w-[80%] border-2 border-red-500 border-dashed focus:outline-none focus:ring-2 focus:ring-red-300";
+                    ? "py-3 shadow-sm text-sm max-w-[80%] border-2 border-red-500 border-dashed focus:outline-none focus:ring-2 focus:ring-red-300"
+                    : "py-2  shadow-sm";
 
                 return CanCancelPending ? $"{pendingClasses} cursor-pointer" : pendingClasses;
             }

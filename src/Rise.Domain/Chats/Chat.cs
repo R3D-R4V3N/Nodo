@@ -14,8 +14,6 @@ public class Chat : Entity
     
     private readonly List<Message> _messages = [];
     public IReadOnlyList<Message> Messages => _messages.AsReadOnly();
-    private readonly List<MessageHistoryItem> _readHistory = [];
-    public IReadOnlyList<MessageHistoryItem> ReadHistory => _readHistory.AsReadOnly();
     public ChatType ChatType { get; private set; }
 
     public static Result<Chat> CreatePrivateChat(BaseUser baseUser1, BaseUser baseUser2)
@@ -184,38 +182,6 @@ public class Chat : Entity
     public Result RemoveMessage(Message message)
     {
         _messages.Remove(message);
-        return Result.Success();
-    }
-
-    public Result UpdateReadHistory(BaseUser user, Message message)
-    {
-        if (!Users.Contains(user))
-        {
-            return Result.Conflict($"{user} zit niet in deze chat.");
-        }
-
-        if (!Messages.Contains(message))
-        {
-            return Result.Conflict($"{message} behoort niet tot deze chat.");
-        }
-
-        var historyItem = _readHistory.SingleOrDefault(x => x.User == user);
-
-        if (historyItem is null)
-        {
-            var item = new MessageHistoryItem()
-            {
-                Chat = this,
-                User = user,
-                LastReadMessage = message,
-            };
-            _readHistory.Add(item);
-        }
-        else
-        {
-            historyItem.LastReadMessage = message;
-        }
-
         return Result.Success();
     }
 }
