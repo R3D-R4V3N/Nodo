@@ -1,6 +1,5 @@
 using Ardalis.Result;
 using Microsoft.AspNetCore.Components;
-using Rise.Client.Chats;
 using Rise.Shared.Identity.Accounts;
 using Rise.Shared.Organizations;
 using Serilog;
@@ -11,7 +10,6 @@ public partial class Register
 {
     [Inject] public required IAccountManager AccountManager { get; set; }
     [Inject] public required IOrganizationService OrganizationService { get; set; }
-    [Inject] private ChatNotificationService ChatNotificationService { get; set; } = null!;
 
     private Result? _result;
     private readonly AccountRequest.Register Model = new();
@@ -51,8 +49,6 @@ public partial class Register
         _isSubmitting = true;
         try
         {
-            await ChatNotificationService.RequestPermissionAsync();
-
             _result = await AccountManager.RegisterAsync(Model);
         }
         finally

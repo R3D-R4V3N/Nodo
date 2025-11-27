@@ -23,7 +23,8 @@ using Rise.Client.RegistrationRequests;
 
 
 // For BACKEND_URL
-using System.Net.Http.Json; 
+using System.Net.Http.Json;
+using Blazored.Toast;
 
 try
 {
@@ -49,6 +50,8 @@ try
     builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthenticationStateProvider>();
     // register the account management interface
     builder.Services.AddScoped(sp => (IAccountManager)sp.GetRequiredService<AuthenticationStateProvider>());
+    
+    builder.Services.AddBlazoredToast();
 
     // Laadt config.json uit wwwroot om de backend URL dynamisch te halen; gebruikt fallback naar localhost als key ontbreekt.
     using var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
@@ -105,11 +108,11 @@ try
     // current user
     builder.Services.AddSingleton<UserState>();
 
+    builder.Services.AddScoped<IVoiceRecorderService, VoiceRecorderService>();
+
     builder.Services.AddSingleton<IHubClientFactory, HubClientFactory>();
     builder.Services.AddSingleton<IHubClient, HubClient>();
 
-    builder.Services.AddSingleton<ChatNotificationService>();
-    builder.Services.AddSingleton<GlobalChatNotificationListener>();
     builder.Services.AddSingleton<OfflineQueueService>();
 
     var host = builder.Build();

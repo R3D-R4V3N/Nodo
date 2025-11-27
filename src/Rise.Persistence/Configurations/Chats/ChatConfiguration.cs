@@ -25,15 +25,6 @@ internal class ChatConfiguration : EntityConfiguration<Chat>
         builder.HasMany(c => c.Users)
             .WithMany(u => u.Chats);
 
-        builder.HasMany(c => c.ReadHistory)
-            .WithOne(h => h.Chat)
-            .HasForeignKey("ChatId")
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // chatid1 seems to be gone without this
-        //builder.Navigation(c => c.ReadHistory)
-        //    .UsePropertyAccessMode(PropertyAccessMode.Field);
-
         builder.HasIndex(c => c.ChatType);
     }
 }
