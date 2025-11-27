@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using System.Net.Http;
 using Microsoft.AspNetCore.Components;
@@ -127,6 +128,19 @@ public partial class Homepage : IDisposable
             }
 
             chat.LastMessage = dto;
+
+            var isOwnMessage = dto.User.Id == UserState.User?.Id;
+            var isChatActive = ChatNotificationService.IsChatActive(dto.ChatId);
+
+            if (isChatActive)
+            {
+                chat.UnreadCount = 0;
+            }
+            else if (!isOwnMessage)
+            {
+                chat.UnreadCount = Math.Max(0, chat.UnreadCount) + 1;
+            }
+
             _chats.Remove(chat);
             _chats.Insert(0, chat);
 

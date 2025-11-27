@@ -18,6 +18,11 @@ public class ChatNotificationService
         _userState = userState;
     }
 
+    public bool IsChatActive(int chatId)
+    {
+        return _activeChatId == chatId;
+    }
+
     public void SetActiveChat(int? chatId)
     {
         _activeChatId = chatId;
