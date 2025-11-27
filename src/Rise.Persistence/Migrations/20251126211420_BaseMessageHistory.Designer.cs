@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rise.Persistence;
 
@@ -11,9 +12,11 @@ using Rise.Persistence;
 namespace Rise.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251126211420_BaseMessageHistory")]
+    partial class BaseMessageHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -313,7 +316,7 @@ namespace Rise.Persistence.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ChatId")
+                    b.Property<int?>("ChatId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -832,11 +835,10 @@ namespace Rise.Persistence.Migrations
 
             modelBuilder.Entity("Rise.Domain.Chats.MessageHistoryItem", b =>
                 {
-                    b.HasOne("Rise.Domain.Chats.Chat", "Chat")
+                    b.HasOne("Rise.Domain.Chats.Chat", null)
                         .WithMany("ReadHistory")
                         .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Rise.Domain.Messages.Message", "LastReadMessage")
                         .WithMany()
@@ -849,8 +851,6 @@ namespace Rise.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Chat");
 
                     b.Navigation("LastReadMessage");
 
@@ -1020,7 +1020,7 @@ namespace Rise.Persistence.Migrations
                             b1.Property<DateTime?>("HandledDate")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("datetime(6)")
-                                .HasDefaultValue(new DateTime(2025, 11, 26, 21, 35, 7, 616, DateTimeKind.Utc).AddTicks(3407))
+                                .HasDefaultValue(new DateTime(2025, 11, 26, 21, 14, 18, 761, DateTimeKind.Utc).AddTicks(2875))
                                 .HasColumnName("HandledDate");
 
                             b1.Property<int>("StatusType")
