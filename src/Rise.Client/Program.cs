@@ -115,15 +115,16 @@ try
     builder.Services.AddSingleton<IHubClient, HubClient>();
 
     builder.Services.AddSingleton<OfflineQueueService>();
-    builder.Services.AddSingleton<OfflinePollingService>();
+    builder.Services.AddSingleton<ConnectionServiceFactory>();
 
     var host = builder.Build();
 
     var offlineQueue = host.Services.GetRequiredService<OfflineQueueService>();
     await offlineQueue.StartAsync();
 
-    var offlinePolling = host.Services.GetRequiredService<OfflinePollingService>();
-    offlinePolling.Start();
+    var connectionFactory = host.Services.GetRequiredService<ConnectionServiceFactory>();
+    var connectionService = await connectionFactory.CreateAsync();
+    await connectionService.InitializeAsync();
 
     await host.RunAsync();
 }
