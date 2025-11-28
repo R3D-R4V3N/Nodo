@@ -109,16 +109,21 @@ try
     builder.Services.AddSingleton<UserState>();
 
     builder.Services.AddScoped<IVoiceRecorderService, VoiceRecorderService>();
+    builder.Services.AddScoped<ChatMessageDispatchService>();
 
     builder.Services.AddSingleton<IHubClientFactory, HubClientFactory>();
     builder.Services.AddSingleton<IHubClient, HubClient>();
 
     builder.Services.AddSingleton<OfflineQueueService>();
+    builder.Services.AddSingleton<OfflinePollingService>();
 
     var host = builder.Build();
 
     var offlineQueue = host.Services.GetRequiredService<OfflineQueueService>();
     await offlineQueue.StartAsync();
+
+    var offlinePolling = host.Services.GetRequiredService<OfflinePollingService>();
+    offlinePolling.Start();
 
     await host.RunAsync();
 }
