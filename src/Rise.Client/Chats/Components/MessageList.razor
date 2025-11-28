@@ -28,7 +28,7 @@
             @if (isOutgoing && hasAudio)
             {
                 <OutgoingAudioBubble Text="@message.Content"
-                                     AudioUrl="@message.AudioDataBlob!"
+                                     AudioUrl="@message.AudioDataBlob"
                                      AudioDuration="@message.AudioDuration"
                                      IsPending="@message.IsPending"
                                      OnCancelPending="() => HandleCancel(message)" />
@@ -41,7 +41,7 @@
             }
             else if (hasAudio)
             {
-                <IncomingAudioBubble AudioUrl="@message.AudioDataBlob!"
+                <IncomingAudioBubble AudioUrl="@message.AudioDataBlob"
                                      AudioDuration="@message.AudioDuration"
                                      Text="@message.Content"
                                      AvatarUrl="@avatarUrl" />
