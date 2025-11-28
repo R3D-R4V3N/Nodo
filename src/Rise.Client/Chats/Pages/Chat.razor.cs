@@ -258,7 +258,7 @@ public partial class Chat : IAsyncDisposable
         {
             if (_hubConnection is null)
             {
-                _hubConnection = HubClientFactory.Create();
+                _hubConnection = await HubClientFactory.CreateAsync();
 
                 _hubConnection.On<MessageDto.Chat>("MessageCreated", dto =>
                     InvokeAsync(() => ProcessIncomingMessage(dto)));

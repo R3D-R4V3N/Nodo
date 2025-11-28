@@ -110,10 +110,11 @@ try
 
     builder.Services.AddScoped<IVoiceRecorderService, VoiceRecorderService>();
 
-    builder.Services.AddSingleton<IHubClientFactory, HubClientFactory>();
-    builder.Services.AddSingleton<IHubClient, HubClient>();
-
     builder.Services.AddSingleton<OfflineQueueService>();
+
+    builder.Services.AddSingleton<IHubClientFactoryStrategy, OnlineHubClientFactory>();
+    builder.Services.AddSingleton<IHubClientFactoryStrategy, OfflineHubClientFactory>();
+    builder.Services.AddSingleton<IHubClientFactory, HubClientFactory>();
 
     var host = builder.Build();
 

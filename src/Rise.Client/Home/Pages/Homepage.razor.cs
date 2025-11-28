@@ -51,7 +51,7 @@ public partial class Homepage : IDisposable
     {
         try
         {
-            _hubConnection = HubClientFactory.Create();
+            _hubConnection = await HubClientFactory.CreateAsync();
 
             // Wanneer iemand online of offline gaat
             _hubConnection.On<string, bool>("UserStatusChanged", (userId, isOnline) =>
@@ -68,8 +68,13 @@ public partial class Homepage : IDisposable
 
             // Vraag de huidige online users op
             var onlineNow = await _hubConnection.InvokeAsync<List<string>>("GetOnlineUsers");
-            foreach (var id in onlineNow)
-                _onlineUsers.Add(id);
+            if (onlineNow is not null)
+            {
+                foreach (var id in onlineNow)
+                {
+                    _onlineUsers.Add(id);
+                }
+            }
 
             StateHasChanged();
         }

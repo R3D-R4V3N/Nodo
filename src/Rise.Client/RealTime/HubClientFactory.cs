@@ -1,21 +1,36 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.SignalR.Client;
+using Rise.Client.Offline;
 
 namespace Rise.Client.RealTime;
 
-public class HubClientFactory : IHubClientFactory
+public sealed class HubClientFactory : IHubClientFactory
 {
-    private readonly NavigationManager _nav;
+    private readonly OfflineQueueService _offlineQueueService;
+    private readonly IReadOnlyDictionary<HubConnectionAvailability, IHubClientFactoryStrategy> _factories;
+    private static readonly IReadOnlyDictionary<bool, HubConnectionAvailability> _availabilityByNavigatorState =
+        new Dictionary<bool, HubConnectionAvailability>
+        {
+            [true] = HubConnectionAvailability.Online,
+            [false] = HubConnectionAvailability.Offline
+        };
 
-    public HubClientFactory(NavigationManager nav) => _nav = nav;
-
-    public IHubClient Create()
+    public HubClientFactory(
+        OfflineQueueService offlineQueueService,
+        IEnumerable<IHubClientFactoryStrategy> factories)
     {
-        var connection = new HubConnectionBuilder()
-            .WithUrl(_nav.ToAbsoluteUri("/chathub"))
-            .WithAutomaticReconnect()
-            .Build();
+        _offlineQueueService = offlineQueueService;
+        _factories = factories.ToDictionary(factory => factory.Availability);
+    }
 
-        return new HubClient(connection);
+    public async Task<IHubClient> CreateAsync()
+    {
+        var availability = await ResolveAvailabilityAsync();
+        var factory = _factories[availability];
+        return await factory.CreateAsync();
+    }
+
+    private async Task<HubConnectionAvailability> ResolveAvailabilityAsync()
+    {
+        var isOnline = await _offlineQueueService.IsOnlineAsync();
+        return _availabilityByNavigatorState[isOnline];
     }
 }
