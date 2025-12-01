@@ -25,6 +25,8 @@ using Rise.Client.RegistrationRequests;
 // For BACKEND_URL
 using System.Net.Http.Json;
 using Blazored.Toast;
+using Rise.Shared.Validators;
+using Rise.Client.Validators;
 
 try
 {
@@ -58,8 +60,8 @@ try
     var config = await http.GetFromJsonAsync<Dictionary<string, string>>("config.json");
 
     var backendUrl = config?["backendUrl"] ?? "https://localhost:5001";
-    var backendUri = new Uri(backendUrl);
-
+    var backendUri = new Uri(backendUrl);   
+    
     // configure client for auth interactions
     builder.Services.AddHttpClient("SecureApi",opt => opt.BaseAddress = backendUri)
         .AddHttpMessageHandler<CookieHandler>();
@@ -88,10 +90,10 @@ try
     {
         client.BaseAddress = backendUri;
     });
-    // Publieke API client (geen CookieHandler)
+
     builder.Services.AddHttpClient<IOrganizationService, OrganizationService>(client =>
     {
-        client.BaseAddress = backendUri; // bij jou bv. https://localhost:5001
+        client.BaseAddress = backendUri;
     });
 
     builder.Services.AddHttpClient<IEventService, EventService>(client =>
@@ -100,10 +102,16 @@ try
     }).AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<IRegistrationRequestService, RegistrationRequestService>(client =>
-        {
-            client.BaseAddress = backendUri;
-        })
-        .AddHttpMessageHandler<CookieHandler>();
+    {
+        client.BaseAddress = backendUri;
+    })
+    .AddHttpMessageHandler<CookieHandler>();
+
+    // load in rules
+    builder.Services.AddHttpClient<IValidatorService, ValidatorService>(client =>
+    {
+        client.BaseAddress = backendUri;
+    });
 
     // current user
     builder.Services.AddSingleton<UserState>();
@@ -116,6 +124,12 @@ try
 
     builder.Services.AddSingleton<OfflineQueueService>();
     builder.Services.AddSingleton<ConnectionServiceFactory>();
+
+    // load in validation rules for DI
+    // no clue if this is the ideal location tho
+    var validatorServiceTemp = new ValidatorService(http);
+    var rules = await validatorServiceTemp.GetRulesAsync();
+    builder.Services.AddSingleton(rules);
 
     var host = builder.Build();
 

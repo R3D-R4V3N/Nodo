@@ -16,6 +16,8 @@ using Rise.Shared.UserSentiments;
 using Rise.Services.Sentiments;
 using Rise.Services.Hobbies;
 using Rise.Shared.Hobbies;
+using Rise.Services.Validators;
+using Rise.Shared.Validators;
 
 namespace Rise.Services;
 
@@ -32,6 +34,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRegistrationRequestService, RegistrationRequestService>();
         services.AddScoped<ISentimentsService, SentimentService>();
         services.AddScoped<IHobbyService, HobbyService>();
+        services.AddScoped<IValidatorService, ValidatorService>();
         services.AddTransient<DbSeeder>();
         
         // Add other application services here.

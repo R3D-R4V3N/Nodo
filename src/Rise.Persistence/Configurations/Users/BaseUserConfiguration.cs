@@ -49,8 +49,7 @@ internal class BaseUserConfiguration : EntityConfiguration<BaseUser>
         builder.OwnsOne(m => m.BirthDay, bd =>
         {
             bd.Property(t => t.Value)
-                .HasColumnName("BirthDay")
-                .HasMaxLength(BirthDay.MAX_LENGTH);
+                .HasColumnName("BirthDay");
         });
 
         builder.Property(x => x.Gender)
