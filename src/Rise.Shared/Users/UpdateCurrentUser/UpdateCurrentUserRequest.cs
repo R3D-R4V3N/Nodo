@@ -1,5 +1,6 @@
 using Rise.Shared.Hobbies;
 using Rise.Shared.Sentiments;
+using Rise.Shared.Validators;
 
 namespace Rise.Shared.Users;
 
@@ -20,63 +21,56 @@ public static partial class UserRequest
 
     public class UpdateCurrentUserValidator : AbstractValidator<UpdateCurrentUser>
     {
-        public const int MaxHobbies = 3;
-        private const int MaxNameLength = 200;
-        private const int MaxBiographyLength = 500;
-        private const int MaxAvatarLength = 500000;
-        private const int MaxDefaultChatLines = 5;
-        private const int MaxPreferences = 5;
-        private const int MaxChatLineLength = 150;
-
-        public UpdateCurrentUserValidator()
+        public UpdateCurrentUserValidator(ValidatorRules rules)
         {
             RuleFor(x => x.FirstName)
                 .NotEmpty()
-                .MaximumLength(MaxNameLength)
+                .MaximumLength(rules.MAX_FIRSTNAME_LENGTH)
                 .Must(name => !string.IsNullOrWhiteSpace(name))
                 .WithMessage("Voornaam mag niet leeg zijn.");
 
             RuleFor(x => x.LastName)
                 .NotEmpty()
-                .MaximumLength(MaxNameLength)
+                .MaximumLength(rules.MAX_LASTNAME_LENGTH)
                 .Must(name => !string.IsNullOrWhiteSpace(name))
                 .WithMessage("Achternaam mag niet leeg zijn.");
 
             RuleFor(x => x.Email)
                 .NotEmpty()
-                .EmailAddress();
+                .EmailAddress()
+                .MaximumLength(rules.MAX_EMAIL_LENGTH);
 
             RuleFor(x => x.Biography)
                 .NotEmpty()
-                .MaximumLength(MaxBiographyLength)
+                .MaximumLength(rules.MAX_BIOGRAPHY_LENGTH)
                 .Must(bio => !string.IsNullOrWhiteSpace(bio))
                 .WithMessage("Bio mag niet leeg zijn.");
 
             RuleFor(x => x.AvatarUrl)
                 .NotEmpty()
-                .MaximumLength(MaxAvatarLength)
+                .MaximumLength(rules.MAX_AVATAR_URL_LENGTH)
                 .Must(url => !string.IsNullOrWhiteSpace(url))
                 .WithMessage("Avatar mag niet leeg zijn.");
 
             RuleFor(x => x.Hobbies)
-                .Must(list => (list?.Select(x => x.Hobby) ?? []).Distinct().Count() <= MaxHobbies)
-                .WithMessage($"Je mag maximaal {MaxHobbies} hobby's selecteren.");
+                .Must(list => (list?.Select(x => x.Hobby) ?? []).Distinct().Count() <= rules.MAX_HOBBIES_COUNT)
+                .WithMessage($"Je mag maximaal {rules.MAX_HOBBIES_COUNT} hobby's selecteren.");
 
             RuleFor(x => x.Sentiments.Where(x => x.Type.Equals(SentimentTypeDto.Like)))
-                .Must(list => (list?.Select(x => x.Category) ?? []).Distinct().Count() <= MaxPreferences)
-                .WithMessage($"Je mag maximaal {MaxPreferences} interesses selecteren.");
+                .Must(list => (list?.Select(x => x.Category) ?? []).Distinct().Count() <= rules.MAX_SENTIMENTS_PER_TYPE)
+                .WithMessage($"Je mag maximaal {rules.MAX_SENTIMENTS_PER_TYPE} interesses selecteren.");
 
             RuleFor(x => x.Sentiments.Where(x => x.Type.Equals(SentimentTypeDto.Dislike)))
-                .Must(list => (list?.Select(x => x.Category) ?? []).Distinct().Count() <= MaxPreferences)
-                .WithMessage($"Je mag maximaal {MaxPreferences} interesses selecteren.");
+                .Must(list => (list?.Select(x => x.Category) ?? []).Distinct().Count() <= rules.MAX_SENTIMENTS_PER_TYPE)
+                .WithMessage($"Je mag maximaal {rules.MAX_SENTIMENTS_PER_TYPE} interesses selecteren.");
 
             RuleFor(x => x.DefaultChatLines)
-                .Must(list => (list ?? []).Count <= MaxDefaultChatLines)
-                .WithMessage($"Je mag maximaal {MaxDefaultChatLines} standaardzinnen selecteren.");
+                .Must(list => (list ?? []).Count <= rules.MAX_DEFAULT_CHAT_LINES_COUNT)
+                .WithMessage($"Je mag maximaal {rules.MAX_DEFAULT_CHAT_LINES_COUNT} standaardzinnen selecteren.");
 
             RuleForEach(x => x.DefaultChatLines)
                 .NotEmpty()
-                .MaximumLength(MaxChatLineLength);
+                .MaximumLength(rules.MAX_DEFAULT_CHAT_LINE_LENGTH);
         }
     }
 }

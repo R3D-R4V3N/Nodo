@@ -1,4 +1,5 @@
 ﻿using Destructurama.Attributed;
+using Rise.Shared.Validators;
 
 namespace Rise.Shared.Identity.Accounts;
 
@@ -35,9 +36,12 @@ public static partial class AccountRequest
         /// </summary>
         public class Validator : AbstractValidator<Login>
         {
-            public Validator()
+            public Validator(ValidatorRules rules)
             {
-                RuleFor(x => x.Email).NotEmpty().EmailAddress();
+                RuleFor(x => x.Email)
+                    .NotEmpty()
+                    .EmailAddress()
+                    .MaximumLength(rules.MAX_EMAIL_LENGTH);
                 RuleFor(x => x.Password).NotEmpty();
             }
         }
