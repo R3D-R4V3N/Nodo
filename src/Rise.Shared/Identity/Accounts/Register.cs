@@ -1,7 +1,7 @@
 using System;
 using Destructurama.Attributed;
-using FluentValidation;
 using Rise.Shared.Users;
+using Rise.Shared.Validators;
 
 namespace Rise.Shared.Identity.Accounts;
 
@@ -64,13 +64,18 @@ public static partial class AccountRequest
         /// </summary>
         public class Validator : AbstractValidator<Register>
         {
-            private const int MaxAvatarLength = 500000;
-
-            public Validator()
+            public Validator(ValidatorRules rules)
             {
-                RuleFor(x => x.Email).NotEmpty().EmailAddress();
-                RuleFor(x => x.FirstName).NotEmpty();
-                RuleFor(x => x.LastName).NotEmpty();
+                RuleFor(x => x.Email)
+                    .NotEmpty()
+                    .EmailAddress()
+                    .MaximumLength(rules.MAX_EMAIL_LENGTH);
+                RuleFor(x => x.FirstName)
+                    .NotEmpty()
+                    .MaximumLength(rules.MAX_FIRSTNAME_LENGTH);
+                RuleFor(x => x.LastName)
+                    .NotEmpty()
+                    .MaximumLength(rules.MAX_LASTNAME_LENGTH);
                 RuleFor(x => x.BirthDate)
                     .NotNull()
                     .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today))
@@ -79,7 +84,7 @@ public static partial class AccountRequest
                     .IsInEnum();
                 RuleFor(x => x.AvatarDataUrl)
                     .NotEmpty()
-                    .MaximumLength(MaxAvatarLength);
+                    .MaximumLength(rules.MAX_AVATAR_URL_LENGTH);
                 RuleFor(x => x.Password).NotEmpty();
                 RuleFor(x => x.ConfirmPassword)
                     .Equal(x => x.Password)

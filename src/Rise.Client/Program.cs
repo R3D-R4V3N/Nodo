@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using FluentValidation;
 using Rise.Client;
 using Rise.Client.Chats;
 using Rise.Client.Events;
@@ -14,6 +15,7 @@ using Rise.Shared.Chats;
 using Rise.Shared.Events;
 using Rise.Shared.UserConnections;
 using Rise.Shared.Users;
+using Rise.Shared.Validators;
 using UserService = Rise.Client.Users.UserService;
 using Rise.Shared.Organizations;
 using Rise.Client.Organizations;
@@ -130,6 +132,18 @@ try
     var validatorServiceTemp = new ValidatorService(http);
     var rules = await validatorServiceTemp.GetRulesAsync();
     builder.Services.AddSingleton(rules);
+
+    builder.Services.AddTransient<IValidator<AccountRequest.Login>>(sp =>
+        new AccountRequest.Login.Validator(sp.GetRequiredService<ValidatorRules>()));
+
+    builder.Services.AddTransient<IValidator<AccountRequest.Register>>(sp =>
+        new AccountRequest.Register.Validator(sp.GetRequiredService<ValidatorRules>()));
+
+    builder.Services.AddTransient<IValidator<UserRequest.UpdateCurrentUser>>(sp =>
+        new UserRequest.UpdateCurrentUserValidator(sp.GetRequiredService<ValidatorRules>()));
+
+    builder.Services.AddTransient<IValidator<ChatRequest.CreateMessage>>(sp =>
+        new ChatRequest.CreateMessage.Validator(sp.GetRequiredService<ValidatorRules>()));
 
     var host = builder.Build();
 

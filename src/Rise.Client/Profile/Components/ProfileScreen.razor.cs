@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using FluentValidation;
 using Rise.Client.Profile.Models;
 using Rise.Client.State;
 using Rise.Client.Users;
@@ -152,6 +153,7 @@ public partial class ProfileScreen : ComponentBase
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
     [Inject] private IUserService UserService { get; set; } = default!;
     [Inject] private UserState UserState { get; set; } = default!;
+    [Inject] private IValidator<UserRequest.UpdateCurrentUser> UpdateUserValidator { get; set; } = default!;
 
     [Inject] private IToastService ToastService { get; set; } = default!;
     
@@ -444,6 +446,17 @@ public partial class ProfileScreen : ComponentBase
                 .Where(text => !string.IsNullOrWhiteSpace(text))
                 .ToList()
         };
+
+        var validationResult = await UpdateUserValidator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors.Select(e => e.ErrorMessage).Distinct())
+            {
+                ToastService.ShowError(error);
+            }
+
+            return;
+        }
 
         try
         {
