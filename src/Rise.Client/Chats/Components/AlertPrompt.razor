@@ -27,13 +27,12 @@
                 @foreach (var reason in Reasons)
                 {
                     <button type="button"
-                            class="group w-full py-3 px-3 rounded-xl border border-neutral-200 bg-neutral-50 text-neutral-900 font-semibold hover:bg-[#D64541] hover:text-white hover:border-[#D64541] transition-colors text-left"
+                            class="group w-full py-3 px-3 rounded-xl border border-neutral-200 bg-neutral-50 text-neutral-900 font-semibold    transition-colors text-left"
                             @onclick="() => SelectReasonAsync(reason.Label)">
                         <div class="flex items-center gap-3">
-                            <div class="h-10 w-10 shrink-0 rounded-lg bg-[#D64541] text-white grid place-items-center transition-colors group-hover:bg-white group-hover:text-[#D64541]">
-                                <svg class="h-6 w-6" fill="currentColor" aria-hidden="true">
-                                    <use href="@reason.IconHref" />
-                                </svg>
+                            <div class="h-12 w-12 shrink-0 rounded-lg bg-[#D64541] text-white grid place-items-center transition-colors  ">
+                                <img src="@reason.IconHref" alt="@reason.Label" class="h-7 w-7 object-contain icon-white" />
+
                             </div>
                             <span>@reason.Label</span>
                         </div>
@@ -42,6 +41,12 @@
             </div>
         </div>
     </div>
+    <style>
+        .icon-white {
+            filter: brightness(0) invert(1);
+        }
+
+    </style>
 }
 
 @code {
