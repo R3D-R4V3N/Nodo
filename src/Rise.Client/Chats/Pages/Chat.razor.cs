@@ -130,7 +130,7 @@ public partial class Chat : IAsyncDisposable
     private void InitializeAlertReasons()
     {
         _alertReasons.Clear();
-        _alertReasons.AddRange(AlertDictionary.Reasons);
+        _alertReasons.AddRange(AlertCatalog.Reasons);
     }
 
     private async Task DispatchMessageAsync(ChatRequest.CreateMessage createRequest, string errorMessage)
