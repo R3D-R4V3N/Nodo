@@ -25,9 +25,14 @@
                 @foreach (var reason in Reasons)
                 {
                     <button type="button"
-                            class="w-full py-4 px-3 rounded-xl border border-neutral-200 bg-neutral-50 text-neutral-900 font-semibold hover:bg-[#D64541] hover:text-white hover:border-[#D64541] transition-colors"
-                            @onclick="() => SelectReasonAsync(reason)">
-                        @reason
+                            class="group w-full py-4 px-4 rounded-xl border border-neutral-200 bg-neutral-50 text-neutral-900 font-semibold hover:bg-[#D64541] hover:text-white hover:border-[#D64541] transition-colors text-left"
+                            @onclick="() => SelectReasonAsync(reason.Label)">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 shrink-0 rounded-lg bg-[#D64541] text-white grid place-items-center transition-colors group-hover:bg-white group-hover:text-[#D64541]">
+                                @reason.Icon
+                            </div>
+                            <span>@reason.Label</span>
+                        </div>
                     </button>
                 }
             </div>
@@ -42,7 +47,7 @@
 
     [Parameter] public string? Description { get; set; } = "Kies de reden voor je melding zodat we dit gesprek kunnen controleren.";
 
-    [Parameter] public IReadOnlyList<string> Reasons { get; set; } = Array.Empty<string>();
+    [Parameter] public IReadOnlyList<AlertReason> Reasons { get; set; } = Array.Empty<AlertReason>();
 
     [Parameter] public EventCallback OnClose { get; set; }
 
@@ -67,4 +72,6 @@
 
         return Task.CompletedTask;
     }
+
+    public record AlertReason(string Label, RenderFragment Icon);
 }
