@@ -8,6 +8,7 @@ using Rise.Client.State;
 using Rise.Shared.Assets;
 using Rise.Shared.Chats;
 using Rise.Shared.Users;
+using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
 
@@ -30,6 +31,14 @@ public partial class Chat : IAsyncDisposable
     private string? _loadError;
     private bool _isLoading = true;
     private bool _isSending;
+    private readonly List<string> _alertReasons = new()
+    {
+        "Ongepast gedrag",
+        "Spam of fraude",
+        "Ander probleem"
+    };
+    private bool _isAlertOpen;
+    private string? _selectedAlertReason;
     private bool _shouldScrollToBottom;
     private ElementReference _messagesHost;
     private ElementReference _footerHost;
@@ -465,7 +474,21 @@ public partial class Chat : IAsyncDisposable
 
     private Task TriggerAlert()
     {
-        // TODO: Hook up with actual alert functionality.
+        _isAlertOpen = true;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task CloseAlert()
+    {
+        _isAlertOpen = false;
+        return Task.CompletedTask;
+    }
+
+    private Task HandleAlertReason(string reason)
+    {
+        _selectedAlertReason = reason;
+        _isAlertOpen = false;
         return Task.CompletedTask;
     }
 
