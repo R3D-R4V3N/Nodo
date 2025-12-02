@@ -31,7 +31,9 @@
                             @onclick="() => SelectReasonAsync(reason.Label)">
                         <div class="flex items-center gap-3">
                             <div class="h-10 w-10 shrink-0 rounded-lg bg-[#D64541] text-white grid place-items-center transition-colors group-hover:bg-white group-hover:text-[#D64541]">
-                                @((MarkupString)reason.IconSvg)
+                                <svg class="h-6 w-6" fill="currentColor" aria-hidden="true">
+                                    <use href="@reason.IconHref" />
+                                </svg>
                             </div>
                             <span>@reason.Label</span>
                         </div>
@@ -75,5 +77,5 @@
         return Task.CompletedTask;
     }
 
-    public record AlertReason(string Label, string IconSvg);
+    public record AlertReason(string Label, string IconHref);
 }
