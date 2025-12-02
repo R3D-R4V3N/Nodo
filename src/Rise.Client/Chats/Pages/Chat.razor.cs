@@ -8,6 +8,7 @@ using Rise.Client.State;
 using Rise.Shared.Assets;
 using Rise.Shared.Chats;
 using Rise.Shared.Users;
+using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
 
@@ -30,6 +31,9 @@ public partial class Chat : IAsyncDisposable
     private string? _loadError;
     private bool _isLoading = true;
     private bool _isSending;
+    private readonly List<AlertPrompt.AlertReason> _alertReasons = new();
+    private bool _isAlertOpen;
+    private string? _selectedAlertReason;
     private bool _shouldScrollToBottom;
     private ElementReference _messagesHost;
     private ElementReference _footerHost;
@@ -41,6 +45,7 @@ public partial class Chat : IAsyncDisposable
     protected override void OnInitialized()
     {
         OfflineQueueService.WentOnline += HandleWentOnlineAsync;
+        InitializeAlertReasons();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -120,6 +125,12 @@ public partial class Chat : IAsyncDisposable
             _connectionError = null;
             await EnsureHubConnectionAsync();
         });
+    }
+
+    private void InitializeAlertReasons()
+    {
+        _alertReasons.Clear();
+        _alertReasons.AddRange(AlertCatalog.Reasons);
     }
 
     private async Task DispatchMessageAsync(ChatRequest.CreateMessage createRequest, string errorMessage)
@@ -465,7 +476,21 @@ public partial class Chat : IAsyncDisposable
 
     private Task TriggerAlert()
     {
-        // TODO: Hook up with actual alert functionality.
+        _isAlertOpen = true;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task CloseAlert()
+    {
+        _isAlertOpen = false;
+        return Task.CompletedTask;
+    }
+
+    private Task HandleAlertReason(string reason)
+    {
+        _selectedAlertReason = reason;
+        _isAlertOpen = false;
         return Task.CompletedTask;
     }
 
