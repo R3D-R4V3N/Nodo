@@ -7,6 +7,7 @@ using Rise.Client.RealTime;
 using Rise.Client.State;
 using Rise.Shared.Assets;
 using Rise.Shared.Chats;
+using Rise.Shared.Emergencies;
 using Rise.Shared.Users;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +34,7 @@ public partial class Chat : IAsyncDisposable
     private bool _isSending;
     private readonly List<AlertPrompt.AlertReason> _alertReasons = new();
     private bool _isAlertOpen;
-    private string? _selectedAlertReason;
+    private EmergencyTypeDto? _selectedAlertReason;
     private bool _shouldScrollToBottom;
     private ElementReference _messagesHost;
     private ElementReference _footerHost;
@@ -487,7 +488,7 @@ public partial class Chat : IAsyncDisposable
         return Task.CompletedTask;
     }
 
-    private Task HandleAlertReason(string reason)
+    private Task HandleAlertReason(EmergencyTypeDto reason)
     {
         _selectedAlertReason = reason;
         _isAlertOpen = false;
