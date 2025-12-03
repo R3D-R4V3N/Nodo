@@ -34,10 +34,40 @@ namespace Rise.Persistence.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("BaseUserChat");
+                    b.ToTable("BaseUser_Chat", (string)null);
                 });
 
-            modelBuilder.Entity("EventInterestedUser", b =>
+            modelBuilder.Entity("EmergencySupervisor", b =>
+                {
+                    b.Property<int>("AllowedToResolveId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmergencyId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AllowedToResolveId", "EmergencyId");
+
+                    b.HasIndex("EmergencyId");
+
+                    b.ToTable("Emergcency_Supervisors_AllowedToResolve", (string)null);
+                });
+
+            modelBuilder.Entity("EmergencySupervisor1", b =>
+                {
+                    b.Property<int>("Emergency1Id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HasResolvedId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Emergency1Id", "HasResolvedId");
+
+                    b.HasIndex("HasResolvedId");
+
+                    b.ToTable("Emergcency_Supervisors_HasResolved", (string)null);
+                });
+
+            modelBuilder.Entity("Event_User_InterestedUsers", b =>
                 {
                     b.Property<int>("EventId")
                         .HasColumnType("int");
@@ -302,7 +332,50 @@ namespace Rise.Persistence.Migrations
 
                     b.HasIndex("ChatType");
 
-                    b.ToTable("Chat", (string)null);
+                    b.ToTable("Chats", (string)null);
+                });
+
+            modelBuilder.Entity("Rise.Domain.Emergencies.Emergency", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChatId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<int>("MadeByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("current_timestamp()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("MadeByUserId");
+
+                    b.ToTable("Emergencies", (string)null);
                 });
 
             modelBuilder.Entity("Rise.Domain.Events.Event", b =>
@@ -357,7 +430,7 @@ namespace Rise.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Event", (string)null);
+                    b.ToTable("Events", (string)null);
                 });
 
             modelBuilder.Entity("Rise.Domain.Messages.Message", b =>
@@ -663,7 +736,7 @@ namespace Rise.Persistence.Migrations
 
                     b.HasIndex("HobbyId");
 
-                    b.ToTable("UserHobbies", (string)null);
+                    b.ToTable("User_Hobby", (string)null);
                 });
 
             modelBuilder.Entity("Rise.Persistence.Configurations.Users.Sentiments.UserSentimentJoin", b =>
@@ -678,7 +751,7 @@ namespace Rise.Persistence.Migrations
 
                     b.HasIndex("SentimentId");
 
-                    b.ToTable("UserSentiments", (string)null);
+                    b.ToTable("User_Sentiment", (string)null);
                 });
 
             modelBuilder.Entity("Rise.Domain.Users.Admin", b =>
@@ -707,7 +780,12 @@ namespace Rise.Persistence.Migrations
                     b.Property<int>("OrganizationId")
                         .HasColumnType("int");
 
+                    b.Property<int>("SupervisorId")
+                        .HasColumnType("int");
+
                     b.HasIndex("OrganizationId");
+
+                    b.HasIndex("SupervisorId");
 
                     b.ToTable("Users", (string)null);
                 });
@@ -727,7 +805,37 @@ namespace Rise.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("EventInterestedUser", b =>
+            modelBuilder.Entity("EmergencySupervisor", b =>
+                {
+                    b.HasOne("Rise.Domain.Users.Supervisor", null)
+                        .WithMany()
+                        .HasForeignKey("AllowedToResolveId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Rise.Domain.Emergencies.Emergency", null)
+                        .WithMany()
+                        .HasForeignKey("EmergencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EmergencySupervisor1", b =>
+                {
+                    b.HasOne("Rise.Domain.Emergencies.Emergency", null)
+                        .WithMany()
+                        .HasForeignKey("Emergency1Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Rise.Domain.Users.Supervisor", null)
+                        .WithMany()
+                        .HasForeignKey("HasResolvedId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Event_User_InterestedUsers", b =>
                 {
                     b.HasOne("Rise.Domain.Events.Event", null)
                         .WithMany()
@@ -790,6 +898,47 @@ namespace Rise.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Rise.Domain.Emergencies.Emergency", b =>
+                {
+                    b.HasOne("Rise.Domain.Chats.Chat", "HappenedInChat")
+                        .WithMany("Emergencies")
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Rise.Domain.Users.BaseUser", "MadeByUser")
+                        .WithMany()
+                        .HasForeignKey("MadeByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("Rise.Domain.Common.ValueObjects.EmergencyRange", "Range", b1 =>
+                        {
+                            b1.Property<int>("EmergencyId")
+                                .HasColumnType("int");
+
+                            b1.Property<DateTime>("End")
+                                .HasColumnType("datetime(6)")
+                                .HasColumnName("EndRangeValue");
+
+                            b1.HasKey("EmergencyId");
+
+                            b1.HasIndex("End");
+
+                            b1.ToTable("Emergencies");
+
+                            b1.WithOwner()
+                                .HasForeignKey("EmergencyId");
+                        });
+
+                    b.Navigation("HappenedInChat");
+
+                    b.Navigation("MadeByUser");
+
+                    b.Navigation("Range")
                         .IsRequired();
                 });
 
@@ -894,7 +1043,6 @@ namespace Rise.Persistence.Migrations
                                 .HasColumnType("int");
 
                             b1.Property<DateOnly>("Value")
-                                .HasMaxLength(255)
                                 .HasColumnType("date")
                                 .HasColumnName("BirthDay");
 
@@ -956,7 +1104,7 @@ namespace Rise.Persistence.Migrations
                             b1.Property<DateTime?>("HandledDate")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("datetime(6)")
-                                .HasDefaultValue(new DateTime(2025, 11, 24, 18, 53, 29, 58, DateTimeKind.Utc).AddTicks(4190))
+                                .HasDefaultValue(new DateTime(2025, 12, 3, 10, 36, 54, 652, DateTimeKind.Utc).AddTicks(9522))
                                 .HasColumnName("HandledDate");
 
                             b1.Property<int>("StatusType")
@@ -1073,7 +1221,6 @@ namespace Rise.Persistence.Migrations
                                 .HasColumnType("int");
 
                             b1.Property<DateOnly>("Value")
-                                .HasMaxLength(255)
                                 .HasColumnType("date")
                                 .HasColumnName("BirthDay");
 
@@ -1339,11 +1486,21 @@ namespace Rise.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Rise.Domain.Users.Supervisor", "Supervisor")
+                        .WithMany("Users")
+                        .HasForeignKey("SupervisorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Organization");
+
+                    b.Navigation("Supervisor");
                 });
 
             modelBuilder.Entity("Rise.Domain.Chats.Chat", b =>
                 {
+                    b.Navigation("Emergencies");
+
                     b.Navigation("Messages");
                 });
 
@@ -1352,6 +1509,11 @@ namespace Rise.Persistence.Migrations
                     b.Navigation("Members");
 
                     b.Navigation("Workers");
+                });
+
+            modelBuilder.Entity("Rise.Domain.Users.Supervisor", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Rise.Domain.Users.User", b =>

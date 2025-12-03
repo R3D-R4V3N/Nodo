@@ -1,0 +1,86 @@
+@using Microsoft.AspNetCore.Components
+
+@if (IsOpen)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+        <div class="w-full max-w-4xl bg-white rounded-2xl shadow-xl p-6 md:p-10 flex flex-col gap-6">
+            <div class="flex items-start justify-between gap-4">
+                <div class="space-y-1">
+                    <p class="text-sm font-semibold text-[#D64541] uppercase tracking-wide">Alert</p>
+                    <h2 class="text-2xl font-bold text-neutral-900">@Title</h2>
+                    @if (!string.IsNullOrWhiteSpace(Description))
+                    {
+                        <p class="text-sm text-neutral-600">@Description</p>
+                    }
+                </div>
+                <button type="button"
+                        class="h-10 w-10 grid place-items-center rounded-full text-neutral-500 hover:text-neutral-800 hover:bg-neutral-100"
+                        @onclick="CloseAsync"
+                        aria-label="Sluit alert popup">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                @foreach (var reason in Reasons)
+                {
+                    <button type="button"
+                            class="group w-full py-3 px-3 rounded-xl border border-neutral-200 bg-neutral-50 text-neutral-900 font-semibold    transition-colors text-left"
+                            @onclick="() => SelectReasonAsync(reason.Label)">
+                        <div class="flex items-center gap-3">
+                            <div class="h-12 w-12 shrink-0 rounded-lg bg-[#D64541] text-white grid place-items-center transition-colors  ">
+                                <img src="@reason.IconHref" alt="@reason.Label" class="h-7 w-7 object-contain icon-white" />
+
+                            </div>
+                            <span>@reason.Label</span>
+                        </div>
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+    <style>
+        .icon-white {
+            filter: brightness(0) invert(1);
+        }
+
+    </style>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+
+    [Parameter] public string Title { get; set; } = "Reden van alert";
+
+    [Parameter] public string? Description { get; set; } = "Kies de reden voor je melding zodat we dit gesprek kunnen controleren.";
+
+    [Parameter] public IReadOnlyList<AlertReason> Reasons { get; set; } = Array.Empty<AlertReason>();
+
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    [Parameter] public EventCallback<string> OnReasonSelected { get; set; }
+
+    private Task CloseAsync()
+    {
+        if (OnClose.HasDelegate)
+        {
+            return OnClose.InvokeAsync();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task SelectReasonAsync(string reason)
+    {
+        if (OnReasonSelected.HasDelegate)
+        {
+            return OnReasonSelected.InvokeAsync(reason);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public record AlertReason(string Label, string IconHref);
+}

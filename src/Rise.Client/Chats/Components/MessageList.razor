@@ -17,6 +17,7 @@
             && !string.IsNullOrWhiteSpace(message.User.Name)
             && !isContinuation;
         var avatarUrl = message.User.AvatarUrl;
+        var hasAudio = !string.IsNullOrWhiteSpace(message.AudioDataBlob);
 
         <div class="@(isContinuation ? "space-y-0.5" : "space-y-1")">
             @if (showSender)
@@ -24,14 +25,31 @@
                 <p class="text-[10px] uppercase tracking-wide text-neutral-500">@message.User.Name</p>
             }
 
-            <MessageBubble Text="@message.Content"
-                           IsOutgoing="isOutgoing"
-                           AvatarUrl="@avatarUrl"
-                           AudioUrl="@message.AudioDataBlob"
-                           AudioDuration="@message.AudioDuration"
-                           IsPending="@message.IsPending"
-                           QueuedOperationId="@message.QueuedOperationId"
-                           OnCancelPending="() => HandleCancel(message)" />
+            @if (isOutgoing && hasAudio)
+            {
+                <OutgoingAudioBubble Text="@message.Content"
+                                     AudioUrl="@message.AudioDataBlob"
+                                     AudioDuration="@message.AudioDuration"
+                                     IsPending="@message.IsPending"
+                                     OnCancelPending="() => HandleCancel(message)" />
+            }
+            else if (isOutgoing)
+            {
+                <OutgoingTextBubble Text="@message.Content"
+                                    IsPending="@message.IsPending"
+                                    OnCancelPending="() => HandleCancel(message)" />
+            }
+            else if (hasAudio)
+            {
+                <IncomingAudioBubble AudioUrl="@message.AudioDataBlob"
+                                     AudioDuration="@message.AudioDuration"
+                                     Text="@message.Content"
+                                     AvatarUrl="@avatarUrl" />
+            }
+            else
+            {
+                <IncomingTextBubble Text="@message.Content" AvatarUrl="@avatarUrl" />
+            }
         </div>
     }
 </section>

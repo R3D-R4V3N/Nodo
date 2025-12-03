@@ -42,8 +42,8 @@ public class AcceptFriendRequestAsyncTests : IClassFixture<EFFixture>
     {
         var db = _fixture.CreateApplicationDbContext();
 
-        var alice = DomainData.ValidUser(1);
-        var bob = DomainData.ValidUser(2);
+        var alice = DomainData.ValidUser();
+        var bob = DomainData.ValidUser();
         bob.SendFriendRequest(alice);
  
         db.Users.AddRange(alice, bob);

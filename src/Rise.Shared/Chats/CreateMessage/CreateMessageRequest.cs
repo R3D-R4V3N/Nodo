@@ -1,3 +1,5 @@
+using Rise.Shared.Validators;
+
 namespace Rise.Shared.Chats;
 
 public static partial class ChatRequest
@@ -11,11 +13,11 @@ public static partial class ChatRequest
 
         public class Validator : AbstractValidator<CreateMessage>
         {
-            public Validator()
+            public Validator(ValidatorRules rules)
             {
                 RuleFor(x => x.ChatId).GreaterThan(0);
                 RuleFor(x => x.Content)
-                    .MaximumLength(2_000);
+                    .MaximumLength(rules.MAX_TEXT_MESSAGE_LENGTH);
 
                 RuleFor(x => x)
                     .Must(request =>

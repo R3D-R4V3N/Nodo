@@ -1,5 +1,4 @@
 using Rise.Domain.Chats;
-using Rise.Domain.Users;
 using Rise.Services.Users.Mapper;
 using Rise.Shared.Chats;
 
@@ -16,26 +15,6 @@ internal static class ChatMapper
                 .Select(MessageMapper.ToChatDto)
                 .ToList()!
         };
-
-    public static ChatDto.GetSupervisorChat ToGetSupervisorChatDto(this Chat chat)
-    {
-        var user = chat.Users.OfType<User>().FirstOrDefault();
-        var supervisor = chat.Users.OfType<Supervisor>().FirstOrDefault();
-
-        if (user is null || supervisor is null)
-            throw new ArgumentNullException();
-
-        return new ChatDto.GetSupervisorChat
-        {
-            ChatId = chat.Id,
-            User = user.ToChatDto(),
-            Supervisor = supervisor.ToChatDto(),
-            Messages = chat.Messages
-                .OrderBy(m => m.CreatedAt)
-                .Select(MessageMapper.ToChatDto)
-                .ToList()!
-        };
-    }
 
     public static ChatDto.GetChats? ToGetChatsDto(this Chat chat)
     {

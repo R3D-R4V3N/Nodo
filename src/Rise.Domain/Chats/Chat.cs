@@ -1,7 +1,9 @@
 using Ardalis.Result;
-using Rise.Domain.Users;
-using Rise.Domain.Messages;
 using Rise.Domain.Common.ValueObjects;
+using Rise.Domain.Emergencies;
+using Rise.Domain.Messages;
+using Rise.Domain.Users;
+using System.Linq;
 
 namespace Rise.Domain.Chats;
 public class Chat : Entity
@@ -14,6 +16,8 @@ public class Chat : Entity
     
     private readonly List<Message> _messages = [];
     public IReadOnlyList<Message> Messages => _messages.AsReadOnly();
+    private readonly List<Emergency> _emergencies = [];
+    public IReadOnlyList<Emergency> Emergencies => _emergencies.AsReadOnly();
     public ChatType ChatType { get; private set; }
 
     public static Result<Chat> CreatePrivateChat(BaseUser baseUser1, BaseUser baseUser2)
@@ -38,6 +42,22 @@ public class Chat : Entity
 
         baseUser1.AddChat(baseUser2, chat);
         baseUser2.AddChat(baseUser1, chat);
+
+        return Result.Success(chat);
+    }
+
+    public static Result<Chat> CreateSupervisorChat(User user, Supervisor supervisor)
+    {
+        Chat chat = new Chat()
+        {
+            ChatType = ChatType.Supervisor,
+        };
+
+        chat._users.Add(user);
+        chat._users.Add(supervisor);
+
+        user.AddChat(supervisor, chat);
+        supervisor.AddChat(supervisor, chat);
 
         return Result.Success(chat);
     }
@@ -136,7 +156,7 @@ public class Chat : Entity
         return Result.Success();
     }
 
-    public Result AddTextMessage(string text, BaseUser user)
+    public Result<Message> AddTextMessage(string text, BaseUser user)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
@@ -157,10 +177,10 @@ public class Chat : Entity
 
         _messages.Add(message);
 
-        return Result.Success();
+        return Result.Success(message);
     }
 
-    public Result AddMessage(Message message)
+    public Result<Message> AddMessage(Message message)
     {
         message.Chat ??= this;
 
@@ -176,12 +196,65 @@ public class Chat : Entity
 
         _messages.Add(message);
 
-        return Result.Success();
+        return Result.Success(message);
     }
 
     public Result RemoveMessage(Message message)
     {
         _messages.Remove(message);
+        return Result.Success();
+    }
+
+    public Result<Emergency> CreateEmergency(BaseUser notifier, Message relatedMessage, EmergencyType type = EmergencyType.Other)
+    {
+        if (notifier is null)
+        {
+            return Result.Conflict("Noodsituatie melder is leeg.");
+        }
+
+        if (relatedMessage is null)
+        {
+            return Result.Conflict("Gerelateerde bericht is leeg");
+        }
+
+        if (!_users.Contains(notifier))
+        {
+            return Result.Conflict("Gebruiker hoort niet bij deze chat.");
+        }
+
+        if (!_messages.Contains(relatedMessage))
+        {
+            return Result.Conflict("Bericht hoort niet bij deze chat.");
+        }
+
+        var emergency = new Emergency()
+        {
+            HappenedInChat = this,
+            MadeByUser = notifier,
+            Range = EmergencyRange.Create(DateTime.UtcNow),
+            Type = type
+        };
+
+        _emergencies.Add(emergency);
+
+        return Result.Success(emergency, "Noodmelding werd aangemaakt.");
+    }
+
+    public Result AddEmergency(Emergency emergency)
+    {
+        if (emergency is null)
+        {
+            return Result.Conflict("Noodsituatie is leeg.");
+        }
+
+        if (_emergencies.Contains(emergency))
+        {
+            return Result.Conflict("Noodmelding zit al in deze chat.");
+        }
+
+        _emergencies.Add(emergency);
+        emergency.HappenedInChat ??= this;
+
         return Result.Success();
     }
 }

@@ -52,6 +52,7 @@ public class ChatService(
         }
 
         var chatsFromDb = await _dbContext.Chats
+            .Where(c => c.ChatType == ChatType.Private || c.ChatType == ChatType.Group)
             .Include(c => c.Messages.OrderByDescending(m => m.CreatedAt)
                     .ThenByDescending(m => m.Id)
                     .Take(1)
@@ -233,46 +234,5 @@ public class ChatService(
 
         return await _dbContext.Users
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
-    }
-
-    public async Task<Result<ChatResponse.GetSupervisorChat>> GetSupervisorChatAsync(CancellationToken cancellationToken = default)
-    {
-        var principal = _sessionContextProvider.User;
-        if (principal is null)
-        {
-            return Result.Unauthorized();
-        }
-
-        var accountId = principal.GetUserId();
-        if (string.IsNullOrWhiteSpace(accountId))
-        {
-            return Result.Unauthorized();
-        }
-
-        var loggedInUser = await FindProfileByAccountIdAsync(accountId, cancellationToken);
-
-        if (loggedInUser is null)
-        {
-            return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
-        }
-
-        // no clue how 'c.Id == chatId && c.Users.Contains(sender)' translates to sql
-        var chat = await _dbContext
-            .Chats
-            .Where(c => c.ChatType == ChatType.Supervisor)
-            .Include(c => c.Messages)
-                .ThenInclude(m => m.Sender)
-            .Include(c => c.Users)
-            .SingleOrDefaultAsync(c => c.Users.Contains(loggedInUser), cancellationToken);
-
-        if (chat is null)
-        {
-            return Result.NotFound($"Chat van '{loggedInUser}' met supervisor werd niet gevonden.");
-        }
-
-        return Result.Success(new ChatResponse.GetSupervisorChat()
-        {
-            Chat = chat.ToGetSupervisorChatDto(),
-        });
     }
 }

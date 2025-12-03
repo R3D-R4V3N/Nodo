@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using FluentValidation;
 using Rise.Client.Profile.Models;
 using Rise.Client.State;
 using Rise.Client.Users;
@@ -15,11 +16,14 @@ using Rise.Shared.Common;
 using Rise.Shared.Hobbies;
 using Rise.Shared.Sentiments;
 using Rise.Shared.Users;
+using Blazored.Toast.Services;
 
 namespace Rise.Client.Profile.Components;
 
+// Component is veel te groot, rework!
+
 [Authorize]
-public partial class ProfileScreen : ComponentBase, IDisposable
+public partial class ProfileScreen : ComponentBase
 {
     private static readonly IReadOnlyList<HobbyOption> _hobbyOptions = Enum.GetValues<HobbyTypeDto>()
         .Select(x =>
@@ -133,10 +137,6 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     private string _newChatLineError = string.Empty;
     private bool _isAddingCustomChatLine;
 
-    private bool _isToastVisible;
-    private string _toastMessage = string.Empty;
-    private CancellationTokenSource? _toastCts;
-
     private enum PreferencePickerMode
     {
         None,
@@ -153,6 +153,10 @@ public partial class ProfileScreen : ComponentBase, IDisposable
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
     [Inject] private IUserService UserService { get; set; } = default!;
     [Inject] private UserState UserState { get; set; } = default!;
+    [Inject] private IValidator<UserRequest.UpdateCurrentUser> UpdateUserValidator { get; set; } = default!;
+
+    [Inject] private IToastService ToastService { get; set; } = default!;
+    
 
     private bool IsEditing => _isEditing;
     private bool IsLoading => _isLoading;
@@ -443,6 +447,17 @@ public partial class ProfileScreen : ComponentBase, IDisposable
                 .ToList()
         };
 
+        var validationResult = await UpdateUserValidator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors.Select(e => e.ErrorMessage).Distinct())
+            {
+                ToastService.ShowError(error);
+            }
+
+            return;
+        }
+
         try
         {
             _isSaving = true;
@@ -456,20 +471,25 @@ public partial class ProfileScreen : ComponentBase, IDisposable
                 _draft = ProfileDraft.FromModel(_model);
                 SyncSelectionFromModel();
                 _isEditing = false;
-                await ShowToastAsync("Wijzigingen opgeslagen");
+                ToastService.ShowSuccess("Wijziging opgeslagen");
             }
             else
             {
-                var errorMessage = result.ValidationErrors.FirstOrDefault()?.ErrorMessage
-                    ?? result.Errors.FirstOrDefault()
-                    ?? "Opslaan is mislukt.";
+                List<string> errors = [.. result.ValidationErrors.Select(e => e.ErrorMessage), .. result.Errors];
+                if (errors.Count == 0)
+                { 
+                    errors.Add("Opslaan is mislukt.");
+                }
 
-                await ShowToastAsync(errorMessage);
+                foreach (var err in errors)
+                {
+                    ToastService.ShowError(err);
+                }
             }
         }
-        catch (Exception ex)
+        catch
         {
-            await ShowToastAsync("Opslaan is mislukt.");
+            ToastService.ShowError("Opslaan is mislukt.");
         }
         finally
         {
@@ -573,7 +593,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
         _isPickerOpen = false;
         _pickerSearch = string.Empty;
-        await ShowToastAsync("Hobby's bijgewerkt");
+        ToastService.ShowSuccess("Hobby's bijgewerkt");
     }
 
     private Task RemoveHobby(string id)
@@ -704,7 +724,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _newChatLineText = string.Empty;
         _newChatLineError = string.Empty;
 
-        await ShowToastAsync("Favoriete chatzinnen bijgewerkt");
+        ToastService.ShowSuccess("Favoriete chatzinnen bijgewerkt");
     }
 
     private Task UpdateChatLinePickerSearch(string value)
@@ -875,7 +895,7 @@ public partial class ProfileScreen : ComponentBase, IDisposable
         _preferencePickerSearch = string.Empty;
         _preferencePickerSelection.Clear();
 
-        await ShowToastAsync(message);
+        ToastService.ShowSuccess(message);
     }
 
     private Task UpdatePreferencePickerSearch(string value)
@@ -1163,31 +1183,4 @@ public partial class ProfileScreen : ComponentBase, IDisposable
 
     // todo: export it to a helper function
     // work like a lib/framework
-    private async Task ShowToastAsync(string message)
-    {
-        _toastCts?.Cancel();
-        _toastCts?.Dispose();
-        _toastCts = new CancellationTokenSource();
-        _toastMessage = message;
-        _isToastVisible = true;
-        await InvokeAsync(StateHasChanged);
-
-        try
-        {
-            await Task.Delay(TimeSpan.FromSeconds(1.4), _toastCts.Token);
-        }
-        catch (TaskCanceledException)
-        {
-            return;
-        }
-
-        _isToastVisible = false;
-        await InvokeAsync(StateHasChanged);
-    }
-
-    public void Dispose()
-    {
-        _toastCts?.Cancel();
-        _toastCts?.Dispose();
-    }
 }

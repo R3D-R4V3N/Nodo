@@ -1,6 +1,6 @@
 <TopBar UseHeaderElement="true"
         Class="sticky top-0 z-40 shadow"
-
+        
         InnerClass="mx-auto max-w-screen-sm px-4 pb-4 pt-8"
         ShowBackButton="false"
         OnBack="HandleBack"
@@ -21,6 +21,7 @@
         }
         else
         {
+            @* Maak een Bewerken Button component *@
             <button type="button"
                     class="rounded-xl bg-white px-4 py-3 text-sm font-medium text-[#127646] shadow hover:bg-white/90 active:scale-[0.99] inline-flex items-center transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
                     @onclick="HandleEdit"

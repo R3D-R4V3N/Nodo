@@ -36,7 +36,7 @@ public class SentimentServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser(1);
+        var alice = DomainData.ValidUser();
         db.Users.Add(alice);
 
         List<UserSentiment> sentiments = [
@@ -79,7 +79,7 @@ public class SentimentServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser(1);
+        var alice = DomainData.ValidUser();
         db.Users.AddRange(alice);
 
         List<UserSentiment> sentiments = [
@@ -127,7 +127,7 @@ public class SentimentServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser(1);
+        var alice = DomainData.ValidUser();
         db.Users.AddRange(alice);
 
         List<UserSentiment> sentiments = [
@@ -175,7 +175,7 @@ public class SentimentServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser(1);
+        var alice = DomainData.ValidUser();
         db.Users.AddRange(alice);
         await db.SaveChangesAsync();
 
@@ -192,7 +192,7 @@ public class SentimentServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser(1);
+        var alice = DomainData.ValidUser();
 
         db.Users.AddRange(alice);
         await db.SaveChangesAsync();

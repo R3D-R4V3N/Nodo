@@ -30,7 +30,6 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         await OrganizationsAsync();
         await UsersAsync();
         await ConnectionsAsync();
-        await ChatsAsync();
         await MessagesAsync();
         await EventsAsync();
         //await ProductsAsync();
@@ -225,7 +224,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = nodoCentrum
+                Organization = nodoCentrum,
+                Supervisor = nodoCentrum.Workers.First()
             }),
             new("user2@example.com", AppRoles.User, accountId => new User()
             {
@@ -241,7 +241,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = nodoCentrum
+                Organization = nodoCentrum,
+                Supervisor = nodoCentrum.Workers.First()
             }),
             new("admin@nodo.chat", AppRoles.Administrator, accountId => new Admin()
             {
@@ -320,7 +321,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = communityZuid
+                Organization = communityZuid,
+                Supervisor = communityZuid.Workers.First()
             }),
             new("milan@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -336,7 +338,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = communityZuid
+                Organization = communityZuid,
+                Supervisor = communityZuid.Workers.First()
             }),
             new("lina@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -352,7 +355,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = nodoCentrum
+                Organization = nodoCentrum,
+                Supervisor = nodoCentrum.Workers.First()
             }),
             new("kyandro@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -368,7 +372,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = nodoCentrum
+                Organization = nodoCentrum,
+                Supervisor = nodoCentrum.Workers.First()
             }),
             new("jasper@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -384,7 +389,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = nodoCentrum
+                Organization = nodoCentrum,
+                Supervisor = nodoCentrum.Workers.First()
             }),
             new("bjorn@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -400,7 +406,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = communityNoord
+                Organization = communityNoord,
+                Supervisor = communityNoord.Workers.First()
             }),
             new("thibo@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -416,7 +423,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = communityNoord
+                Organization = communityNoord,
+                Supervisor = communityNoord.Workers.First()
             }),
             new("saar@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -432,7 +440,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = communityNoord
+                Organization = communityNoord,
+                Supervisor = communityNoord.Workers.First()
             }),
             new("yassin@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -448,7 +457,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = communityZuid
+                Organization = communityZuid,
+                Supervisor = communityZuid.Workers.First()
             }),
             new("lotte@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -464,7 +474,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = communityZuid
+                Organization = communityZuid,
+                Supervisor = communityZuid.Workers.First()
             }),
             new("amina@nodo.chat", AppRoles.User, accountId => new User()
             {
@@ -480,7 +491,8 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = communityZuid
+                Organization = communityZuid,
+                Supervisor = communityZuid.Workers.First()
             }),
         };
 
@@ -532,7 +544,9 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 case User userProfile:
                     userProfile.UpdateSentiments(CreateSentiments());
                     userProfile.UpdateHobbies(CreateHobbies(dbContext, HobbyType.Reading, HobbyType.BoardGames, HobbyType.Crafting));
+                    var superChat = Chat.CreateSupervisorChat(userProfile, userProfile.Supervisor);
                     dbContext.Users.Add(userProfile);
+                    dbContext.Chats.Add(superChat);
                     break;
                 case Supervisor supervisorProfile:
                     dbContext.Supervisors.Add(supervisorProfile);
@@ -601,53 +615,13 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         {
             userA.SendFriendRequest(userB);
             userB.AcceptFriendRequest(userA);
+            Chat.CreatePrivateChat(userA, userB);
         }
 
         static void SendFriendRequest(User requester, User receiver)
         {
             requester.SendFriendRequest(receiver);
         }
-    }
-
-    private async Task ChatsAsync()
-    {
-        if (dbContext.Chats.Any())
-        {
-            return;
-        }
-
-        var users = await dbContext
-            .Users
-            .Include(u => u.Connections)
-            .ToListAsync();
-
-        if (users.Count == 0)
-            return;
-
-        var noor = users.GetUser("Noor");
-        var milan = users.GetUser("Milan");
-        var lina = users.GetUser("Lina");
-        var kyandro = users.GetUser("Kyandro");
-        var jasper = users.GetUser("Jasper");
-        var bjorn = users.GetUser("Bjorn");
-        var thibo = users.GetUser("Thibo");
-        var saar = users.GetUser("Saar");
-        var yassin = users.GetUser("Yassin");
-        var lotte = users.GetUser("Lotte");
-        var amina = users.GetUser("Amina");
-        var john = users.GetUser("John");
-        var stacey = users.GetUser("Stacey");
-
-        var chatsToCreate = new List<Chat>
-        {
-            Chat.CreatePrivateChat(noor, milan), // individueleCheckIn
-            Chat.CreatePrivateChat(kyandro, jasper), // vrijdagGroep
-            Chat.CreatePrivateChat(bjorn, thibo), // creatieveHoek
-            Chat.CreatePrivateChat(lotte, amina), // technischeHulp
-        };
-
-        dbContext.Chats.AddRange(chatsToCreate);
-        await dbContext.SaveChangesAsync();
     }
 
     private async Task MessagesAsync()
@@ -658,6 +632,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         }
 
         var chats = await dbContext.Chats
+            .Where(c => c.ChatType == ChatType.Private)
             .OrderBy(c => c.Id)
             .ToListAsync();
 
@@ -671,7 +646,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         var creatieveHoek = chats[2];
         var technischeHulp = chats[3];
 
-        individueleCheckIn.AddTextMessage("Hoi Emma, ik ben een beetje zenuwachtig voor morgen.", individueleCheckIn.RandomUser());
+        individueleCheckIn.AddTextMessage("Hoi, ik ben een beetje zenuwachtig voor morgen.", individueleCheckIn.RandomUser());
         individueleCheckIn.AddTextMessage("Dat begrijp ik Noor, we bekijken samen hoe je het rustig kunt aanpakken.", individueleCheckIn.RandomUser());
         individueleCheckIn.AddTextMessage("Zal ik straks mijn checklist nog eens doornemen?", individueleCheckIn.RandomUser());
         individueleCheckIn.AddTextMessage("Ja, en ik stuur je zo meteen een ademhalingsoefening.", individueleCheckIn.RandomUser());

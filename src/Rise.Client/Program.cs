@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using FluentValidation;
 using Rise.Client;
 using Rise.Client.Chats;
 using Rise.Client.Events;
@@ -14,6 +15,7 @@ using Rise.Shared.Chats;
 using Rise.Shared.Events;
 using Rise.Shared.UserConnections;
 using Rise.Shared.Users;
+using Rise.Shared.Validators;
 using UserService = Rise.Client.Users.UserService;
 using Rise.Shared.Organizations;
 using Rise.Client.Organizations;
@@ -23,7 +25,11 @@ using Rise.Client.RegistrationRequests;
 
 
 // For BACKEND_URL
-using System.Net.Http.Json; 
+using System.Net.Http.Json;
+using Blazored.Toast;
+using Rise.Shared.Validators;
+using Rise.Client.Validators;
+using Rise.Shared.Identity.Accounts;
 
 try
 {
@@ -49,14 +55,16 @@ try
     builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthenticationStateProvider>();
     // register the account management interface
     builder.Services.AddScoped(sp => (IAccountManager)sp.GetRequiredService<AuthenticationStateProvider>());
+    
+    builder.Services.AddBlazoredToast();
 
     // Laadt config.json uit wwwroot om de backend URL dynamisch te halen; gebruikt fallback naar localhost als key ontbreekt.
     using var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
     var config = await http.GetFromJsonAsync<Dictionary<string, string>>("config.json");
 
     var backendUrl = config?["backendUrl"] ?? "https://localhost:5001";
-    var backendUri = new Uri(backendUrl);
-
+    var backendUri = new Uri(backendUrl);   
+    
     // configure client for auth interactions
     builder.Services.AddHttpClient("SecureApi",opt => opt.BaseAddress = backendUri)
         .AddHttpMessageHandler<CookieHandler>();
@@ -85,10 +93,10 @@ try
     {
         client.BaseAddress = backendUri;
     });
-    // Publieke API client (geen CookieHandler)
+
     builder.Services.AddHttpClient<IOrganizationService, OrganizationService>(client =>
     {
-        client.BaseAddress = backendUri; // bij jou bv. https://localhost:5001
+        client.BaseAddress = backendUri;
     });
 
     builder.Services.AddHttpClient<IEventService, EventService>(client =>
@@ -97,24 +105,55 @@ try
     }).AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<IRegistrationRequestService, RegistrationRequestService>(client =>
-        {
-            client.BaseAddress = backendUri;
-        })
-        .AddHttpMessageHandler<CookieHandler>();
+    {
+        client.BaseAddress = backendUri;
+    })
+    .AddHttpMessageHandler<CookieHandler>();
+
+    // load in rules
+    builder.Services.AddHttpClient<IValidatorService, ValidatorService>(client =>
+    {
+        client.BaseAddress = backendUri;
+    });
 
     // current user
     builder.Services.AddSingleton<UserState>();
+
+    builder.Services.AddScoped<IVoiceRecorderService, VoiceRecorderService>();
+    builder.Services.AddScoped<ChatMessageDispatchService>();
 
     builder.Services.AddSingleton<IHubClientFactory, HubClientFactory>();
     builder.Services.AddSingleton<IHubClient, HubClient>();
 
     builder.Services.AddSingleton<OfflineQueueService>();
-    builder.Services.AddSingleton<ChatService>();
+    builder.Services.AddSingleton<ConnectionServiceFactory>();
+
+    // load in validation rules for DI
+    // no clue if this is the ideal location tho
+    var validatorServiceTemp = new ValidatorService(http);
+    var rules = await validatorServiceTemp.GetRulesAsync();
+    builder.Services.AddSingleton(rules);
+
+    builder.Services.AddTransient<IValidator<AccountRequest.Login>>(sp =>
+        new AccountRequest.Login.Validator(sp.GetRequiredService<ValidatorRules>()));
+
+    builder.Services.AddTransient<IValidator<AccountRequest.Register>>(sp =>
+        new AccountRequest.Register.Validator(sp.GetRequiredService<ValidatorRules>()));
+
+    builder.Services.AddTransient<IValidator<UserRequest.UpdateCurrentUser>>(sp =>
+        new UserRequest.UpdateCurrentUserValidator(sp.GetRequiredService<ValidatorRules>()));
+
+    builder.Services.AddTransient<IValidator<ChatRequest.CreateMessage>>(sp =>
+        new ChatRequest.CreateMessage.Validator(sp.GetRequiredService<ValidatorRules>()));
 
     var host = builder.Build();
 
     var offlineQueue = host.Services.GetRequiredService<OfflineQueueService>();
     await offlineQueue.StartAsync();
+
+    var connectionFactory = host.Services.GetRequiredService<ConnectionServiceFactory>();
+    var connectionService = await connectionFactory.CreateAsync();
+    await connectionService.InitializeAsync();
 
     await host.RunAsync();
 }

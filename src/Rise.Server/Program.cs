@@ -15,6 +15,7 @@ using Rise.Shared.Chats;
 using Serilog.Events;
 using Rise.Server.Hubs;
 using Rise.Storage;
+using Microsoft.Extensions.Configuration;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)

@@ -10,6 +10,7 @@ internal class EventConfiguration : EntityConfiguration<Event>
     public override void Configure(EntityTypeBuilder<Event> builder)
     {
         base.Configure(builder);
+        builder.ToTable("Events");
 
         builder.Property(e => e.Name)
             .IsRequired()
@@ -36,7 +37,7 @@ internal class EventConfiguration : EntityConfiguration<Event>
             .HasMany(e => e.InterestedUsers)
             .WithMany(u => u.InterestedInEvents)
             .UsingEntity<Dictionary<string, object>>(
-                "EventInterestedUsers",
+                "Event_User_InterestedUsers",
                 right => right
                     .HasOne<User>()
                     .WithMany()
