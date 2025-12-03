@@ -39,13 +39,19 @@ public class EmergencyService(
 
         var chat = await dbContext
             .Chats
-            .Include(c => c.Users.Where(u => u.AccountId == accountId))
+            .Include(c => c.Users)
+            .ThenInclude(u => (u as User).Supervisor)
             .Include(c => c.Messages.Where(m => m.Id == request.MessageId))
             .SingleOrDefaultAsync(c => c.Id == request.ChatId, ctx);
 
         if (chat is null)
         {
             return Result.Unauthorized("Chat werd niet gevonden.");
+        }
+
+        if (!chat.Users.Any(u => u == sender))
+        {
+            return Result.Unauthorized("Geen toegang tot deze chat.");
         }
 
         var fiveMinutesAgo = DateTime.UtcNow.AddMinutes(-5);

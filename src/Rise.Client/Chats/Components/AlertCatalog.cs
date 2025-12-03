@@ -1,3 +1,4 @@
+using Rise.Client.Chats.Components;
 using Rise.Shared.Emergencies;
 
 public static class AlertCatalog
