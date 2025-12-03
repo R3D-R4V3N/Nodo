@@ -1,0 +1,38 @@
+<div class="flex items-center gap-2">
+    @if (IsEditing)
+    {
+        <button type="button"
+                class="rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-medium text-neutral-700 shadow hover:bg-neutral-50 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
+                @onclick="OnCancel"
+                disabled="IsBusy">
+            Annuleren
+        </button>
+        <button type="button"
+                class="rounded-xl bg-[#127646] px-3 py-2 text-sm font-semibold text-white shadow hover:bg-[#0f663c] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
+                @onclick="OnSave"
+                disabled="IsBusy">
+            Opslaan
+        </button>
+    }
+    else if (CanEdit)
+    {
+        <button type="button"
+                class="rounded-xl bg-white px-3 py-2 text-sm font-medium text-[#127646] shadow hover:bg-white/90 active:scale-[0.99] inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                @onclick="OnEdit"
+                disabled="IsBusy">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 256 256">
+                <path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM51.31,160l90.35-90.35,16.68,16.69L68,176.68ZM48,179.31,76.69,208H48Zm48,25.38L79.31,188l90.35-90.35h0l16.68,16.69Z"></path>
+            </svg>
+            <span>Bewerken</span>
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter] public bool IsEditing { get; set; }
+    [Parameter] public bool CanEdit { get; set; } = true;
+    [Parameter] public bool IsBusy { get; set; }
+    [Parameter] public EventCallback OnEdit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+}
