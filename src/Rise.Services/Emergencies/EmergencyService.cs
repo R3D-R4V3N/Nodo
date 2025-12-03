@@ -62,9 +62,16 @@ public class EmergencyService(
             return Result.Conflict("Er werd al recent een noodmelding gestuurd.");
         }
 
+        var relatedMessage = chat.Messages.FirstOrDefault(m => m.Id == request.MessageId);
+
+        if (relatedMessage is null)
+        {
+            return Result.Conflict("Bericht hoort niet bij deze chat.");
+        }
+
         var createEmergencyResult = chat.CreateEmergency(
-            sender, 
-            chat.Messages.FirstOrDefault()!, 
+            sender,
+            relatedMessage,
             request.Type.ToDomain()
         );
 

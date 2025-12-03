@@ -1,3 +1,4 @@
+using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
@@ -42,6 +43,7 @@ public partial class Chat : IAsyncDisposable
     private const double _footerPaddingBuffer = 24;
     [Inject] private ChatMessageDispatchService MessageDispatchService { get; set; } = null!;
     [Inject] public IEmergencyService EmergencyService { get; set; } = null!;
+    [Inject] public IToastService ToastService { get; set; } = null!;
 
     protected override void OnInitialized()
     {
@@ -498,13 +500,13 @@ public partial class Chat : IAsyncDisposable
         }
 
         var relatedMessage = _chat.Messages
+            .Where(message => !message.IsPending && message.Id > 0)
             .OrderByDescending(message => message.Timestamp ?? DateTime.MinValue)
             .FirstOrDefault();
 
         if (relatedMessage is null)
         {
-            _errorMessage = "Er zijn geen berichten om een melding te maken.";
-            StateHasChanged();
+            ToastService.ShowError("Er zijn geen verstuurde berichten om te melden.");
             return;
         }
 
@@ -517,14 +519,24 @@ public partial class Chat : IAsyncDisposable
 
         if (!result.IsSuccess)
         {
-            _errorMessage = result.Errors.FirstOrDefault()
-                ?? result.ValidationErrors.FirstOrDefault()?.ErrorMessage
-                ?? "Er kon geen noodmelding worden aangemaakt.";
-            StateHasChanged();
+            var errors = result.Errors
+                .DefaultIfEmpty(result.ValidationErrors.FirstOrDefault()?.ErrorMessage)
+                .Where(e => !string.IsNullOrWhiteSpace(e))
+                .ToList();
+
+            if (errors.Count == 0)
+            {
+                errors.Add("Er kon geen noodmelding worden aangemaakt.");
+            }
+
+            foreach (var error in errors)
+            {
+                ToastService.ShowError(error!);
+            }
         }
         else
         {
-            _errorMessage = null;
+            ToastService.ShowSuccess("Noodmelding werd verstuurd.");
         }
     }
 
