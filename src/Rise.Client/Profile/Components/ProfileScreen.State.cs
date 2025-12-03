@@ -188,7 +188,12 @@ public partial class ProfileScreen
 
     private void CancelInterestsEdit()
     {
-        _selectedHobbyIds = _initialHobbyIds.ToHashSet();
+        _selectedHobbyIds.Clear();
+        foreach (var id in _initialHobbyIds)
+        {
+            _selectedHobbyIds.Add(id);
+        }
+
         var restoredHobbies = _selectedHobbyIds
             .Select(CreateHobbyModel)
             .Where(h => h is not null)
@@ -230,40 +235,100 @@ public partial class ProfileScreen
         ChatLines
     }
 
-    private UserRequest.UpdateCurrentUser BuildUpdateRequest() => new()
+    private List<string> GetModelHobbyIds() => _model.Hobbies
+        .Select(h => h.Id)
+        .Where(id => !string.IsNullOrWhiteSpace(id))
+        .ToList();
+
+    private (List<string> Likes, List<string> Dislikes) GetModelPreferenceIds()
     {
-        FirstName = _draft.FirstName ?? string.Empty,
-        LastName = _draft.LastName ?? string.Empty,
-        Email = _draft.Email ?? string.Empty,
-        Biography = _draft.Bio ?? string.Empty,
-        AvatarUrl = _draft.AvatarUrl ?? string.Empty,
-        Gender = _draft.Gender,
-        Hobbies = _selectedHobbyIds
-            .Where(id => !string.IsNullOrWhiteSpace(id))
-            .Select(x => new HobbyDto.EditProfile()
+        var likeIds = new List<string>();
+        var dislikeIds = new List<string>();
+
+        foreach (var interest in _model.Interests)
+        {
+            if (!string.IsNullOrWhiteSpace(interest.Like))
             {
-                Hobby = Enum.Parse<HobbyTypeDto>(x)
-            })
-            .ToList(),
-        Sentiments = (_selectedLikeIds ?? Enumerable.Empty<string>())
-            .Where(id => !string.IsNullOrWhiteSpace(id))
-            .Select(x => new SentimentDto.EditProfile
+                var likeId = ResolvePreferenceId(interest.Like);
+                if (!string.IsNullOrWhiteSpace(likeId))
+                {
+                    likeIds.Add(likeId);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(interest.Dislike))
             {
-                Type = SentimentTypeDto.Like,
-                Category = Enum.Parse<SentimentCategoryTypeDto>(x)
-            })
-            .Concat((_selectedDislikeIds ?? Enumerable.Empty<string>())
+                var dislikeId = ResolvePreferenceId(interest.Dislike);
+                if (!string.IsNullOrWhiteSpace(dislikeId))
+                {
+                    dislikeIds.Add(dislikeId);
+                }
+            }
+        }
+
+        return (OrderPreferenceIds(likeIds).Take(PreferenceSelectionLimit).ToList(),
+            OrderPreferenceIds(dislikeIds).Take(PreferenceSelectionLimit).ToList());
+    }
+
+    private List<string> GetModelChatLineIds()
+    {
+        var chatLineIds = new List<string>();
+        foreach (var line in _model.DefaultChatLines)
+        {
+            var id = ResolveChatLineId(line);
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                chatLineIds.Add(id);
+            }
+        }
+
+        return OrderChatLineIds(chatLineIds).Take(ChatLineSelectionLimit).ToList();
+    }
+
+    private UserRequest.UpdateCurrentUser BuildUpdateRequest(ProfileSection section)
+    {
+        var personalSource = section == ProfileSection.PersonalInfo ? _draft : ProfileDraft.FromModel(_model);
+        var hobbySource = section == ProfileSection.Interests ? _selectedHobbyIds : GetModelHobbyIds();
+        var (modelLikeIds, modelDislikeIds) = GetModelPreferenceIds();
+        var likeSource = section == ProfileSection.Interests ? _selectedLikeIds : modelLikeIds;
+        var dislikeSource = section == ProfileSection.Interests ? _selectedDislikeIds : modelDislikeIds;
+        var chatLineSource = section == ProfileSection.ChatLines ? _selectedChatLineIds : GetModelChatLineIds();
+
+        return new UserRequest.UpdateCurrentUser
+        {
+            FirstName = personalSource.FirstName ?? string.Empty,
+            LastName = personalSource.LastName ?? string.Empty,
+            Email = personalSource.Email ?? string.Empty,
+            Biography = personalSource.Bio ?? string.Empty,
+            AvatarUrl = personalSource.AvatarUrl ?? string.Empty,
+            Gender = personalSource.Gender,
+            Hobbies = hobbySource
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Select(x => new HobbyDto.EditProfile()
+                {
+                    Hobby = Enum.Parse<HobbyTypeDto>(x)
+                })
+                .ToList(),
+            Sentiments = (likeSource ?? Enumerable.Empty<string>())
                 .Where(id => !string.IsNullOrWhiteSpace(id))
                 .Select(x => new SentimentDto.EditProfile
                 {
-                    Type = SentimentTypeDto.Dislike,
+                    Type = SentimentTypeDto.Like,
                     Category = Enum.Parse<SentimentCategoryTypeDto>(x)
-                }))
-            .ToList(),
-        DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds)
-            .Where(text => !string.IsNullOrWhiteSpace(text))
-            .ToList()
-    };
+                })
+                .Concat((dislikeSource ?? Enumerable.Empty<string>())
+                    .Where(id => !string.IsNullOrWhiteSpace(id))
+                    .Select(x => new SentimentDto.EditProfile
+                    {
+                        Type = SentimentTypeDto.Dislike,
+                        Category = Enum.Parse<SentimentCategoryTypeDto>(x)
+                    }))
+                .ToList(),
+            DefaultChatLines = BuildChatLineTexts(chatLineSource)
+                .Where(text => !string.IsNullOrWhiteSpace(text))
+                .ToList()
+        };
+    }
 
     private async Task SaveSectionAsync(ProfileSection section)
     {
@@ -287,7 +352,7 @@ public partial class ProfileScreen
             return;
         }
 
-        var request = BuildUpdateRequest();
+        var request = BuildUpdateRequest(section);
 
         var validationResult = await UpdateUserValidator.ValidateAsync(request);
         if (!validationResult.IsValid)
