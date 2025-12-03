@@ -37,7 +37,7 @@ namespace Rise.Persistence.Migrations
                     b.ToTable("BaseUserChat");
                 });
 
-            modelBuilder.Entity("EventInterestedUsers", b =>
+            modelBuilder.Entity("EventInterestedUser", b =>
                 {
                     b.Property<int>("EventId")
                         .HasColumnType("int");
@@ -727,7 +727,7 @@ namespace Rise.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("EventInterestedUsers", b =>
+            modelBuilder.Entity("EventInterestedUser", b =>
                 {
                     b.HasOne("Rise.Domain.Events.Event", null)
                         .WithMany()
@@ -894,6 +894,7 @@ namespace Rise.Persistence.Migrations
                                 .HasColumnType("int");
 
                             b1.Property<DateOnly>("Value")
+                                .HasMaxLength(255)
                                 .HasColumnType("date")
                                 .HasColumnName("BirthDay");
 
@@ -955,7 +956,7 @@ namespace Rise.Persistence.Migrations
                             b1.Property<DateTime?>("HandledDate")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("datetime(6)")
-                                .HasDefaultValue(new DateTime(2025, 11, 28, 16, 56, 41, 726, DateTimeKind.Utc).AddTicks(7310))
+                                .HasDefaultValue(new DateTime(2025, 11, 24, 18, 53, 29, 58, DateTimeKind.Utc).AddTicks(4190))
                                 .HasColumnName("HandledDate");
 
                             b1.Property<int>("StatusType")
@@ -1072,6 +1073,7 @@ namespace Rise.Persistence.Migrations
                                 .HasColumnType("int");
 
                             b1.Property<DateOnly>("Value")
+                                .HasMaxLength(255)
                                 .HasColumnType("date")
                                 .HasColumnName("BirthDay");
 

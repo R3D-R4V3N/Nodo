@@ -1,8 +1,57 @@
 @page "/helpdesk/voorlichting"
-@layout EmptyLayout
+@using Rise.Client.Helpdesk.Components
+@layout MainLayout
+@attribute [Authorize]
 
-<div>
-    <h3>VoorlichtingPage</h3>
+<TopBar Title="voorlichting" ShowBackButton="true" ></TopBar>
+
+<div class="w-full mb-32 md:mt-8 mt-4">
+  <div class="flex flex-col items-center w-full">
+
+    <!-- Sensoa -->
+    <VoorlichtingButton
+      Link="https://www.sensoa.be"
+      ImageUrl="https://www.sensoa.be/themes/custom/epsenkaas_theme/logo.png"
+      ImageAlt="Sensoa"
+      Title="Sexualiteit"
+      ImageContainerClasses="flex justify-center w-1/2 py-6" />
+
+    <!-- Fara -->
+    <VoorlichtingButton
+      Link="https://www.fara.be"
+      ImageUrl="https://www.keuzehulpongeplandzwanger.be/static/logo_fara.6585728a71fd.png"
+      ImageAlt="Fara"
+      Title="Zwangerschap"
+      ImageContainerClasses="flex justify-center w-1/3"
+      TitleClasses="p-4" />
+
+    <!-- Participate Autisme -->
+    <VoorlichtingButton
+      Link="https://nl.participate-autisme.be"
+      ImageUrl="https://kzitermee.be/wp-content/uploads/2022/10/Participate-blauw.png"
+      ImageAlt="Participate"
+      Title="Autisme"
+      ImageContainerClasses="flex justify-center w-1/2 py-6" />
+
+    <!-- Cavaria -->
+    <VoorlichtingButton
+      Link="https://www.cavaria.be"
+      ImageUrl="https://www.autenout.be/wp-content/uploads/2019/12/logo-cavaria.png"
+      ImageAlt="Cavaria"
+      Title="LGBTI+"
+      ImageContainerClasses="flex justify-center w-3/4 py-2"
+      TitleClasses="p-4" />
+
+    <!-- 1712 -->
+    <VoorlichtingButton
+      Link="https://www.1712.be/nl"
+      ImageUrl="https://www.1712.be/sites/default/files/2025-03/logo_1712final.png"
+      ImageAlt="1712"
+      Title="Geweld, Misbruik & Kindermishandeling"
+      ImageContainerClasses="flex justify-center w-1/3 py-2 md:w-1/4"
+      TitleClasses="p-4" />
+
+  </div>
 </div>
 
 @code {

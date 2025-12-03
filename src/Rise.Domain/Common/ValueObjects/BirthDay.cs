@@ -6,6 +6,7 @@ public class BirthDay : ValueObject, IProperty<BirthDay, DateOnly>
 {
     // EF
     private BirthDay() { }
+    public const int MAX_LENGTH = 255;
 
     public DateOnly Value { get; private set; }
     public static Result<BirthDay> Create(DateOnly value)

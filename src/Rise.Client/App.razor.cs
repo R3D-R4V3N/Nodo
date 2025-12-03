@@ -2,8 +2,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Rise.Client.State;
 using Rise.Client.Users;
-using Rise.Client.Validators;
-using Rise.Shared.Validators;
 
 namespace Rise.Client;
 public partial class App : IDisposable
@@ -24,8 +22,8 @@ public partial class App : IDisposable
         finally
         {
             _isLoading = false;
-            StateHasChanged();
         }
+        StateHasChanged();
     }
 
     private async void OnAuthStateChanged(Task<AuthenticationState> task)
@@ -38,8 +36,8 @@ public partial class App : IDisposable
         finally
         {
             _isLoading = false;
-            StateHasChanged();
         }
+        StateHasChanged();
     }
 
     public void Dispose()

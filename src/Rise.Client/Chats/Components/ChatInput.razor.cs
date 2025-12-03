@@ -9,6 +9,7 @@ public partial class ChatInput
     [Parameter] public EventCallback<string> OnSend { get; set; }
     [Parameter] public EventCallback<RecordedAudio> OnSendVoice { get; set; }
 
+    private IJSObjectReference? _module;
     private bool _isRecording;
     private bool _isProcessing;
     private bool _canRecord = true;
@@ -55,7 +56,8 @@ public partial class ChatInput
 
         try
         {
-            await VoiceRecorderService.StartRecordingAsync();
+            await EnsureModuleAsync();
+            await _module!.InvokeVoidAsync("startRecording");
             _isRecording = true;
         }
         catch (JSException ex)
@@ -70,12 +72,18 @@ public partial class ChatInput
 
     private async Task CompleteRecordingAsync()
     {
+        if (_module is null)
+        {
+            _isRecording = false;
+            return;
+        }
+
         _isProcessing = true;
         StateHasChanged();
 
         try
         {
-            var audio = await VoiceRecorderService.StopRecordingAsync();
+            var audio = await _module.InvokeAsync<RecordedAudio?>("stopRecording");
             if (audio is not null && !string.IsNullOrWhiteSpace(audio.DataUrl))
             {
                 _errorMessage = null;
@@ -96,6 +104,11 @@ public partial class ChatInput
             _isProcessing = false;
             StateHasChanged();
         }
+    }
+
+    private async Task EnsureModuleAsync()
+    {
+        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/voiceRecorder.js");
     }
 
     private string VoiceButtonClasses
@@ -140,6 +153,18 @@ public partial class ChatInput
 
     public async ValueTask DisposeAsync()
     {
-        await VoiceRecorderService.DisposeAsync();
+        if (_module is not null)
+        {
+            try
+            {
+                await _module.InvokeVoidAsync("disposeRecorder");
+            }
+            catch (JSException)
+            {
+                // ignore disposal exceptions
+            }
+
+            await _module.DisposeAsync();
+        }
     }
 }

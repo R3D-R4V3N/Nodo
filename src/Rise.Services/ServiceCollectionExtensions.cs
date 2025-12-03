@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using FluentValidation;
 using Rise.Persistence;
 using Rise.Services.Chats;
 using Rise.Shared.Chats;
@@ -9,7 +8,6 @@ using Rise.Services.RegistrationRequests;
 using Rise.Services.UserConnections;
 using Rise.Services.Users;
 using Rise.Shared.Events;
-using Rise.Shared.Identity.Accounts;
 using Rise.Shared.Organizations;
 using Rise.Shared.RegistrationRequests;
 using Rise.Shared.UserConnections;
@@ -18,8 +16,6 @@ using Rise.Shared.UserSentiments;
 using Rise.Services.Sentiments;
 using Rise.Services.Hobbies;
 using Rise.Shared.Hobbies;
-using Rise.Services.Validators;
-using Rise.Shared.Validators;
 
 namespace Rise.Services;
 
@@ -36,12 +32,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRegistrationRequestService, RegistrationRequestService>();
         services.AddScoped<ISentimentsService, SentimentService>();
         services.AddScoped<IHobbyService, HobbyService>();
-        services.AddScoped<IValidatorService, ValidatorService>();
-        services.AddScoped(sp => sp.GetRequiredService<IValidatorService>().GetRulesAsync().GetAwaiter().GetResult());
-        services.AddScoped<IValidator<AccountRequest.Login>, AccountRequest.Login.Validator>();
-        services.AddScoped<IValidator<AccountRequest.Register>, AccountRequest.Register.Validator>();
-        services.AddScoped<IValidator<UserRequest.UpdateCurrentUser>, UserRequest.UpdateCurrentUserValidator>();
-        services.AddScoped<IValidator<ChatRequest.CreateMessage>, ChatRequest.CreateMessage.Validator>();
         services.AddTransient<DbSeeder>();
         
         // Add other application services here.

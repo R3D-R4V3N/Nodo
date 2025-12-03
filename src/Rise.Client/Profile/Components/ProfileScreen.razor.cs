@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using FluentValidation;
 using Rise.Client.Profile.Models;
 using Rise.Client.State;
 using Rise.Client.Users;
@@ -16,12 +15,11 @@ using Rise.Shared.Common;
 using Rise.Shared.Hobbies;
 using Rise.Shared.Sentiments;
 using Rise.Shared.Users;
-using Blazored.Toast.Services;
 
 namespace Rise.Client.Profile.Components;
 
 [Authorize]
-public partial class ProfileScreen : ComponentBase
+public partial class ProfileScreen : ComponentBase, IDisposable
 {
     private static readonly IReadOnlyList<HobbyOption> _hobbyOptions = Enum.GetValues<HobbyTypeDto>()
         .Select(x =>
@@ -135,6 +133,10 @@ public partial class ProfileScreen : ComponentBase
     private string _newChatLineError = string.Empty;
     private bool _isAddingCustomChatLine;
 
+    private bool _isToastVisible;
+    private string _toastMessage = string.Empty;
+    private CancellationTokenSource? _toastCts;
+
     private enum PreferencePickerMode
     {
         None,
@@ -151,10 +153,6 @@ public partial class ProfileScreen : ComponentBase
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
     [Inject] private IUserService UserService { get; set; } = default!;
     [Inject] private UserState UserState { get; set; } = default!;
-    [Inject] private IValidator<UserRequest.UpdateCurrentUser> UpdateUserValidator { get; set; } = default!;
-
-    [Inject] private IToastService ToastService { get; set; } = default!;
-    
 
     private bool IsEditing => _isEditing;
     private bool IsLoading => _isLoading;
@@ -225,4 +223,971 @@ public partial class ProfileScreen : ComponentBase
     private string CurrentName => _isEditing 
         ? $"{_draft.FirstName} {_draft.LastName}" 
         : $"{_model.FirstName} {_model.LastName}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var currentUser = UserState.User!;
+
+            var memberSince = FormatMemberSince(currentUser.CreatedAt);
+            _model = ProfileModel.FromUser(currentUser, memberSince);
+            _draft = ProfileDraft.FromModel(_model);
+            SyncSelectionFromModel();
+        }
+        catch
+        {
+            _loadError = "Er ging iets mis bij het laden van je profiel.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void SyncSelectionFromModel()
+    {
+        _selectedHobbyIds.Clear();
+        foreach (var hobby in _model.Hobbies)
+        {
+            if (!string.IsNullOrWhiteSpace(hobby.Id))
+            {
+                _selectedHobbyIds.Add(hobby.Id);
+            }
+        }
+
+        _pickerSelection = _selectedHobbyIds.ToHashSet();
+        _initialHobbyIds = _selectedHobbyIds.ToHashSet();
+
+        _customPreferenceOptions.Clear();
+        _customChatLineOptions.Clear();
+
+        var likeIds = new List<string>();
+        var dislikeIds = new List<string>();
+
+        foreach (var interest in _model.Interests)
+        {
+            if (!string.IsNullOrWhiteSpace(interest.Like))
+            {
+                var likeId = ResolvePreferenceId(interest.Like);
+                if (!string.IsNullOrWhiteSpace(likeId))
+                {
+                    likeIds.Add(likeId);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(interest.Dislike))
+            {
+                var dislikeId = ResolvePreferenceId(interest.Dislike);
+                if (!string.IsNullOrWhiteSpace(dislikeId))
+                {
+                    dislikeIds.Add(dislikeId);
+                }
+            }
+        }
+
+        _selectedLikeIds = OrderPreferenceIds(likeIds).Take(PreferenceSelectionLimit).ToList();
+        _selectedDislikeIds = OrderPreferenceIds(dislikeIds).Take(PreferenceSelectionLimit).ToList();
+        _initialLikeIds = _selectedLikeIds.ToList();
+        _initialDislikeIds = _selectedDislikeIds.ToList();
+
+        _preferencePickerSelection = new HashSet<string>(_selectedLikeIds, StringComparer.OrdinalIgnoreCase);
+        _preferencePickerMode = PreferencePickerMode.None;
+        _isPreferencePickerOpen = false;
+        _preferencePickerSearch = string.Empty;
+
+        var chatLineIds = new List<string>();
+        foreach (var line in _model.DefaultChatLines)
+        {
+            var id = ResolveChatLineId(line);
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                chatLineIds.Add(id);
+            }
+        }
+
+        _selectedChatLineIds = OrderChatLineIds(chatLineIds).Take(ChatLineSelectionLimit).ToList();
+        _initialChatLineIds = _selectedChatLineIds.ToList();
+        _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
+        _newChatLineText = string.Empty;
+        _newChatLineError = string.Empty;
+        _isAddingCustomChatLine = false;
+
+        _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
+
+        UpdateInterestsModel();
+    }
+
+    private static string FormatMemberSince(DateTime createdAt)
+    {
+        if (createdAt == default)
+        {
+            return "Actief sinds onbekend";
+        }
+
+        var culture = CultureInfo.GetCultureInfo("nl-BE");
+        var formatted = createdAt.ToString("MMMM yyyy", culture);
+        formatted = culture.TextInfo.ToTitleCase(formatted);
+        return $"Actief sinds {formatted}";
+    }
+
+    private Task NavigateBack()
+    {
+        NavigationManager.NavigateTo("/");
+        return Task.CompletedTask;
+    }
+
+    private void BeginEdit()
+    {
+        if (_isLoading || HasError)
+        {
+            return;
+        }
+
+        _draft = ProfileDraft.FromModel(_model);
+        _pickerSelection = _selectedHobbyIds.ToHashSet();
+        _initialHobbyIds = _selectedHobbyIds.ToHashSet();
+        _initialLikeIds = _selectedLikeIds.ToList();
+        _initialDislikeIds = _selectedDislikeIds.ToList();
+        _preferencePickerSelection = new HashSet<string>(_selectedLikeIds, StringComparer.OrdinalIgnoreCase);
+        _preferencePickerMode = PreferencePickerMode.None;
+        _isPreferencePickerOpen = false;
+        _preferencePickerSearch = string.Empty;
+        _initialChatLineIds = _selectedChatLineIds.ToList();
+        _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
+        _newChatLineText = string.Empty;
+        _newChatLineError = string.Empty;
+        _isEditing = true;
+    }
+
+    private void CancelEdit()
+    {
+        _draft = ProfileDraft.FromModel(_model);
+        _selectedHobbyIds.Clear();
+        foreach (var id in _initialHobbyIds)
+        {
+            _selectedHobbyIds.Add(id);
+        }
+
+        var restoredHobbies = _selectedHobbyIds
+            .Select(CreateHobbyModel)
+            .Where(h => h is not null)
+            .Cast<ProfileHobbyModel>()
+            .ToList();
+
+        _model = _model with { Hobbies = restoredHobbies };
+        _pickerSelection = _selectedHobbyIds.ToHashSet();
+
+        _selectedLikeIds = OrderPreferenceIds(_initialLikeIds);
+        _selectedDislikeIds = OrderPreferenceIds(_initialDislikeIds);
+        _preferencePickerSelection = new HashSet<string>(_selectedLikeIds, StringComparer.OrdinalIgnoreCase);
+        _preferencePickerMode = PreferencePickerMode.None;
+        _isPreferencePickerOpen = false;
+        _preferencePickerSearch = string.Empty;
+        _selectedChatLineIds = OrderChatLineIds(_initialChatLineIds);
+        _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
+        _newChatLineText = string.Empty;
+        _newChatLineError = string.Empty;
+        _isAddingCustomChatLine = false;
+        _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
+        UpdateInterestsModel();
+
+        _isEditing = false;
+    }
+
+    private async Task SaveEdit()
+    {
+        if (_isLoading || HasError || !_isEditing || _isSaving)
+        {
+            return;
+        }
+
+        var request = new UserRequest.UpdateCurrentUser
+        {
+            FirstName = _draft.FirstName ?? string.Empty,
+            LastName = _draft.LastName ?? string.Empty,
+            Email = _draft.Email ?? string.Empty,
+            Biography = _draft.Bio ?? string.Empty,
+            AvatarUrl = _draft.AvatarUrl ?? string.Empty,
+            Gender = _draft.Gender,
+            Hobbies = _selectedHobbyIds
+                        .Where(id => !string.IsNullOrWhiteSpace(id))
+                        .Select(x => new HobbyDto.EditProfile() 
+                        { 
+                            Hobby = Enum.Parse<HobbyTypeDto>(x)
+                        })
+                        .ToList(),
+            Sentiments = (_selectedLikeIds ?? Enumerable.Empty<string>())
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Select(x => new SentimentDto.EditProfile
+                {
+                    Type = SentimentTypeDto.Like,
+                    Category = Enum.Parse<SentimentCategoryTypeDto>(x)
+                })
+                .Concat((_selectedDislikeIds ?? Enumerable.Empty<string>())
+                    .Where(id => !string.IsNullOrWhiteSpace(id))
+                    .Select(x => new SentimentDto.EditProfile
+                    {
+                        Type = SentimentTypeDto.Dislike,
+                        Category = Enum.Parse<SentimentCategoryTypeDto>(x)
+                    })
+                ).ToList(),
+            DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds)
+                .Where(text => !string.IsNullOrWhiteSpace(text))
+                .ToList()
+        };
+
+        try
+        {
+            _isSaving = true;
+            var result = await UserService.UpdateUserAsync(UserState?.User.AccountId, request);
+
+            if (result.IsSuccess && result.Value.User is not null)
+            {
+                var updatedUser = result.Value.User;
+                var memberSince = FormatMemberSince(updatedUser.CreatedAt);
+                _model = ProfileModel.FromUser(updatedUser, memberSince);
+                _draft = ProfileDraft.FromModel(_model);
+                SyncSelectionFromModel();
+                _isEditing = false;
+                await ShowToastAsync("Wijzigingen opgeslagen");
+            }
+            else
+            {
+                var errorMessage = result.ValidationErrors.FirstOrDefault()?.ErrorMessage
+                    ?? result.Errors.FirstOrDefault()
+                    ?? "Opslaan is mislukt.";
+
+                await ShowToastAsync(errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowToastAsync("Opslaan is mislukt.");
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task OnAvatarChanged(InputFileChangeEventArgs args)
+    {
+        var file = args.File;
+        if (file is null)
+        {
+            return;
+        }
+
+        try
+        {
+            //todo: rename avatar url to bytes tream
+            //when it reaches endpoint, upload to file server and map that url to user
+            using var stream = file.OpenReadStream(maxAllowedSize: 300 * 1024);
+            using var memory = new MemoryStream();
+            await stream.CopyToAsync(memory);
+            var base64 = Convert.ToBase64String(memory.ToArray());
+            var dataUrl = $"data:{file.ContentType};base64,{base64}";
+            _draft.AvatarUrl = dataUrl;
+            if (!_isEditing)
+            {
+                _model = _model with { AvatarUrl = dataUrl };
+            }
+        }
+        catch
+        {
+            // Ignore failures and keep existing avatar.
+        }
+    }
+
+    private Task OpenHobbiesPicker()
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        _isPreferencePickerOpen = false;
+        _preferencePickerMode = PreferencePickerMode.None;
+        _preferencePickerSearch = string.Empty;
+        _preferencePickerSelection.Clear();
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
+
+        _pickerSelection = _selectedHobbyIds.ToHashSet();
+        _pickerSearch = string.Empty;
+        _isPickerOpen = true;
+
+        return Task.CompletedTask;
+    }
+
+    private Task ClosePicker()
+    {
+        _isPickerOpen = false;
+        _pickerSearch = string.Empty;
+        return Task.CompletedTask;
+    }
+
+    private Task TogglePickerSelection(string id)
+    {
+        if (_pickerSelection.Contains(id))
+        {
+            _pickerSelection.Remove(id);
+        }
+        else if (_pickerSelection.Count < HobbySelectionLimit)
+        {
+            _pickerSelection.Add(id);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task ClearPickerSelection()
+    {
+        _pickerSelection.Clear();
+        return Task.CompletedTask;
+    }
+
+    private async Task ConfirmPickerSelection()
+    {
+        _selectedHobbyIds.Clear();
+        foreach (var id in _pickerSelection)
+        {
+            _selectedHobbyIds.Add(id);
+        }
+
+        var updatedHobbies = _selectedHobbyIds
+            .Select(CreateHobbyModel)
+            .Where(h => h is not null)
+            .Cast<ProfileHobbyModel>()
+            .ToList();
+
+        _model = _model with { Hobbies = updatedHobbies };
+        _pickerSelection = _selectedHobbyIds.ToHashSet();
+
+        _isPickerOpen = false;
+        _pickerSearch = string.Empty;
+        await ShowToastAsync("Hobby's bijgewerkt");
+    }
+
+    private Task RemoveHobby(string id)
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (_selectedHobbyIds.Remove(id))
+        {
+            _pickerSelection.Remove(id);
+            var updatedHobbies = _selectedHobbyIds
+                .Select(CreateHobbyModel)
+                .Where(h => h is not null)
+                .Cast<ProfileHobbyModel>()
+                .ToList();
+
+            _model = _model with { Hobbies = updatedHobbies };
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task OpenLikesPicker()
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        _isPickerOpen = false;
+        _pickerSearch = string.Empty;
+
+        _preferencePickerSelection = new HashSet<string>(_selectedLikeIds, StringComparer.OrdinalIgnoreCase);
+        _preferencePickerMode = PreferencePickerMode.Likes;
+        _preferencePickerSearch = string.Empty;
+        _isPreferencePickerOpen = true;
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
+
+        return Task.CompletedTask;
+    }
+
+    private Task OpenDislikesPicker()
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        _isPickerOpen = false;
+        _pickerSearch = string.Empty;
+
+        _preferencePickerSelection = new HashSet<string>(_selectedDislikeIds, StringComparer.OrdinalIgnoreCase);
+        _preferencePickerMode = PreferencePickerMode.Dislikes;
+        _preferencePickerSearch = string.Empty;
+        _isPreferencePickerOpen = true;
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
+
+        return Task.CompletedTask;
+    }
+
+    private Task OpenChatLinesPicker()
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        _isPickerOpen = false;
+        _pickerSearch = string.Empty;
+
+        _isPreferencePickerOpen = false;
+        _preferencePickerMode = PreferencePickerMode.None;
+        _preferencePickerSearch = string.Empty;
+
+        _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
+        _chatLinePickerSearch = string.Empty;
+        _newChatLineText = string.Empty;
+        _newChatLineError = string.Empty;
+        _isChatLinePickerOpen = true;
+
+        return Task.CompletedTask;
+    }
+
+    private Task CloseChatLinePicker()
+    {
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
+        _newChatLineText = string.Empty;
+        _newChatLineError = string.Empty;
+        return Task.CompletedTask;
+    }
+
+    private Task ToggleChatLinePickerSelection(string id)
+    {
+        if (_chatLinePickerSelection.Contains(id))
+        {
+            _chatLinePickerSelection.Remove(id);
+        }
+        else if (_chatLinePickerSelection.Count < ChatLineSelectionLimit)
+        {
+            _chatLinePickerSelection.Add(id);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task ClearChatLinePickerSelection()
+    {
+        _chatLinePickerSelection.Clear();
+        return Task.CompletedTask;
+    }
+
+    private async Task ConfirmChatLinePickerSelection()
+    {
+        _selectedChatLineIds = OrderChatLineIds(_chatLinePickerSelection)
+            .Take(ChatLineSelectionLimit)
+            .ToList();
+
+        _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
+
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
+        _chatLinePickerSelection.Clear();
+        _newChatLineText = string.Empty;
+        _newChatLineError = string.Empty;
+
+        await ShowToastAsync("Favoriete chatzinnen bijgewerkt");
+    }
+
+    private Task UpdateChatLinePickerSearch(string value)
+    {
+        _chatLinePickerSearch = value;
+        return Task.CompletedTask;
+    }
+
+    private Task UpdateNewChatLineText(string value)
+    {
+        _newChatLineText = value;
+
+        if (!string.IsNullOrEmpty(_newChatLineError))
+        {
+            _newChatLineError = string.Empty;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task AddCustomChatLineAsync(string value)
+    {
+        if (_isAddingCustomChatLine)
+        {
+            return Task.CompletedTask;
+        }
+
+        _newChatLineError = string.Empty;
+
+        var input = value?.Trim() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            _newChatLineError = "Typ een zin om toe te voegen.";
+            return Task.CompletedTask;
+        }
+
+        if (input.Length > ChatLineTextMaxLength)
+        {
+            _newChatLineError = $"Zin mag maximaal {ChatLineTextMaxLength} tekens bevatten.";
+            return Task.CompletedTask;
+        }
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            _newChatLineError = "Deze zin kan niet worden gebruikt.";
+            return Task.CompletedTask;
+        }
+
+        var id = ResolveChatLineId(input);
+
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            _newChatLineError = "Deze zin kan niet worden gebruikt.";
+            return Task.CompletedTask;
+        }
+
+        if (_chatLinePickerSelection.Contains(id))
+        {
+            _newChatLineError = "Deze zin staat al in je lijst.";
+            return Task.CompletedTask;
+        }
+
+        if (_chatLinePickerSelection.Count >= ChatLineSelectionLimit)
+        {
+            _newChatLineError = $"Je kan maximaal {ChatLineSelectionLimit} zinnen kiezen.";
+            return Task.CompletedTask;
+        }
+
+        _isAddingCustomChatLine = true;
+
+        try
+        {
+            _chatLinePickerSelection.Add(id);
+            _selectedChatLineIds = OrderChatLineIds(_chatLinePickerSelection)
+                .Take(ChatLineSelectionLimit)
+                .ToList();
+
+            _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
+            _newChatLineText = string.Empty;
+            _newChatLineError = string.Empty;
+        }
+        finally
+        {
+            _isAddingCustomChatLine = false;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task RemoveChatLine(string id)
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (RemovePreference(_selectedChatLineIds, id))
+        {
+            _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
+            _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
+            _newChatLineError = string.Empty;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task ClosePreferencePicker()
+    {
+        _isPreferencePickerOpen = false;
+        _preferencePickerMode = PreferencePickerMode.None;
+        _preferencePickerSearch = string.Empty;
+        _preferencePickerSelection.Clear();
+        return Task.CompletedTask;
+    }
+
+    private Task TogglePreferencePickerSelection(string id)
+    {
+        if (_preferencePickerSelection.Contains(id))
+        {
+            _preferencePickerSelection.Remove(id);
+        }
+        else if (_preferencePickerSelection.Count < PreferenceSelectionLimit)
+        {
+            _preferencePickerSelection.Add(id);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task ClearPreferencePickerSelection()
+    {
+        _preferencePickerSelection.Clear();
+        return Task.CompletedTask;
+    }
+
+    private async Task ConfirmPreferencePickerSelection()
+    {
+        if (_preferencePickerMode == PreferencePickerMode.None)
+        {
+            _preferencePickerSelection.Clear();
+            _isPreferencePickerOpen = false;
+            _preferencePickerSearch = string.Empty;
+            return;
+        }
+
+        var ordered = OrderPreferenceIds(_preferencePickerSelection)
+            .Take(PreferenceSelectionLimit)
+            .ToList();
+
+        if (_preferencePickerMode == PreferencePickerMode.Likes)
+        {
+            _selectedLikeIds = ordered;
+        }
+        else
+        {
+            _selectedDislikeIds = ordered;
+        }
+
+        UpdateInterestsModel();
+
+        var message = _preferencePickerMode == PreferencePickerMode.Likes
+            ? "Wat ik leuk vind bijgewerkt"
+            : "Wat ik minder leuk vind bijgewerkt";
+
+        _isPreferencePickerOpen = false;
+        _preferencePickerMode = PreferencePickerMode.None;
+        _preferencePickerSearch = string.Empty;
+        _preferencePickerSelection.Clear();
+
+        await ShowToastAsync(message);
+    }
+
+    private Task UpdatePreferencePickerSearch(string value)
+    {
+        _preferencePickerSearch = value;
+        return Task.CompletedTask;
+    }
+
+    private Task RemoveLike(string id)
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (RemovePreference(_selectedLikeIds, id))
+        {
+            UpdateInterestsModel();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task RemoveDislike(string id)
+    {
+        if (!_isEditing)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (RemovePreference(_selectedDislikeIds, id))
+        {
+            UpdateInterestsModel();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task UpdatePickerSearch(string value)
+    {
+        _pickerSearch = value;
+        return Task.CompletedTask;
+    }
+
+    private List<string> OrderPreferenceIds(IEnumerable<string> ids)
+    {
+        return ids
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(id => id.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(id => _preferenceOrderById.TryGetValue(id, out var order) ? order : int.MaxValue)
+            .ThenBy(id => GetPreferenceName(id), StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private string ResolvePreferenceId(string value)
+    {
+        var normalized = NormalizePreferenceValue(value);
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return string.Empty;
+        }
+
+        if (_preferenceOptionsById.TryGetValue(normalized, out var optionById))
+        {
+            return optionById.Id;
+        }
+
+        if (_preferenceIdByName.TryGetValue(normalized, out var optionId))
+        {
+            return optionId;
+        }
+
+        if (!_customPreferenceOptions.ContainsKey(normalized))
+        {
+            _customPreferenceOptions[normalized] = normalized;
+        }
+
+        return normalized;
+    }
+
+    private static string NormalizePreferenceValue(string value)
+        => value.Trim();
+
+    private string GetPreferenceName(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return string.Empty;
+        }
+
+        if (_preferenceOptionsById.TryGetValue(id, out var option))
+        {
+            return option.Name;
+        }
+
+        if (_customPreferenceOptions.TryGetValue(id, out var custom))
+        {
+            return custom;
+        }
+
+        return id;
+    }
+
+    private string GetPreferenceLabel(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return string.Empty;
+        }
+
+        if (_preferenceOptionsById.TryGetValue(id, out var option))
+        {
+            return option.Label;
+        }
+
+        if (_customPreferenceOptions.TryGetValue(id, out var custom))
+        {
+            return custom;
+        }
+
+        return id;
+    }
+
+    private static string FormatBirthDay(DateOnly birthDay)
+    {
+        if (birthDay == default)
+        {
+            return "–";
+        }
+
+        return birthDay.ToString("dd MMMM yyyy", CultureInfo.CurrentCulture);
+    }
+
+    private IReadOnlyList<PreferenceChip> BuildPreferenceChips(IEnumerable<string> ids)
+    {
+        var chips = new List<PreferenceChip>();
+        foreach (var id in ids)
+        {
+            var label = GetPreferenceLabel(id);
+            if (!string.IsNullOrWhiteSpace(label))
+            {
+                chips.Add(new PreferenceChip(id, label));
+            }
+        }
+
+        return chips;
+    }
+
+    private List<string> OrderChatLineIds(IEnumerable<string> ids)
+    {
+        return ids
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(id => id.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(id => _chatLineOrderById.TryGetValue(id, out var order) ? order : int.MaxValue)
+            .ThenBy(id => GetChatLineText(id), StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private string ResolveChatLineId(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var normalized = value.Trim();
+
+        if (_chatLineOptionsById.TryGetValue(normalized, out var optionById))
+        {
+            return optionById.Id;
+        }
+
+        if (_chatLineIdByName.TryGetValue(normalized, out var optionId))
+        {
+            return optionId;
+        }
+
+        if (!_customChatLineOptions.ContainsKey(normalized))
+        {
+            _customChatLineOptions[normalized] = normalized;
+        }
+
+        return normalized;
+    }
+
+    private string GetChatLineText(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return string.Empty;
+        }
+
+        if (_chatLineOptionsById.TryGetValue(id, out var option))
+        {
+            return option.Name;
+        }
+
+        if (_customChatLineOptions.TryGetValue(id, out var custom))
+        {
+            return custom;
+        }
+
+        if (_chatLineIdByName.TryGetValue(id, out var resolvedId) && _chatLineOptionsById.TryGetValue(resolvedId, out var resolvedOption))
+        {
+            return resolvedOption.Name;
+        }
+
+        return id;
+    }
+
+    private IReadOnlyList<PreferenceChip> BuildChatLineChips(IEnumerable<string> ids)
+    {
+        var chips = new List<PreferenceChip>();
+        foreach (var id in ids)
+        {
+            var text = GetChatLineText(id);
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                chips.Add(new PreferenceChip(id, text));
+            }
+        }
+
+        return chips;
+    }
+
+    private IReadOnlyList<string> BuildChatLineTexts(IEnumerable<string> ids)
+    {
+        var result = new List<string>();
+        foreach (var id in ids)
+        {
+            var text = GetChatLineText(id);
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                result.Add(text);
+            }
+        }
+
+        return result;
+    }
+
+    private static bool RemovePreference(List<string> list, string id)
+    {
+        var index = list.FindIndex(existing => string.Equals(existing, id, StringComparison.OrdinalIgnoreCase));
+        if (index >= 0)
+        {
+            list.RemoveAt(index);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void UpdateInterestsModel()
+    {
+        var interests = new List<ProfileInterestModel>();
+
+        foreach (var likeId in _selectedLikeIds)
+        {
+            var label = GetPreferenceName(likeId);
+            if (!string.IsNullOrWhiteSpace(label))
+            {
+                interests.Add(new ProfileInterestModel("Like", label, null));
+            }
+        }
+
+        foreach (var dislikeId in _selectedDislikeIds)
+        {
+            var label = GetPreferenceName(dislikeId);
+            if (!string.IsNullOrWhiteSpace(label))
+            {
+                interests.Add(new ProfileInterestModel("Dislike", null, label));
+            }
+        }
+
+        _model = _model with { Interests = interests };
+    }
+
+    private static ProfileHobbyModel? CreateHobbyModel(string id)
+    {
+        var option = _hobbyOptions.FirstOrDefault(o => string.Equals(o.Id, id, StringComparison.Ordinal));
+        return option is null ? null : new ProfileHobbyModel(option.Id, option.Name, option.Emoji);
+    }
+
+    // todo: export it to a helper function
+    // work like a lib/framework
+    private async Task ShowToastAsync(string message)
+    {
+        _toastCts?.Cancel();
+        _toastCts?.Dispose();
+        _toastCts = new CancellationTokenSource();
+        _toastMessage = message;
+        _isToastVisible = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(1.4), _toastCts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        _isToastVisible = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        _toastCts?.Cancel();
+        _toastCts?.Dispose();
+    }
 }

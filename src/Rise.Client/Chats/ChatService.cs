@@ -7,35 +7,30 @@ using Rise.Shared.Chats;
 
 namespace Rise.Client.Chats;
 
-public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueueService, IJSRuntime jsRuntime) : IChatService
+public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueueService, CacheService cacheService) : IChatService
 {
-    private readonly HttpClient _httpClient = httpClient;
-    private readonly OfflineQueueService _offlineQueueService = offlineQueueService;
-    private readonly IJSRuntime _jsRuntime = jsRuntime;
-    private readonly JsonSerializerOptions _serializerOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-    };
-
-    private const string ChatsCacheKey = "offline-cache:chats";
-    private const string ChatDetailCacheKeyPrefix = "offline-cache:chat:";
-
     public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChats>>("api/chats", cancellationToken);
+            var result = await httpClient.GetFromJsonAsync<Result<ChatResponse.GetChats>>("api/chats", cancellationToken);
             if (result is not null && result.IsSuccess && result.Value is not null)
             {
-                await CacheChatsAsync(result.Value, cancellationToken);
+                var chats = result.Value;
+                CacheObject<ChatResponse.GetChats> cacheObject = new CacheObject<ChatResponse.GetChats>()
+                { 
+                    Key = CacheKeys.ChatsCacheKey,
+                    Payload = chats
+                };
+                await cacheService.CacheAsync(cacheObject, cancellationToken);
             }
 
             return result ?? Result<ChatResponse.GetChats>.Error("Kon de chats niet laden.");
         }
         catch (HttpRequestException)
         {
-            var cached = await TryGetCachedChatsAsync(cancellationToken);
+            var cached = await cacheService
+                .TryGetCachedAsync<ChatResponse.GetChats>(CacheKeys.ChatsCacheKey, cancellationToken);
             if (cached is not null)
             {
                 return Result<ChatResponse.GetChats>.Success(cached, "Offline: eerder geladen gesprekken worden getoond.");
@@ -49,23 +44,32 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
     {
         try
         {
-            var result = await _httpClient.GetFromJsonAsync<Result<ChatResponse.GetChat>>($"api/chats/{chatId}", cancellationToken);
+            var result = await httpClient.GetFromJsonAsync<Result<ChatResponse.GetChat>>($"api/chats/{chatId}", cancellationToken);
             if (result is not null && result.IsSuccess && result.Value is not null)
             {
-                await CacheChatAsync(result.Value, cancellationToken);
+                var chat = result.Value;
+                CacheObject<ChatResponse.GetChat> cacheObject = new CacheObject<ChatResponse.GetChat>()
+                {
+                    Key = CacheKeys.GetChatCacheKey(chat.Chat.ChatId),
+                    Payload = chat
+                };
+                await cacheService.CacheAsync(cacheObject, cancellationToken);
             }
 
             return result ?? Result<ChatResponse.GetChat>.Error("Kon het gesprek niet laden.");
         }
         catch (HttpRequestException)
         {
-            var cachedDetail = await TryGetCachedChatAsync(chatId, cancellationToken);
+            var cachedDetail = await cacheService
+                .TryGetCachedAsync<ChatResponse.GetChat>(CacheKeys.GetChatCacheKey(chatId), cancellationToken);
+            
             if (cachedDetail is not null)
             {
                 return Result<ChatResponse.GetChat>.Success(cachedDetail, "Offline: gesprek geladen vanuit cache.");
             }
 
-            var cached = await TryGetCachedChatsAsync(cancellationToken);
+            var cached = await cacheService
+                .TryGetCachedAsync<ChatResponse.GetChats>(CacheKeys.ChatsCacheKey, cancellationToken);
             var chat = cached?.Chats.FirstOrDefault(c => c.ChatId == chatId);
 
             if (chat is not null)
@@ -85,12 +89,44 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
         }
     }
 
+    public async Task<Result<ChatResponse.GetSupervisorChat>> GetSupervisorChatAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await httpClient.GetFromJsonAsync<Result<ChatResponse.GetSupervisorChat>>($"api/chats/supervisor", cancellationToken);
+            if (result is not null && result.IsSuccess && result.Value is not null)
+            {
+                var supervisorChat = result.Value;
+                CacheObject<ChatResponse.GetSupervisorChat> cacheObject = new CacheObject<ChatResponse.GetSupervisorChat>()
+                {
+                    Key = CacheKeys.SupervisorChatCacheKey,
+                    Payload = supervisorChat
+                };
+                await cacheService.CacheAsync(cacheObject, cancellationToken);
+            }
+
+            return result ?? Result<ChatResponse.GetSupervisorChat>.Error("Kon het gesprek niet laden.");
+        }
+        catch (HttpRequestException)
+        {
+            var cachedDetail = await cacheService
+                .TryGetCachedAsync<ChatResponse.GetSupervisorChat>(CacheKeys.SupervisorChatCacheKey, cancellationToken);
+            
+            if (cachedDetail is not null)
+            {
+                return Result<ChatResponse.GetSupervisorChat>.Success(cachedDetail, "Offline: gesprek geladen vanuit cache.");
+            }
+
+            return Result<ChatResponse.GetSupervisorChat>.Error("Offline: het gesprek kan niet vernieuwd worden zonder verbinding.");
+        }
+    }
+
     public async Task<Result<MessageDto.Chat>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
     {
         HttpResponseMessage response;
         try
         {
-            response = await _httpClient.PostAsJsonAsync($"api/chats/{request.ChatId}/messages", request, cancellationToken);
+            response = await httpClient.PostAsJsonAsync($"api/chats/{request.ChatId}/messages", request, cancellationToken);
         }
         catch (HttpRequestException)
         {
@@ -111,8 +147,8 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
     {
         try
         {
-            var queuedId = await _offlineQueueService.QueueOperationAsync(
-                _httpClient.BaseAddress?.ToString() ?? string.Empty,
+            var queuedId = await offlineQueueService.QueueOperationAsync(
+                httpClient.BaseAddress?.ToString() ?? string.Empty,
                 $"/api/chats/{request.ChatId}/messages",
                 HttpMethod.Post,
                 request,
@@ -131,68 +167,4 @@ public class ChatService(HttpClient httpClient, OfflineQueueService offlineQueue
         var queueResult = await QueueMessageAsync(request, cancellationToken);
         return queueResult.IsSuccess;
     }
-
-    private async Task CacheChatsAsync(ChatResponse.GetChats chats, CancellationToken cancellationToken)
-    {
-        try
-        {
-            var payload = JsonSerializer.Serialize(chats, _serializerOptions);
-            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", cancellationToken, ChatsCacheKey, payload);
-        }
-        catch
-        {
-            // Failing to cache should not break the UX.
-        }
-    }
-
-    private async Task CacheChatAsync(ChatResponse.GetChat chat, CancellationToken cancellationToken)
-    {
-        try
-        {
-            var payload = JsonSerializer.Serialize(chat, _serializerOptions);
-            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", cancellationToken, GetChatCacheKey(chat.Chat.ChatId), payload);
-        }
-        catch
-        {
-            // Failing to cache should not break the UX.
-        }
-    }
-
-    private async Task<ChatResponse.GetChats?> TryGetCachedChatsAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            var cached = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", cancellationToken, ChatsCacheKey);
-            if (string.IsNullOrWhiteSpace(cached))
-            {
-                return null;
-            }
-
-            return JsonSerializer.Deserialize<ChatResponse.GetChats>(cached, _serializerOptions);
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private async Task<ChatResponse.GetChat?> TryGetCachedChatAsync(int chatId, CancellationToken cancellationToken)
-    {
-        try
-        {
-            var cached = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", cancellationToken, GetChatCacheKey(chatId));
-            if (string.IsNullOrWhiteSpace(cached))
-            {
-                return null;
-            }
-
-            return JsonSerializer.Deserialize<ChatResponse.GetChat>(cached, _serializerOptions);
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static string GetChatCacheKey(int chatId) => $"{ChatDetailCacheKeyPrefix}{chatId}";
 }
