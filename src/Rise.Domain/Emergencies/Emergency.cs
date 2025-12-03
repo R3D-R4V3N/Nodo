@@ -28,6 +28,8 @@ public class Emergency : Entity
             AllowedToResolve = _happenedInChat?
                 .Users.OfType<User>()
                 .Select(u => u.Supervisor)
+                .Where(supervisor => supervisor is not null)
+                .Cast<Supervisor>()
                 .Distinct()
                 .ToList() ?? [];
 
