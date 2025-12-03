@@ -35,6 +35,9 @@ public partial class Chat : IAsyncDisposable
     private readonly List<AlertPrompt.AlertReason> _alertReasons = new();
     private bool _isAlertOpen;
     private EmergencyTypeDto? _selectedAlertReason;
+    private bool _isSendingAlert;
+    private bool _alertIsError;
+    private string? _alertFeedback;
     private bool _shouldScrollToBottom;
     private ElementReference _messagesHost;
     private ElementReference _footerHost;
@@ -488,11 +491,45 @@ public partial class Chat : IAsyncDisposable
         return Task.CompletedTask;
     }
 
-    private Task HandleAlertReason(EmergencyTypeDto reason)
+    private async Task HandleAlertReason(EmergencyTypeDto reason)
     {
         _selectedAlertReason = reason;
         _isAlertOpen = false;
-        return Task.CompletedTask;
+
+        if (_chat is null || _isSendingAlert)
+        {
+            return;
+        }
+
+        var latestMessage = _chat.Messages.LastOrDefault();
+        if (latestMessage is null)
+        {
+            _alertFeedback = "Er zijn geen berichten om aan de alert te koppelen.";
+            _alertIsError = true;
+            StateHasChanged();
+            return;
+        }
+
+        var request = new EmergencyRequest.CreateEmergency
+        {
+            ChatId = _chat.ChatId,
+            MessageId = latestMessage.Id,
+            Type = reason
+        };
+
+        _alertFeedback = null;
+        _isSendingAlert = true;
+        StateHasChanged();
+
+        var result = await EmergencyService.CreateEmergencyAsync(request);
+
+        _isSendingAlert = false;
+        _alertIsError = !result.IsSuccess;
+        _alertFeedback = result.IsSuccess
+            ? "De supervisor is verwittigd."
+            : result.Errors.FirstOrDefault() ?? "Het versturen van de alert is mislukt.";
+
+        StateHasChanged();
     }
 
     private string GetMessageHostPaddingStyle()

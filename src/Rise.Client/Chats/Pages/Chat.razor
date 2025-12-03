@@ -13,6 +13,7 @@
 
 @layout EmptyLayout
 @inject IChatService ChatService
+@inject IEmergencyService EmergencyService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
@@ -65,6 +66,12 @@
         {
             <div class="px-6 py-2 text-xs text-amber-700 bg-amber-50 border-b border-amber-200">
                 @_connectionError
+            </div>
+        }
+        @if (!string.IsNullOrWhiteSpace(_alertFeedback))
+        {
+            <div class="px-6 py-2 text-xs border-b @(_alertIsError ? "text-red-700 bg-red-50 border-red-200" : "text-emerald-700 bg-emerald-50 border-emerald-200")">
+                @_alertFeedback
             </div>
         }
 

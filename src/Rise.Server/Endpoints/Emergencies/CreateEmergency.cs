@@ -9,7 +9,7 @@ public class CreateEmergency(IEmergencyService emergencyService) : Endpoint<Emer
     public override void Configure()
     {
         Post("/api/emergencies");
-        Roles(AppRoles.Supervisor);
+        Roles(AppRoles.User, AppRoles.Supervisor);
     }
 
     public override Task<Result<EmergencyResponse.Create>> ExecuteAsync(EmergencyRequest.CreateEmergency emergency, CancellationToken ct)
