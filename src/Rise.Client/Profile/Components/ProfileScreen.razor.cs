@@ -116,7 +116,9 @@ public partial class ProfileScreen : ComponentBase
     private HashSet<string> _chatLinePickerSelection = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _customChatLineOptions = new(StringComparer.OrdinalIgnoreCase);
 
-    private bool _isEditing;
+    private bool _isEditingPersonalInfo;
+    private bool _isEditingInterests;
+    private bool _isEditingChatLines;
     private bool _isSaving;
     private bool _isLoading = true;
     private string? _loadError;
@@ -155,11 +157,14 @@ public partial class ProfileScreen : ComponentBase
 
     [Inject] private IToastService ToastService { get; set; } = default!;
     
-
-    private bool IsEditing => _isEditing;
+    private bool IsEditingPersonalInfo => _isEditingPersonalInfo;
+    private bool IsEditingInterests => _isEditingInterests;
+    private bool IsEditingChatLines => _isEditingChatLines;
+    private bool IsSaving => _isSaving;
     private bool IsLoading => _isLoading;
     private bool HasError => !string.IsNullOrWhiteSpace(_loadError);
     private string? ErrorMessage => _loadError;
+    private bool CanEditProfile => !_isLoading && !HasError;
     private IReadOnlyList<ProfileHobbyModel> Hobbies => _model.Hobbies;
     private IReadOnlyList<HobbyOption> HobbyOptions => _hobbyOptions;
     private IReadOnlyList<PreferenceOption> PreferenceOptions => _preferenceOptions;
@@ -222,7 +227,7 @@ public partial class ProfileScreen : ComponentBase
         _ => "Zoek..."
     };
     private string DisplayName => string.IsNullOrWhiteSpace(CurrentName) ? "Jouw Naam" : CurrentName;
-    private string CurrentName => _isEditing 
-        ? $"{_draft.FirstName} {_draft.LastName}" 
+    private string CurrentName => _isEditingPersonalInfo
+        ? $"{_draft.FirstName} {_draft.LastName}"
         : $"{_model.FirstName} {_model.LastName}";
 }

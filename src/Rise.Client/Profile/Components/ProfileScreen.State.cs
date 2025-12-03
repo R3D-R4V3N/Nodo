@@ -107,6 +107,10 @@ public partial class ProfileScreen
         _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
 
         UpdateInterestsModel();
+
+        _isEditingPersonalInfo = false;
+        _isEditingInterests = false;
+        _isEditingChatLines = false;
     }
 
     private static string FormatMemberSince(DateTime createdAt)
@@ -128,7 +132,7 @@ public partial class ProfileScreen
         return Task.CompletedTask;
     }
 
-    private void BeginEdit()
+    private void BeginPersonalInfoEdit()
     {
         if (_isLoading || HasError)
         {
@@ -136,6 +140,16 @@ public partial class ProfileScreen
         }
 
         _draft = ProfileDraft.FromModel(_model);
+        _isEditingPersonalInfo = true;
+    }
+
+    private void BeginInterestsEdit()
+    {
+        if (_isLoading || HasError)
+        {
+            return;
+        }
+
         _pickerSelection = _selectedHobbyIds.ToHashSet();
         _initialHobbyIds = _selectedHobbyIds.ToHashSet();
         _initialLikeIds = _selectedLikeIds.ToList();
@@ -144,24 +158,37 @@ public partial class ProfileScreen
         _preferencePickerMode = PreferencePickerMode.None;
         _isPreferencePickerOpen = false;
         _preferencePickerSearch = string.Empty;
+
+        _isEditingInterests = true;
+    }
+
+    private void BeginChatLinesEdit()
+    {
+        if (_isLoading || HasError)
+        {
+            return;
+        }
+
         _initialChatLineIds = _selectedChatLineIds.ToList();
         _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
         _isChatLinePickerOpen = false;
         _chatLinePickerSearch = string.Empty;
         _newChatLineText = string.Empty;
         _newChatLineError = string.Empty;
-        _isEditing = true;
+        _isAddingCustomChatLine = false;
+
+        _isEditingChatLines = true;
     }
 
-    private void CancelEdit()
+    private void CancelPersonalInfoEdit()
     {
         _draft = ProfileDraft.FromModel(_model);
-        _selectedHobbyIds.Clear();
-        foreach (var id in _initialHobbyIds)
-        {
-            _selectedHobbyIds.Add(id);
-        }
+        _isEditingPersonalInfo = false;
+    }
 
+    private void CancelInterestsEdit()
+    {
+        _selectedHobbyIds = _initialHobbyIds.ToHashSet();
         var restoredHobbies = _selectedHobbyIds
             .Select(CreateHobbyModel)
             .Where(h => h is not null)
@@ -177,6 +204,13 @@ public partial class ProfileScreen
         _preferencePickerMode = PreferencePickerMode.None;
         _isPreferencePickerOpen = false;
         _preferencePickerSearch = string.Empty;
+        UpdateInterestsModel();
+
+        _isEditingInterests = false;
+    }
+
+    private void CancelChatLinesEdit()
+    {
         _selectedChatLineIds = OrderChatLineIds(_initialChatLineIds);
         _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
         _isChatLinePickerOpen = false;
@@ -185,52 +219,75 @@ public partial class ProfileScreen
         _newChatLineError = string.Empty;
         _isAddingCustomChatLine = false;
         _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
-        UpdateInterestsModel();
 
-        _isEditing = false;
+        _isEditingChatLines = false;
     }
 
-    private async Task SaveEdit()
+    private enum ProfileSection
     {
-        if (_isLoading || HasError || !_isEditing || _isSaving)
+        PersonalInfo,
+        Interests,
+        ChatLines
+    }
+
+    private UserRequest.UpdateCurrentUser BuildUpdateRequest() => new()
+    {
+        FirstName = _draft.FirstName ?? string.Empty,
+        LastName = _draft.LastName ?? string.Empty,
+        Email = _draft.Email ?? string.Empty,
+        Biography = _draft.Bio ?? string.Empty,
+        AvatarUrl = _draft.AvatarUrl ?? string.Empty,
+        Gender = _draft.Gender,
+        Hobbies = _selectedHobbyIds
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(x => new HobbyDto.EditProfile()
+            {
+                Hobby = Enum.Parse<HobbyTypeDto>(x)
+            })
+            .ToList(),
+        Sentiments = (_selectedLikeIds ?? Enumerable.Empty<string>())
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(x => new SentimentDto.EditProfile
+            {
+                Type = SentimentTypeDto.Like,
+                Category = Enum.Parse<SentimentCategoryTypeDto>(x)
+            })
+            .Concat((_selectedDislikeIds ?? Enumerable.Empty<string>())
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Select(x => new SentimentDto.EditProfile
+                {
+                    Type = SentimentTypeDto.Dislike,
+                    Category = Enum.Parse<SentimentCategoryTypeDto>(x)
+                }))
+            .ToList(),
+        DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds)
+            .Where(text => !string.IsNullOrWhiteSpace(text))
+            .ToList()
+    };
+
+    private async Task SaveSectionAsync(ProfileSection section)
+    {
+        if (_isLoading || HasError || _isSaving)
         {
             return;
         }
 
-        var request = new UserRequest.UpdateCurrentUser
+        if (section == ProfileSection.PersonalInfo && !_isEditingPersonalInfo)
         {
-            FirstName = _draft.FirstName ?? string.Empty,
-            LastName = _draft.LastName ?? string.Empty,
-            Email = _draft.Email ?? string.Empty,
-            Biography = _draft.Bio ?? string.Empty,
-            AvatarUrl = _draft.AvatarUrl ?? string.Empty,
-            Gender = _draft.Gender,
-            Hobbies = _selectedHobbyIds
-                        .Where(id => !string.IsNullOrWhiteSpace(id))
-                        .Select(x => new HobbyDto.EditProfile()
-                        {
-                            Hobby = Enum.Parse<HobbyTypeDto>(x)
-                        })
-                        .ToList(),
-            Sentiments = (_selectedLikeIds ?? Enumerable.Empty<string>())
-                .Where(id => !string.IsNullOrWhiteSpace(id))
-                .Select(x => new SentimentDto.EditProfile
-                {
-                    Type = SentimentTypeDto.Like,
-                    Category = Enum.Parse<SentimentCategoryTypeDto>(x)
-                })
-                .Concat((_selectedDislikeIds ?? Enumerable.Empty<string>())
-                    .Where(id => !string.IsNullOrWhiteSpace(id))
-                    .Select(x => new SentimentDto.EditProfile
-                    {
-                        Type = SentimentTypeDto.Dislike,
-                        Category = Enum.Parse<SentimentCategoryTypeDto>(x)
-                    })
-                ).ToList(),
-            DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds)
-                .Where(text => !string.IsNullOrWhiteSpace(text))
-                .ToList()
-        };
+            return;
+        }
+
+        if (section == ProfileSection.Interests && !_isEditingInterests)
+        {
+            return;
+        }
+
+        if (section == ProfileSection.ChatLines && !_isEditingChatLines)
+        {
+            return;
+        }
+
+        var request = BuildUpdateRequest();
 
         var validationResult = await UpdateUserValidator.ValidateAsync(request);
         if (!validationResult.IsValid)
@@ -255,8 +312,16 @@ public partial class ProfileScreen
                 _model = ProfileModel.FromUser(updatedUser, memberSince);
                 _draft = ProfileDraft.FromModel(_model);
                 SyncSelectionFromModel();
-                _isEditing = false;
-                ToastService.ShowSuccess("Wijziging opgeslagen");
+
+                var message = section switch
+                {
+                    ProfileSection.PersonalInfo => "Persoonlijke gegevens opgeslagen",
+                    ProfileSection.Interests => "Interesses en hobby's opgeslagen",
+                    ProfileSection.ChatLines => "Standaardzinnen opgeslagen",
+                    _ => "Wijziging opgeslagen"
+                };
+
+                ToastService.ShowSuccess(message);
             }
             else
             {
@@ -282,10 +347,19 @@ public partial class ProfileScreen
         }
     }
 
+    private Task SavePersonalInfoEdit() => SaveSectionAsync(ProfileSection.PersonalInfo);
+    private Task SaveInterestsEdit() => SaveSectionAsync(ProfileSection.Interests);
+    private Task SaveChatLinesEdit() => SaveSectionAsync(ProfileSection.ChatLines);
+
     private async Task OnAvatarChanged(InputFileChangeEventArgs args)
     {
         var file = args.File;
         if (file is null)
+        {
+            return;
+        }
+
+        if (!_isEditingPersonalInfo)
         {
             return;
         }
@@ -298,10 +372,7 @@ public partial class ProfileScreen
             var base64 = Convert.ToBase64String(memory.ToArray());
             var dataUrl = $"data:{file.ContentType};base64,{base64}";
             _draft.AvatarUrl = dataUrl;
-            if (!_isEditing)
-            {
-                _model = _model with { AvatarUrl = dataUrl };
-            }
+            _model = _model with { AvatarUrl = dataUrl };
         }
         catch
         {

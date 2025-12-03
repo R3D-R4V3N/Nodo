@@ -10,7 +10,7 @@ public partial class ProfileScreen
 {
     private Task OpenHobbiesPicker()
     {
-        if (!_isEditing)
+        if (!_isEditingInterests)
         {
             return Task.CompletedTask;
         }
@@ -80,7 +80,7 @@ public partial class ProfileScreen
 
     private Task RemoveHobby(string id)
     {
-        if (!_isEditing)
+        if (!_isEditingInterests)
         {
             return Task.CompletedTask;
         }
@@ -102,7 +102,7 @@ public partial class ProfileScreen
 
     private Task OpenLikesPicker()
     {
-        if (!_isEditing)
+        if (!_isEditingInterests)
         {
             return Task.CompletedTask;
         }
@@ -122,7 +122,7 @@ public partial class ProfileScreen
 
     private Task OpenDislikesPicker()
     {
-        if (!_isEditing)
+        if (!_isEditingInterests)
         {
             return Task.CompletedTask;
         }
@@ -142,7 +142,7 @@ public partial class ProfileScreen
 
     private Task OpenChatLinesPicker()
     {
-        if (!_isEditing)
+        if (!_isEditingChatLines)
         {
             return Task.CompletedTask;
         }
@@ -299,7 +299,7 @@ public partial class ProfileScreen
 
     private Task RemoveChatLine(string id)
     {
-        if (!_isEditing)
+        if (!_isEditingChatLines)
         {
             return Task.CompletedTask;
         }
@@ -388,7 +388,7 @@ public partial class ProfileScreen
 
     private Task RemoveLike(string id)
     {
-        if (!_isEditing)
+        if (!_isEditingInterests)
         {
             return Task.CompletedTask;
         }
@@ -403,7 +403,7 @@ public partial class ProfileScreen
 
     private Task RemoveDislike(string id)
     {
-        if (!_isEditing)
+        if (!_isEditingInterests)
         {
             return Task.CompletedTask;
         }

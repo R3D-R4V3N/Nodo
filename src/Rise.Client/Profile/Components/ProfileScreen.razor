@@ -5,12 +5,10 @@
 <div class="min-h-screen bg-neutral-50 text-neutral-900 antialiased overflow-x-hidden">
     <ProfileHeader
         Title="Profiel"
-        IsEditing="@IsEditing"
+        IsEditing="false"
+        ShowActions="false"
         CanEdit="@(!IsLoading && !HasError)"
-        OnBack="NavigateBack"
-        OnEdit="BeginEdit"
-        OnCancel="CancelEdit"
-        OnSave="SaveEdit" />
+        OnBack="NavigateBack" />
 
     @if (IsLoading)
     {
@@ -36,6 +34,7 @@
                     AvatarUrl="@_draft.AvatarUrl"
                     DisplayName="@DisplayName"
                     MemberSince="@_model.MemberSince"
+                    CanEdit="@IsEditingPersonalInfo"
                     OnAvatarChanged="OnAvatarChanged" />
             </section>
 
@@ -46,14 +45,28 @@
                 @bind-Bio="_draft.Bio"
                 @bind-Gender="_draft.Gender"
                 BirthDay="@BirthDayDisplay"
-                IsEditing="@IsEditing" />
+                IsEditing="@IsEditingPersonalInfo"
+                CanEdit="@CanEditProfile"
+                IsBusy="@IsSaving"
+                OnEdit="BeginPersonalInfoEdit"
+                OnCancel="CancelPersonalInfoEdit"
+                OnSave="SavePersonalInfoEdit" />
 
             <ProfileInterestsSection
                 Likes="@LikeChips"
                 Dislikes="@DislikeChips"
                 Hobbies="@Hobbies"
                 DefaultChatLines="@ChatLineChips"
-                IsEditing="@IsEditing"
+                IsInterestsEditing="@IsEditingInterests"
+                IsChatLinesEditing="@IsEditingChatLines"
+                CanEdit="@CanEditProfile"
+                IsBusy="@IsSaving"
+                OnEditInterests="BeginInterestsEdit"
+                OnCancelInterests="CancelInterestsEdit"
+                OnSaveInterests="SaveInterestsEdit"
+                OnEditChatLines="BeginChatLinesEdit"
+                OnCancelChatLines="CancelChatLinesEdit"
+                OnSaveChatLines="SaveChatLinesEdit"
                 MaxLikes="@MaxLikes"
                 MaxDislikes="@MaxDislikes"
                 MaxHobbies="@MaxHobbies"
