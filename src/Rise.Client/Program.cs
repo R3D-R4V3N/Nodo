@@ -30,7 +30,6 @@ using Blazored.Toast;
 using Rise.Shared.Validators;
 using Rise.Client.Validators;
 using Rise.Shared.Identity.Accounts;
-using Rise.Client.Navigation;
 
 try
 {
@@ -56,12 +55,8 @@ try
     builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthenticationStateProvider>();
     // register the account management interface
     builder.Services.AddScoped(sp => (IAccountManager)sp.GetRequiredService<AuthenticationStateProvider>());
-
+    
     builder.Services.AddBlazoredToast();
-
-    // Detect PWA usage and enforce navigation rules
-    builder.Services.AddScoped<PwaInterop>();
-    builder.Services.AddScoped<PwaNavigationHandler>();
 
     // Laadt config.json uit wwwroot om de backend URL dynamisch te halen; gebruikt fallback naar localhost als key ontbreekt.
     using var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
@@ -152,9 +147,6 @@ try
         new ChatRequest.CreateMessage.Validator(sp.GetRequiredService<ValidatorRules>()));
 
     var host = builder.Build();
-
-    var pwaNavigationHandler = host.Services.GetRequiredService<PwaNavigationHandler>();
-    await pwaNavigationHandler.InitializeAsync();
 
     var offlineQueue = host.Services.GetRequiredService<OfflineQueueService>();
     await offlineQueue.StartAsync();
