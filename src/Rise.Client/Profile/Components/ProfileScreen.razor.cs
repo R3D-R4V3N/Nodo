@@ -116,8 +116,13 @@ public partial class ProfileScreen : ComponentBase
     private HashSet<string> _chatLinePickerSelection = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _customChatLineOptions = new(StringComparer.OrdinalIgnoreCase);
 
-    private bool _isEditing;
-    private bool _isSaving;
+    private bool _isEditingPersonalInfo;
+    private bool _isEditingInterests;
+    private bool _isEditingChatLines;
+
+    private bool _isSavingPersonalInfo;
+    private bool _isSavingInterests;
+    private bool _isSavingChatLines;
     private bool _isLoading = true;
     private string? _loadError;
 
@@ -151,12 +156,21 @@ public partial class ProfileScreen : ComponentBase
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
     [Inject] private IUserService UserService { get; set; } = default!;
     [Inject] private UserState UserState { get; set; } = default!;
-    [Inject] private IValidator<UserRequest.UpdateCurrentUser> UpdateUserValidator { get; set; } = default!;
+    [Inject] private IValidator<UserRequest.UpdatePersonalInfo> UpdatePersonalInfoValidator { get; set; } = default!;
+    [Inject] private IValidator<UserRequest.UpdateInterests> UpdateInterestsValidator { get; set; } = default!;
+    [Inject] private IValidator<UserRequest.UpdateDefaultChatLines> UpdateChatLinesValidator { get; set; } = default!;
 
     [Inject] private IToastService ToastService { get; set; } = default!;
     
 
-    private bool IsEditing => _isEditing;
+    private bool IsEditingPersonalInfo => _isEditingPersonalInfo;
+    private bool IsEditingInterests => _isEditingInterests;
+    private bool IsEditingChatLines => _isEditingChatLines;
+    private bool IsSavingPersonalInfo => _isSavingPersonalInfo;
+    private bool IsSavingInterests => _isSavingInterests;
+    private bool IsSavingChatLines => _isSavingChatLines;
+    private bool CanEditProfile => !IsLoading && !HasError && !_isSavingPersonalInfo && !_isSavingInterests && !_isSavingChatLines;
+    private bool AnySectionEditing => _isEditingPersonalInfo || _isEditingInterests || _isEditingChatLines;
     private bool IsLoading => _isLoading;
     private bool HasError => !string.IsNullOrWhiteSpace(_loadError);
     private string? ErrorMessage => _loadError;
@@ -206,7 +220,7 @@ public partial class ProfileScreen : ComponentBase
     private string NewChatLineText => _newChatLineText;
     private string NewChatLineError => _newChatLineError;
     private bool IsAddingCustomChatLine => _isAddingCustomChatLine;
-    private bool IsCustomChatLineLimitReached => _chatLinePickerSelection.Count >= ChatLineSelectionLimit;
+    private bool IsCustomChatLineLimitReached => _isEditingChatLines && _chatLinePickerSelection.Count >= ChatLineSelectionLimit;
     private int CustomChatLineMaxLength => ChatLineTextMaxLength;
     private string BirthDayDisplay => FormatBirthDay(_draft.BirthDay);
     private string PreferencePickerTitle => _preferencePickerMode switch
@@ -222,7 +236,7 @@ public partial class ProfileScreen : ComponentBase
         _ => "Zoek..."
     };
     private string DisplayName => string.IsNullOrWhiteSpace(CurrentName) ? "Jouw Naam" : CurrentName;
-    private string CurrentName => _isEditing 
-        ? $"{_draft.FirstName} {_draft.LastName}" 
+    private string CurrentName => _isEditingPersonalInfo
+        ? $"{_draft.FirstName} {_draft.LastName}"
         : $"{_model.FirstName} {_model.LastName}";
 }

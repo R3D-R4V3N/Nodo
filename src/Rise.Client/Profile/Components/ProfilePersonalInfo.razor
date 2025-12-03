@@ -3,7 +3,32 @@
 @using Rise.Shared.Users
 
 <section class="mt-5">
-    <h3 class="mb-2 text-sm font-medium text-neutral-700">Persoonlijke gegevens</h3>
+    <div class="mb-2 flex items-center justify-between gap-2">
+        <h3 class="text-sm font-medium text-neutral-700">Persoonlijke gegevens</h3>
+        <div class="flex items-center gap-2">
+            @if (IsEditing)
+            {
+                <ProfileActionButton Text="Annuleren"
+                                      Variant="ProfileActionButtonVariant.Secondary"
+                                      Small="true"
+                                      OnClick="HandleCancelEdit"
+                                      Disabled="@IsSaving" />
+                <ProfileActionButton Text="@(IsSaving ? \"Opslaan...\" : \"Opslaan\")"
+                                      Variant="ProfileActionButtonVariant.Primary"
+                                      Small="true"
+                                      OnClick="HandleSaveEdit"
+                                      Disabled="@IsSaving" />
+            }
+            else
+            {
+                <ProfileActionButton Text="Bewerken"
+                                      Variant="ProfileActionButtonVariant.Ghost"
+                                      Small="true"
+                                      OnClick="HandleBeginEdit"
+                                      Disabled="@(!CanEdit)" />
+            }
+        </div>
+    </div>
     <div class="space-y-3">
         <div class="rounded-2xl border border-neutral-200 bg-white px-3 py-2.5">
             <label class="flex items-center gap-2 text-xs text-neutral-500" for="firstname-input">
@@ -104,11 +129,11 @@
                     }
                 </select>
             }
-        else
-        {
-            <p class="mt-1 text-sm">@GenderDisplay(Gender)</p>
-        }
-    </div>
+            else
+            {
+                <p class="mt-1 text-sm">@GenderDisplay(Gender)</p>
+            }
+        </div>
 
         <div class="rounded-2xl border border-neutral-200 bg-white px-3 py-2.5">
             <label class="flex items-center gap-2 text-xs text-neutral-500">
@@ -176,6 +201,11 @@
         set => _birthDay = value ?? string.Empty;
     }
     [Parameter] public bool IsEditing { get; set; }
+    [Parameter] public bool IsSaving { get; set; }
+    [Parameter] public bool CanEdit { get; set; } = true;
+    [Parameter] public EventCallback OnEdit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
 
     private string NameOrPlaceholder => string.IsNullOrWhiteSpace(FirstName) ? "–" : $"{FirstName} {LastName}";
     private string EmailOrPlaceholder => string.IsNullOrWhiteSpace(Email) ? "–" : Email;
@@ -190,6 +220,10 @@
         GenderTypeDto.X     => "X",
         _ => "X"
     };
+
+    private Task HandleBeginEdit() => OnEdit.InvokeAsync();
+    private Task HandleCancelEdit() => OnCancel.InvokeAsync();
+    private Task HandleSaveEdit() => OnSave.InvokeAsync();
 
     private async Task HandleFirstNameChanged(ChangeEventArgs args)
     {

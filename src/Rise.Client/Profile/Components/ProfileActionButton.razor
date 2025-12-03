@@ -1,0 +1,42 @@
+@using Microsoft.AspNetCore.Components
+
+<button type="@ButtonType" class="@BuildClasses()" @onclick="HandleClick" disabled="@Disabled">
+    @if (Icon is not null)
+    {
+        <span class="flex items-center" aria-hidden="true">@Icon</span>
+    }
+    <span>@Text</span>
+</button>
+
+@code {
+    public enum ProfileActionButtonVariant
+    {
+        Primary,
+        Secondary,
+        Ghost
+    }
+
+    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Small { get; set; }
+    [Parameter] public ProfileActionButtonVariant Variant { get; set; } = ProfileActionButtonVariant.Ghost;
+    [Parameter] public RenderFragment? Icon { get; set; }
+    [Parameter] public string ButtonType { get; set; } = "button";
+
+    private string BuildClasses()
+    {
+        var baseClasses = "rounded-xl inline-flex items-center justify-center gap-2 transition-opacity disabled:cursor-not-allowed disabled:opacity-60";
+        var sizeClasses = Small ? "px-3 py-2 text-xs" : "px-4 py-3 text-sm";
+        var variantClasses = Variant switch
+        {
+            ProfileActionButtonVariant.Primary => "bg-[#127646] text-white shadow hover:bg-[#0f663c] active:scale-[0.99]",
+            ProfileActionButtonVariant.Secondary => "border border-neutral-200 bg-white text-neutral-700 shadow-sm hover:bg-neutral-50",
+            _ => "bg-white text-[#127646] shadow hover:bg-white/90 active:scale-[0.99]"
+        };
+
+        return $"{baseClasses} {sizeClasses} {variantClasses}";
+    }
+
+    private Task HandleClick() => OnClick.InvokeAsync();
+}

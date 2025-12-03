@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Common;
 using Rise.Domain.Common.ValueObjects;
 using Rise.Persistence;
@@ -52,27 +54,35 @@ public class UserService(
         });
     }
 
-    public async Task<Result<UserResponse.CurrentUser>> UpdateUserAsync(
+    private async Task<(Result<UserResponse.CurrentUser>? Error, Domain.Users.User? User, IdentityUser? IdentityUser)> LoadUserForUpdateAsync(
         string userToChangeAccountId,
-        UserRequest.UpdateCurrentUser request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken,
+        bool includeProfileDetails = true)
     {
         var loggedInUserId = sessionContextProvider.User?.GetUserId();
 
         if (string.IsNullOrWhiteSpace(userToChangeAccountId) || string.IsNullOrWhiteSpace(loggedInUserId))
         {
-            return Result.Unauthorized();
+            return (Result.Unauthorized(), null, null);
         }
 
-        var userToChange = await dbContext
-            .Users
-            .Include(u => u.Sentiments)
-            .Include(u => u.Hobbies)
+        var query = dbContext.Users.AsQueryable();
+
+        if (includeProfileDetails)
+        {
+            query = query
+                .Include(u => u.Sentiments)
+                .Include(u => u.Hobbies)
+                .Include(u => u.UserSettings)
+                    .ThenInclude(settings => settings.ChatTextLineSuggestions);
+        }
+
+        var userToChange = await query
             .SingleOrDefaultAsync(u => u.AccountId == userToChangeAccountId, cancellationToken);
 
         if (userToChange is null)
         {
-            return Result.Unauthorized("Meegegeven id heeft geen geldig profiel.");
+            return (Result.Unauthorized("Meegegeven id heeft geen geldig profiel."), null, null);
         }
 
         if (!userToChangeAccountId.Equals(loggedInUserId))
@@ -83,9 +93,30 @@ public class UserService(
 
             if (loggedInUser is null)
             {
-                return Result.Unauthorized();
+                return (Result.Unauthorized(), null, null);
             }
         }
+
+        var identityUser = await dbContext
+            .IdentityUsers
+            .SingleOrDefaultAsync(u => u.Id == userToChangeAccountId, cancellationToken);
+
+        return (null, userToChange, identityUser);
+    }
+
+    public async Task<Result<UserResponse.CurrentUser>> UpdateUserAsync(
+        string userToChangeAccountId,
+        UserRequest.UpdateCurrentUser request,
+        CancellationToken cancellationToken = default)
+    {
+        var loadResult = await LoadUserForUpdateAsync(userToChangeAccountId, cancellationToken);
+        if (loadResult.Error is not null)
+        {
+            return loadResult.Error;
+        }
+
+        var userToChange = loadResult.User!;
+        var identityUser = loadResult.IdentityUser;
 
         userToChange.FirstName = FirstName.Create(request.FirstName);
         userToChange.LastName = LastName.Create(request.LastName);
@@ -152,9 +183,49 @@ public class UserService(
             }
         }
 
-        var identityUser = await dbContext
-            .IdentityUsers
-            .SingleOrDefaultAsync(u => u.Id == userToChangeAccountId, cancellationToken);
+        if (identityUser is not null)
+        {
+            var trimmedEmail = request.Email?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(trimmedEmail))
+            {
+                return Result.Invalid(new ValidationError(nameof(request.Email), "E-mailadres mag niet leeg zijn."));
+            }
+            identityUser.Email = trimmedEmail;
+            identityUser.UserName = trimmedEmail;
+            var normalized = trimmedEmail.ToUpperInvariant();
+            identityUser.NormalizedEmail = normalized;
+            identityUser.NormalizedUserName = normalized;
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        var email = identityUser?.Email ?? string.Empty;
+
+        return Result.Success(new UserResponse.CurrentUser
+        {
+            User = UserMapper.ToCurrentUserDto(userToChange, email)
+        });
+    }
+
+    public async Task<Result<UserResponse.CurrentUser>> UpdatePersonalInfoAsync(
+        string userToChangeAccountId,
+        UserRequest.UpdatePersonalInfo request,
+        CancellationToken cancellationToken = default)
+    {
+        var loadResult = await LoadUserForUpdateAsync(userToChangeAccountId, cancellationToken);
+        if (loadResult.Error is not null)
+        {
+            return loadResult.Error;
+        }
+
+        var userToChange = loadResult.User!;
+        var identityUser = loadResult.IdentityUser;
+
+        userToChange.FirstName = FirstName.Create(request.FirstName);
+        userToChange.LastName = LastName.Create(request.LastName);
+        userToChange.Biography = Biography.Create(request.Biography);
+        userToChange.AvatarUrl = AvatarUrl.Create(request.AvatarUrl);
+        userToChange.Gender = request.Gender.ToDomain();
 
         if (identityUser is not null)
         {
@@ -168,6 +239,109 @@ public class UserService(
             var normalized = trimmedEmail.ToUpperInvariant();
             identityUser.NormalizedEmail = normalized;
             identityUser.NormalizedUserName = normalized;
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        var email = identityUser?.Email ?? string.Empty;
+
+        return Result.Success(new UserResponse.CurrentUser
+        {
+            User = UserMapper.ToCurrentUserDto(userToChange, email)
+        });
+    }
+
+    public async Task<Result<UserResponse.CurrentUser>> UpdateInterestsAsync(
+        string userToChangeAccountId,
+        UserRequest.UpdateInterests request,
+        CancellationToken cancellationToken = default)
+    {
+        var loadResult = await LoadUserForUpdateAsync(userToChangeAccountId, cancellationToken);
+        if (loadResult.Error is not null)
+        {
+            return loadResult.Error;
+        }
+
+        var userToChange = loadResult.User!;
+        var identityUser = loadResult.IdentityUser;
+
+        var hobbiesResult = await HobbyMapper.ToDomainAsync(request.Hobbies, dbContext, cancellationToken);
+
+        if (!hobbiesResult.IsSuccess)
+        {
+            if (hobbiesResult.ValidationErrors.Any())
+            {
+                return Result.Invalid(hobbiesResult.ValidationErrors);
+            }
+
+            return Result.Conflict(hobbiesResult.Errors.ToArray());
+        }
+
+        var updateHobbiesResult = userToChange.UpdateHobbies(hobbiesResult.Value);
+        if (!updateHobbiesResult.IsSuccess)
+        {
+            var updateError = updateHobbiesResult.Errors.FirstOrDefault() ?? "Kon de voorkeuren niet bijwerken.";
+            return Result.Invalid(new ValidationError(nameof(request.Sentiments), updateError));
+        }
+
+        var sentimentsResult = await SentimentMapper.ToDomainAsync(request.Sentiments, dbContext, cancellationToken);
+        if (!sentimentsResult.IsSuccess)
+        {
+            if (sentimentsResult.ValidationErrors.Any())
+            {
+                return Result.Invalid(sentimentsResult.ValidationErrors);
+            }
+
+            return Result.Conflict(sentimentsResult.Errors.ToArray());
+        }
+
+        var updateSentimentsResult = userToChange.UpdateSentiments(sentimentsResult.Value);
+        if (!updateSentimentsResult.IsSuccess)
+        {
+            var updateError = updateSentimentsResult.Errors.FirstOrDefault() ?? "Kon de voorkeuren niet bijwerken.";
+            return Result.Invalid(new ValidationError(nameof(request.Sentiments), updateError));
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        var email = identityUser?.Email ?? string.Empty;
+
+        return Result.Success(new UserResponse.CurrentUser
+        {
+            User = UserMapper.ToCurrentUserDto(userToChange, email)
+        });
+    }
+
+    public async Task<Result<UserResponse.CurrentUser>> UpdateDefaultChatLinesAsync(
+        string userToChangeAccountId,
+        UserRequest.UpdateDefaultChatLines request,
+        CancellationToken cancellationToken = default)
+    {
+        var loadResult = await LoadUserForUpdateAsync(userToChangeAccountId, cancellationToken, includeProfileDetails: true);
+        if (loadResult.Error is not null)
+        {
+            return loadResult.Error;
+        }
+
+        var userToChange = loadResult.User!;
+        var identityUser = loadResult.IdentityUser;
+
+        userToChange.UserSettings.RemoveChatTextLines();
+
+        var chatLines = request.DefaultChatLines ?? [];
+        foreach (var chatLine in chatLines)
+        {
+            var censored = WordFilter.Censor(chatLine);
+            var addResult = userToChange.UserSettings.AddChatTextLine(censored);
+            if (!addResult.IsSuccess)
+            {
+                if (addResult.ValidationErrors.Any())
+                {
+                    return Result.Invalid(addResult.ValidationErrors);
+                }
+
+                return Result.Conflict(addResult.Errors.ToArray());
+            }
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);

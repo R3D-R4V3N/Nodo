@@ -10,7 +10,7 @@ public partial class ProfileScreen
 {
     private Task OpenHobbiesPicker()
     {
-        if (!_isEditing)
+        if (!_isEditingInterests)
         {
             return Task.CompletedTask;
         }
@@ -58,6 +58,11 @@ public partial class ProfileScreen
 
     private async Task ConfirmPickerSelection()
     {
+        if (!_isEditingInterests)
+        {
+            return Task.CompletedTask;
+        }
+
         _selectedHobbyIds.Clear();
         foreach (var id in _pickerSelection)
         {
@@ -80,7 +85,7 @@ public partial class ProfileScreen
 
     private Task RemoveHobby(string id)
     {
-        if (!_isEditing)
+        if (!_isEditingInterests)
         {
             return Task.CompletedTask;
         }
@@ -102,7 +107,7 @@ public partial class ProfileScreen
 
     private Task OpenLikesPicker()
     {
-        if (!_isEditing)
+        if (!_isEditingInterests)
         {
             return Task.CompletedTask;
         }
@@ -122,7 +127,7 @@ public partial class ProfileScreen
 
     private Task OpenDislikesPicker()
     {
-        if (!_isEditing)
+        if (!_isEditingInterests)
         {
             return Task.CompletedTask;
         }
@@ -142,7 +147,7 @@ public partial class ProfileScreen
 
     private Task OpenChatLinesPicker()
     {
-        if (!_isEditing)
+        if (!_isEditingChatLines)
         {
             return Task.CompletedTask;
         }
@@ -194,6 +199,11 @@ public partial class ProfileScreen
 
     private async Task ConfirmChatLinePickerSelection()
     {
+        if (!_isEditingChatLines)
+        {
+            return Task.CompletedTask;
+        }
+
         _selectedChatLineIds = OrderChatLineIds(_chatLinePickerSelection)
             .Take(ChatLineSelectionLimit)
             .ToList();
@@ -229,7 +239,7 @@ public partial class ProfileScreen
 
     private Task AddCustomChatLineAsync(string value)
     {
-        if (_isAddingCustomChatLine)
+        if (_isAddingCustomChatLine || !_isEditingChatLines)
         {
             return Task.CompletedTask;
         }
@@ -299,7 +309,7 @@ public partial class ProfileScreen
 
     private Task RemoveChatLine(string id)
     {
-        if (!_isEditing)
+        if (!_isEditingChatLines)
         {
             return Task.CompletedTask;
         }
@@ -345,6 +355,11 @@ public partial class ProfileScreen
 
     private async Task ConfirmPreferencePickerSelection()
     {
+        if (!_isEditingInterests)
+        {
+            return Task.CompletedTask;
+        }
+
         if (_preferencePickerMode == PreferencePickerMode.None)
         {
             _preferencePickerSelection.Clear();
@@ -388,7 +403,7 @@ public partial class ProfileScreen
 
     private Task RemoveLike(string id)
     {
-        if (!_isEditing)
+        if (!_isEditingInterests)
         {
             return Task.CompletedTask;
         }
@@ -403,7 +418,7 @@ public partial class ProfileScreen
 
     private Task RemoveDislike(string id)
     {
-        if (!_isEditing)
+        if (!_isEditingInterests)
         {
             return Task.CompletedTask;
         }

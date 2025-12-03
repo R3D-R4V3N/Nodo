@@ -41,6 +41,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IValidator<AccountRequest.Login>, AccountRequest.Login.Validator>();
         services.AddScoped<IValidator<AccountRequest.Register>, AccountRequest.Register.Validator>();
         services.AddScoped<IValidator<UserRequest.UpdateCurrentUser>, UserRequest.UpdateCurrentUserValidator>();
+        services.AddScoped<IValidator<UserRequest.UpdatePersonalInfo>, UserRequest.UpdatePersonalInfoValidator>();
+        services.AddScoped<IValidator<UserRequest.UpdateInterests>, UserRequest.UpdateInterestsValidator>();
+        services.AddScoped<IValidator<UserRequest.UpdateDefaultChatLines>, UserRequest.UpdateDefaultChatLinesValidator>();
         services.AddScoped<IValidator<ChatRequest.CreateMessage>, ChatRequest.CreateMessage.Validator>();
         services.AddTransient<DbSeeder>();
         
