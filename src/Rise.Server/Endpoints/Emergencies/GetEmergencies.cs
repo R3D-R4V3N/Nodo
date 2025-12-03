@@ -2,7 +2,7 @@ using Rise.Shared.Emergencies;
 using Rise.Shared.Common;
 using Rise.Shared.Identity;
 
-namespace Rise.Server.Endpoints.Emeergencies;
+namespace Rise.Server.Endpoints.Emergencies;
 
 public class GetEmergencies(IEmergencyService emergencyService) : Endpoint<QueryRequest.SkipTake, Result<EmergencyResponse.GetEmergencies>>
 {
