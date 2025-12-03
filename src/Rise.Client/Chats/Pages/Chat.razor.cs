@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
+using Ardalis.Result;
 using Rise.Client.Chats.Components;
 using Rise.Client.Offline;
 using Rise.Client.RealTime;
@@ -9,6 +10,8 @@ using Rise.Shared.Assets;
 using Rise.Shared.Chats;
 using Rise.Shared.Emergencies;
 using Rise.Shared.Users;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
@@ -19,6 +22,7 @@ public partial class Chat : IAsyncDisposable
     [Parameter] public int ChatId { get; set; }
     [Inject] public UserState UserState { get; set; }
     [Inject] public OfflineQueueService OfflineQueueService { get; set; } = null!;
+    [Inject] public IHttpClientFactory HttpClientFactory { get; set; } = null!;
     // Onnodig complex, zie Talk over Factory
 
     private ChatDto.GetChat? _chat;
@@ -521,7 +525,7 @@ public partial class Chat : IAsyncDisposable
         _isSendingAlert = true;
         StateHasChanged();
 
-        var result = await EmergencyService.CreateEmergencyAsync(request);
+        var result = await CreateEmergencyAsync(request);
 
         _isSendingAlert = false;
         _alertIsError = !result.IsSuccess;
@@ -530,6 +534,24 @@ public partial class Chat : IAsyncDisposable
             : result.Errors.FirstOrDefault() ?? "Het versturen van de alert is mislukt.";
 
         StateHasChanged();
+    }
+
+    private async Task<Result<EmergencyResponse.Create>> CreateEmergencyAsync(EmergencyRequest.CreateEmergency request)
+    {
+        HttpResponseMessage response;
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("SecureApi");
+            response = await httpClient.PostAsJsonAsync("api/emergencies", request);
+        }
+        catch (HttpRequestException)
+        {
+            return Result.Error("Kon geen verbinding maken om de noodmelding te versturen.");
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<Result<EmergencyResponse.Create>>();
+
+        return result ?? Result.Error("Kon het antwoord van de server niet verwerken.");
     }
 
     private string GetMessageHostPaddingStyle()
