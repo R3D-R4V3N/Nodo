@@ -7,6 +7,7 @@ using Rise.Client.RealTime;
 using Rise.Client.State;
 using Rise.Shared.Assets;
 using Rise.Shared.Chats;
+using Rise.Shared.Emergencies;
 using Rise.Shared.Users;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +34,6 @@ public partial class Chat : IAsyncDisposable
     private bool _isSending;
     private readonly List<AlertPrompt.AlertReason> _alertReasons = new();
     private bool _isAlertOpen;
-    private string? _selectedAlertReason;
     private bool _shouldScrollToBottom;
     private ElementReference _messagesHost;
     private ElementReference _footerHost;
@@ -41,6 +41,7 @@ public partial class Chat : IAsyncDisposable
     private bool _footerMeasurementPending = true;
     private const double _footerPaddingBuffer = 24;
     [Inject] private ChatMessageDispatchService MessageDispatchService { get; set; } = null!;
+    [Inject] public IEmergencyService EmergencyService { get; set; } = null!;
 
     protected override void OnInitialized()
     {
@@ -487,11 +488,44 @@ public partial class Chat : IAsyncDisposable
         return Task.CompletedTask;
     }
 
-    private Task HandleAlertReason(string reason)
+    private async Task HandleAlertReason(EmergencyTypeDto reason)
     {
-        _selectedAlertReason = reason;
         _isAlertOpen = false;
-        return Task.CompletedTask;
+
+        if (_chat is null)
+        {
+            return;
+        }
+
+        var relatedMessage = _chat.Messages
+            .OrderByDescending(message => message.Timestamp ?? DateTime.MinValue)
+            .FirstOrDefault();
+
+        if (relatedMessage is null)
+        {
+            _errorMessage = "Er zijn geen berichten om een melding te maken.";
+            StateHasChanged();
+            return;
+        }
+
+        var result = await EmergencyService.CreateEmergencyAsync(new EmergencyRequest.CreateEmergency
+        {
+            ChatId = _chat.ChatId,
+            MessageId = relatedMessage.Id,
+            Type = reason,
+        });
+
+        if (!result.IsSuccess)
+        {
+            _errorMessage = result.Errors.FirstOrDefault()
+                ?? result.ValidationErrors.FirstOrDefault()?.ErrorMessage
+                ?? "Er kon geen noodmelding worden aangemaakt.";
+            StateHasChanged();
+        }
+        else
+        {
+            _errorMessage = null;
+        }
     }
 
     private string GetMessageHostPaddingStyle()

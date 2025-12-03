@@ -8,7 +8,12 @@ public static class EmergencyMapper
     {
         return new EmergencyDto.Get
         {
-           
+            Id = emergency.Id,
+            Type = emergency.Type.ToDto(),
+            ChatId = emergency.HappenedInChat.Id,
+            CreatedAt = emergency.Range.End,
+            Reporter = emergency.MadeByUser.ToString(),
+            IsResolved = emergency.IsResolved,
         };
     }
 }
