@@ -128,111 +128,47 @@ public partial class ProfileScreen
         return Task.CompletedTask;
     }
 
-    private void BeginEdit()
+    private Task NoOp() => Task.CompletedTask;
+
+    private Task BeginProfileInfoEdit()
     {
-        if (_isLoading || HasError)
+        if (_isLoading || HasError || _isEditingPreferences || _isEditingChatLines)
+        {
+            return Task.CompletedTask;
+        }
+
+        _draft = ProfileDraft.FromModel(_model);
+        _isEditingProfileInfo = true;
+
+        return Task.CompletedTask;
+    }
+
+    private Task CancelProfileInfoEdit()
+    {
+        _draft = ProfileDraft.FromModel(_model);
+        _isEditingProfileInfo = false;
+
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveProfileInfoAsync()
+    {
+        if (_isLoading || HasError || !_isEditingProfileInfo || _isSavingProfileInfo)
         {
             return;
         }
 
-        _draft = ProfileDraft.FromModel(_model);
-        _pickerSelection = _selectedHobbyIds.ToHashSet();
-        _initialHobbyIds = _selectedHobbyIds.ToHashSet();
-        _initialLikeIds = _selectedLikeIds.ToList();
-        _initialDislikeIds = _selectedDislikeIds.ToList();
-        _preferencePickerSelection = new HashSet<string>(_selectedLikeIds, StringComparer.OrdinalIgnoreCase);
-        _preferencePickerMode = PreferencePickerMode.None;
-        _isPreferencePickerOpen = false;
-        _preferencePickerSearch = string.Empty;
-        _initialChatLineIds = _selectedChatLineIds.ToList();
-        _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
-        _isChatLinePickerOpen = false;
-        _chatLinePickerSearch = string.Empty;
-        _newChatLineText = string.Empty;
-        _newChatLineError = string.Empty;
-        _isEditing = true;
-    }
-
-    private void CancelEdit()
-    {
-        _draft = ProfileDraft.FromModel(_model);
-        _selectedHobbyIds.Clear();
-        foreach (var id in _initialHobbyIds)
-        {
-            _selectedHobbyIds.Add(id);
-        }
-
-        var restoredHobbies = _selectedHobbyIds
-            .Select(CreateHobbyModel)
-            .Where(h => h is not null)
-            .Cast<ProfileHobbyModel>()
-            .ToList();
-
-        _model = _model with { Hobbies = restoredHobbies };
-        _pickerSelection = _selectedHobbyIds.ToHashSet();
-
-        _selectedLikeIds = OrderPreferenceIds(_initialLikeIds);
-        _selectedDislikeIds = OrderPreferenceIds(_initialDislikeIds);
-        _preferencePickerSelection = new HashSet<string>(_selectedLikeIds, StringComparer.OrdinalIgnoreCase);
-        _preferencePickerMode = PreferencePickerMode.None;
-        _isPreferencePickerOpen = false;
-        _preferencePickerSearch = string.Empty;
-        _selectedChatLineIds = OrderChatLineIds(_initialChatLineIds);
-        _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
-        _isChatLinePickerOpen = false;
-        _chatLinePickerSearch = string.Empty;
-        _newChatLineText = string.Empty;
-        _newChatLineError = string.Empty;
-        _isAddingCustomChatLine = false;
-        _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
-        UpdateInterestsModel();
-
-        _isEditing = false;
-    }
-
-    private async Task SaveEdit()
-    {
-        if (_isLoading || HasError || !_isEditing || _isSaving)
-        {
-            return;
-        }
-
-        var request = new UserRequest.UpdateCurrentUser
+        var request = new UserRequest.UpdateProfileInfo
         {
             FirstName = _draft.FirstName ?? string.Empty,
             LastName = _draft.LastName ?? string.Empty,
             Email = _draft.Email ?? string.Empty,
             Biography = _draft.Bio ?? string.Empty,
             AvatarUrl = _draft.AvatarUrl ?? string.Empty,
-            Gender = _draft.Gender,
-            Hobbies = _selectedHobbyIds
-                        .Where(id => !string.IsNullOrWhiteSpace(id))
-                        .Select(x => new HobbyDto.EditProfile()
-                        {
-                            Hobby = Enum.Parse<HobbyTypeDto>(x)
-                        })
-                        .ToList(),
-            Sentiments = (_selectedLikeIds ?? Enumerable.Empty<string>())
-                .Where(id => !string.IsNullOrWhiteSpace(id))
-                .Select(x => new SentimentDto.EditProfile
-                {
-                    Type = SentimentTypeDto.Like,
-                    Category = Enum.Parse<SentimentCategoryTypeDto>(x)
-                })
-                .Concat((_selectedDislikeIds ?? Enumerable.Empty<string>())
-                    .Where(id => !string.IsNullOrWhiteSpace(id))
-                    .Select(x => new SentimentDto.EditProfile
-                    {
-                        Type = SentimentTypeDto.Dislike,
-                        Category = Enum.Parse<SentimentCategoryTypeDto>(x)
-                    })
-                ).ToList(),
-            DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds)
-                .Where(text => !string.IsNullOrWhiteSpace(text))
-                .ToList()
+            Gender = _draft.Gender
         };
 
-        var validationResult = await UpdateUserValidator.ValidateAsync(request);
+        var validationResult = await UpdateProfileInfoValidator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
             foreach (var error in validationResult.Errors.Select(e => e.ErrorMessage).Distinct())
@@ -245,18 +181,14 @@ public partial class ProfileScreen
 
         try
         {
-            _isSaving = true;
-            var result = await UserService.UpdateUserAsync(UserState?.User.AccountId, request);
+            _isSavingProfileInfo = true;
+            var result = await UserService.UpdateProfileInfoAsync(UserState?.User.AccountId, request);
 
             if (result.IsSuccess && result.Value.User is not null)
             {
-                var updatedUser = result.Value.User;
-                var memberSince = FormatMemberSince(updatedUser.CreatedAt);
-                _model = ProfileModel.FromUser(updatedUser, memberSince);
-                _draft = ProfileDraft.FromModel(_model);
-                SyncSelectionFromModel();
-                _isEditing = false;
-                ToastService.ShowSuccess("Wijziging opgeslagen");
+                ApplyUpdatedUser(result.Value.User);
+                _isEditingProfileInfo = false;
+                ToastService.ShowSuccess("Persoonlijke gegevens opgeslagen");
             }
             else
             {
@@ -278,8 +210,235 @@ public partial class ProfileScreen
         }
         finally
         {
-            _isSaving = false;
+            _isSavingProfileInfo = false;
         }
+    }
+
+    private Task BeginPreferencesEdit()
+    {
+        if (_isLoading || HasError || _isEditingProfileInfo || _isEditingChatLines)
+        {
+            return Task.CompletedTask;
+        }
+
+        _initialHobbyIds = _selectedHobbyIds.ToHashSet();
+        _initialLikeIds = _selectedLikeIds.ToList();
+        _initialDislikeIds = _selectedDislikeIds.ToList();
+        _pickerSelection = _selectedHobbyIds.ToHashSet();
+        _preferencePickerSelection = new HashSet<string>(_selectedLikeIds, StringComparer.OrdinalIgnoreCase);
+        _preferencePickerMode = PreferencePickerMode.None;
+        _isPreferencePickerOpen = false;
+        _preferencePickerSearch = string.Empty;
+        _isEditingPreferences = true;
+
+        return Task.CompletedTask;
+    }
+
+    private Task CancelPreferencesEdit()
+    {
+        _selectedHobbyIds.Clear();
+        _selectedHobbyIds.UnionWith(_initialHobbyIds);
+        var restoredHobbies = _selectedHobbyIds
+            .Select(CreateHobbyModel)
+            .Where(h => h is not null)
+            .Cast<ProfileHobbyModel>()
+            .ToList();
+
+        _model = _model with { Hobbies = restoredHobbies };
+        _pickerSelection = _selectedHobbyIds.ToHashSet();
+
+        _selectedLikeIds = OrderPreferenceIds(_initialLikeIds);
+        _selectedDislikeIds = OrderPreferenceIds(_initialDislikeIds);
+        _preferencePickerSelection = new HashSet<string>(_selectedLikeIds, StringComparer.OrdinalIgnoreCase);
+        _preferencePickerMode = PreferencePickerMode.None;
+        _isPreferencePickerOpen = false;
+        _preferencePickerSearch = string.Empty;
+        UpdateInterestsModel();
+
+        _isEditingPreferences = false;
+
+        return Task.CompletedTask;
+    }
+
+    private async Task SavePreferencesAsync()
+    {
+        if (_isLoading || HasError || !_isEditingPreferences || _isSavingPreferences)
+        {
+            return;
+        }
+
+        var request = new UserRequest.UpdatePreferences
+        {
+            Hobbies = _selectedHobbyIds
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Select(x => new HobbyDto.EditProfile
+                {
+                    Hobby = Enum.Parse<HobbyTypeDto>(x)
+                })
+                .ToList(),
+            Sentiments = (_selectedLikeIds ?? Enumerable.Empty<string>())
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Select(x => new SentimentDto.EditProfile
+                {
+                    Type = SentimentTypeDto.Like,
+                    Category = Enum.Parse<SentimentCategoryTypeDto>(x)
+                })
+                .Concat((_selectedDislikeIds ?? Enumerable.Empty<string>())
+                    .Where(id => !string.IsNullOrWhiteSpace(id))
+                    .Select(x => new SentimentDto.EditProfile
+                    {
+                        Type = SentimentTypeDto.Dislike,
+                        Category = Enum.Parse<SentimentCategoryTypeDto>(x)
+                    }))
+                .ToList()
+        };
+
+        var validationResult = await UpdatePreferencesValidator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors.Select(e => e.ErrorMessage).Distinct())
+            {
+                ToastService.ShowError(error);
+            }
+
+            return;
+        }
+
+        try
+        {
+            _isSavingPreferences = true;
+            var result = await UserService.UpdatePreferencesAsync(UserState?.User.AccountId, request);
+
+            if (result.IsSuccess && result.Value.User is not null)
+            {
+                ApplyUpdatedUser(result.Value.User);
+                _isEditingPreferences = false;
+                ToastService.ShowSuccess("Interesses en hobby's opgeslagen");
+            }
+            else
+            {
+                List<string> errors = [.. result.ValidationErrors.Select(e => e.ErrorMessage), .. result.Errors];
+                if (errors.Count == 0)
+                {
+                    errors.Add("Opslaan is mislukt.");
+                }
+
+                foreach (var err in errors)
+                {
+                    ToastService.ShowError(err);
+                }
+            }
+        }
+        catch
+        {
+            ToastService.ShowError("Opslaan is mislukt.");
+        }
+        finally
+        {
+            _isSavingPreferences = false;
+        }
+    }
+
+    private Task BeginChatLinesEdit()
+    {
+        if (_isLoading || HasError || _isEditingProfileInfo || _isEditingPreferences)
+        {
+            return Task.CompletedTask;
+        }
+
+        _initialChatLineIds = _selectedChatLineIds.ToList();
+        _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
+        _newChatLineText = string.Empty;
+        _newChatLineError = string.Empty;
+        _isEditingChatLines = true;
+
+        return Task.CompletedTask;
+    }
+
+    private Task CancelChatLinesEdit()
+    {
+        _selectedChatLineIds = OrderChatLineIds(_initialChatLineIds);
+        _chatLinePickerSelection = new HashSet<string>(_selectedChatLineIds, StringComparer.OrdinalIgnoreCase);
+        _isChatLinePickerOpen = false;
+        _chatLinePickerSearch = string.Empty;
+        _newChatLineText = string.Empty;
+        _newChatLineError = string.Empty;
+        _isAddingCustomChatLine = false;
+        _model = _model with { DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds) };
+        _isEditingChatLines = false;
+
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveChatLinesAsync()
+    {
+        if (_isLoading || HasError || !_isEditingChatLines || _isSavingChatLines)
+        {
+            return;
+        }
+
+        var request = new UserRequest.UpdateChatLines
+        {
+            DefaultChatLines = BuildChatLineTexts(_selectedChatLineIds)
+                .Where(text => !string.IsNullOrWhiteSpace(text))
+                .ToList()
+        };
+
+        var validationResult = await UpdateChatLinesValidator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors.Select(e => e.ErrorMessage).Distinct())
+            {
+                ToastService.ShowError(error);
+            }
+
+            return;
+        }
+
+        try
+        {
+            _isSavingChatLines = true;
+            var result = await UserService.UpdateChatLinesAsync(UserState?.User.AccountId, request);
+
+            if (result.IsSuccess && result.Value.User is not null)
+            {
+                ApplyUpdatedUser(result.Value.User);
+                _isEditingChatLines = false;
+                ToastService.ShowSuccess("Standaardzinnen opgeslagen");
+            }
+            else
+            {
+                List<string> errors = [.. result.ValidationErrors.Select(e => e.ErrorMessage), .. result.Errors];
+                if (errors.Count == 0)
+                {
+                    errors.Add("Opslaan is mislukt.");
+                }
+
+                foreach (var err in errors)
+                {
+                    ToastService.ShowError(err);
+                }
+            }
+        }
+        catch
+        {
+            ToastService.ShowError("Opslaan is mislukt.");
+        }
+        finally
+        {
+            _isSavingChatLines = false;
+        }
+    }
+
+    private void ApplyUpdatedUser(UserDto.CurrentUser updatedUser)
+    {
+        var memberSince = FormatMemberSince(updatedUser.CreatedAt);
+        _model = ProfileModel.FromUser(updatedUser, memberSince);
+        _draft = ProfileDraft.FromModel(_model);
+        SyncSelectionFromModel();
+        UserState.User = updatedUser;
     }
 
     private async Task OnAvatarChanged(InputFileChangeEventArgs args)
@@ -298,7 +457,7 @@ public partial class ProfileScreen
             var base64 = Convert.ToBase64String(memory.ToArray());
             var dataUrl = $"data:{file.ContentType};base64,{base64}";
             _draft.AvatarUrl = dataUrl;
-            if (!_isEditing)
+            if (!_isEditingProfileInfo)
             {
                 _model = _model with { AvatarUrl = dataUrl };
             }

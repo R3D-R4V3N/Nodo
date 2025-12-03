@@ -5,12 +5,13 @@
 <div class="min-h-screen bg-neutral-50 text-neutral-900 antialiased overflow-x-hidden">
     <ProfileHeader
         Title="Profiel"
-        IsEditing="@IsEditing"
+        IsEditing="false"
         CanEdit="@(!IsLoading && !HasError)"
+        ShowActions="false"
         OnBack="NavigateBack"
-        OnEdit="BeginEdit"
-        OnCancel="CancelEdit"
-        OnSave="SaveEdit" />
+        OnEdit="NoOp"
+        OnCancel="NoOp"
+        OnSave="NoOp" />
 
     @if (IsLoading)
     {
@@ -46,25 +47,43 @@
                 @bind-Bio="_draft.Bio"
                 @bind-Gender="_draft.Gender"
                 BirthDay="@BirthDayDisplay"
-                IsEditing="@IsEditing" />
+                IsEditing="@IsEditingProfileInfo"
+                CanEdit="@CanEditProfileInfo"
+                IsSaving="@IsSavingProfileInfo"
+                OnEdit="BeginProfileInfoEdit"
+                OnCancel="CancelProfileInfoEdit"
+                OnSave="SaveProfileInfoAsync" />
 
             <ProfileInterestsSection
                 Likes="@LikeChips"
                 Dislikes="@DislikeChips"
                 Hobbies="@Hobbies"
-                DefaultChatLines="@ChatLineChips"
-                IsEditing="@IsEditing"
+                IsEditing="@IsEditingPreferences"
+                CanEdit="@CanEditPreferences"
+                IsSaving="@IsSavingPreferences"
                 MaxLikes="@MaxLikes"
                 MaxDislikes="@MaxDislikes"
                 MaxHobbies="@MaxHobbies"
-                MaxChatLines="@MaxChatLines"
                 OnManageLikes="OpenLikesPicker"
                 OnManageDislikes="OpenDislikesPicker"
                 OnManageHobbies="OpenHobbiesPicker"
-                OnManageChatLines="OpenChatLinesPicker"
+                OnEdit="BeginPreferencesEdit"
+                OnCancel="CancelPreferencesEdit"
+                OnSave="SavePreferencesAsync"
                 OnRemoveLike="RemoveLike"
                 OnRemoveDislike="RemoveDislike"
-                OnRemoveHobby="RemoveHobby"
+                OnRemoveHobby="RemoveHobby" />
+
+            <ProfileChatLinesSection
+                DefaultChatLines="@ChatLineChips"
+                IsEditing="@IsEditingChatLines"
+                CanEdit="@CanEditChatLines"
+                IsSaving="@IsSavingChatLines"
+                MaxChatLines="@MaxChatLines"
+                OnManageChatLines="OpenChatLinesPicker"
+                OnEdit="BeginChatLinesEdit"
+                OnCancel="CancelChatLinesEdit"
+                OnSave="SaveChatLinesAsync"
                 OnRemoveChatLine="RemoveChatLine" />
         </main>
     }

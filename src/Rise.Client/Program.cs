@@ -142,6 +142,12 @@ try
 
     builder.Services.AddTransient<IValidator<UserRequest.UpdateCurrentUser>>(sp =>
         new UserRequest.UpdateCurrentUserValidator(sp.GetRequiredService<ValidatorRules>()));
+    builder.Services.AddTransient<IValidator<UserRequest.UpdateProfileInfo>>(sp =>
+        new UserRequest.UpdateProfileInfoValidator(sp.GetRequiredService<ValidatorRules>()));
+    builder.Services.AddTransient<IValidator<UserRequest.UpdatePreferences>>(sp =>
+        new UserRequest.UpdatePreferencesValidator(sp.GetRequiredService<ValidatorRules>()));
+    builder.Services.AddTransient<IValidator<UserRequest.UpdateChatLines>>(sp =>
+        new UserRequest.UpdateChatLinesValidator(sp.GetRequiredService<ValidatorRules>()));
 
     builder.Services.AddTransient<IValidator<ChatRequest.CreateMessage>>(sp =>
         new ChatRequest.CreateMessage.Validator(sp.GetRequiredService<ValidatorRules>()));
