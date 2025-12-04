@@ -1,8 +1,10 @@
+using Ardalis.Result;
 using Rise.Shared.Events;
+using Rise.Shared.Events.GetEvents;
 
 namespace Rise.Server.Endpoints.Events;
 
-public class GetEvents(IEventService eventService) : EndpointWithoutRequest<Result<EventsResponse.GetEvents>>
+public class GetEvents(IEventService eventService) : EndpointWithoutRequest<Result<GetEventsResponse.GetEvents>>
 {
     public override void Configure()
     {
@@ -10,7 +12,7 @@ public class GetEvents(IEventService eventService) : EndpointWithoutRequest<Resu
         AllowAnonymous();
     }
 
-    public override Task<Result<EventsResponse.GetEvents>> ExecuteAsync(CancellationToken ct)
+    public override Task<Result<GetEventsResponse.GetEvents>> ExecuteAsync(CancellationToken ct)
     {
         return eventService.GetEventsAsync(ct);
     }

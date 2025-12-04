@@ -23,7 +23,6 @@ public class UserTests
         var gender = GenderType.X;
         var userSettings = DomainData.ValidUserSettings();
         var orga = DomainData.ValidOrganization();
-        var supervisor = DomainData.ValidSupervisor();
 
         var user = new User()
         {
@@ -35,8 +34,7 @@ public class UserTests
             BirthDay = birthDay,
             Gender = gender,
             UserSettings = userSettings,
-            Organization = orga,
-            Supervisor = supervisor
+            Organization = orga
         };
 
         user.AccountId.ShouldBe(accountId);
@@ -48,7 +46,6 @@ public class UserTests
         user.Gender.ShouldBe(gender);
         user.UserSettings.ShouldBe(userSettings);
         user.Organization.ShouldBe(orga);
-        user.Supervisor.ShouldBe(supervisor);
     }
 
     [Theory]
@@ -60,11 +57,11 @@ public class UserTests
     public void Friends_ReturnsFriends(UserConnectionType type, int count)
     {
         var user = DomainData
-            .ValidUser();
+            .ValidUser(1);
 
         user = user
             .WithConnections(
-                user.CreateConnectionWith(DomainData.ValidUser(), type)
+                user.CreateConnectionWith(DomainData.ValidUser(2), type)
             );
 
         user.Friends.Count().ShouldBe(count);
@@ -79,11 +76,11 @@ public class UserTests
     public void FriendRequests_ReturnsFriendRequests(UserConnectionType type, int count)
     {
         var user = DomainData
-            .ValidUser();
+            .ValidUser(1);
 
         user = user
             .WithConnections(
-                user.CreateConnectionWith(DomainData.ValidUser(), type)
+                user.CreateConnectionWith(DomainData.ValidUser(2), type)
             );
 
         user.FriendRequests.Count().ShouldBe(count);
@@ -98,11 +95,11 @@ public class UserTests
     public void BlockedUsers_ReturnsBlockedUsers(UserConnectionType type, int count)
     {
         var user = DomainData
-            .ValidUser();
+            .ValidUser(1);
 
         user = user
             .WithConnections(
-                user.CreateConnectionWith(DomainData.ValidUser(), type)
+                user.CreateConnectionWith(DomainData.ValidUser(2), type)
             );
 
         user.BlockedUsers.Count().ShouldBe(count);
@@ -111,8 +108,8 @@ public class UserTests
     [Fact]
     public void HasFriend_ShouldReturnTrue_WhenConnectionExists()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1 = user1
             .WithConnections(
@@ -131,8 +128,8 @@ public class UserTests
     [Fact]
     public void IsFriend_ShouldReturnFalse_WhenNoFriendshipExists()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.IsFriend(user2).ShouldBeFalse();
         user2.IsFriend(user1).ShouldBeFalse();
@@ -141,8 +138,8 @@ public class UserTests
     [Fact]
     public void IsBlocked_ShouldReturnTrue_WhenBlockExists()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1 = user1
             .WithConnections(
@@ -155,8 +152,8 @@ public class UserTests
     [Fact]
     public void IsBlocked_ShouldReturnFalse_WhenNoBlockExists()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.IsBlocked(user2).ShouldBeFalse();
         user2.IsBlocked(user1).ShouldBeFalse();
@@ -165,8 +162,8 @@ public class UserTests
     [Fact]
     public void HasFriendRequest_ShouldReturnTrue_WhenIncomingRequestExists()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1 = user1
             .WithConnections(
@@ -185,8 +182,8 @@ public class UserTests
     [Fact]
     public void HasFriendRequest_ShouldReturnTrue_WhenOutgoingRequestExists()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1 = user1
             .WithConnections(
@@ -205,8 +202,8 @@ public class UserTests
     [Fact]
     public void HasFriendRequest_ShouldReturnFalse_WhenNoRequestExists()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.IsFriend(user2).ShouldBeFalse();
         user2.IsFriend(user1).ShouldBeFalse();
@@ -215,8 +212,8 @@ public class UserTests
     [Fact]
     public void SendFriendRequest_ShouldCreateFriendRequest_WhenNoConnectionExists()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         var result = user1.SendFriendRequest(user2);
 
@@ -228,8 +225,8 @@ public class UserTests
     [Fact]
     public void SendFriendRequest_ShouldReturnConflict_WhenTargetHasCurrentBlocked()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user2 = user2.WithConnections(
             user2.CreateConnectionWith(user1, UserConnectionType.Blocked)
@@ -248,8 +245,8 @@ public class UserTests
     [InlineData(UserConnectionType.Blocked)]
     public void SendFriendRequest_ShouldReturnConflict_WhenConnectionAlreadyExists(UserConnectionType type)
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1 = user1.WithConnections(
             user1.CreateConnectionWith(user2, type)
@@ -264,8 +261,8 @@ public class UserTests
     [Fact]
     public void AcceptFriendRequest_ShouldCreateFriendship_WhenIncomingConnectionExists()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         var result = user2.AcceptFriendRequest(user1);
@@ -282,8 +279,8 @@ public class UserTests
     [Fact]
     public void AcceptFriendRequest_ShouldReturnConflict_WhenNoConnectionExists()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         var result = user1.AcceptFriendRequest(user2);
 
@@ -299,8 +296,8 @@ public class UserTests
     [Fact]
     public void AcceptFriendRequest_ShouldReturnConflict_WhenAlreadyFriends()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
@@ -320,8 +317,8 @@ public class UserTests
     [Fact]
     public void AcceptFriendRequest_ShouldReturnConflict_WhenNoIncoming()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
 
@@ -340,8 +337,8 @@ public class UserTests
     [Fact]
     public void RemoveFriend_ShouldRemoveFromBothUsers()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
@@ -359,8 +356,8 @@ public class UserTests
     [Fact]
     public void RemoveFriend_ShouldNotFound_WhenNoConnectionExists()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         var result = user1.RemoveFriend(user2);
 
@@ -371,8 +368,8 @@ public class UserTests
     [Fact]
     public void RemoveFriend_ShouldNotFound_WhenNoFriendshipExists()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
 
@@ -385,8 +382,8 @@ public class UserTests
     [Fact]
     public void CancelFriendRequest_ShouldRemoveFromBothUsers()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
 
@@ -400,8 +397,8 @@ public class UserTests
     [Fact]
     public void CancelFriendRequest_NotFound_NoConnectionToCancel()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         var result = user1.CancelFriendRequest(user2);
 
@@ -414,8 +411,8 @@ public class UserTests
     [Fact]
     public void CancelFriendRequest_ShouldConflict_UsersAreFriends()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1); 
@@ -431,8 +428,8 @@ public class UserTests
     [Fact]
     public void CancelFriendRequest_ShouldConflict_ConnectionButNoOutgoingConnection()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user2.SendFriendRequest(user1);
 
@@ -447,8 +444,8 @@ public class UserTests
     [Fact]
     public void RejectFriendRequest_ShouldRemoveFromBothUsers()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
 
@@ -462,8 +459,8 @@ public class UserTests
     [Fact]
     public void RejectFriendRequest_NotFound_NoConnectionToReject()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         var result = user1.RejectFriendRequest(user2);
 
@@ -476,8 +473,8 @@ public class UserTests
     [Fact]
     public void RejectFriendRequest_ShouldConflict_UsersAreFriends()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
@@ -493,8 +490,8 @@ public class UserTests
     [Fact]
     public void RejectFriendRequest_ShouldConflict_ConnectionButNoIncomingConnection()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
 
@@ -509,15 +506,15 @@ public class UserTests
     [Fact]
     public void AddChat_ShouldAddChatAndLinkBack()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreateGroupChat(user1, user2);
 
-        var newUser = DomainData.ValidUser();
+        var newUser = DomainData.ValidUser(3);
         user1.SendFriendRequest(newUser);
         newUser.AcceptFriendRequest(user1);
 
@@ -532,15 +529,15 @@ public class UserTests
     [Fact]
     public void AddChat_ShouldReturnConflict_WhenPrivateChat()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreatePrivateChat(user1, user2);
 
-        var newUser = DomainData.ValidUser();
+        var newUser = DomainData.ValidUser(3);
         user1.SendFriendRequest(newUser);
         newUser.AcceptFriendRequest(user1);
 
@@ -553,15 +550,15 @@ public class UserTests
     [Fact]
     public void AddChat_ShouldAdd_WhenSupervisorIsAddedToPrivate()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreatePrivateChat(user1, user2);
 
-        var supervisor = DomainData.ValidSupervisor();
+        var supervisor = DomainData.ValidSupervisor(3);
 
         var result = supervisor.AddChat(user1, chat);
 
@@ -574,15 +571,15 @@ public class UserTests
     [Fact]
     public void AddChat_ShouldReturnConflict_WhenAlreadyInChat()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreateGroupChat(user1, user2);
 
-        var newUser = DomainData.ValidUser();
+        var newUser = DomainData.ValidUser(3);
         user1.SendFriendRequest(newUser);
         newUser.AcceptFriendRequest(user1);
 
@@ -597,15 +594,15 @@ public class UserTests
     [Fact]
     public void AddChat_ShouldReturnConflict_WhenNotFriend()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.AcceptFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreatePrivateChat(user1, user2);
 
-        var newUser = DomainData.ValidUser();
+        var newUser = DomainData.ValidUser(3);
         var result = newUser.AddChat(user1, chat);
 
         result.Status.ShouldBe(ResultStatus.Conflict);
@@ -615,16 +612,16 @@ public class UserTests
     [Fact]
     public void AddChat_ShouldReturnConflict_AddUserFails()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
-        var user3 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
+        var user3 = DomainData.ValidUser(3);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreatePrivateChat(user1, user2);
 
-        var newUser = DomainData.ValidUser();
+        var newUser = DomainData.ValidUser(4);
         newUser.SendFriendRequest(user3);
         user3.AcceptFriendRequest(newUser);
 
@@ -638,13 +635,12 @@ public class UserTests
 
     [Theory]
     [MemberData(nameof(RemoveChat_ShouldRemoveUserAndChatLink_MemberData))]
-    public void RemoveChat_ShouldRemoveUserAndChatLink(User user1, User user2, bool ownerIsUser1)
+    public void RemoveChat_ShouldRemoveUserAndChatLink(User user1, User user2, User owner)
     {
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreateGroupChat(user1, user2);
-        var owner = ownerIsUser1 ? user1 : user2;
 
         var result = user2.RemoveChat(owner, chat);
 
@@ -654,8 +650,8 @@ public class UserTests
     }
     public static IEnumerable<object[]> RemoveChat_ShouldRemoveUserAndChatLink_MemberData()
     {
-        yield return new object[] { DomainData.ValidUser(), DomainData.ValidUser(), true };
-        yield return new object[] { DomainData.ValidUser(), DomainData.ValidUser(), false };
+        yield return new object[] { DomainData.ValidUser(1), DomainData.ValidUser(2), DomainData.ValidUser(1) };
+        yield return new object[] { DomainData.ValidUser(1), DomainData.ValidUser(2), DomainData.ValidUser(2) };
     }
 
     [Theory]
@@ -674,15 +670,15 @@ public class UserTests
     }
     public static IEnumerable<object[]> RemoveChat_ShouldConflict_WhenPrivateChat_MemberData()
     {
-        yield return new object[] { DomainData.ValidUser(), DomainData.ValidUser(), DomainData.ValidUser() };
-        yield return new object[] { DomainData.ValidUser(), DomainData.ValidUser(), DomainData.ValidUser() };
+        yield return new object[] { DomainData.ValidUser(1), DomainData.ValidUser(2), DomainData.ValidUser(1) };
+        yield return new object[] { DomainData.ValidUser(1), DomainData.ValidUser(2), DomainData.ValidUser(2) };
     }
 
     [Fact]
     public void RemoveChat_ShouldReturnConflict_WhenNotInChat()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
@@ -699,9 +695,9 @@ public class UserTests
     [Fact]
     public void RemoveChat_ShouldReturnConflict_RemoveUserFails()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
-        var user3 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
+        var user3 = DomainData.ValidUser(3);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
@@ -718,7 +714,7 @@ public class UserTests
     [Fact]
     public void UpdateSentiments_ShouldUpdate()
     {
-        var user = DomainData.ValidUser();
+        var user = DomainData.ValidUser(1);
         IEnumerable<UserSentiment> sentiments = 
         [
             new UserSentiment()
@@ -742,7 +738,7 @@ public class UserTests
     [Fact]
     public void UpdateSentiments_ShouldUpdate_WhenEmpty()
     {
-        var user = DomainData.ValidUser();
+        var user = DomainData.ValidUser(1);
         IEnumerable<UserSentiment> sentiments = [];
 
         var result = user.UpdateSentiments(sentiments);
@@ -754,7 +750,7 @@ public class UserTests
     [Fact]
     public void UpdateSentiments_ShouldUpdate_WhenListNull()
     {
-        var user = DomainData.ValidUser();
+        var user = DomainData.ValidUser(1);
 
         var result = user.UpdateSentiments(null!);
 
@@ -775,7 +771,7 @@ public class UserTests
         ];
 
         var user = DomainData
-            .ValidUser()
+            .ValidUser(1)
             .WithSentiments(sentiments);
 
         IEnumerable<UserSentiment> updateSentiments =
@@ -794,7 +790,7 @@ public class UserTests
     public void UpdateSentiments_ShouldUpdate_WhenDuplicate()
     {
         var user = DomainData
-            .ValidUser();
+            .ValidUser(1);
 
         IEnumerable<UserSentiment> sentiments =
         [
@@ -833,7 +829,7 @@ public class UserTests
         ];
 
         var user = DomainData
-            .ValidUser()
+            .ValidUser(1)
             .WithSentiments(sentiments);
 
         List<UserSentiment> updateSentiments = [];
@@ -869,7 +865,7 @@ public class UserTests
         ];
 
         var user = DomainData
-            .ValidUser()
+            .ValidUser(1)
             .WithSentiments(sentiments);
 
         IEnumerable<UserSentiment> updateSentiments =
@@ -896,7 +892,7 @@ public class UserTests
     [Fact]
     public void UpdateHobbies_ShouldUpdate()
     {
-        var user = DomainData.ValidUser();
+        var user = DomainData.ValidUser(1);
         IEnumerable<UserHobby> hobbies =
         [
             new UserHobby()
@@ -923,7 +919,7 @@ public class UserTests
         ];
 
         var user = DomainData
-            .ValidUser()
+            .ValidUser(1)
             .WithHobbies(hobbies);
 
         List<UserHobby> updateHobbies = [];
@@ -957,7 +953,7 @@ public class UserTests
         ];
 
         var user = DomainData
-            .ValidUser()
+            .ValidUser(1)
             .WithHobbies(hobbies);
 
         List<UserHobby> updateHobbies = 

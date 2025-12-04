@@ -9,6 +9,7 @@ public static class ChatDto
         public int ChatId { get; set; }
         public List<UserDto.Chat> Users { get; set; }
         public MessageDto.Chat? LastMessage { get; set; }
+        public int UnreadCount { get; set; }
     }
     public class GetChat
     {

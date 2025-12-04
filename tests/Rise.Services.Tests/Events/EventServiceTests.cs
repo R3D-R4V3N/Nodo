@@ -36,14 +36,14 @@ public class EventServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
         db.Users.Add(alice);
 
         var events = new List<Event>
         {
-            DomainData.ValidEvent(),
-            DomainData.ValidEvent(),
-            DomainData.ValidEvent(),
+            DomainData.ValidEvent(1),
+            DomainData.ValidEvent(2),
+            DomainData.ValidEvent(3),
         };
 
         db.Events.AddRange(events);
@@ -63,7 +63,7 @@ public class EventServiceTests : IClassFixture<EFFixture>
     //    await using var scope = await EfTestScope.CreateScope(_fixture);
     //    var db = scope.DbContext;
 
-    //    var alice = DomainData.ValidUser();
+    //    var alice = DomainData.ValidUser(1);
     //    db.Users.AddRange(alice);
 
     //    var events = new List<Event>
@@ -96,7 +96,7 @@ public class EventServiceTests : IClassFixture<EFFixture>
     //    await using var scope = await EfTestScope.CreateScope(_fixture);
     //    var db = scope.DbContext;
 
-    //    var alice = DomainData.ValidUser();
+    //    var alice = DomainData.ValidUser(1);
     //    db.Users.AddRange(alice);
 
     //    var events = new List<Event>
@@ -131,7 +131,7 @@ public class EventServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
         db.Users.AddRange(alice);
         await db.SaveChangesAsync();
 
@@ -148,7 +148,7 @@ public class EventServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
 
         db.Users.AddRange(alice);
         await db.SaveChangesAsync();

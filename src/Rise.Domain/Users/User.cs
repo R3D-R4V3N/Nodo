@@ -69,23 +69,6 @@ public class User : BaseUser
         }
     }
 
-    // supervisor
-    private Supervisor _supervisor;
-    public required Supervisor Supervisor
-    {
-        get => _supervisor;
-        set
-        {
-            if (_supervisor == value) return;
-
-            _supervisor = Guard.Against.Null(value);
-            if (!_supervisor.Users.Contains(this))
-            {
-                _supervisor.AddUser(this);
-            }
-        }
-    }
-
     private UserConnection? GetConnection(User target)
     {
         foreach (var conType in Enum.GetValues<UserConnectionType>())

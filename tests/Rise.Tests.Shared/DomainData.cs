@@ -1,7 +1,6 @@
 ﻿using Rise.Domain.Chats;
 using Rise.Domain.Common;
 using Rise.Domain.Common.ValueObjects;
-using Rise.Domain.Emergencies;
 using Rise.Domain.Events;
 using Rise.Domain.Organizations;
 using Rise.Domain.Users;
@@ -17,12 +16,6 @@ namespace Rise.Tests.Shared;
 public static class DomainData
 {
     private static readonly Random _random = new();
-    private static int _index = 1;
-    private static int GetValidIndex()
-    {
-        return Interlocked.Increment(ref _index);
-    }
-
     public static DefaultSentence ValidDefaultSentence(int idx = 0)
         => DefaultSentence.Create($"Valid Sentence {idx}.");
 
@@ -42,28 +35,8 @@ public static class DomainData
     public static BirthDay ValidBirthDay() => BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-28)));
     public static Organization ValidOrganization()
         => new Organization("Nodo Centrum", "Ondersteuning vanuit het centrale team.");
-    public static User ValidUser() 
-    {
-        int id = GetValidIndex();
-        return new User()
-        {
-            AccountId = "valid-id-" + id,
-            FirstName = ValidFirstName(),
-            LastName = ValidLastName(),
-            Biography = ValidBiography(),
-            AvatarUrl = ValidAvatarUrl(),
-            BirthDay = ValidBirthDay(),
-            Gender = GenderType.X,
-            UserSettings = ValidUserSettings(),
-            Organization = ValidOrganization(),
-            Supervisor = ValidSupervisor(),
-        }.WithId(id);
-    }
-
-    public static Supervisor ValidSupervisor()
-    {
-        int id = GetValidIndex();
-        return new Supervisor()
+    public static User ValidUser(int id) =>
+        new User()
         {
             AccountId = "valid-id-" + id,
             FirstName = ValidFirstName(),
@@ -75,7 +48,20 @@ public static class DomainData
             UserSettings = ValidUserSettings(),
             Organization = ValidOrganization()
         }.WithId(id);
-    }
+
+    public static Supervisor ValidSupervisor(int id) =>
+        new Supervisor()
+        {
+            AccountId = "valid-id-" + id,
+            FirstName = ValidFirstName(),
+            LastName = ValidLastName(),
+            Biography = ValidBiography(),
+            AvatarUrl = ValidAvatarUrl(),
+            BirthDay = ValidBirthDay(),
+            Gender = GenderType.X,
+            UserSettings = ValidUserSettings(),
+            Organization = ValidOrganization()
+        }.WithId(id);
 
     public static string ValidNaughtyWord()
     {
@@ -90,9 +76,8 @@ public static class DomainData
         return set.ElementAt(_random.Next(set.Count));
     }
 
-    public static Event ValidEvent()
+    public static Event ValidEvent(int id)
     {
-        int id = GetValidIndex();
         return new Event
         {
             Name = "Event Name",
@@ -102,22 +87,6 @@ public static class DomainData
             Price = 100.00,
             ImageUrl = "Url",
             InterestedUsers = []
-        }.WithId(id);
-    }
-
-    public static Emergency ValidEmergency()
-    {
-        var id = GetValidIndex();
-        var chat = ValidChat();
-        var chatUser = chat.Users.First();
-        var message = chat.AddTextMessage("test", chatUser).Value;
-
-        return new Emergency
-        {   
-            HappenedInChat = chat,
-            MadeByUser = chatUser,
-            Range = EmergencyRange.Create(DateTime.UtcNow),
-            Type = EmergencyType.Other
         }.WithId(id);
     }
 
@@ -165,10 +134,10 @@ public static class DomainData
     }
     public static Chat ValidChat()
     {
-        var user1 = ValidUser();
-        var user2 = ValidUser();
+        var user1 = ValidUser(-1);
+        var user2 = ValidUser(-2);
 
-        user1.SendFriendRequest(user2);
+        user1.AcceptFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
 
         return Chat.CreatePrivateChat(user1, user2);
