@@ -1,7 +1,7 @@
-﻿<CascadingAuthenticationState>
+<CascadingAuthenticationState>
     @if (!_isLoading)
     {
-        <Router AppAssembly="@typeof(App).Assembly">
+        <Router AppAssembly="@typeof(App).Assembly" OnNavigateAsync="HandleNavigationAsync">
             <Found Context="routeData">
                 <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                     <NotAuthorized>
@@ -11,7 +11,7 @@
                         }
                         else
                         {
-                            <Rise.Client.Shared.RedirectToHomepage />    
+                            <Rise.Client.Shared.RedirectToHomepage />
                         }
                     </NotAuthorized>
                 </AuthorizeRouteView>
@@ -27,6 +27,6 @@
     }
     else
     {
-        <LoadingScreen/>
+        <LoadingScreen />
     }
 </CascadingAuthenticationState>
