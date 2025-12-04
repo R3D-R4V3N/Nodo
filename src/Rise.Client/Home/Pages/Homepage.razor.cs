@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Globalization;
 using System.Net.Http;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -64,7 +65,19 @@ public partial class Homepage : IDisposable
                 InvokeAsync(StateHasChanged); // UI updaten
             });
 
+            _hubConnection.On<MessageDto.Chat>("MessageCreated", message =>
+                InvokeAsync(() => HandleIncomingMessage(message)));
+
+            _hubConnection.Reconnected += _ =>
+                InvokeAsync(async () =>
+                {
+                    await JoinAllChatsAsync();
+                    StateHasChanged();
+                });
+
             await _hubConnection.StartAsync();
+
+            await JoinAllChatsAsync();
 
             // Vraag de huidige online users op
             var onlineNow = await _hubConnection.InvokeAsync<List<string>>("GetOnlineUsers");
@@ -77,6 +90,41 @@ public partial class Homepage : IDisposable
         {
             // Offline status updates are optional; continue rendering cached chats without a notice.
         }
+    }
+
+    private Task JoinAllChatsAsync()
+    {
+        if (_hubConnection is null || _hubConnection.State != HubConnectionState.Connected)
+        {
+            return Task.CompletedTask;
+        }
+
+        var joinTasks = _chats
+            .Select(chat => _hubConnection.SendAsync("JoinChat", chat.ChatId))
+            .ToArray();
+
+        return Task.WhenAll(joinTasks);
+    }
+
+    private void HandleIncomingMessage(MessageDto.Chat message)
+    {
+        var chat = _chats.FirstOrDefault(chat => chat.ChatId == message.ChatId);
+        if (chat is null)
+        {
+            return;
+        }
+
+        var existingTimestamp = chat.LastMessage?.Timestamp;
+        var incomingTimestamp = message.Timestamp;
+
+        if (chat.LastMessage is null || existingTimestamp is null || incomingTimestamp is null || incomingTimestamp >= existingTimestamp)
+        {
+            chat.LastMessage = message;
+        }
+
+        _chats.Sort((a, b) => Nullable.Compare(b.LastMessage?.Timestamp, a.LastMessage?.Timestamp));
+
+        StateHasChanged();
     }
 
 
