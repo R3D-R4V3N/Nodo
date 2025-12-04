@@ -124,6 +124,42 @@ public class EmergencyServiceTests : IClassFixture<EFFixture>
         result.Status.ShouldBe(ResultStatus.Conflict);
         result.Errors.ShouldContain("Er werd al recent een noodmelding gestuurd.");
     }
+
+    [Fact]
+    public async Task CreateEmergencyAsync_ShouldUnauth_WhenNotInchat()
+    {
+        await using var scope = await EfTestScope.CreateScope(_fixture);
+        var db = scope.DbContext;
+
+        var alice = DomainData.ValidUser();
+        var bob = DomainData.ValidUser();
+        var john = DomainData.ValidUser();
+
+        alice.SendFriendRequest(bob);
+        bob.AcceptFriendRequest(alice);
+        var chat = Chat.CreatePrivateChat(alice, bob).Value;
+        var message = chat.AddTextMessage("This is a test.", bob).Value;
+
+        db.Users.AddRange(alice, bob, john);
+        db.Chats.Add(chat);
+
+        await db.SaveChangesAsync();
+
+        var emergencyService = CreateEmergencyService(john, db);
+
+        var request = new EmergencyRequest.CreateEmergency()
+        {
+            ChatId = chat.Id,
+            MessageId = message.Id,
+            Type = EmergencyTypeDto.Other,
+        };
+
+        var result = await emergencyService.CreateEmergencyAsync(request);
+
+        result.Status.ShouldBe(ResultStatus.Unauthorized);
+        result.Errors.ShouldContain("Geen toegang tot deze chat.");
+    }
+
     // no time left for more create test
 
     [Fact]

@@ -3,7 +3,7 @@ using Rise.Shared.Common;
 using Rise.Shared.Identity;
 using static FastEndpoints.Ep;
 
-namespace Rise.Server.Endpoints.Emeergencies;
+namespace Rise.Server.Endpoints.Emergencies;
 
 public class GetEmergency(IEmergencyService emergencyService) : EndpointWithoutRequest<Result<EmergencyResponse.GetEmergency>>
 {
