@@ -42,7 +42,7 @@ internal class UserConfiguration : EntityConfiguration<User>
                        .HasForeignKey(js => js.UserId),
                    j =>
                    {
-                       j.ToTable("User_Sentiment");
+                       j.ToTable("UserSentiments");
                        j.HasKey(x => new { x.UserId, x.SentimentId });
                    });
 
@@ -60,7 +60,7 @@ internal class UserConfiguration : EntityConfiguration<User>
                        .HasForeignKey(js => js.UserId),
                    j =>
                    {
-                       j.ToTable("User_Hobby");
+                       j.ToTable("UserHobbies");
                        j.HasKey(x => new { x.UserId, x.HobbyId });
                    });
 

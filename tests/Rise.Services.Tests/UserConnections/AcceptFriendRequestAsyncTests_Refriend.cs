@@ -43,8 +43,8 @@ public class AcceptFriendRequestAsyncTests_Refriend : IClassFixture<EFFixture>
     {
         var db = _fixture.CreateApplicationDbContext();
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
 
         alice.SendFriendRequest(bob);
         bob.AcceptFriendRequest(alice);

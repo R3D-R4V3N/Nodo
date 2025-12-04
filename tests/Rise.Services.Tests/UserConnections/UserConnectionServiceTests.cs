@@ -50,8 +50,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
 
         alice.SendFriendRequest(bob);
         bob.AcceptFriendRequest(alice);
@@ -72,9 +72,9 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
-        var john = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
+        var john = DomainData.ValidUser(3);
 
         alice.SendFriendRequest(bob);
         bob.AcceptFriendRequest(alice);
@@ -103,9 +103,9 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
-        var john = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
+        var john = DomainData.ValidUser(3);
         bob.FirstName = FirstName.Create("bob");
 
         alice.SendFriendRequest(bob);
@@ -134,7 +134,7 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
 
         db.Users.AddRange(alice);
         await db.SaveChangesAsync();
@@ -153,7 +153,7 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
 
         db.Users.AddRange(alice);
         await db.SaveChangesAsync();
@@ -170,9 +170,9 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
-        var john = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
+        var john = DomainData.ValidUser(3);
 
         alice.SendFriendRequest(bob);
         john.SendFriendRequest(alice);
@@ -193,9 +193,9 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
-        var john = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
+        var john = DomainData.ValidUser(3);
 
         alice.SendFriendRequest(bob);
         john.SendFriendRequest(alice);
@@ -221,9 +221,9 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
-        var john = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
+        var john = DomainData.ValidUser(3);
         bob.FirstName = FirstName.Create("bob");
 
         alice.SendFriendRequest(bob);
@@ -249,7 +249,7 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
 
         db.Users.AddRange(alice);
         await db.SaveChangesAsync();
@@ -268,7 +268,7 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
 
         db.Users.AddRange(alice);
         await db.SaveChangesAsync();
@@ -285,9 +285,9 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
-        var john = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
+        var john = DomainData.ValidUser(3);
 
         db.Users.AddRange(alice, bob, john);
         await db.SaveChangesAsync();
@@ -306,7 +306,7 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
         db.Users.Add(alice);
         await db.SaveChangesAsync();
 
@@ -325,9 +325,9 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
-        var john = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
+        var john = DomainData.ValidUser(3);
 
         alice.SendFriendRequest(bob); 
         db.Users.AddRange(alice, bob, john);
@@ -367,15 +367,15 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         db.Sentiments.Add(movies);
         db.Hobbies.AddRange(pilates, basket);
 
-        var alice = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
         alice.UpdateSentiments([movies]);
         alice.UpdateHobbies([pilates]);
 
-        var bob = DomainData.ValidUser();
+        var bob = DomainData.ValidUser(2);
         bob.UpdateSentiments([movies]);
         bob.UpdateHobbies([basket]);
 
-        var john = DomainData.ValidUser();
+        var john = DomainData.ValidUser(3);
         john.UpdateSentiments([movies]);
         john.UpdateHobbies([pilates]);
 
@@ -396,8 +396,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var users = Enumerable.Range(2, 5).Select(_ => DomainData.ValidUser()).ToList();
+        var alice = DomainData.ValidUser(1);
+        var users = Enumerable.Range(2, 5).Select(DomainData.ValidUser).ToList();
 
         db.Users.Add(alice);
         db.Users.AddRange(users);
@@ -422,7 +422,7 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
 
         var (ucService, _) = CreateUCService(alice, db);
 
@@ -437,8 +437,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser(); 
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1); 
+        var bob = DomainData.ValidUser(2);
         alice.SendFriendRequest(bob);
 
         db.Users.AddRange(alice, bob);
@@ -486,7 +486,7 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
         db.Users.Add(alice);
         await db.SaveChangesAsync();
 
@@ -504,8 +504,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
 
         db.Users.Add(alice);
         await db.SaveChangesAsync();
@@ -524,8 +524,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
 
         alice.SendFriendRequest(bob);
         bob.AcceptFriendRequest(alice);
@@ -553,8 +553,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
         alice.SendFriendRequest(bob);
         bob.AcceptFriendRequest(alice);
 
@@ -603,7 +603,7 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
         db.Users.Add(alice);
         await db.SaveChangesAsync();
 
@@ -621,8 +621,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
 
         db.Users.Add(alice);
         await db.SaveChangesAsync();
@@ -641,8 +641,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
 
         alice.SendFriendRequest(bob);
 
@@ -669,8 +669,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
 
         db.Users.AddRange(alice, bob);
         await db.SaveChangesAsync();
@@ -707,7 +707,7 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
         db.Users.Add(alice);
         await db.SaveChangesAsync();
 
@@ -725,8 +725,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
 
         db.Users.Add(alice);
         await db.SaveChangesAsync();
@@ -745,8 +745,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
 
         alice.SendFriendRequest(bob);
 
@@ -773,7 +773,7 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
         db.Users.Add(alice);
         await db.SaveChangesAsync();
 
@@ -791,8 +791,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
 
         db.Users.Add(alice);
         await db.SaveChangesAsync();
@@ -811,8 +811,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
 
         alice.SendFriendRequest(bob);
         alice.AcceptFriendRequest(bob);
@@ -840,8 +840,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
         bob.SendFriendRequest(alice);
 
         db.Users.AddRange(alice, bob);
@@ -889,7 +889,7 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
         db.Users.Add(alice);
         await db.SaveChangesAsync();
 
@@ -907,8 +907,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
 
         db.Users.Add(alice);
         await db.SaveChangesAsync();
@@ -927,8 +927,8 @@ public class UserConnectionServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser();
-        var bob = DomainData.ValidUser();
+        var alice = DomainData.ValidUser(1);
+        var bob = DomainData.ValidUser(2);
 
         alice.SendFriendRequest(bob);
 

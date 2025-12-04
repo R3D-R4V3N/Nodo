@@ -10,7 +10,6 @@ internal class ChatConfiguration : EntityConfiguration<Chat>
     public override void Configure(EntityTypeBuilder<Chat> builder)
     {
         base.Configure(builder);
-        builder.ToTable("Chats");
 
         builder.Property(x => x.ChatType)
             .HasConversion<string>()
@@ -24,13 +23,16 @@ internal class ChatConfiguration : EntityConfiguration<Chat>
 
 
         builder.HasMany(c => c.Users)
-            .WithMany(u => u.Chats)
-            .UsingEntity(j => j.ToTable("BaseUser_Chat"));
+            .WithMany(u => u.Chats);
 
-        builder.HasMany(c => c.Emergencies)
-            .WithOne(m => m.HappenedInChat)       
-            .HasForeignKey("ChatId")    
+        builder.HasMany(c => c.ReadHistory)
+            .WithOne(h => h.Chat)
+            .HasForeignKey("ChatId")
             .OnDelete(DeleteBehavior.Cascade);
+
+        // chatid1 seems to be gone without this
+        //builder.Navigation(c => c.ReadHistory)
+        //    .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasIndex(c => c.ChatType);
     }
