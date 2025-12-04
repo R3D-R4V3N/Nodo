@@ -52,6 +52,7 @@ public class ChatService(
         }
 
         var chatsFromDb = await _dbContext.Chats
+            .Where(c => c.ChatType == ChatType.Private || c.ChatType == ChatType.Group)
             .Include(c => c.Messages.OrderByDescending(m => m.CreatedAt)
                     .ThenByDescending(m => m.Id)
                     .Take(1)
@@ -60,47 +61,8 @@ public class ChatService(
             .Where(c => c.Users.Contains(sender))
             .ToListAsync(cancellationToken);
 
-        var chatIds = chatsFromDb
-            .Select(c => c.Id)
-            .ToList();
-
-        var lastReadLookup = await _dbContext.ChatMessageHistory
-            .Where(h => h.User.AccountId == accountId && chatIds.Contains(h.Chat.Id))
-            .Select(h => new
-            {
-                ChatId = h.Chat.Id,
-                LastReadAt = (DateTime?)h.LastReadMessage.CreatedAt,
-                LastReadMessageId = (int?)h.LastReadMessage.Id
-            })
-            .ToDictionaryAsync(x => x.ChatId, x => x, cancellationToken);
-
-        var messageGroups = await _dbContext.Messages
-            .Where(m => chatIds.Contains(m.Chat.Id))
-            .Select(m => new { ChatId = m.Chat.Id, m.Id, m.CreatedAt })
-            .ToListAsync(cancellationToken);
-
-        var unreadCounts = messageGroups
-            .GroupBy(m => m.ChatId)
-            .ToDictionary(
-                g => g.Key,
-                g =>
-                {
-                    if (!lastReadLookup.TryGetValue(g.Key, out var lastRead) || lastRead is null)
-                    {
-                        return g.Count();
-                    }
-
-                    return g.Count(m =>
-                        m.CreatedAt > lastRead.LastReadAt!.Value ||
-                        (m.CreatedAt == lastRead.LastReadAt!.Value && m.Id > lastRead.LastReadMessageId));
-                });
-
         var chatDtos = chatsFromDb
-            .Select(chat =>
-            {
-                unreadCounts.TryGetValue(chat.Id, out var unread);
-                return ChatMapper.ToGetChatsDto(chat, unread);
-            })
+            .Select(ChatMapper.ToGetChatsDto)
             .ToList();
 
         return Result.Success(new ChatResponse.GetChats
@@ -140,19 +102,6 @@ public class ChatService(
         if (chat is null)
         {
             return Result.NotFound($"Chat met id '{chatId}' werd niet gevonden.");
-        }
-
-        var lastMessage = chat.Messages
-            .OrderBy(m => m.CreatedAt)
-            .LastOrDefault();
-
-        if (lastMessage is not null)
-        {
-            var historyUpdated = await UpdateReadHistoryAsync(chat, sender, lastMessage, cancellationToken);
-            if (historyUpdated)
-            {
-                await _dbContext.SaveChangesAsync(cancellationToken);
-            }
         }
 
         var dto = chat.ToGetChatDto();
@@ -239,8 +188,6 @@ public class ChatService(
 
         chat.AddMessage(message);
 
-        await UpdateReadHistoryAsync(chat, sender, message, cancellationToken);
-
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         var dto = message.ToChatDto()!;
@@ -258,36 +205,6 @@ public class ChatService(
         }
 
         return Result.Success(dto);
-    }
-
-    private async Task<bool> UpdateReadHistoryAsync(Chat chat, BaseUser user, Message lastMessage, CancellationToken cancellationToken)
-    {
-        var existingHistory = await _dbContext.ChatMessageHistory
-            .Include(h => h.User)
-            .Include(h => h.Chat)
-            .Include(h => h.LastReadMessage)
-            .SingleOrDefaultAsync(h => h.Chat.Id == chat.Id && h.User.Id == user.Id, cancellationToken);
-
-        if (existingHistory is null)
-        {
-            var item = new MessageHistoryItem
-            {
-                Chat = chat,
-                User = user,
-                LastReadMessage = lastMessage,
-            };
-
-            _dbContext.ChatMessageHistory.Add(item);
-            return true;
-        }
-
-        if (existingHistory.LastReadMessage.Id == lastMessage.Id)
-        {
-            return false;
-        }
-
-        existingHistory.LastReadMessage = lastMessage;
-        return true;
     }
 
     public Task<Result<int>> QueueMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)

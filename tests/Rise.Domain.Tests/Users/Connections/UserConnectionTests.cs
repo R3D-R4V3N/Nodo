@@ -14,8 +14,8 @@ public class UserConnectionTests
     [Fact]
     public void Constructor_ShouldSetPropertiesCorrectly()
     {
-        var user1 = DomainData.ValidUser(1);
-        var user2 = DomainData.ValidUser(2);
+        var user1 = DomainData.ValidUser();
+        var user2 = DomainData.ValidUser();
         var connectionType = UserConnectionType.Friend;
         var createdAt = DateTime.UtcNow;
 
@@ -36,8 +36,8 @@ public class UserConnectionTests
     [Fact]
     public void TwoConnections_WithSameValues_ShouldBeEqual()
     {
-        var user1 = DomainData.ValidUser(1);
-        var user2 = DomainData.ValidUser(2);
+        var user1 = DomainData.ValidUser();
+        var user2 = DomainData.ValidUser();
 
         var c1 = new UserConnection
         {
@@ -62,14 +62,14 @@ public class UserConnectionTests
     {
         var c1 = new UserConnection
         {
-            From = DomainData.ValidUser(1),
-            To = DomainData.ValidUser(2),
+            From = DomainData.ValidUser(),
+            To = DomainData.ValidUser(),
             ConnectionType = UserConnectionType.Friend
         };
         var c2 = new UserConnection
         {
-            From = DomainData.ValidUser(2),
-            To = DomainData.ValidUser(1),
+            From = DomainData.ValidUser(),
+            To = DomainData.ValidUser(),
             ConnectionType = UserConnectionType.Friend
         };
 
@@ -79,8 +79,8 @@ public class UserConnectionTests
     [Fact]
     public void TwoConnections_WithDifferentConnectionType_ShouldNotBeEqual()
     {
-        var user1 = DomainData.ValidUser(1);
-        var user2 = DomainData.ValidUser(2);
+        var user1 = DomainData.ValidUser();
+        var user2 = DomainData.ValidUser();
 
         var c1 = new UserConnection
         {

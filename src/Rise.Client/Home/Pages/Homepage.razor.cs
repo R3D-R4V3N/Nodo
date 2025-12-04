@@ -1,9 +1,8 @@
-using System;
+using System.Globalization;
 using System.Globalization;
 using System.Net.Http;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
-using Rise.Client.Chats;
 using Rise.Client.RealTime;
 using Rise.Client.State;
 using Rise.Shared.Assets;
@@ -28,7 +27,6 @@ public partial class Homepage : IDisposable
     [Inject]
     private IHubClientFactory HubClientFactory { get; set; } = null!;
     private IHubClient? _hubConnection;
-    [Inject] private ChatNotificationService ChatNotificationService { get; set; } = null!;
     private readonly HashSet<string> _onlineUsers = new();
 
     protected override async Task OnInitializedAsync()
@@ -67,21 +65,26 @@ public partial class Homepage : IDisposable
                 InvokeAsync(StateHasChanged); // UI updaten
             });
 
-            _hubConnection.On<MessageDto.Chat>("MessageCreated", dto =>
-            {
-                _ = HandleIncomingMessageAsync(dto);
-            });
+            _hubConnection.On<MessageDto.Chat>("MessageCreated", message =>
+                InvokeAsync(() => HandleIncomingMessage(message)));
 
-            _hubConnection.Reconnected += _ => InvokeAsync(async () =>
-            {
-                await RefreshOnlineUsersAsync();
-                await JoinChatGroupsAsync();
-            });
+            _hubConnection.Reconnected += _ =>
+                InvokeAsync(async () =>
+                {
+                    await JoinAllChatsAsync();
+                    StateHasChanged();
+                });
 
             await _hubConnection.StartAsync();
 
-            await RefreshOnlineUsersAsync();
-            await JoinChatGroupsAsync();
+            await JoinAllChatsAsync();
+
+            // Vraag de huidige online users op
+            var onlineNow = await _hubConnection.InvokeAsync<List<string>>("GetOnlineUsers");
+            foreach (var id in onlineNow)
+                _onlineUsers.Add(id);
+
+            StateHasChanged();
         }
         catch (HttpRequestException)
         {
@@ -89,67 +92,43 @@ public partial class Homepage : IDisposable
         }
     }
 
-    private async Task RefreshOnlineUsersAsync()
+    private Task JoinAllChatsAsync()
     {
         if (_hubConnection is null || _hubConnection.State != HubConnectionState.Connected)
+        {
+            return Task.CompletedTask;
+        }
+
+        var joinTasks = _chats
+            .Select(chat => _hubConnection.SendAsync("JoinChat", chat.ChatId))
+            .ToArray();
+
+        return Task.WhenAll(joinTasks);
+    }
+
+    private void HandleIncomingMessage(MessageDto.Chat message)
+    {
+        var chat = _chats.FirstOrDefault(chat => chat.ChatId == message.ChatId);
+        if (chat is null)
         {
             return;
         }
 
-        var onlineNow = await _hubConnection.InvokeAsync<List<string>>("GetOnlineUsers");
-        _onlineUsers.Clear();
-        foreach (var id in onlineNow)
-            _onlineUsers.Add(id);
+        var existingTimestamp = chat.LastMessage?.Timestamp;
+        var incomingTimestamp = message.Timestamp;
+
+        if (chat.LastMessage is null || existingTimestamp is null || incomingTimestamp is null || incomingTimestamp >= existingTimestamp)
+        {
+            chat.LastMessage = message;
+        }
+
+        _chats.Sort((a, b) => Nullable.Compare(b.LastMessage?.Timestamp, a.LastMessage?.Timestamp));
 
         StateHasChanged();
     }
 
-    private async Task JoinChatGroupsAsync()
-    {
-        if (_hubConnection is null || _hubConnection.State != HubConnectionState.Connected)
-        {
-            return;
-        }
 
-        foreach (var chatId in _chats.Select(chat => chat.ChatId))
-        {
-            await _hubConnection.SendAsync("JoinChat", chatId);
-        }
-    }
-
-    private Task HandleIncomingMessageAsync(MessageDto.Chat dto)
-    {
-        return InvokeAsync(() =>
-        {
-            var chat = _chats.FirstOrDefault(c => c.ChatId == dto.ChatId);
-            if (chat is null)
-            {
-                return;
-            }
-
-            chat.LastMessage = dto;
-
-            var isOwnMessage = dto.User.Id == UserState.User?.Id;
-            var isChatActive = ChatNotificationService.IsChatActive(dto.ChatId);
-
-            if (isChatActive)
-            {
-                chat.UnreadCount = 0;
-            }
-            else if (!isOwnMessage)
-            {
-                chat.UnreadCount = Math.Max(0, chat.UnreadCount) + 1;
-            }
-
-            _chats.Remove(chat);
-            _chats.Insert(0, chat);
-
-            StateHasChanged();
-        });
-    }
-
-
-    private void NavigateToChat(ChatDto.GetChats chat)
+    private void NavigateToChat(ChatDto.GetChats chat) 
         => NavigationManager.NavigateTo($"/chat/{chat.ChatId}");
 
     private string GetChatTitle(ChatDto.GetChats chat)
@@ -211,16 +190,6 @@ public partial class Homepage : IDisposable
     private bool IsGroupChat(ChatDto.GetChats chat)
     {
         return chat.Users.Count > 2;
-    }
-
-    private static string FormatUnreadLabel(int unreadCount)
-    {
-        if (unreadCount <= 0)
-        {
-            return string.Empty;
-        }
-
-        return unreadCount > 99 ? "99+" : unreadCount.ToString(CultureInfo.InvariantCulture);
     }
 
     private void NavigateToFriendProfile(ChatDto.GetChats chat)

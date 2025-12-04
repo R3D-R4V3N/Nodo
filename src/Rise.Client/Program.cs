@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using FluentValidation;
 using Rise.Client;
 using Rise.Client.Chats;
+using Rise.Client.Emergencies;
 using Rise.Client.Events;
 using Rise.Client.Identity;
 using Rise.Client.RealTime;
@@ -12,6 +13,7 @@ using Rise.Client.UserConnections;
 using Rise.Client.Users;
 using Rise.Client.Offline;
 using Rise.Shared.Chats;
+using Rise.Shared.Emergencies;
 using Rise.Shared.Events;
 using Rise.Shared.UserConnections;
 using Rise.Shared.Users;
@@ -74,6 +76,11 @@ try
         client.BaseAddress = backendUri;
     }).AddHttpMessageHandler<CookieHandler>();
 
+    builder.Services.AddHttpClient<IEmergencyService, EmergencyService>(client =>
+    {
+        client.BaseAddress = backendUri;
+    }).AddHttpMessageHandler<CookieHandler>();
+
     builder.Services.AddHttpClient<IUserConnectionService, UserConnectionService>(client =>
     {
         client.BaseAddress = backendUri;
@@ -125,8 +132,6 @@ try
     builder.Services.AddSingleton<IHubClientFactory, HubClientFactory>();
     builder.Services.AddSingleton<IHubClient, HubClient>();
 
-    builder.Services.AddSingleton<ChatNotificationService>();
-    builder.Services.AddSingleton<GlobalChatNotificationListener>();
     builder.Services.AddSingleton<OfflineQueueService>();
     builder.Services.AddSingleton<ConnectionServiceFactory>();
 

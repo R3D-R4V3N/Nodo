@@ -15,8 +15,8 @@ public class ConnectionExtensionsTests
     [MemberData(nameof(AllConnectionTypes))]
     public void CreateConnectionWith_ShouldSetPropertiesCorrectly(UserConnectionType type)
     {
-        var user1 = DomainData.ValidUser(1);
-        var user2 = DomainData.ValidUser(2);
+        var user1 = DomainData.ValidUser();
+        var user2 = DomainData.ValidUser();
 
         var connection = user1.CreateConnectionWith(user2, type);
 

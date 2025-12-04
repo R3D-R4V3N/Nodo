@@ -1,0 +1,44 @@
+@page "/pwa"
+@layout EmptyLayout
+
+<PageTitle>PWA vereist</PageTitle>
+
+<div class="min-h-screen flex flex-col items-center justify-center px-6 py-10 text-center space-y-8 bg-gradient-to-b from-white to-[#F2F2F2]">
+    <img src="icon-192.png" alt="Nodo app icoon" class="w-24 h-24 rounded-2xl shadow-lg" />
+
+    <div class="space-y-3 max-w-xl">
+        <h1 class="text-3xl font-semibold text-[#127646]">Installeer Nodo als app</h1>
+        <p class="text-gray-700 leading-relaxed">
+            Om alle functies te gebruiken, moet je Nodo op je toestel installeren. Open je mobiel toestel als PWA en kom daarna terug.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl">
+        <div class="bg-white rounded-2xl shadow p-6 text-left space-y-3">
+            <h2 class="text-xl font-semibold text-[#127646] flex items-center space-x-2">
+                <span>Android</span>
+            </h2>
+            <ol class="list-decimal list-inside text-gray-700 space-y-2">
+                <li>Open het menu in je browser (meestal de drie puntjes).</li>
+                <li>Kies <strong>Toevoegen aan startscherm</strong> of <strong>Install app</strong>.</li>
+                <li>Bevestig om Nodo te installeren.</li>
+            </ol>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow p-6 text-left space-y-3">
+            <h2 class="text-xl font-semibold text-[#127646] flex items-center space-x-2">
+                <span>iOS (Safari)</span>
+            </h2>
+            <ol class="list-decimal list-inside text-gray-700 space-y-2">
+                <li>Druk op de <strong>Deel</strong>-knop onderaan.</li>
+                <li>Kies <strong>Zet op beginscherm</strong>.</li>
+                <li>Bevestig om Nodo toe te voegen.</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="max-w-xl text-gray-700 space-y-2">
+        <p>Na installatie open je Nodo vanuit je startscherm. Vanaf dan heb je toegang tot alle pagina's en functies.</p>
+        <p class="text-sm text-gray-600">Op desktop is installatie niet nodig en blijft de website gewoon beschikbaar.</p>
+    </div>
+</div>

@@ -1,14 +1,13 @@
 using System.Net.Http.Json;
 using Rise.Shared.Events;
-using Rise.Shared.Events.GetEvents;
 
 namespace Rise.Client.Events;
 
 public class EventService(HttpClient httpClient): IEventService
 {
-    public async Task<Result<GetEventsResponse.GetEvents>> GetEventsAsync(CancellationToken ctx = default)
+    public async Task<Result<EventsResponse.GetEvents>> GetEventsAsync(CancellationToken ctx = default)
     {
-        var result = await httpClient.GetFromJsonAsync<Result<GetEventsResponse.GetEvents>>("api/events", ctx);
+        var result = await httpClient.GetFromJsonAsync<Result<EventsResponse.GetEvents>>("api/events", ctx);
         return result!;
     }
 

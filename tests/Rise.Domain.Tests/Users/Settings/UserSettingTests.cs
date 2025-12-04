@@ -112,7 +112,7 @@ public class UserSettingTests
     [Fact]
     public void SettingUser_ShouldLinkBackToUserSettings()
     {
-        var user = DomainData.ValidUser(1);
+        var user = DomainData.ValidUser();
         var setting = DomainData.ValidUserSettings();
 
         setting.User = user;
@@ -126,7 +126,7 @@ public class UserSettingTests
     [Fact]
     public void SettingUser_ShouldIgnoreIfAlreadyAssigned()
     {
-        var user = DomainData.ValidUser(1);
+        var user = DomainData.ValidUser();
         var setting = DomainData.ValidUserSettings();
 
         setting.User = user;

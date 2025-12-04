@@ -48,15 +48,15 @@ public class SupervisorTests
     [InlineData(true)] 
     public void AddChat_SupervisorCanAdd_WithoutFriendship(bool isSelfOwner)
     {
-        var user1 = DomainData.ValidUser(1);
-        var user2 = DomainData.ValidUser(2);
+        var user1 = DomainData.ValidUser();
+        var user2 = DomainData.ValidUser();
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreatePrivateChat(user1, user2);
 
-        var supervisor = DomainData.ValidSupervisor(3);
+        var supervisor = DomainData.ValidSupervisor();
         BaseUser owner = isSelfOwner ? supervisor : user1;
 
         var result = supervisor.AddChat(owner, chat);
@@ -70,14 +70,14 @@ public class SupervisorTests
     [Fact]
     public void RemoveChat_SupervisorCanRemove_WhenNotInChat()
     {
-        User user1 = DomainData.ValidUser(1);
-        User user2 = DomainData.ValidUser(2);
+        User user1 = DomainData.ValidUser();
+        User user2 = DomainData.ValidUser();
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreatePrivateChat(user1, user2);
-        var supervisor = DomainData.ValidSupervisor(3);
+        var supervisor = DomainData.ValidSupervisor();
 
         var result = user1.RemoveChat(supervisor, chat);
 
