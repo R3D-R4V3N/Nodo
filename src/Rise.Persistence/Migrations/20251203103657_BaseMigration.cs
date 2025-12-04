@@ -270,6 +270,7 @@ namespace Rise.Persistence.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Type = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     ChatId = table.Column<int>(type: "int", nullable: false),
                     MadeByUserId = table.Column<int>(type: "int", nullable: false),
                     EndRangeValue = table.Column<DateTime>(type: "datetime(6)", nullable: false),

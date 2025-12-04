@@ -10,10 +10,10 @@ public static class EmergencyMapper
         {
             Id = emergency.Id,
             Type = emergency.Type.ToDto(),
+            Status = emergency.Status.ToDto(),
             ChatId = emergency.HappenedInChat.Id,
             CreatedAt = emergency.Range.End,
             Reporter = emergency.MadeByUser.ToString(),
-            IsResolved = emergency.IsResolved,
         };
     }
 }

@@ -1,6 +1,7 @@
 @using Rise.Shared.Common
 @using Rise.Shared.Emergencies
 @inject IEmergencyService EmergencyService
+@inject NavigationManager NavigationManager
 @using Serilog
 
 <div class="col-span-2 bg-white rounded-xl p-4 ">
@@ -25,12 +26,22 @@
         <div class="space-y-3">
             @foreach (var emergency in _latestEmergencies)
             {
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center gap-4">
                     <div>
                         <p class="font-normal">@emergency.Reporter</p>
                         <p class="text-sm text-neutral-500">@emergency.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
                     </div>
-                    <span class="@GetStatusBadgeClass(emergency.IsResolved)">@GetStatusLabel(emergency.IsResolved)</span>
+
+                    <div class="flex items-center gap-2">
+                        <select class="text-sm border rounded px-2 py-1" value="@((int)emergency.Status)" disabled="@_updatingEmergencies.Contains(emergency.Id)" @onchange="args => UpdateStatusAsync(emergency, args)">
+                            @foreach (var status in _statusOptions)
+                            {
+                                <option value="@((int)status)">@EmergencyDto.TranslateStatusToText(status)</option>
+                            }
+                        </select>
+                        <button class="text-xs bg-neutral-100 text-neutral-800 px-3 py-1 rounded border" @onclick="() => NavigateToChat(emergency.ChatId)">Chat</button>
+                        <span class="@GetStatusBadgeClass(emergency.Status)">@emergency.StatusLabel</span>
+                    </div>
                 </div>
             }
         </div>
@@ -39,8 +50,10 @@
 
 @code {
     private List<EmergencyDto.Get> _latestEmergencies = [];
+    private readonly EmergencyStatusDto[] _statusOptions = [EmergencyStatusDto.Open, EmergencyStatusDto.InProgress, EmergencyStatusDto.Closed];
     private bool _isLoading = true;
     private string? _errorMessage;
+    private readonly HashSet<int> _updatingEmergencies = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -62,7 +75,14 @@
             }
             else
             {
-                _errorMessage = string.Join(Environment.NewLine, result.Errors);
+                var errors = result.Errors
+                    .DefaultIfEmpty(result.ValidationErrors.FirstOrDefault()?.ErrorMessage)
+                    .Where(e => !string.IsNullOrWhiteSpace(e))
+                    .ToList();
+
+                _errorMessage = errors.Count > 0
+                    ? string.Join(Environment.NewLine, errors)
+                    : "Status kon niet worden aangepast.";
             }
         }
         catch (Exception ex)
@@ -76,9 +96,64 @@
         }
     }
 
-    private static string GetStatusLabel(bool isResolved) => isResolved ? "Afgehandeld" : "Open";
+    private async Task UpdateStatusAsync(EmergencyDto.Get emergency, ChangeEventArgs args)
+    {
+        if (args.Value is null || _updatingEmergencies.Contains(emergency.Id))
+        {
+            return;
+        }
 
-    private static string GetStatusBadgeClass(bool isResolved) => isResolved
-        ? "text-xs bg-green-100 text-green-700 px-2 py-1 rounded"
-        : "text-xs bg-red-100 text-red-700 px-2 py-1 rounded";
+        if (!int.TryParse(args.Value.ToString(), out var statusValue))
+        {
+            return;
+        }
+
+        var newStatus = (EmergencyStatusDto)statusValue;
+
+        _updatingEmergencies.Add(emergency.Id);
+        _errorMessage = null;
+
+        try
+        {
+            var result = await EmergencyService.UpdateStatusAsync(new EmergencyRequest.UpdateStatus
+            {
+                EmergencyId = emergency.Id,
+                Status = newStatus
+            });
+
+            if (result.IsSuccess)
+            {
+                var updated = result.Value.Emergency;
+                var index = _latestEmergencies.FindIndex(e => e.Id == updated.Id);
+
+                if (index >= 0)
+                {
+                    _latestEmergencies[index] = updated;
+                }
+            }
+            else
+            {
+                _errorMessage = string.Join(Environment.NewLine, result.Errors);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Kon status van noodmelding niet bijwerken.");
+            _errorMessage = "Fout bij het aanpassen van de status.";
+        }
+        finally
+        {
+            _updatingEmergencies.Remove(emergency.Id);
+            StateHasChanged();
+        }
+    }
+
+    private void NavigateToChat(int chatId) => NavigationManager.NavigateTo($"/chat/{chatId}");
+
+    private static string GetStatusBadgeClass(EmergencyStatusDto status) => status switch
+    {
+        EmergencyStatusDto.Closed => "text-xs bg-green-100 text-green-700 px-2 py-1 rounded",
+        EmergencyStatusDto.InProgress => "text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded",
+        _ => "text-xs bg-red-100 text-red-700 px-2 py-1 rounded",
+    };
 }
