@@ -61,8 +61,42 @@ public class ChatService(
             .Where(c => c.Users.Contains(sender))
             .ToListAsync(cancellationToken);
 
+        var chatIds = chatsFromDb
+            .Select(chat => chat.Id)
+            .ToList();
+
+        var lastReadLookup = await _dbContext.ChatMessageHistories
+            .Where(history => history.UserId == sender.Id && chatIds.Contains(history.ChatId))
+            .ToDictionaryAsync(history => history.ChatId, cancellationToken);
+
+        var unreadCounts = await _dbContext.Messages
+            .Where(message => chatIds.Contains(message.Chat.Id))
+            .Select(message => new
+            {
+                ChatId = message.Chat.Id,
+                message.Id,
+                message.CreatedAt
+            })
+            .ToListAsync(cancellationToken);
+
+        var unreadLookup = unreadCounts
+            .GroupBy(message => message.ChatId)
+            .ToDictionary(
+                group => group.Key,
+                group =>
+                {
+                    lastReadLookup.TryGetValue(group.Key, out var lastRead);
+
+                    return group.Count(message => IsUnread(message.CreatedAt, message.Id, lastRead));
+                });
+
         var chatDtos = chatsFromDb
-            .Select(ChatMapper.ToGetChatsDto)
+            .Select(chat =>
+            {
+                var dto = ChatMapper.ToGetChatsDto(chat)!;
+                dto.UnreadCount = unreadLookup.TryGetValue(chat.Id, out var count) ? count : 0;
+                return dto;
+            })
             .ToList();
 
         return Result.Success(new ChatResponse.GetChats
@@ -234,5 +268,18 @@ public class ChatService(
 
         return await _dbContext.Users
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+    }
+
+    private static bool IsUnread(DateTime createdAt, int messageId, ChatMessageHistory? history)
+    {
+        if (history is null)
+        {
+            return true;
+        }
+
+        var newerThanTimestamp = history.LastReadAt.HasValue && createdAt > history.LastReadAt.Value;
+        var newerThanMessageId = history.LastReadMessageId.HasValue && messageId > history.LastReadMessageId.Value;
+
+        return newerThanTimestamp || newerThanMessageId;
     }
 }
