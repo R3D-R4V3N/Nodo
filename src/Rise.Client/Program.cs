@@ -11,6 +11,7 @@ using Rise.Client.State;
 using Rise.Client.UserConnections;
 using Rise.Client.Users;
 using Rise.Client.Offline;
+using Rise.Client.Emergencies;
 using Rise.Shared.Chats;
 using Rise.Shared.Events;
 using Rise.Shared.UserConnections;
@@ -21,6 +22,7 @@ using Rise.Shared.Organizations;
 using Rise.Client.Organizations;
 using Rise.Shared.RegistrationRequests;
 using Rise.Client.RegistrationRequests;
+using Rise.Shared.Emergencies;
 
 
 
@@ -105,6 +107,12 @@ try
     }).AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<IRegistrationRequestService, RegistrationRequestService>(client =>
+    {
+        client.BaseAddress = backendUri;
+    })
+    .AddHttpMessageHandler<CookieHandler>();
+
+    builder.Services.AddHttpClient<IEmergencyService, EmergencyService>(client =>
     {
         client.BaseAddress = backendUri;
     })
