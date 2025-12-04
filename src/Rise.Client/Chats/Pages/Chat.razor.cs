@@ -1,3 +1,4 @@
+using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
@@ -7,7 +8,9 @@ using Rise.Client.RealTime;
 using Rise.Client.State;
 using Rise.Shared.Assets;
 using Rise.Shared.Chats;
+using Rise.Shared.Emergencies;
 using Rise.Shared.Users;
+using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
 
@@ -17,7 +20,7 @@ public partial class Chat : IAsyncDisposable
     [Parameter] public int ChatId { get; set; }
     [Inject] public UserState UserState { get; set; }
     [Inject] public OfflineQueueService OfflineQueueService { get; set; } = null!;
-    [Inject] public ChatNotificationService ChatNotificationService { get; set; } = null!;
+    // Onnodig complex, zie Talk over Factory
 
     private ChatDto.GetChat? _chat;
     private readonly SemaphoreSlim _hubConnectionLock = new(1, 1);
@@ -30,6 +33,8 @@ public partial class Chat : IAsyncDisposable
     private string? _loadError;
     private bool _isLoading = true;
     private bool _isSending;
+    private readonly List<AlertPrompt.AlertReason> _alertReasons = new();
+    private bool _isAlertOpen;
     private bool _shouldScrollToBottom;
     private ElementReference _messagesHost;
     private ElementReference _footerHost;
@@ -37,10 +42,13 @@ public partial class Chat : IAsyncDisposable
     private bool _footerMeasurementPending = true;
     private const double _footerPaddingBuffer = 24;
     [Inject] private ChatMessageDispatchService MessageDispatchService { get; set; } = null!;
+    [Inject] public IEmergencyService EmergencyService { get; set; } = null!;
+    [Inject] public IToastService ToastService { get; set; } = null!;
 
     protected override void OnInitialized()
     {
         OfflineQueueService.WentOnline += HandleWentOnlineAsync;
+        InitializeAlertReasons();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -59,11 +67,9 @@ public partial class Chat : IAsyncDisposable
         else
         {
             _chat = null;
-            _loadError = result.Errors.FirstOrDefault()
+            _loadError = result.Errors.FirstOrDefault() 
                 ?? "Het gesprek kon niet geladen worden.";
         }
-
-        ChatNotificationService.SetActiveChat(_chat?.ChatId);
 
         _isLoading = false;
         _shouldScrollToBottom = true;
@@ -124,6 +130,12 @@ public partial class Chat : IAsyncDisposable
         });
     }
 
+    private void InitializeAlertReasons()
+    {
+        _alertReasons.Clear();
+        _alertReasons.AddRange(AlertCatalog.Reasons);
+    }
+
     private async Task DispatchMessageAsync(ChatRequest.CreateMessage createRequest, string errorMessage)
     {
         try
@@ -141,7 +153,6 @@ public partial class Chat : IAsyncDisposable
 
             if (result.IsSuccess)
             {
-                var sentMessage = result.Value;
                 return;
             }
 
@@ -468,8 +479,65 @@ public partial class Chat : IAsyncDisposable
 
     private Task TriggerAlert()
     {
-        // TODO: Hook up with actual alert functionality.
+        _isAlertOpen = true;
+        StateHasChanged();
         return Task.CompletedTask;
+    }
+
+    private Task CloseAlert()
+    {
+        _isAlertOpen = false;
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleAlertReason(EmergencyTypeDto reason)
+    {
+        _isAlertOpen = false;
+
+        if (_chat is null)
+        {
+            return;
+        }
+
+        var relatedMessage = _chat.Messages
+            .Where(message => !message.IsPending && message.Id > 0)
+            .OrderByDescending(message => message.Timestamp ?? DateTime.MinValue)
+            .FirstOrDefault();
+
+        if (relatedMessage is null)
+        {
+            ToastService.ShowError("Er zijn geen verstuurde berichten om te melden.");
+            return;
+        }
+
+        var result = await EmergencyService.CreateEmergencyAsync(new EmergencyRequest.CreateEmergency
+        {
+            ChatId = _chat.ChatId,
+            MessageId = relatedMessage.Id,
+            Type = reason,
+        });
+
+        if (!result.IsSuccess)
+        {
+            var errors = result.Errors
+                .DefaultIfEmpty(result.ValidationErrors.FirstOrDefault()?.ErrorMessage)
+                .Where(e => !string.IsNullOrWhiteSpace(e))
+                .ToList();
+
+            if (errors.Count == 0)
+            {
+                errors.Add("Er kon geen noodmelding worden aangemaakt.");
+            }
+
+            foreach (var error in errors)
+            {
+                ToastService.ShowError(error!);
+            }
+        }
+        else
+        {
+            ToastService.ShowSuccess("Noodmelding werd verstuurd.");
+        }
     }
 
     private string GetMessageHostPaddingStyle()
@@ -486,7 +554,6 @@ public partial class Chat : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         OfflineQueueService.WentOnline -= HandleWentOnlineAsync;
-        ChatNotificationService.SetActiveChat(null);
         await LeaveCurrentChatAsync();
         if (_hubConnection is not null)
         {

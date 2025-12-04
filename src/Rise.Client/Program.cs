@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using FluentValidation;
 using Rise.Client;
 using Rise.Client.Chats;
+using Rise.Client.Emergencies;
 using Rise.Client.Events;
 using Rise.Client.Identity;
 using Rise.Client.RealTime;
@@ -12,6 +13,7 @@ using Rise.Client.UserConnections;
 using Rise.Client.Users;
 using Rise.Client.Offline;
 using Rise.Shared.Chats;
+using Rise.Shared.Emergencies;
 using Rise.Shared.Events;
 using Rise.Shared.UserConnections;
 using Rise.Shared.Users;
@@ -30,7 +32,6 @@ using Blazored.Toast;
 using Rise.Shared.Validators;
 using Rise.Client.Validators;
 using Rise.Shared.Identity.Accounts;
-using Rise.Client.Navigation;
 
 try
 {
@@ -56,12 +57,8 @@ try
     builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthenticationStateProvider>();
     // register the account management interface
     builder.Services.AddScoped(sp => (IAccountManager)sp.GetRequiredService<AuthenticationStateProvider>());
-
+    
     builder.Services.AddBlazoredToast();
-
-    // Detect PWA usage and enforce navigation rules
-    builder.Services.AddScoped<PwaInterop>();
-    builder.Services.AddScoped<PwaNavigationHandler>();
 
     // Laadt config.json uit wwwroot om de backend URL dynamisch te halen; gebruikt fallback naar localhost als key ontbreekt.
     using var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
@@ -75,6 +72,11 @@ try
         .AddHttpMessageHandler<CookieHandler>();
 
     builder.Services.AddHttpClient<IChatService, ChatService>(client =>
+    {
+        client.BaseAddress = backendUri;
+    }).AddHttpMessageHandler<CookieHandler>();
+
+    builder.Services.AddHttpClient<IEmergencyService, EmergencyService>(client =>
     {
         client.BaseAddress = backendUri;
     }).AddHttpMessageHandler<CookieHandler>();
@@ -130,8 +132,6 @@ try
     builder.Services.AddSingleton<IHubClientFactory, HubClientFactory>();
     builder.Services.AddSingleton<IHubClient, HubClient>();
 
-    builder.Services.AddSingleton<ChatNotificationService>();
-    builder.Services.AddSingleton<GlobalChatNotificationListener>();
     builder.Services.AddSingleton<OfflineQueueService>();
     builder.Services.AddSingleton<ConnectionServiceFactory>();
 
@@ -154,9 +154,6 @@ try
         new ChatRequest.CreateMessage.Validator(sp.GetRequiredService<ValidatorRules>()));
 
     var host = builder.Build();
-
-    var pwaNavigationHandler = host.Services.GetRequiredService<PwaNavigationHandler>();
-    await pwaNavigationHandler.InitializeAsync();
 
     var offlineQueue = host.Services.GetRequiredService<OfflineQueueService>();
     await offlineQueue.StartAsync();

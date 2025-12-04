@@ -1,17 +1,15 @@
 using Microsoft.EntityFrameworkCore;
-using Rise.Domain.Users;
 using Rise.Persistence;
 using Rise.Services.Events.Mapper;
 using Rise.Services.Identity;
 using Rise.Shared.Events;
-using Rise.Shared.Events.GetEvents;
 using Rise.Shared.Identity;
 
 namespace Rise.Services.Events;
 
 public class EventService(ApplicationDbContext dbContext, ISessionContextProvider sessionContextProvider) : IEventService
 {
-    public async Task<Result<GetEventsResponse.GetEvents>> GetEventsAsync(CancellationToken ctx = default)
+    public async Task<Result<EventsResponse.GetEvents>> GetEventsAsync(CancellationToken ctx = default)
     {
         var userId = sessionContextProvider.User?.GetUserId();
 
@@ -31,7 +29,7 @@ public class EventService(ApplicationDbContext dbContext, ISessionContextProvide
 
         var eventDtos = events.Select(EventMapper.ToGetDto);
 
-        return Result.Success(new GetEventsResponse.GetEvents
+        return Result.Success(new EventsResponse.GetEvents
         {
             Events = eventDtos,
             TotalCount = events.Count

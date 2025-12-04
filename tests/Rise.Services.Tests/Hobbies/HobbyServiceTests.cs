@@ -36,7 +36,7 @@ public class HobbyServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser(1);
+        var alice = DomainData.ValidUser();
         db.Users.Add(alice);
 
         List<UserHobby> hobbies = [
@@ -71,7 +71,7 @@ public class HobbyServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser(1);
+        var alice = DomainData.ValidUser();
         db.Users.AddRange(alice);
 
         List<UserHobby> hobbies = [
@@ -110,7 +110,7 @@ public class HobbyServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser(1);
+        var alice = DomainData.ValidUser();
         db.Users.AddRange(alice);
 
         List<UserHobby> hobbies = [
@@ -149,7 +149,7 @@ public class HobbyServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser(1);
+        var alice = DomainData.ValidUser();
         db.Users.AddRange(alice);
         await db.SaveChangesAsync();
 
@@ -166,7 +166,7 @@ public class HobbyServiceTests : IClassFixture<EFFixture>
         await using var scope = await EfTestScope.CreateScope(_fixture);
         var db = scope.DbContext;
 
-        var alice = DomainData.ValidUser(1);
+        var alice = DomainData.ValidUser();
 
         db.Users.AddRange(alice);
         await db.SaveChangesAsync();

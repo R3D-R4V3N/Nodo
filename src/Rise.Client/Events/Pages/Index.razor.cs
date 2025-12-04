@@ -2,7 +2,6 @@ using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Rise.Client.State;
 using Rise.Shared.Events;
-using Rise.Shared.Events.GetEvents;
 
 namespace Rise.Client.Events.Pages;
 

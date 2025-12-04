@@ -3,5 +3,6 @@ namespace Rise.Domain.Chats;
 public enum ChatType
 { 
     Private,
-    Group
+    Group,
+    Supervisor
 }

@@ -15,6 +15,7 @@ using Rise.Shared.Chats;
 using Serilog.Events;
 using Rise.Server.Hubs;
 using Rise.Storage;
+using Microsoft.Extensions.Configuration;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -42,9 +43,8 @@ try
 
     builder.Services.AddDbContext<ApplicationDbContext>(o =>
     {
-        var cs =
-            "Server=65.109.132.74;Port=3308;Database=nododb;User=chatuser;Password=chatuserpassword123;SslMode=None;";
-        cs ??= builder.Configuration.GetConnectionString("DatabaseConnection")
+        var cs = Environment.GetEnvironmentVariable("DB_CONNECTION")
+                 ?? builder.Configuration.GetConnectionString("DatabaseConnection")
                  ?? throw new InvalidOperationException("No connection string found");
 
         o.UseMySql(cs, ServerVersion.AutoDetect(cs));
@@ -88,7 +88,7 @@ try
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
 
-        //db.Database.EnsureDeleted();
+        db.Database.EnsureDeleted();
         db.Database.Migrate();
 
         await seeder.SeedAsync();

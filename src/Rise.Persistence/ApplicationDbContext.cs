@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
+using Rise.Domain.Emergencies;
 using Rise.Domain.Events;
 using Rise.Domain.Messages;
 using Rise.Domain.Organizations;
@@ -26,7 +27,6 @@ namespace Rise.Persistence;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> opts) : IdentityDbContext<IdentityUser>(opts)
 {
     public DbSet<Chat> Chats => Set<Chat>();
-    public DbSet<MessageHistoryItem> ChatMessageHistory => Set<MessageHistoryItem>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<IdentityUser> IdentityUsers => Set<IdentityUser>();
     public DbSet<User> Users => Set<User>();
@@ -38,6 +38,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> opts) :
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<RegistrationRequest> RegistrationRequests => Set<RegistrationRequest>();
     public DbSet<Event> Events => Set<Event>();
+    public DbSet<Emergency> Emergencies => Set<Emergency>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
