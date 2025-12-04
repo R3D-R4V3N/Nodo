@@ -19,20 +19,4 @@ public class Supervisor : BaseUser
             }
         }
     }
-    private readonly List<User> _users = [];
-    public IReadOnlyCollection<User> Users => _users.AsReadOnly();
-    public void AddUser(User user)
-    {
-        if (_users.Contains(user))
-        {
-            return;
-        }
-
-        _users.Add(user);
-
-        if (user.Supervisor != this)
-        {
-            user.Supervisor = this;
-        }
-    }
 }

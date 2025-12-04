@@ -13,7 +13,6 @@ using Rise.Shared.Identity;
 using Rise.Shared.RegistrationRequests;
 using Rise.Shared.Identity.Accounts;
 using Rise.Services.Users.Mapper;
-using Rise.Domain.Chats;
 
 namespace Rise.Services.RegistrationRequests;
 
@@ -282,7 +281,6 @@ public class RegistrationRequestService(
                 IsDarkMode = false,
             },
             Organization = registration.Organization,
-            Supervisor = assignedSupervisor,
         };
 
         var chatLineResults = new[]
@@ -298,10 +296,7 @@ public class RegistrationRequestService(
             return Result.Error(errorMessage);
         }
 
-        var supervisorChat = Chat.CreateSupervisorChat(newUser, assignedSupervisor);
-
         dbContext.Users.Add(newUser);
-        dbContext.Chats.Add(supervisorChat);
 
         await dbContext.SaveChangesAsync(ct);
 

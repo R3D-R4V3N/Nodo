@@ -15,8 +15,8 @@ public class ChatTests
     [Fact]
     public void CreatePrivateChat_ShouldCreate()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
@@ -36,8 +36,8 @@ public class ChatTests
     [Fact]
     public void CreatePrivateChat_ShouldConflict_WhenNotFriend()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         var result = Chat.CreatePrivateChat(user1, user2);
 
@@ -48,9 +48,9 @@ public class ChatTests
     [Fact]
     public void CreateGroupChat_ShouldCreate()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
-        var user3 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
+        var user3 = DomainData.ValidUser(3);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
@@ -75,8 +75,8 @@ public class ChatTests
     [Fact]
     public void CreateGroupChat_ShouldConflict_WhenNotFriend()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         var result = Chat.CreateGroupChat(user1, user2);
 
@@ -87,15 +87,15 @@ public class ChatTests
     [Fact]
     public void AddUser_ShouldAddUser_WhenGroup()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreateGroupChat(user1, user2);
 
-        var user3 = DomainData.ValidUser();
+        var user3 = DomainData.ValidUser(3);
         user1.SendFriendRequest(user3);
         user3.AcceptFriendRequest(user1);
 
@@ -110,15 +110,15 @@ public class ChatTests
     [Fact]
     public void AddUser_ShouldConflict_WhenPrivateChat()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
 
         Chat chat = Chat.CreatePrivateChat(user1, user2);
 
-        var user3 = DomainData.ValidUser();
+        var user3 = DomainData.ValidUser(3);
         user1.SendFriendRequest(user3);
         user3.AcceptFriendRequest(user1);
 
@@ -131,8 +131,8 @@ public class ChatTests
     [Fact]
     public void AddUser_ShouldReturnConflict_WhenUserAlreadyExists()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
         
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
@@ -148,8 +148,8 @@ public class ChatTests
     [Fact]
     public void AddUser_ShouldReturnConflict_WhenUserNotOwner()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
@@ -165,8 +165,8 @@ public class ChatTests
     [Fact]
     public void RemoveUser_ShouldRemove_InGroupChat()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
@@ -183,8 +183,8 @@ public class ChatTests
     [Fact]
     public void RemoveUser_ShouldConflict_WhenPrivateChat()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
@@ -200,9 +200,9 @@ public class ChatTests
     [Fact]
     public void RemoveUser_ShouldRemove_PassedOwnerIsSupervisor()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
-        var user3 = DomainData.ValidSupervisor();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
+        var user3 = DomainData.ValidSupervisor(3);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
@@ -219,9 +219,9 @@ public class ChatTests
     [Fact]
     public void RemoveUser_ShouldConflict_UserNotOwner()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
-        var user3 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
+        var user3 = DomainData.ValidUser(3);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
@@ -239,9 +239,9 @@ public class ChatTests
     [Fact]
     public void RemoveUser_ShouldConflict_UserNotPresent()
     {
-        var user1 = DomainData.ValidUser();
-        var user2 = DomainData.ValidUser();
-        var user3 = DomainData.ValidUser();
+        var user1 = DomainData.ValidUser(1);
+        var user2 = DomainData.ValidUser(2);
+        var user3 = DomainData.ValidUser(3);
 
         user1.SendFriendRequest(user2);
         user2.AcceptFriendRequest(user1);
