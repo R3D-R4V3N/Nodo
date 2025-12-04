@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Rise.Domain.Emergencies;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Connections;
 using Rise.Persistence;
@@ -58,8 +59,9 @@ public class EmergencyService(
 
         var recentEmergencyExists = await dbContext
             .Emergencies
-            .AnyAsync(e => e.HappenedInChat.Id == chat.Id 
+            .AnyAsync(e => e.HappenedInChat.Id == chat.Id
                 && e.MadeByUser.AccountId == accountId
+                && e.Status != EmergencyStatus.Closed
                 && e.CreatedAt >= fiveMinutesAgo
                 , ctx);
 
@@ -110,11 +112,15 @@ public class EmergencyService(
             return Result.Unauthorized();
         }
 
-        var supervisor = await dbContext
-            .Supervisors
-            .SingleOrDefaultAsync(u => u.AccountId == accountId, ctx);
+        var isAdministrator = principal.IsInRole(AppRoles.Administrator);
 
-        if (supervisor is null)
+        var supervisor = isAdministrator
+            ? null
+            : await dbContext
+                .Supervisors
+                .SingleOrDefaultAsync(u => u.AccountId == accountId, ctx);
+
+        if (!isAdministrator && supervisor is null)
         {
             return Result.Unauthorized();
         }
@@ -125,8 +131,12 @@ public class EmergencyService(
             .Include(e => e.AllowedToResolve)
             .Include(e => e.HasResolved)
             .Include(e => e.MadeByUser)
-            .Where(e => e.AllowedToResolve.Contains(supervisor))
             .AsQueryable();
+
+        if (!isAdministrator)
+        {
+            emergencyQuery = emergencyQuery.Where(e => e.AllowedToResolve.Contains(supervisor!));
+        }
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
@@ -140,7 +150,7 @@ public class EmergencyService(
         var emergencies = emergencyQuery
             .AsEnumerable()
             .OrderByDescending(c => c.CreatedAt)
-            .ThenBy(e => e.IsResolved)
+            .ThenBy(e => e.Status)
             .ThenBy(e => e.MadeByUser.FirstName.Value)
             .Skip(request.Skip)
             .Take(request.Take)
@@ -169,11 +179,15 @@ public class EmergencyService(
             return Result.Unauthorized();
         }
 
-        var supervisor = await dbContext
-            .Supervisors
-            .SingleOrDefaultAsync(u => u.AccountId == accountId, ctx);
+        var isAdministrator = principal.IsInRole(AppRoles.Administrator);
 
-        if (supervisor is null)
+        var supervisor = isAdministrator
+            ? null
+            : await dbContext
+                .Supervisors
+                .SingleOrDefaultAsync(u => u.AccountId == accountId, ctx);
+
+        if (!isAdministrator && supervisor is null)
         {
             return Result.Unauthorized();
         }
@@ -197,5 +211,67 @@ public class EmergencyService(
                 Emergency = emergency.ToGetDto()
             }
         );
+    }
+
+    public async Task<Result<EmergencyResponse.UpdateStatus>> UpdateStatusAsync(
+        EmergencyRequest.UpdateStatus request,
+        CancellationToken ctx = default)
+    {
+        var principal = sessionContextProvider.User;
+        if (principal is null)
+        {
+            return Result.Unauthorized();
+        }
+
+        var accountId = principal.GetUserId();
+        if (string.IsNullOrWhiteSpace(accountId))
+        {
+            return Result.Unauthorized();
+        }
+
+        var isAdministrator = principal.IsInRole(AppRoles.Administrator);
+
+        var supervisor = isAdministrator
+            ? null
+            : await dbContext
+                .Supervisors
+                .SingleOrDefaultAsync(u => u.AccountId == accountId, ctx);
+
+        if (!isAdministrator && supervisor is null)
+        {
+            return Result.Unauthorized();
+        }
+
+        var emergency = await dbContext
+            .Emergencies
+            .Include(e => e.HappenedInChat)
+            .Include(e => e.AllowedToResolve)
+            .Include(e => e.HasResolved)
+            .Include(e => e.MadeByUser)
+            .FirstOrDefaultAsync(e => e.Id == request.EmergencyId, ctx);
+
+        if (emergency is null)
+        {
+            return Result.NotFound("Noodmelding werd niet gevonden.");
+        }
+
+        if (!isAdministrator && !emergency.AllowedToResolve.Contains(supervisor!))
+        {
+            return Result.Unauthorized("Geen toegang om deze noodmelding aan te passen.");
+        }
+
+        var updateResult = emergency.SetStatus(request.Status.ToDomain(), supervisor);
+
+        if (!updateResult.IsSuccess)
+        {
+            return Result.Conflict(updateResult.Errors.ToArray());
+        }
+
+        await dbContext.SaveChangesAsync(ctx);
+
+        return Result.Success(new EmergencyResponse.UpdateStatus
+        {
+            Emergency = emergency.ToGetDto()
+        });
     }
 }

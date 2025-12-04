@@ -10,7 +10,7 @@ public class GetEmergency(IEmergencyService emergencyService) : EndpointWithoutR
     public override void Configure()
     {
         Get("/api/emergencies/{ChatId:int}");
-        Roles(AppRoles.Supervisor);
+        Roles(AppRoles.Supervisor, AppRoles.Administrator);
     }
 
     public override Task<Result<EmergencyResponse.GetEmergency>> ExecuteAsync(CancellationToken ct)

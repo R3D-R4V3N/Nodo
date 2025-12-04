@@ -19,6 +19,11 @@ internal class EmergencyConfiguration : EntityConfiguration<Emergency>
         builder.Property(e => e.Type)
             .IsRequired();
 
+        builder.Property(e => e.Status)
+            .HasConversion<int>()
+            .HasDefaultValue(EmergencyStatus.Open)
+            .IsRequired();
+
         builder.OwnsOne(e => e.Range, range =>
         {
             range.Property(r => r.End)

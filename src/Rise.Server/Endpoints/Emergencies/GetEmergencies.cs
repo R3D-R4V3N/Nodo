@@ -9,7 +9,7 @@ public class GetEmergencies(IEmergencyService emergencyService) : Endpoint<Query
     public override void Configure()
     {
         Get("/api/emergencies");
-        Roles(AppRoles.Supervisor);
+        Roles(AppRoles.Supervisor, AppRoles.Administrator);
     }
 
     public override Task<Result<EmergencyResponse.GetEmergencies>> ExecuteAsync(QueryRequest.SkipTake request, CancellationToken ct)
