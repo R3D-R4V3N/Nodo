@@ -110,11 +110,15 @@ public class EmergencyService(
             return Result.Unauthorized();
         }
 
-        var supervisor = await dbContext
-            .Supervisors
-            .SingleOrDefaultAsync(u => u.AccountId == accountId, ctx);
+        var isAdministrator = principal.IsInRole(AppRoles.Administrator);
 
-        if (supervisor is null)
+        var supervisor = isAdministrator
+            ? null
+            : await dbContext
+                .Supervisors
+                .SingleOrDefaultAsync(u => u.AccountId == accountId, ctx);
+
+        if (!isAdministrator && supervisor is null)
         {
             return Result.Unauthorized();
         }
@@ -125,8 +129,12 @@ public class EmergencyService(
             .Include(e => e.AllowedToResolve)
             .Include(e => e.HasResolved)
             .Include(e => e.MadeByUser)
-            .Where(e => e.AllowedToResolve.Contains(supervisor))
             .AsQueryable();
+
+        if (!isAdministrator)
+        {
+            emergencyQuery = emergencyQuery.Where(e => e.AllowedToResolve.Contains(supervisor!));
+        }
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
@@ -169,11 +177,15 @@ public class EmergencyService(
             return Result.Unauthorized();
         }
 
-        var supervisor = await dbContext
-            .Supervisors
-            .SingleOrDefaultAsync(u => u.AccountId == accountId, ctx);
+        var isAdministrator = principal.IsInRole(AppRoles.Administrator);
 
-        if (supervisor is null)
+        var supervisor = isAdministrator
+            ? null
+            : await dbContext
+                .Supervisors
+                .SingleOrDefaultAsync(u => u.AccountId == accountId, ctx);
+
+        if (!isAdministrator && supervisor is null)
         {
             return Result.Unauthorized();
         }
