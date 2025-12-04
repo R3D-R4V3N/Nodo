@@ -33,12 +33,28 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <select class="text-sm border rounded px-2 py-1" value="@((int)emergency.Status)" disabled="@_updatingEmergencies.Contains(emergency.Id)" @onchange="args => UpdateStatusAsync(emergency, args)">
-                            @foreach (var status in _statusOptions)
+                        <div class="relative">
+                            <button class="inline-flex items-center justify-center gap-x-1.5 rounded-md bg-neutral-900 text-white px-3 py-2 text-sm font-semibold inset-ring-1 inset-ring-white/5 hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed" @onclick="() => ToggleDropdown(emergency.Id)" aria-expanded="@_openDropdowns.Contains(emergency.Id)" disabled="@_updatingEmergencies.Contains(emergency.Id)">
+                                @EmergencyDto.TranslateStatusToText(emergency.Status)
+                                <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="-mr-1 size-4 text-gray-300">
+                                    <path d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" fill-rule="evenodd" />
+                                </svg>
+                            </button>
+
+                            @if (_openDropdowns.Contains(emergency.Id))
                             {
-                                <option value="@((int)status)">@EmergencyDto.TranslateStatusToText(status)</option>
+                                <div class="absolute right-0 z-10 mt-2 w-52 origin-top-right rounded-md bg-gray-800 outline outline-1 -outline-offset-1 outline-white/10 shadow-lg transition transition-discrete data-[closed]:scale-95 data-[closed]:opacity-0">
+                                    <div class="py-1">
+                                        @foreach (var status in _statusOptions)
+                                        {
+                                            <button class="block w-full px-4 py-2 text-left text-sm text-gray-200 hover:bg-white/5 focus:bg-white/5 focus:outline-hidden" disabled="@_updatingEmergencies.Contains(emergency.Id)" @onclick="() => SelectStatusAsync(emergency, status)">
+                                                @EmergencyDto.TranslateStatusToText(status)
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
                             }
-                        </select>
+                        </div>
                         <button class="text-xs bg-neutral-100 text-neutral-800 px-3 py-1 rounded border" @onclick="() => NavigateToChat(emergency.ChatId)">Chat</button>
                         <span class="@GetStatusBadgeClass(emergency.Status)">@emergency.StatusLabel</span>
                     </div>
@@ -54,6 +70,7 @@
     private bool _isLoading = true;
     private string? _errorMessage;
     private readonly HashSet<int> _updatingEmergencies = [];
+    private readonly HashSet<int> _openDropdowns = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -96,19 +113,38 @@
         }
     }
 
-    private async Task UpdateStatusAsync(EmergencyDto.Get emergency, ChangeEventArgs args)
+    private void ToggleDropdown(int emergencyId)
     {
-        if (args.Value is null || _updatingEmergencies.Contains(emergency.Id))
+        if (_updatingEmergencies.Contains(emergencyId))
         {
             return;
         }
 
-        if (!int.TryParse(args.Value.ToString(), out var statusValue))
+        if (!_openDropdowns.Add(emergencyId))
         {
+            _openDropdowns.Remove(emergencyId);
+        }
+    }
+
+    private void CloseDropdown(int emergencyId) => _openDropdowns.Remove(emergencyId);
+
+    private async Task SelectStatusAsync(EmergencyDto.Get emergency, EmergencyStatusDto newStatus)
+    {
+        if (_updatingEmergencies.Contains(emergency.Id) || emergency.Status == newStatus)
+        {
+            CloseDropdown(emergency.Id);
             return;
         }
 
-        var newStatus = (EmergencyStatusDto)statusValue;
+        await UpdateStatusAsync(emergency, newStatus);
+    }
+
+    private async Task UpdateStatusAsync(EmergencyDto.Get emergency, EmergencyStatusDto newStatus)
+    {
+        if (_updatingEmergencies.Contains(emergency.Id))
+        {
+            return;
+        }
 
         _updatingEmergencies.Add(emergency.Id);
         _errorMessage = null;
@@ -144,6 +180,7 @@
         finally
         {
             _updatingEmergencies.Remove(emergency.Id);
+            CloseDropdown(emergency.Id);
             StateHasChanged();
         }
     }
