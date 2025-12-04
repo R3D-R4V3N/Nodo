@@ -69,26 +69,24 @@ public class ChatService(
             .Where(history => history.UserId == sender.Id && chatIds.Contains(history.ChatId))
             .ToDictionaryAsync(history => history.ChatId, cancellationToken);
 
-        var unreadCounts = await _dbContext.Messages
-            .Where(message => chatIds.Contains(message.Chat.Id))
+        var unreadLookup = await _dbContext.Messages
+            .Where(message => chatIds.Contains(EF.Property<int>(message, "ChatId")))
             .Select(message => new
             {
-                ChatId = message.Chat.Id,
+                ChatId = EF.Property<int>(message, "ChatId"),
                 message.Id,
                 message.CreatedAt
             })
-            .ToListAsync(cancellationToken);
-
-        var unreadLookup = unreadCounts
             .GroupBy(message => message.ChatId)
-            .ToDictionary(
+            .ToDictionaryAsync(
                 group => group.Key,
                 group =>
                 {
                     lastReadLookup.TryGetValue(group.Key, out var lastRead);
 
                     return group.Count(message => IsUnread(message.CreatedAt, message.Id, lastRead));
-                });
+                },
+                cancellationToken);
 
         var chatDtos = chatsFromDb
             .Select(chat =>
