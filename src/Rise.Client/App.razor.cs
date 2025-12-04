@@ -56,7 +56,6 @@ public partial class App : IDisposable
 
         if (ShouldRedirectToPwa(context.Path))
         {
-            context.PreventNavigation();
             NavigationManager.NavigateTo("/pwa", replace: true);
         }
     }
