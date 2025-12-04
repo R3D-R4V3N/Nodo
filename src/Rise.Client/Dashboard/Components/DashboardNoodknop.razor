@@ -1,32 +1,84 @@
+@using Rise.Shared.Common
+@using Rise.Shared.Emergencies
+@inject IEmergencyService EmergencyService
+@using Serilog
+
 <div class="col-span-2 bg-white rounded-xl p-4 ">
     <div class="flex justify-between items-center mb-4">
         <h3 class=" text-lg font-semibold">Noodknop meldingen</h3>
-            
     </div>
-    <div class="space-y-3">
-        <div class="flex justify-between items-center">
-            <div>
-                <p class="font-normal">Alexandra Deff</p>
-                <p class="text-sm text-neutral-500">18/02/2025 16:01</p>
-            </div>
-            <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Completed</span>
+
+    @if (_isLoading)
+    {
+        <p class="text-sm text-neutral-500">Aan het laden...</p>
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <p class="text-sm text-red-600">@_errorMessage</p>
+    }
+    else if (_latestEmergencies.Count == 0)
+    {
+        <p class="text-sm text-neutral-500">Geen noodmeldingen gevonden.</p>
+    }
+    else
+    {
+        <div class="space-y-3">
+            @foreach (var emergency in _latestEmergencies)
+            {
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="font-normal">@emergency.Reporter</p>
+                        <p class="text-sm text-neutral-500">@emergency.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    <span class="@GetStatusBadgeClass(emergency.IsResolved)">@GetStatusLabel(emergency.IsResolved)</span>
+                </div>
+            }
         </div>
-        <div class="flex justify-between items-center">
-            <div>
-                <p class="font-normal">Edwin Adenike</p>
-                <p class="text-sm text-neutral-500">18/02/2025 16:01</p>
-            </div>
-            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">In Progress</span>
-        </div>
-        <div class="flex justify-between items-center">
-            <div>
-                <p class="font-normal">Isaac Oluwatemilorun</p>
-                <p class="text-sm text-neutral-500">18/02/2025 16:01</p>
-            </div>
-            <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Pending</span>
-        </div>
-    </div>
+    }
 </div>
+
 @code {
-    
+    private List<EmergencyDto.Get> _latestEmergencies = [];
+    private bool _isLoading = true;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var result = await EmergencyService.GetEmergenciesAsync(new QueryRequest.SkipTake
+            {
+                Skip = 0,
+                Take = 3,
+                SearchTerm = string.Empty
+            });
+
+            if (result.IsSuccess)
+            {
+                _latestEmergencies = result.Value.Emergencies
+                    .OrderByDescending(e => e.CreatedAt)
+                    .Take(3)
+                    .ToList();
+            }
+            else
+            {
+                _errorMessage = string.Join(Environment.NewLine, result.Errors);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Kon laatste noodmeldingen niet laden.");
+            _errorMessage = "Fout bij het laden van noodmeldingen.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private static string GetStatusLabel(bool isResolved) => isResolved ? "Afgehandeld" : "Open";
+
+    private static string GetStatusBadgeClass(bool isResolved) => isResolved
+        ? "text-xs bg-green-100 text-green-700 px-2 py-1 rounded"
+        : "text-xs bg-red-100 text-red-700 px-2 py-1 rounded";
 }
