@@ -4,10 +4,12 @@ using Rise.Domain.Chats;
 
 namespace Rise.Persistence.Configurations.Chats;
 
-internal class ChatMessageHistoryConfiguration : IEntityTypeConfiguration<ChatMessageHistory>
+internal class ChatMessageHistoryConfiguration : EntityConfiguration<ChatMessageHistory>
 {
-    public void Configure(EntityTypeBuilder<ChatMessageHistory> builder)
+    public override void Configure(EntityTypeBuilder<ChatMessageHistory> builder)
     {
+        base.Configure(builder);
+
         builder.ToTable("ChatMessageHistories");
 
         builder
