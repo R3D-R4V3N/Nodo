@@ -146,7 +146,7 @@ public class ChatService(
         });
     }
 
-    private async Task MarkChatAsReadAsync(Chat chat, User reader, CancellationToken cancellationToken)
+    private async Task MarkChatAsReadAsync(Chat chat, BaseUser reader, CancellationToken cancellationToken)
     {
         var lastMessage = chat.Messages
             .OrderByDescending(message => message.CreatedAt)
