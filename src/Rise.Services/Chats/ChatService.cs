@@ -61,8 +61,40 @@ public class ChatService(
             .Where(c => c.Users.Contains(sender))
             .ToListAsync(cancellationToken);
 
+        var chatIds = chatsFromDb
+            .Select(chat => chat.Id)
+            .ToList();
+
+        var lastReadLookup = await _dbContext.ChatMessageHistories
+            .Where(history => history.UserId == sender.Id && chatIds.Contains(history.ChatId))
+            .ToDictionaryAsync(history => history.ChatId, cancellationToken);
+
+        var unreadLookup = await _dbContext.Messages
+            .Where(message => chatIds.Contains(EF.Property<int>(message, "ChatId")))
+            .Select(message => new
+            {
+                ChatId = EF.Property<int>(message, "ChatId"),
+                message.Id,
+                message.CreatedAt
+            })
+            .GroupBy(message => message.ChatId)
+            .ToDictionaryAsync(
+                group => group.Key,
+                group =>
+                {
+                    lastReadLookup.TryGetValue(group.Key, out var lastRead);
+
+                    return group.Count(message => IsUnread(message.CreatedAt, message.Id, lastRead));
+                },
+                cancellationToken);
+
         var chatDtos = chatsFromDb
-            .Select(ChatMapper.ToGetChatsDto)
+            .Select(chat =>
+            {
+                var dto = ChatMapper.ToGetChatsDto(chat)!;
+                dto.UnreadCount = unreadLookup.TryGetValue(chat.Id, out var count) ? count : 0;
+                return dto;
+            })
             .ToList();
 
         return Result.Success(new ChatResponse.GetChats
@@ -104,12 +136,54 @@ public class ChatService(
             return Result.NotFound($"Chat met id '{chatId}' werd niet gevonden.");
         }
 
+        await MarkChatAsReadAsync(chat, sender, cancellationToken);
+
         var dto = chat.ToGetChatDto();
 
-        return Result.Success(new ChatResponse.GetChat() 
-        { 
+        return Result.Success(new ChatResponse.GetChat()
+        {
             Chat = dto
         });
+    }
+
+    private async Task MarkChatAsReadAsync(Chat chat, BaseUser reader, CancellationToken cancellationToken)
+    {
+        var lastMessage = chat.Messages
+            .OrderByDescending(message => message.CreatedAt)
+            .ThenByDescending(message => message.Id)
+            .FirstOrDefault();
+
+        if (lastMessage is null)
+        {
+            return;
+        }
+
+        var history = await _dbContext.ChatMessageHistories
+            .SingleOrDefaultAsync(history => history.ChatId == chat.Id && history.UserId == reader.Id, cancellationToken);
+
+        var hasNewerTimestamp = history?.LastReadAt is null || lastMessage.CreatedAt > history.LastReadAt;
+        var hasNewerMessageId = history?.LastReadMessageId is null || lastMessage.Id > history.LastReadMessageId;
+
+        if (!hasNewerTimestamp && !hasNewerMessageId)
+        {
+            return;
+        }
+
+        if (history is null)
+        {
+            history = new ChatMessageHistory
+            {
+                ChatId = chat.Id,
+                UserId = reader.Id
+            };
+
+            _dbContext.ChatMessageHistories.Add(history);
+        }
+
+        history.LastReadAt = lastMessage.CreatedAt;
+        history.LastReadMessageId = lastMessage.Id;
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<Result<MessageDto.Chat>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
@@ -234,5 +308,18 @@ public class ChatService(
 
         return await _dbContext.Users
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+    }
+
+    private static bool IsUnread(DateTime createdAt, int messageId, ChatMessageHistory? history)
+    {
+        if (history is null)
+        {
+            return true;
+        }
+
+        var newerThanTimestamp = history.LastReadAt.HasValue && createdAt > history.LastReadAt.Value;
+        var newerThanMessageId = history.LastReadMessageId.HasValue && messageId > history.LastReadMessageId.Value;
+
+        return newerThanTimestamp || newerThanMessageId;
     }
 }

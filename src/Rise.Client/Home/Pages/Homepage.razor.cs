@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Globalization;
 using System.Net.Http;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -23,6 +22,7 @@ public partial class Homepage : IDisposable
     private bool _isLoading = true;
     private string? _loadError;
     private string? _searchTerm;
+    private int? _activeChatId;
 
     [Inject]
     private IHubClientFactory HubClientFactory { get; set; } = null!;
@@ -122,14 +122,43 @@ public partial class Homepage : IDisposable
             chat.LastMessage = message;
         }
 
+        var isActiveChat = _activeChatId.HasValue && _activeChatId.Value == message.ChatId;
+        var isOwnMessage = string.Equals(message.User.AccountId, UserState.User?.AccountId, StringComparison.Ordinal);
+
+        if (isActiveChat)
+        {
+            chat.UnreadCount = 0;
+        }
+        else if (!isOwnMessage)
+        {
+            chat.UnreadCount += 1;
+        }
+
         _chats.Sort((a, b) => Nullable.Compare(b.LastMessage?.Timestamp, a.LastMessage?.Timestamp));
 
         StateHasChanged();
     }
 
 
-    private void NavigateToChat(ChatDto.GetChats chat) 
-        => NavigationManager.NavigateTo($"/chat/{chat.ChatId}");
+    private void NavigateToChat(ChatDto.GetChats chat)
+    {
+        _activeChatId = chat.ChatId;
+        chat.UnreadCount = 0;
+        _chats.Sort((a, b) => Nullable.Compare(b.LastMessage?.Timestamp, a.LastMessage?.Timestamp));
+        NavigationManager.NavigateTo($"/chat/{chat.ChatId}");
+    }
+
+    private static string FormatUnreadLabel(int unreadCount)
+    {
+        if (unreadCount <= 0)
+        {
+            return string.Empty;
+        }
+
+        return unreadCount > 99
+            ? "99+"
+            : unreadCount.ToString(CultureInfo.InvariantCulture);
+    }
 
     private string GetChatTitle(ChatDto.GetChats chat)
     {
@@ -166,15 +195,15 @@ public partial class Homepage : IDisposable
         return UserState.User!.Name;
     }
 
-   private string GetAvatarUrl(ChatDto.GetChats chat)
-   {
-       // Zoek de eerste gebruiker die niet de huidige gebruiker is
-       var otherUser = chat?
-           .Users?
-           .FirstOrDefault(u => u.Id != UserState.User.Id);
+    private string GetAvatarUrl(ChatDto.GetChats chat)
+    {
+        // Zoek de eerste gebruiker die niet de huidige gebruiker is
+        var otherUser = chat?
+            .Users?
+            .FirstOrDefault(u => u.Id != UserState.User.Id);
 
-       return otherUser?.AvatarUrl ?? DefaultImages.Profile;
-   }
+        return otherUser?.AvatarUrl ?? DefaultImages.Profile;
+    }
 
 
     private static string GetAvatarKey(MessageDto.Chat dto)
