@@ -1,0 +1,47 @@
+@using System.Globalization
+
+@if (Count > 0)
+{
+    <span class="@CssClass">
+        @FormatUnreadLabel(Count)
+    </span>
+}
+
+@code {
+    [Parameter]
+    public int Count { get; set; }
+
+    [Parameter]
+    public string PositionClass { get; set; } = "absolute -top-2 -right-2";
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    private const string BaseBadgeClass = "inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] sm:text-xs font-semibold min-w-[1.5rem] h-6 px-2 border-2 border-white";
+
+    private string CssClass
+    {
+        get
+        {
+            var composed = string.IsNullOrWhiteSpace(PositionClass)
+                ? BaseBadgeClass
+                : $"{PositionClass} {BaseBadgeClass}";
+
+            return string.IsNullOrWhiteSpace(Class)
+                ? composed
+                : $"{composed} {Class}";
+        }
+    }
+
+    private static string FormatUnreadLabel(int unreadCount)
+    {
+        if (unreadCount <= 0)
+        {
+            return string.Empty;
+        }
+
+        return unreadCount > 99
+            ? "99+"
+            : unreadCount.ToString(CultureInfo.InvariantCulture);
+    }
+}
