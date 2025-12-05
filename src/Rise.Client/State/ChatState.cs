@@ -4,7 +4,7 @@ using Rise.Shared.Chats;
 
 namespace Rise.Client.State;
 
-public class ChatStateService
+public class ChatState
 {
     private readonly Dictionary<int, int> _unreadCounts = new();
 

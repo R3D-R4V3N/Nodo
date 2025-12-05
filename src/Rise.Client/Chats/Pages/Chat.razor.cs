@@ -19,7 +19,7 @@ public partial class Chat : IAsyncDisposable
 {
     [Parameter] public int ChatId { get; set; }
     [Inject] public UserState UserState { get; set; }
-    [Inject] public ChatStateService ChatState { get; set; } = null!;
+    [Inject] public ChatState ChatState { get; set; } = null!;
     [Inject] public OfflineQueueService OfflineQueueService { get; set; } = null!;
     // Onnodig complex, zie Talk over Factory
 

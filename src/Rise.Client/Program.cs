@@ -127,7 +127,7 @@ try
 
     // current user
     builder.Services.AddSingleton<UserState>();
-    builder.Services.AddSingleton<ChatStateService>();
+    builder.Services.AddSingleton<ChatState>();
 
     builder.Services.AddScoped<IVoiceRecorderService, VoiceRecorderService>();
     builder.Services.AddScoped<ChatMessageDispatchService>();

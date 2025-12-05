@@ -12,7 +12,7 @@ namespace Rise.Client.Home.Pages;
 public partial class Homepage : IDisposable
 {
     [Inject] public UserState UserState { get; set; }
-    [Inject] public ChatStateService ChatState { get; set; } = null!;
+    [Inject] public ChatState ChatState { get; set; } = null!;
     private readonly List<ChatDto.GetChats> _chats = new();
     private List<ChatDto.GetChats> _filteredChats => string.IsNullOrWhiteSpace(_searchTerm)
         ? _chats
