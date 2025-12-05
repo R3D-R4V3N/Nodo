@@ -136,12 +136,54 @@ public class ChatService(
             return Result.NotFound($"Chat met id '{chatId}' werd niet gevonden.");
         }
 
+        await MarkChatAsReadAsync(chat, sender, cancellationToken);
+
         var dto = chat.ToGetChatDto();
 
-        return Result.Success(new ChatResponse.GetChat() 
-        { 
+        return Result.Success(new ChatResponse.GetChat()
+        {
             Chat = dto
         });
+    }
+
+    private async Task MarkChatAsReadAsync(Chat chat, User reader, CancellationToken cancellationToken)
+    {
+        var lastMessage = chat.Messages
+            .OrderByDescending(message => message.CreatedAt)
+            .ThenByDescending(message => message.Id)
+            .FirstOrDefault();
+
+        if (lastMessage is null)
+        {
+            return;
+        }
+
+        var history = await _dbContext.ChatMessageHistories
+            .SingleOrDefaultAsync(history => history.ChatId == chat.Id && history.UserId == reader.Id, cancellationToken);
+
+        var hasNewerTimestamp = history?.LastReadAt is null || lastMessage.CreatedAt > history.LastReadAt;
+        var hasNewerMessageId = history?.LastReadMessageId is null || lastMessage.Id > history.LastReadMessageId;
+
+        if (!hasNewerTimestamp && !hasNewerMessageId)
+        {
+            return;
+        }
+
+        if (history is null)
+        {
+            history = new ChatMessageHistory
+            {
+                ChatId = chat.Id,
+                UserId = reader.Id
+            };
+
+            _dbContext.ChatMessageHistories.Add(history);
+        }
+
+        history.LastReadAt = lastMessage.CreatedAt;
+        history.LastReadMessageId = lastMessage.Id;
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<Result<MessageDto.Chat>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
