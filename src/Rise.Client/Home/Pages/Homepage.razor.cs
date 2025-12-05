@@ -154,18 +154,6 @@ public partial class Homepage : IDisposable
         NavigationManager.NavigateTo($"/chat/{chat.ChatId}");
     }
 
-    private static string FormatUnreadLabel(int unreadCount)
-    {
-        if (unreadCount <= 0)
-        {
-            return string.Empty;
-        }
-
-        return unreadCount > 99
-            ? "99+"
-            : unreadCount.ToString(CultureInfo.InvariantCulture);
-    }
-
     private string GetChatTitle(ChatDto.GetChats chat)
     {
         var chatUserNames = chat?
