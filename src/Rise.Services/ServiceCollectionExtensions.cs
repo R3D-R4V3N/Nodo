@@ -22,6 +22,7 @@ using Rise.Shared.Emergencies;
 using Rise.Services.Emergencies;
 using Rise.Services.Validators;
 using Rise.Shared.Validators;
+using Rise.Services.Notifications;
 
 namespace Rise.Services;
 
@@ -39,6 +40,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISentimentsService, SentimentService>();
         services.AddScoped<IHobbyService, HobbyService>();
         services.AddScoped<IEmergencyService, EmergencyService>();
+        services.AddScoped<INotificationSubscriptionService, NotificationSubscriptionService>();
+        services.AddScoped<IPushNotificationService, PushNotificationService>();
         services.AddScoped<IValidatorService, ValidatorService>();
         services.AddScoped(sp => sp.GetRequiredService<IValidatorService>().GetRulesAsync().GetAwaiter().GetResult());
         services.AddScoped<IValidator<AccountRequest.Login>, AccountRequest.Login.Validator>();

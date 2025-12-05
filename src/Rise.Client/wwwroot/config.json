@@ -1,3 +1,4 @@
 {
-  "backendUrl": "https://localhost:5001"
+  "backendUrl": "https://localhost:5001",
+  "vapidPublicKey": "REPLACE_WITH_VAPID_PUBLIC_KEY"
 }

@@ -10,6 +10,7 @@ using Rise.Server.RealTime;
 using Rise.Services;
 using Rise.Services.Chats;
 using Rise.Services.Identity;
+using Rise.Services.Notifications;
 using Rise.Services.UserConnections;
 using Rise.Shared.Chats;
 using Serilog.Events;
@@ -61,6 +62,7 @@ try
         .AddDefaultTokenProviders();
 
     builder.Services
+        .Configure<VapidSettings>(builder.Configuration.GetSection("VapidKeys"))
         .AddHttpContextAccessor()
         .AddScoped<ISessionContextProvider, HttpContextSessionProvider>()
         .AddApplicationServices()
@@ -77,8 +79,8 @@ try
         });
 
     builder.Services.AddSignalR();
-    builder.Services.AddSingleton<IChatMessageDispatcher, SignalRChatMessageDispatcher>();
-    builder.Services.AddSingleton<IUserConnectionNotificationDispatcher, SignalRUserConnectionNotificationDispatcher>();
+    builder.Services.AddScoped<IChatMessageDispatcher, SignalRChatMessageDispatcher>();
+    builder.Services.AddScoped<IUserConnectionNotificationDispatcher, SignalRUserConnectionNotificationDispatcher>();
 
     var app = builder.Build();
 

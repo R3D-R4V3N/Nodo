@@ -118,6 +118,12 @@ The `dotnet clean` command cleans the output of the previous build. It's impleme
 
 ## Authentication
 
+## Web push notifications
+
+- Generate VAPID keys (for example with `npx web-push generate-vapid-keys`) and copy the public/private keys to the `VapidKeys` section in `src/Rise.Server/appsettings*.json`. The public key should also replace `vapidPublicKey` in `src/Rise.Client/wwwroot/config.json` so the browser can subscribe.
+- The service worker (`wwwroot/service-worker.js` and `service-worker.published.js`) now listens for `push` events and shows a native notification with a link back to the chat.
+- On load the client will register the service worker, request notification permission, subscribe via `PushManager.subscribe`, and POST the subscription to `/api/notifications/subscribe` so the backend can send pushes when new chat messages arrive.
+
 Authentication and authorization is present, you'll host and maintain the user accounts in your own database without any external identity provider. You can login with the following test users with the password `Nodo.1`
 
 ### Users

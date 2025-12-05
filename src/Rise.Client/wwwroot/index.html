@@ -44,6 +44,7 @@
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="js/pwa.js"></script>
+    <script src="js/pushNotifications.js"></script>
     <script>
         window.scrollToBottom = (el, force = false) => {
             if (!el) return;
@@ -71,6 +72,7 @@
                 const serviceWorkerUrl = `${normalizedBase}service-worker.js`;
 
                 navigator.serviceWorker.register(serviceWorkerUrl)
+                    .then(() => window.setupPushNotifications?.())
                     .catch(err => console.error('Service worker registration failed', err));
             });
         }

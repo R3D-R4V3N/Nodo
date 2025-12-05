@@ -12,10 +12,14 @@
       <None Remove="Friends\**" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Using Include="Ardalis.Result" />
-        <Using Include="Serilog" />
-    </ItemGroup>
+  <ItemGroup>
+    <Using Include="Ardalis.Result" />
+    <Using Include="Serilog" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WebPush" Version="3.1.2" />
+  </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Rise.Domain\Rise.Domain.csproj" />

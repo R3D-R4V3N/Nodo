@@ -5,6 +5,7 @@ using Rise.Domain.Chats;
 using Rise.Domain.Emergencies;
 using Rise.Domain.Events;
 using Rise.Domain.Messages;
+using Rise.Domain.Notifications;
 using Rise.Domain.Organizations;
 using Rise.Domain.Registrations;
 using Rise.Domain.Users;
@@ -29,6 +30,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> opts) :
     public DbSet<Chat> Chats => Set<Chat>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<ChatMessageHistory> ChatMessageHistories => Set<ChatMessageHistory>();
+    public DbSet<NotificationSubscription> NotificationSubscriptions => Set<NotificationSubscription>();
     public DbSet<IdentityUser> IdentityUsers => Set<IdentityUser>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Supervisor> Supervisors => Set<Supervisor>();

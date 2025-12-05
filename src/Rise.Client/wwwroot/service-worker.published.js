@@ -15,6 +15,7 @@ const extraResources = [
     'css/style.css',
     'Rise.Client.styles.css',
     'js/offlineNotifier.js',
+    'js/pushNotifications.js',
     'js/voiceRecorder.js',
     'favicon.png',
     'icon-192.png',
@@ -119,3 +120,41 @@ async function handleApiRequest(request) {
             });
     }
 }
+
+self.addEventListener('push', event => {
+    if (!event.data) {
+        return;
+    }
+
+    const payload = event.data.json();
+    const title = payload.title || 'Nodo';
+    const body = payload.body || 'Nieuw bericht ontvangen.';
+
+    event.waitUntil(
+        self.registration.showNotification(title, {
+            body,
+            data: payload.data,
+            icon: '/icon-192.png',
+            badge: '/icon-192.png'
+        })
+    );
+});
+
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+            const chatUrl = event.notification.data?.chatId
+                ? `/chats/${event.notification.data.chatId}`
+                : '/';
+
+            const client = clientList.find(c => c.url.includes(chatUrl));
+            if (client) {
+                return client.focus();
+            }
+
+            return clients.openWindow(chatUrl);
+        })
+    );
+});
