@@ -11,7 +11,7 @@
 
     @if (_isLoading)
     {
-        <p class="text-sm text-neutral-500">Aan het laden...</p>
+        <LoadingIndicator Message="Noodmeldingen laden..." Class="text-sm text-neutral-500" />
     }
     else if (!string.IsNullOrEmpty(_errorMessage))
     {

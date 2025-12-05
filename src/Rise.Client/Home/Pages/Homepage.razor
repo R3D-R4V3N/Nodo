@@ -46,7 +46,9 @@
 
       @if (_isLoading)
       {
-        <p class="text-sm text-neutral-500 px-1">Chats laden…</p>
+        <div class="px-1">
+          <LoadingIndicator Message="Chats laden…" />
+        </div>
       }
       else if (!string.IsNullOrWhiteSpace(_loadError))
       {
@@ -95,8 +97,8 @@
                         @(isOnline ? "bg-green-500" : "invisible")"></span>
                     </div>
                   }
- 
-                  
+
+
                   <!-- Texts -->
                   <div class="min-w-0 flex-1">
                     <div class="flex items-baseline justify-between gap-2">

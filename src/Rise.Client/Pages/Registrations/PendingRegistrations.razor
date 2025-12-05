@@ -22,7 +22,7 @@
                 @if (_isLoading)
                 {
                     <div class="rounded-3xl border border-neutral-200 bg-white px-5 py-10 text-center shadow-sm">
-                        <p class="text-sm text-neutral-500">Aan het laden...</p>
+                        <LoadingIndicator Centered="true" Message="Aan het laden..." Class="justify-center" />
                     </div>
                 }
                 else if (!string.IsNullOrEmpty(_errorMessage))

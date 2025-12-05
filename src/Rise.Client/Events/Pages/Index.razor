@@ -6,12 +6,12 @@
 
 <div class="flex flex-col h-screen">
     <div class="flex-shrink-0">
-        <TopBar 
+        <TopBar
             Title="Evenementen"
             Class="text-center"
         />
     </div>
-    
+
     <div class="flex-1 overflow-y-auto pb-24">
         @if (_errorMessage != null)
         {
@@ -19,10 +19,12 @@
                 @_errorMessage
             </div>
         }
-        
+
         @if (_events == null)
         {
-            <p class="text-center text-neutral-500 mt-6">Evenementen laden...</p>
+            <div class="text-center text-neutral-500 mt-6">
+                <LoadingIndicator Centered="true" Message="Evenementen laden..." Class="justify-center" />
+            </div>
         }
         else if (!_events.Any())
         {
@@ -45,24 +47,4 @@
         }
     </div>
 </div>
-    
-    @* <EventCard *@
-    @*     ImageUrl="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=800&q=80" *@
-    @*     Title="Rock for specials" *@
-    @*     Location="9940 Evergem" *@
-    @*     DateText="zo, 2 mrt. om 09:00" *@
-    @*     AttendeeImage="https://randomuser.me/api/portraits/women/44.jpg" *@
-    @*     AttendeeText="Alyssa, Silke en 4 vrienden zijn geïnteresseerd" *@
-    @*     Price="12.50" *@
-    @* /> *@
-    @* *@
-    @* <EventCard *@
-    @*     ImageUrl="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=800&q=80" *@
-    @*     Title="Rock for specials" *@
-    @*     Location="9940 Evergem" *@
-    @*     DateText="zo, 2 mrt. om 09:00" *@
-    @*     AttendeeImage="https://randomuser.me/api/portraits/women/44.jpg" *@
-    @*     AttendeeText="Alyssa, Silke en 4 vrienden zijn geïnteresseerd" *@
-    @*     Price="12.50" *@
-    @* /> *@
-    
+
