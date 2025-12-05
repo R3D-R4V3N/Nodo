@@ -34,6 +34,7 @@ using Blazored.Toast;
 using Rise.Shared.Validators;
 using Rise.Client.Validators;
 using Rise.Shared.Identity.Accounts;
+using System.Text.Json;
 
 try
 {
@@ -65,7 +66,24 @@ try
 
     // Laadt config.json uit wwwroot om de backend URL dynamisch te halen; gebruikt fallback naar localhost als key ontbreekt.
     using var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
-    var config = await http.GetFromJsonAsync<Dictionary<string, string>>("config.json");
+    Dictionary<string, string>? config = null;
+
+    try
+    {
+        config = await http.GetFromJsonAsync<Dictionary<string, string>>("config.json");
+    }
+    catch (HttpRequestException ex)
+    {
+        Log.Warning(ex, "Kon config.json niet laden; val terug op standaardwaarden.");
+    }
+    catch (NotSupportedException ex)
+    {
+        Log.Warning(ex, "config.json heeft een onverwachte content-type; val terug op standaardwaarden.");
+    }
+    catch (JsonException ex)
+    {
+        Log.Warning(ex, "config.json kon niet als JSON worden gelezen; val terug op standaardwaarden.");
+    }
 
     var backendUrl = config?["backendUrl"] ?? "https://localhost:5001";
     var backendUri = new Uri(backendUrl);
