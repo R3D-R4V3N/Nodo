@@ -9,6 +9,19 @@
         return magicBellModulePromise;
     };
 
+    const ensureServiceWorkerIsReachable = async (serviceWorkerPath) => {
+        const response = await fetch(serviceWorkerPath, { method: 'GET' });
+
+        if (!response.ok) {
+            throw new Error(`Service worker niet gevonden (${response.status}). Controleer het pad of of het bestand wordt gepubliceerd.`);
+        }
+
+        const contentType = response.headers.get('content-type') ?? '';
+        if (!contentType.toLowerCase().includes('javascript')) {
+            throw new Error('Service worker-bestand lijkt geen JavaScript terug te geven. Mogelijk wordt een HTML-pagina geserveerd.');
+        }
+    };
+
     const ensureSupport = () => {
         if (!('Notification' in window)) {
             throw new Error('Deze browser ondersteunt geen notificaties.');
@@ -48,7 +61,17 @@
                 subscriptionOptions.userExternalId = options.userExternalId;
             }
 
-            return module.subscribe(subscriptionOptions);
+            await ensureServiceWorkerIsReachable(subscriptionOptions.serviceWorkerPath);
+
+            try {
+                return await module.subscribe(subscriptionOptions);
+            } catch (error) {
+                if (error instanceof SyntaxError && typeof error.message === 'string' && error.message.includes('Unexpected token <')) {
+                    throw new Error('Kon de service worker niet registreren: er wordt HTML teruggestuurd in plaats van JavaScript. Controleer het pad en of het bestand publiek beschikbaar is.');
+                }
+
+                throw error;
+            }
         }
     };
 })();
