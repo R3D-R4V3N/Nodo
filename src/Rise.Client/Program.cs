@@ -23,6 +23,7 @@ using Rise.Shared.Organizations;
 using Rise.Client.Organizations;
 using Rise.Shared.RegistrationRequests;
 using Rise.Client.RegistrationRequests;
+using BlazorSpinner;
 
 
 
@@ -59,6 +60,7 @@ try
     builder.Services.AddScoped(sp => (IAccountManager)sp.GetRequiredService<AuthenticationStateProvider>());
     
     builder.Services.AddBlazoredToast();
+    builder.Services.AddScoped<SpinnerService>();
 
     // Laadt config.json uit wwwroot om de backend URL dynamisch te halen; gebruikt fallback naar localhost als key ontbreekt.
     using var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };

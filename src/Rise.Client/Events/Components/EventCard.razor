@@ -48,7 +48,10 @@
             <span class="inline-flex items-center justify-center gap-2 w-full">
                 @if (_isLoading)
                 {
-                    <LoadingIndicator Message="Laden..." Class="text-white" />
+                    <div class="loading-indicator text-white">
+                        <Spinner />
+                        <p class="loading-indicator__message">Laden...</p>
+                    </div>
                 }
                 else if (IsInterested)
                 {

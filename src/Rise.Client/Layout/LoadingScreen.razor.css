@@ -38,6 +38,6 @@
     color: #ffffff;
 }
 
-.app-loading-indicator :global(.loading-indicator__message) {
+.app-loading-indicator .loading-indicator__message {
     color: #e5e7eb;
 }

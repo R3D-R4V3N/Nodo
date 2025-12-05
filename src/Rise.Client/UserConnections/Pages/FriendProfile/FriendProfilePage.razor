@@ -11,7 +11,10 @@
 @if (user is null)
 {
     <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600">
-        <LoadingIndicator Centered="true" Message="Profiel wordt geladen..." />
+        <div class="loading-indicator loading-indicator--centered">
+            <Spinner />
+            <p class="loading-indicator__message">Profiel wordt geladen...</p>
+        </div>
     </div>
 }
 else if (user?.User is null)

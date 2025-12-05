@@ -23,7 +23,10 @@
         @if (_events == null)
         {
             <div class="text-center text-neutral-500 mt-6">
-                <LoadingIndicator Centered="true" Message="Evenementen laden..." Class="justify-center" />
+                <div class="loading-indicator loading-indicator--centered justify-center">
+                    <Spinner />
+                    <p class="loading-indicator__message">Evenementen laden...</p>
+                </div>
             </div>
         }
         else if (!_events.Any())

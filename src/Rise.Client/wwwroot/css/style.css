@@ -97,3 +97,19 @@
 .btn-click-anim:active {
     animation: click-pop 150ms ease-out;
 }
+
+.loading-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #0B6532;
+}
+
+.loading-indicator--centered {
+    justify-content: center;
+}
+
+.loading-indicator__message {
+    font-size: 0.9rem;
+    color: #4b5563;
+}

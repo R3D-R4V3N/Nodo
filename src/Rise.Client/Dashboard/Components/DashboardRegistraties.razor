@@ -10,7 +10,10 @@
 
     @if (_isLoading)
     {
-        <LoadingIndicator Message="Registraties laden..." Class="text-sm text-neutral-500" />
+        <div class="loading-indicator text-sm text-neutral-500">
+            <Spinner />
+            <p class="loading-indicator__message">Registraties laden...</p>
+        </div>
     }
     else if (!string.IsNullOrEmpty(_errorMessage))
     {
