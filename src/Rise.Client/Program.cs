@@ -24,6 +24,7 @@ using Rise.Client.Organizations;
 using Rise.Shared.RegistrationRequests;
 using Rise.Client.RegistrationRequests;
 using BlazorSpinner;
+using Rise.Client.MagicBell;
 
 
 
@@ -67,7 +68,16 @@ try
     var config = await http.GetFromJsonAsync<Dictionary<string, string>>("config.json");
 
     var backendUrl = config?["backendUrl"] ?? "https://localhost:5001";
-    var backendUri = new Uri(backendUrl);   
+    var backendUri = new Uri(backendUrl);
+
+    var magicBellPublicKey = config?.GetValueOrDefault("magicBellPublicKey") ?? string.Empty;
+    var magicBellServiceWorkerPath = config?.GetValueOrDefault("magicBellServiceWorkerPath") ?? "/service-worker.js";
+
+    builder.Services.AddSingleton(new MagicBellClientOptions
+    {
+        PublicKey = magicBellPublicKey,
+        ServiceWorkerPath = magicBellServiceWorkerPath
+    });
     
     // configure client for auth interactions
     builder.Services.AddHttpClient("SecureApi",opt => opt.BaseAddress = backendUri)

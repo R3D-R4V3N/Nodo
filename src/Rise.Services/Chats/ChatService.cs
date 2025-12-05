@@ -9,18 +9,21 @@ using Rise.Shared.Common;
 using Rise.Shared.Chats;
 using Rise.Shared.Identity;
 using Rise.Domain.Common.ValueObjects;
+using Rise.Services.Notifications;
 
 namespace Rise.Services.Chats;
 
 public class ChatService(
     ApplicationDbContext dbContext,
     ISessionContextProvider sessionContextProvider,
-    IChatMessageDispatcher? messageDispatcher = null) : IChatService
+    IChatMessageDispatcher? messageDispatcher = null,
+    IMagicBellNotificationService? magicBellNotificationService = null) : IChatService
 {
 
     private readonly ApplicationDbContext _dbContext = dbContext;
     private readonly ISessionContextProvider _sessionContextProvider = sessionContextProvider;
     private readonly IChatMessageDispatcher? _messageDispatcher = messageDispatcher;
+    private readonly IMagicBellNotificationService? _magicBellNotificationService = magicBellNotificationService;
 
     public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -277,6 +280,25 @@ public class ChatService(
             catch
             {
                 // Realtime notificaties mogen een mislukte call niet blokkeren.
+            }
+        }
+
+        if (_magicBellNotificationService is not null)
+        {
+            try
+            {
+                var recipients = chat.Users
+                    .Where(u => !string.Equals(u.AccountId, sender.AccountId, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (recipients.Count > 0)
+                {
+                    await _magicBellNotificationService.NotifyChatMessageAsync(message, recipients, cancellationToken);
+                }
+            }
+            catch
+            {
+                // Push notificaties mogen een mislukte call niet blokkeren.
             }
         }
 

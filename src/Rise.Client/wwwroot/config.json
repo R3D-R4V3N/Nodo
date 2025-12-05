@@ -1,3 +1,5 @@
 {
-  "backendUrl": "https://localhost:5001"
+  "backendUrl": "https://localhost:5001",
+  "magicBellPublicKey": "BMPQibipMaI8tVC74D7hAXeC7Xh-e7XnQ-j6ml16A8Jywy5ADxmZjB-msL68l8CDF3xZzDIZn-MnhKGKZ_V7dGU",
+  "magicBellServiceWorkerPath": "/service-worker.js"
 }

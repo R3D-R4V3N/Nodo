@@ -1,3 +1,5 @@
+importScripts('https://assets.magicbell.io/sdks/webpush/service-worker.js');
+
 const DEV_CACHE = 'nodo-dev-cache-v4';
 const toAbsoluteUrl = url => new URL(url, self.location.origin).toString();
 const PRECACHE_URLS = [
@@ -8,6 +10,7 @@ const PRECACHE_URLS = [
     'css/style.css',
     'Rise.Client.styles.css',
     'js/offlineNotifier.js',
+    'js/magicBellPush.js',
     'js/voiceRecorder.js',
     'favicon.png',
     'icon-192.png',

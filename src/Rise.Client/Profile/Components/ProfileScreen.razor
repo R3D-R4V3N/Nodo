@@ -69,6 +69,37 @@
                 OnRemoveDislike="RemoveDislike"
                 OnRemoveHobby="RemoveHobby"
                 OnRemoveChatLine="RemoveChatLine" />
+
+            <section class="mt-8">
+                <div class="rounded-2xl border border-neutral-200 bg-white/80 p-5 shadow-sm shadow-neutral-100">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="space-y-1">
+                            <p class="text-sm font-semibold text-neutral-900">Pushmeldingen</p>
+                            <p class="text-sm text-neutral-600">Ontvang een notificatie wanneer er een nieuw chatbericht binnenkomt.</p>
+                        </div>
+                        <button class="btn btn-primary"
+                                disabled="@(!CanSubscribeForPush || _isSubscribingForPush)"
+                                @onclick="EnablePushNotificationsAsync">
+                            @_isSubscribingForPush ? "Bezig..." : "Schakel meldingen in"
+                        </button>
+                    </div>
+
+                    @if (!CanSubscribeForPush)
+                    {
+                        <p class="mt-3 text-sm text-amber-700">Pushnotificaties zijn niet geconfigureerd.</p>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_pushSubscriptionMessage))
+                    {
+                        <p class="mt-3 text-sm text-emerald-700">@_pushSubscriptionMessage</p>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_pushSubscriptionError))
+                    {
+                        <p class="mt-3 text-sm text-rose-700">@_pushSubscriptionError</p>
+                    }
+                </div>
+            </section>
         </main>
     }
 

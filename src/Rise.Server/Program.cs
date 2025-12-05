@@ -16,6 +16,9 @@ using Serilog.Events;
 using Rise.Server.Hubs;
 using Rise.Storage;
 using Microsoft.Extensions.Configuration;
+using Rise.Services.Notifications;
+using Microsoft.Extensions.Options;
+using System.Net.Http.Headers;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -79,6 +82,32 @@ try
     builder.Services.AddSignalR();
     builder.Services.AddSingleton<IChatMessageDispatcher, SignalRChatMessageDispatcher>();
     builder.Services.AddSingleton<IUserConnectionNotificationDispatcher, SignalRUserConnectionNotificationDispatcher>();
+
+    builder.Services.Configure<MagicBellOptions>(builder.Configuration.GetSection("MagicBell"));
+    builder.Services.AddHttpClient<IMagicBellNotificationService, MagicBellNotificationService>((sp, client) =>
+    {
+        var options = sp.GetRequiredService<IOptions<MagicBellOptions>>().Value;
+        var apiUrl = string.IsNullOrWhiteSpace(options.ApiUrl) ? "https://api.magicbell.com/" : options.ApiUrl;
+
+        if (!apiUrl.EndsWith('/'))
+        {
+            apiUrl += "/";
+        }
+
+        client.BaseAddress = new Uri(apiUrl);
+
+        if (!string.IsNullOrWhiteSpace(options.ApiKey))
+        {
+            client.DefaultRequestHeaders.Add("X-MAGICBELL-API-KEY", options.ApiKey);
+        }
+
+        if (!string.IsNullOrWhiteSpace(options.ApiSecret))
+        {
+            client.DefaultRequestHeaders.Add("X-MAGICBELL-API-SECRET", options.ApiSecret);
+        }
+
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    });
 
     var app = builder.Build();
 
