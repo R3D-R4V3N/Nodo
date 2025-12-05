@@ -86,10 +86,10 @@ else
 
         ProfileHobbies = new List<ProfileHobbyModel>
         {
-            new ProfileHobbyModel("Interesses", new[] { "Fun", "Begeleider" }, "#9b51e0", avatarUrl),
-            new ProfileHobbyModel("Ik hou van...", new[] { "Rood", "Pokemon", "Kerst" }, "#F2994A", avatarUrl),
-            new ProfileHobbyModel("Ik hou niet van...", new[] { "Spinnen" }, "#EB5757", avatarUrl),
-            new ProfileHobbyModel("Hobbys", new[] { "Voetbal", "Basketbal" }, "#56CCF2", avatarUrl)
+            new ProfileHobbyModel("interest_fun", "Interesses", "🌟"),
+            new ProfileHobbyModel("likes", "Ik hou van...", "❤️"),
+            new ProfileHobbyModel("dislikes", "Ik hou niet van...", "🚫"),
+            new ProfileHobbyModel("hobbies", "Hobby's", "⚽")
         };
 
         var uriData = NavigationManager.Uri.Split('?');
@@ -101,5 +101,18 @@ else
             var userConnectionType = System.Text.Json.JsonSerializer.Deserialize<UserConnectionTypeDto>(data);
             PageContext = userConnectionType;
         }
+    }
+
+    private static int CalculateAge(DateOnly birthDay)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var age = today.Year - birthDay.Year;
+
+        if (today < birthDay.AddYears(age))
+        {
+            age--;
+        }
+
+        return age;
     }
 }
