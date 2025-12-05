@@ -264,6 +264,8 @@ public class ChatService(
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
+        await MarkSenderMessageHistoryAsync(chat.Id, sender.Id, message.CreatedAt, message.Id, cancellationToken);
+
         var dto = message.ToChatDto()!;
 
         if (_messageDispatcher is not null)
@@ -279,6 +281,28 @@ public class ChatService(
         }
 
         return Result.Success(dto);
+    }
+
+    private async Task MarkSenderMessageHistoryAsync(int chatId, int senderId, DateTime messageCreatedAt, int messageId, CancellationToken cancellationToken)
+    {
+        var history = await _dbContext.ChatMessageHistories
+            .SingleOrDefaultAsync(history => history.ChatId == chatId && history.UserId == senderId, cancellationToken);
+
+        if (history is null)
+        {
+            history = new ChatMessageHistory
+            {
+                ChatId = chatId,
+                UserId = senderId
+            };
+
+            _dbContext.ChatMessageHistories.Add(history);
+        }
+
+        history.LastReadAt = messageCreatedAt;
+        history.LastReadMessageId = messageId;
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public Task<Result<int>> QueueMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
