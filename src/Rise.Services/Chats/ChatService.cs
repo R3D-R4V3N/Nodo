@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
 using Rise.Domain.Messages;
@@ -15,12 +16,12 @@ namespace Rise.Services.Chats;
 public class ChatService(
     ApplicationDbContext dbContext,
     ISessionContextProvider sessionContextProvider,
-    IChatMessageDispatcher? messageDispatcher = null) : IChatService
+    IEnumerable<IChatMessageDispatcher> messageDispatchers) : IChatService
 {
 
     private readonly ApplicationDbContext _dbContext = dbContext;
     private readonly ISessionContextProvider _sessionContextProvider = sessionContextProvider;
-    private readonly IChatMessageDispatcher? _messageDispatcher = messageDispatcher;
+    private readonly IReadOnlyList<IChatMessageDispatcher> _messageDispatchers = messageDispatchers.ToList();
 
     public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -268,11 +269,11 @@ public class ChatService(
 
         var dto = message.ToChatDto()!;
 
-        if (_messageDispatcher is not null)
+        foreach (var dispatcher in _messageDispatchers)
         {
             try
             {
-                await _messageDispatcher.NotifyMessageCreatedAsync(chat.Id, dto, cancellationToken);
+                await dispatcher.NotifyMessageCreatedAsync(chat.Id, dto, cancellationToken);
             }
             catch
             {
