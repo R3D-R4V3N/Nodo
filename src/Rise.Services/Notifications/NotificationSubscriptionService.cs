@@ -66,9 +66,26 @@ public class NotificationSubscriptionService(ApplicationDbContext dbContext) : I
 
     private async Task<BaseUser?> FindUserByAccountIdAsync(string accountId, CancellationToken cancellationToken)
     {
-        return await _dbContext.Set<BaseUser>()
-            .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken)
-            ?? await _dbContext.Supervisors.SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken)
-            ?? await _dbContext.Users.SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+        var baseUser = await _dbContext.Set<BaseUser>()
+            .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+
+        if (baseUser is not null)
+        {
+            return baseUser;
+        }
+
+        var supervisor = await _dbContext.Supervisors.SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+        if (supervisor is not null)
+        {
+            return supervisor;
+        }
+
+        var user = await _dbContext.Users.SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
+        if (user is not null)
+        {
+            return user;
+        }
+
+        return null;
     }
 }
