@@ -10,6 +10,7 @@ using Rise.Server.RealTime;
 using Rise.Services;
 using Rise.Services.Chats;
 using Rise.Services.Identity;
+using Rise.Server.Notifications;
 using Rise.Services.UserConnections;
 using Rise.Shared.Chats;
 using Serilog.Events;
@@ -76,8 +77,15 @@ try
             o.DocumentSettings = s => { s.Title = "RISE API"; };
         });
 
+    builder.Services.Configure<MagicBellOptions>(builder.Configuration.GetSection(MagicBellOptions.SectionName));
+    builder.Services.AddHttpClient(MagicBellOptions.HttpClientName, client =>
+    {
+        client.BaseAddress = new Uri("https://api.magicbell.com/");
+    });
+
     builder.Services.AddSignalR();
     builder.Services.AddSingleton<IChatMessageDispatcher, SignalRChatMessageDispatcher>();
+    builder.Services.AddScoped<IChatMessageDispatcher, MagicBellChatMessageDispatcher>();
     builder.Services.AddSingleton<IUserConnectionNotificationDispatcher, SignalRUserConnectionNotificationDispatcher>();
 
     var app = builder.Build();
