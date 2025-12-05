@@ -16,7 +16,10 @@
     {
         <main class="mx-auto max-w-screen-sm px-4 pb-24 pt-6">
             <div class="rounded-2xl border border-dashed border-neutral-300 bg-white/60 px-4 py-8 text-center">
-                <LoadingIndicator Centered="true" Message="Profiel wordt geladen..." Class="justify-center" />
+                <div class="loading-indicator loading-indicator--centered justify-center">
+                    <Spinner />
+                    <p class="loading-indicator__message">Profiel wordt geladen...</p>
+                </div>
             </div>
         </main>
     }

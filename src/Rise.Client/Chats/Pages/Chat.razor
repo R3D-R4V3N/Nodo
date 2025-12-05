@@ -39,7 +39,10 @@
     @if (_isLoading)
     {
         <div class="flex-1 grid place-items-center">
-            <LoadingIndicator Centered="true" Message="Gesprek wordt geladen…" />
+            <div class="loading-indicator loading-indicator--centered">
+                <Spinner />
+                <p class="loading-indicator__message">Gesprek wordt geladen…</p>
+            </div>
         </div>
     }
     else if (!string.IsNullOrWhiteSpace(_loadError))
