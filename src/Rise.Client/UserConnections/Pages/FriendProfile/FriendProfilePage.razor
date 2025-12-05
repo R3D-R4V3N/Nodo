@@ -10,8 +10,8 @@
 
 @if (user is null)
 {
-    <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600 animate-pulse">
-        <p>Profiel wordt geladen...</p>
+    <div class="flex justify-center items-center h-screen bg-[#F2F2F2] text-neutral-600">
+        <LoadingIndicator Centered="true" Message="Profiel wordt geladen..." />
     </div>
 }
 else if (user?.User is null)
@@ -23,7 +23,7 @@ else if (user?.User is null)
 else
 {
     <div class="relative flex min-h-screen flex-col bg-[#F2F2F2] text-neutral-900 antialiased md:flex-row animate-fade-in overflow-y-hidden overflow-x-hidden">
-       
+
         <div class="absolute top-[67%] left-1/2 z-[60] w-full max-w-[400px] -translate-x-1/2 -translate-y-1/2 block md:hidden ">
             <EmojiComponent Hobbies="@ProfileHobbies"/>
         </div>
@@ -43,13 +43,13 @@ else
             <DescriptionComponent PlusKnop="@(PageContext == UserConnectionTypeDto.AddFriends)"
                                   Description="@user.User.Biography"
                                   ProfileHobbies="@ProfileHobbies"/>
-        
+
     </div>
-    
+
 }
 
 @code {
-    [Parameter] public Guid id { get; set; } 
+    [Parameter] public Guid id { get; set; }
 
     [Inject] public UserState UserState { get; set; }
 
@@ -79,32 +79,27 @@ else
 
         if (user is null)
         {
-            Console.WriteLine("Gebruiker niet gevonden!");
+            return;
         }
 
-        ProfileHobbies = user.User.Hobbies
-            .Select(h => new ProfileHobbyModel(h.Hobby.ToString(), h.Name, h.Emoji))
-            .ToList();
-        
-        Console.WriteLine($"Aantal hobby's: {user.User.Hobbies.Count}");
-        foreach (var h in user.User.Hobbies)
+        var avatarUrl = user.User.AvatarUrl ?? DefaultImages.Profile;
+
+        ProfileHobbies = new List<ProfileHobbyModel>
         {
-            Console.WriteLine($"Hobby: {h.Name}, Emoji: {h.Emoji}, Id: {h.Hobby.ToString()}");
+            new ProfileHobbyModel("Interesses", new[] { "Fun", "Begeleider" }, "#9b51e0", avatarUrl),
+            new ProfileHobbyModel("Ik hou van...", new[] { "Rood", "Pokemon", "Kerst" }, "#F2994A", avatarUrl),
+            new ProfileHobbyModel("Ik hou niet van...", new[] { "Spinnen" }, "#EB5757", avatarUrl),
+            new ProfileHobbyModel("Hobbys", new[] { "Voetbal", "Basketbal" }, "#56CCF2", avatarUrl)
+        };
+
+        var uriData = NavigationManager.Uri.Split('?');
+        if (uriData.Length > 1)
+        {
+            var data = uriData[1].Replace("%22", "\"");
+            data = System.Text.RegularExpressions.Regex.Unescape(data);
+
+            var userConnectionType = System.Text.Json.JsonSerializer.Deserialize<UserConnectionTypeDto>(data);
+            PageContext = userConnectionType;
         }
     }
-    private int CalculateAge(DateOnly birthDate)
-    {
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        var age = today.Year - birthDate.Year;
-
-        // als verjaardag nog niet is geweest dit jaar → leeftijd -1
-        if (birthDate > today.AddYears(-age))
-        {
-            age--;
-        }
-
-        return age;
-    }
-
-
 }
