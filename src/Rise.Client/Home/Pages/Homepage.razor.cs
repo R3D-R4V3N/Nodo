@@ -143,6 +143,8 @@ public partial class Homepage : IDisposable
     private void NavigateToChat(ChatDto.GetChats chat)
     {
         _activeChatId = chat.ChatId;
+        chat.UnreadCount = 0;
+        _chats.Sort((a, b) => Nullable.Compare(b.LastMessage?.Timestamp, a.LastMessage?.Timestamp));
         NavigationManager.NavigateTo($"/chat/{chat.ChatId}");
     }
 
