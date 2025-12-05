@@ -12,6 +12,7 @@ namespace Rise.Client.Home.Pages;
 public partial class Homepage : IDisposable
 {
     [Inject] public UserState UserState { get; set; }
+    [Inject] public ChatStateService ChatState { get; set; } = null!;
     private readonly List<ChatDto.GetChats> _chats = new();
     private List<ChatDto.GetChats> _filteredChats => string.IsNullOrWhiteSpace(_searchTerm)
         ? _chats
@@ -22,12 +23,17 @@ public partial class Homepage : IDisposable
     private bool _isLoading = true;
     private string? _loadError;
     private string? _searchTerm;
-    private int? _activeChatId;
 
     [Inject]
     private IHubClientFactory HubClientFactory { get; set; } = null!;
     private IHubClient? _hubConnection;
     private readonly HashSet<string> _onlineUsers = new();
+
+    protected override void OnInitialized()
+    {
+        ChatState.OnChange += HandleChatStateChanged;
+        ChatState.SetActiveChat(null);
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -36,6 +42,7 @@ public partial class Homepage : IDisposable
         {
             _chats.Clear();
             _chats.AddRange(result.Value.Chats ?? []);
+            ChatState.InitializeCounts(_chats);
         }
         else
         {
@@ -122,16 +129,16 @@ public partial class Homepage : IDisposable
             chat.LastMessage = message;
         }
 
-        var isActiveChat = _activeChatId.HasValue && _activeChatId.Value == message.ChatId;
+        var isActiveChat = ChatState.ActiveChatId.HasValue && ChatState.ActiveChatId.Value == message.ChatId;
         var isOwnMessage = string.Equals(message.User.AccountId, UserState.User?.AccountId, StringComparison.Ordinal);
 
         if (isActiveChat)
         {
-            chat.UnreadCount = 0;
+            ChatState.ResetUnread(message.ChatId);
         }
         else if (!isOwnMessage)
         {
-            chat.UnreadCount += 1;
+            ChatState.IncrementUnread(message.ChatId);
         }
 
         _chats.Sort((a, b) => Nullable.Compare(b.LastMessage?.Timestamp, a.LastMessage?.Timestamp));
@@ -142,8 +149,7 @@ public partial class Homepage : IDisposable
 
     private void NavigateToChat(ChatDto.GetChats chat)
     {
-        _activeChatId = chat.ChatId;
-        chat.UnreadCount = 0;
+        ChatState.SetActiveChat(chat.ChatId);
         _chats.Sort((a, b) => Nullable.Compare(b.LastMessage?.Timestamp, a.LastMessage?.Timestamp));
         NavigationManager.NavigateTo($"/chat/{chat.ChatId}");
     }
@@ -205,6 +211,16 @@ public partial class Homepage : IDisposable
         return otherUser?.AvatarUrl ?? DefaultImages.Profile;
     }
 
+    private int GetUnreadCount(int chatId)
+    {
+        return ChatState.GetUnreadCount(chatId);
+    }
+
+    private void HandleChatStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
 
     private static string GetAvatarKey(MessageDto.Chat dto)
     {
@@ -236,6 +252,7 @@ public partial class Homepage : IDisposable
 
     public async void Dispose()
     {
+        ChatState.OnChange -= HandleChatStateChanged;
         if (_hubConnection is not null)
             await _hubConnection.DisposeAsync();
     }
