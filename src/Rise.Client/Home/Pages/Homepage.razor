@@ -72,10 +72,10 @@
                       class="w-full text-left"
                       @onclick="() => NavigateToChat(chat)">
                 <div class="relative bg-white rounded-3xl p-4 sm:p-5 shadow hover:shadow-md active:scale-[0.99] transition flex items-start gap-3 sm:gap-4">
-                  @if (chat.UnreadCount > 0)
+                  @if (GetUnreadCount(chat.ChatId) > 0)
                   {
                     <span class="absolute -top-2 -right-2 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] sm:text-xs font-semibold min-w-[1.5rem] h-6 px-2 border-2 border-white">
-                      @FormatUnreadLabel(chat.UnreadCount)
+                      @FormatUnreadLabel(GetUnreadCount(chat.ChatId))
                     </span>
                   }
                   <!-- Avatar -->

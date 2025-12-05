@@ -19,6 +19,7 @@ public partial class Chat : IAsyncDisposable
 {
     [Parameter] public int ChatId { get; set; }
     [Inject] public UserState UserState { get; set; }
+    [Inject] public ChatStateService ChatState { get; set; } = null!;
     [Inject] public OfflineQueueService OfflineQueueService { get; set; } = null!;
     // Onnodig complex, zie Talk over Factory
 
@@ -63,12 +64,14 @@ public partial class Chat : IAsyncDisposable
         if (result.IsSuccess && result.Value is not null)
         {
             _chat = result.Value.Chat;
+            ChatState.SetActiveChat(ChatId);
         }
         else
         {
             _chat = null;
-            _loadError = result.Errors.FirstOrDefault() 
+            _loadError = result.Errors.FirstOrDefault()
                 ?? "Het gesprek kon niet geladen worden.";
+            ChatState.SetActiveChat(null);
         }
 
         _isLoading = false;
@@ -561,6 +564,8 @@ public partial class Chat : IAsyncDisposable
         }
 
         _hubConnectionLock.Dispose();
+
+        ChatState.SetActiveChat(null);
     }
 
     private async Task LeaveCurrentChatAsync()
