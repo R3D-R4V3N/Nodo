@@ -12,7 +12,6 @@ public class Emergency : Entity
     public Emergency() { }
 
     public required EmergencyType Type { get; set; } = EmergencyType.Other;
-    public EmergencyStatus Status { get; private set; } = EmergencyStatus.Open;
     private Chat _happenedInChat;
     public required Chat HappenedInChat 
     {
@@ -42,31 +41,8 @@ public class Emergency : Entity
     public required EmergencyRange Range { get; set; }
     public List<Supervisor> AllowedToResolve { get; private set; } = [];
     public List<Supervisor> HasResolved { get; private set; } = [];
-    public bool IsResolved => Status == EmergencyStatus.Closed || HasResolved.Count >= AllowedToResolve.Count;
-
-    public Result SetStatus(EmergencyStatus status, Supervisor? resolver = null)
-    {
-        if (!Enum.IsDefined(typeof(EmergencyStatus), status))
-        {
-            return Result.Conflict("Ongeldige status opgegeven.");
-        }
-
-        Status = status;
-
-        if (Status == EmergencyStatus.Closed)
-        {
-            if (resolver is not null && !HasResolved.Contains(resolver))
-            {
-                HasResolved.Add(resolver);
-            }
-        }
-        else
-        {
-            HasResolved.Clear();
-        }
-
-        return Result.Success();
-    }
+    public EmergencyStatus Status { get; private set; } = EmergencyStatus.Open;
+    public bool IsResolved => Status == EmergencyStatus.Closed;
 
     public Result<string> Resolve(Supervisor handler)
     {
@@ -91,8 +67,10 @@ public class Emergency : Entity
         }
 
         HasResolved.Add(handler);
-        Status = EmergencyStatus.Closed;
 
-        return Result.Success($"Melding werd opgelost door {handler}.");
+        if (HasResolved.Count >= AllowedToResolve.Count)
+            Status = EmergencyStatus.Closed;
+
+        return Result.Success($"{handler} heeft ingegrepen in {this}.");
     }
 }

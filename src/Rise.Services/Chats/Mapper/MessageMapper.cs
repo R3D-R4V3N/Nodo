@@ -23,4 +23,23 @@ internal static class MessageMapper
                 : null,
         };
     }
+
+    public static MessageDto.Chat? ToEmergencyDto(this Message message)
+    {
+        if (message is null)
+            return null;
+
+        return new MessageDto.Chat
+        {
+            ChatId = message.Chat.Id,
+            Id = message.Id,
+            Content = message.Text?.Value ?? string.Empty,
+            Timestamp = message.CreatedAt,
+            User = UserMapper.ToMessageDto(message.Sender),
+            AudioDataBlob = AudioHelperMethods.BuildAudioDataUrl(message),
+            AudioDuration = message.AudioDurationSeconds.HasValue
+                ? TimeSpan.FromSeconds(message.AudioDurationSeconds.Value)
+                : null,
+        };
+    }
 }

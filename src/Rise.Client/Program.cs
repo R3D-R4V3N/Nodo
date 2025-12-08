@@ -7,7 +7,6 @@ using Rise.Client.Chats;
 using Rise.Client.Emergencies;
 using Rise.Client.Events;
 using Rise.Client.Identity;
-using Rise.Client.Notifications;
 using Rise.Client.RealTime;
 using Rise.Client.State;
 using Rise.Client.UserConnections;
@@ -132,12 +131,12 @@ try
 
     builder.Services.AddScoped<IVoiceRecorderService, VoiceRecorderService>();
     builder.Services.AddScoped<ChatMessageDispatchService>();
-    builder.Services.AddScoped<IMagicBellPushService, MagicBellPushService>();
 
     builder.Services.AddSingleton<IHubClientFactory, HubClientFactory>();
     builder.Services.AddSingleton<IHubClient, HubClient>();
 
     builder.Services.AddSingleton<OfflineQueueService>();
+    builder.Services.AddSingleton<ICacheService, CacheService>();
     builder.Services.AddSingleton<ConnectionServiceFactory>();
 
     // load in validation rules for DI

@@ -13,6 +13,7 @@ using Rise.Shared.Users;
 using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
+using Rise.Shared.Common;
 
 namespace Rise.Client.Chats.Pages;
 public partial class Chat : IAsyncDisposable
@@ -24,6 +25,7 @@ public partial class Chat : IAsyncDisposable
     // Onnodig complex, zie Talk over Factory
 
     private ChatDto.GetChat? _chat;
+    private List<MessageDto.Chat> _messages = [];
     private readonly SemaphoreSlim _hubConnectionLock = new(1, 1);
     [Inject] private IHubClientFactory HubClientFactory { get; set; } = null!;
     private IHubClient? _hubConnection;
@@ -57,30 +59,64 @@ public partial class Chat : IAsyncDisposable
         _loadError = null;
         _errorMessage = null;
         _isLoading = true;
-        ScheduleFooterMeasurement();
-
-        var result = await ChatService.GetByIdAsync(ChatId);
-
-        if (result.IsSuccess && result.Value is not null)
+        var chatResult = await ChatService.GetByIdAsync(ChatId);
+        if (chatResult.IsSuccess && chatResult.Value is not null)
         {
-            _chat = result.Value.Chat;
+            _chat = chatResult.Value.Chat;
             ChatState.SetActiveChat(ChatId);
+            await LoadNextMessages();
         }
         else
         {
             _chat = null;
-            _loadError = result.Errors.FirstOrDefault()
+            _loadError = chatResult.Errors.FirstOrDefault() 
                 ?? "Het gesprek kon niet geladen worden.";
             ChatState.SetActiveChat(null);
         }
-
-        _isLoading = false;
-        _shouldScrollToBottom = true;
 
         var isOnline = await OfflineQueueService.IsOnlineAsync();
         if (isOnline)
         {
             await EnsureHubConnectionAsync();
+        }
+
+        _isLoading = false;
+        ScheduleFooterMeasurement();
+        _shouldScrollToBottom = true;
+        StateHasChanged();
+    }
+    private bool _shouldIgnoreFirstIntersection = true;
+    private async Task OnInfiniteScrollTriggered()
+    {
+        if (_shouldIgnoreFirstIntersection)
+        {
+            _shouldIgnoreFirstIntersection = false;
+            return;
+        }
+
+        await LoadNextMessages();
+    }
+    private async Task LoadNextMessages()
+    {
+        if (!ChatState.HasNextPage(ChatId))
+            return;
+
+        const int PAGE_SIZE = 50;
+        int skip = _messages.Count;
+
+        QueryRequest.SkipTake request = new QueryRequest.SkipTake()
+        {
+            Skip = skip,
+            Take = PAGE_SIZE,
+        };
+
+        var messagesResult = await ChatService.GetMessagesAsync(ChatId, request);
+        if (messagesResult.IsSuccess && messagesResult.Value is not null)
+        {
+            if (PAGE_SIZE != messagesResult.Value.BatchCount)
+                ChatState.FetchedAllMessages(ChatId);
+
+            _messages.InsertRange(0, messagesResult.Value.Messages.Reverse());
         }
     }
 
@@ -186,7 +222,7 @@ public partial class Chat : IAsyncDisposable
             return;
         }
 
-        _chat.Messages.Add(pendingMessage);
+        _messages.Add(pendingMessage);
         ScheduleFooterMeasurement();
         _shouldScrollToBottom = true;
         StateHasChanged();
@@ -211,7 +247,7 @@ public partial class Chat : IAsyncDisposable
             }
         }
 
-        _chat.Messages.Remove(message);
+        _messages.Remove(message);
         ScheduleFooterMeasurement();
         StateHasChanged();
     }
@@ -282,7 +318,7 @@ public partial class Chat : IAsyncDisposable
         if (TryAddMessage(dto))
         {
             ScheduleFooterMeasurement();
-            _shouldScrollToBottom = true;
+            _shouldScrollToBottom = _messages[^1].User.AccountId == UserState.User.AccountId;
             StateHasChanged();
         }
     }
@@ -294,7 +330,7 @@ public partial class Chat : IAsyncDisposable
             return;
         }
 
-        var pendingMessage = _chat.Messages.FirstOrDefault(message =>
+        var pendingMessage = _messages.FirstOrDefault(message =>
             message.IsPending
             && message.ChatId == dto.ChatId
             && message.User.Id == dto.User.Id
@@ -302,7 +338,7 @@ public partial class Chat : IAsyncDisposable
 
         if (pendingMessage is not null)
         {
-            _chat.Messages.Remove(pendingMessage);
+            _messages.Remove(pendingMessage);
         }
     }
 
@@ -373,7 +409,7 @@ public partial class Chat : IAsyncDisposable
             return false;
         }
 
-        _chat.Messages.Add(dto);
+        _messages.Add(dto);
 
         // is sort needed?
         // if yes: better to use a sorted datastructure than to sort on every new message
@@ -451,7 +487,7 @@ public partial class Chat : IAsyncDisposable
 
     private string GetChatStatusText()
     {
-        var lastMessage = _chat?.Messages.LastOrDefault();
+        var lastMessage = _messages.LastOrDefault();
         if (lastMessage?.Timestamp is DateTime timestamp)
         {
             return $"Laatste bericht {timestamp.ToLocalTime():HH:mm}";
@@ -467,7 +503,7 @@ public partial class Chat : IAsyncDisposable
             return string.Empty;
         }
 
-        var first = _chat.Messages
+        var first = _messages
             .OrderBy(m => m.Timestamp)
             .FirstOrDefault();
 
@@ -502,7 +538,7 @@ public partial class Chat : IAsyncDisposable
             return;
         }
 
-        var relatedMessage = _chat.Messages
+        var relatedMessage = _messages
             .Where(message => !message.IsPending && message.Id > 0)
             .OrderByDescending(message => message.Timestamp ?? DateTime.MinValue)
             .FirstOrDefault();

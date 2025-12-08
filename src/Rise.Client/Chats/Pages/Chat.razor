@@ -72,11 +72,15 @@
         }
 
         <!-- Scrollable messages -->
-        <div class="flex-1 overflow-y-auto px-3 no-scrollbar" style="@GetMessageHostPaddingStyle()" @ref="_messagesHost">
-            <MessageList Messages="_chat?.Messages"
-                         TimestampText="@GetConversationDateLabel()"
-                         OnCancelPending="CancelPendingMessageAsync" />
-        </div>
+        <Rise.Client.Shared.InfiniteScroll ObserverTargetId="observerTarget" ObservableTargetReached="(e) => OnInfiniteScrollTriggered()">
+
+            <div class="flex-1 overflow-y-auto px-3 no-scrollbar" style="@GetMessageHostPaddingStyle()" @ref="_messagesHost">
+                <MessageList Messages="_messages"
+                             TimestampText="@GetConversationDateLabel()"
+                             OnCancelPending="CancelPendingMessageAsync" />
+            </div>
+
+        </Rise.Client.Shared.InfiniteScroll>
 
         <!-- Fixed input bar -->
         <div class="fixed bottom-0 left-0 right-0 bg-white" @ref="_footerHost">

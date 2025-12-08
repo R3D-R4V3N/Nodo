@@ -1,6 +1,4 @@
-self.importScripts('https://unpkg.com/@magicbell/webpush@latest/dist/magicbell-sw.js');
-
-const DEV_CACHE = 'nodo-dev-cache-v5';
+const DEV_CACHE = 'nodo-dev-cache-v4';
 const toAbsoluteUrl = url => new URL(url, self.location.origin).toString();
 const PRECACHE_URLS = [
     './',
@@ -8,13 +6,17 @@ const PRECACHE_URLS = [
     'manifest.webmanifest',
     'css/app.css',
     'css/style.css',
-    'Rise.Client.styles.css',
+    'js/Observer.js',
     'js/offlineNotifier.js',
+    'js/offlineQueue.js',
+    'js/pwa.js',
     'js/voiceRecorder.js',
-    'js/magicBellPush.js',
+    'js/pushNotifications.js',
     'favicon.png',
-    'icon-192.png',
-    'icon-512.png'
+    'icons/android/*.png',
+    'icons/ios/*.png',
+    'icons/windows/*.png'
+    
 ].map(toAbsoluteUrl);
 const offlineRoot = toAbsoluteUrl('./');
 const apiPattern = /\/api\//i;
@@ -108,3 +110,47 @@ async function handleApiRequest(request) {
             });
     }
 }
+self.addEventListener('push', event => {
+    console.log('[SW] Push event ontvangen:', event);
+
+    if (!event.data) {
+        console.warn("[SW] Push ontvangen maar geen data payload");
+        return;
+    }
+
+    const data = event.data.json();
+
+    const title = data.title || "Nieuw bericht";
+    const options = {
+        body: data.body || "",
+        icon: "icons/ios/1024.png",
+        badge: "icons/ios/1024.png",
+        data: {
+            url: data.url || "/"
+        }
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(title, options)
+    );
+});
+
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+
+    const urlToOpen = event.notification.data.url || "/";
+
+    event.waitUntil(
+        clients.matchAll({ includeUncontrolled: true, type: "window" })
+            .then(clientList => {
+                for (const client of clientList) {
+                    if (client.url === urlToOpen && "focus" in client) {
+                        return client.focus();
+                    }
+                }
+                if (clients.openWindow) {
+                    return clients.openWindow(urlToOpen);
+                }
+            })
+    );
+});

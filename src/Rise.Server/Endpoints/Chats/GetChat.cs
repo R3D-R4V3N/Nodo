@@ -13,7 +13,7 @@ public class GetChat(IChatService chatService) : Endpoint<ChatRequest.GetChat, R
 
     public override Task<Result<ChatResponse.GetChat>> ExecuteAsync(ChatRequest.GetChat req, CancellationToken ct)
     {
-        req.ChatId = Route<int>("ChatId");
-        return chatService.GetByIdAsync(req.ChatId, ct);
+        var chatId = Route<int>("ChatId");
+        return chatService.GetByIdAsync(chatId, ct);
     }
 }

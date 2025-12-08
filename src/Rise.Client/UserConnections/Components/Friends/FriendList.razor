@@ -3,7 +3,8 @@
     {
         @foreach (var f in Items)
         {
-            <FriendCard Friend="f"
+            <FriendCard @key="@f.User.Id"
+                        Friend="f"
                         PageContext="@PageContext"
                         OnAccept="OnAccept"
                         OnReject="OnReject"

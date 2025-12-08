@@ -4,6 +4,6 @@ public static partial class EmergencyResponse
 {
     public class GetEmergency
     {
-        public EmergencyDto.Get Emergency { get; set; }
+        public EmergencyDto.GetEmergency Emergency { get; set; }
     }
 }

@@ -22,5 +22,8 @@
       <ProjectReference Include="..\Rise.Persistence\Rise.Persistence.csproj" />
       <ProjectReference Include="..\Rise.Shared\Rise.Shared.csproj" />
     </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="WebPush" Version="1.0.12" />
+    </ItemGroup>
 
 </Project>

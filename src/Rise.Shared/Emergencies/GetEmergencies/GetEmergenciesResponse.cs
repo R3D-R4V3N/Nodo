@@ -4,7 +4,7 @@ public static partial class EmergencyResponse
 {
     public class GetEmergencies
     {
-        public IEnumerable<EmergencyDto.Get> Emergencies { get; set; } = [];
+        public IEnumerable<EmergencyDto.GetEmergencies> Emergencies { get; set; } = [];
         public int TotalCount { get; set; }
     }
 }

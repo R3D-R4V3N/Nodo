@@ -37,8 +37,8 @@ public class EmergencyService(HttpClient httpClient) : IEmergencyService
         return result ?? Result<EmergencyResponse.GetEmergency>.Error("Kon de noodmelding niet laden.");
     }
 
-    public async Task<Result<EmergencyResponse.UpdateStatus>> UpdateStatusAsync(
-        EmergencyRequest.UpdateStatus request,
+    public async Task<Result<EmergencyResponse.Resolve>> ResolveAsync(
+        EmergencyRequest.Resolve request,
         CancellationToken ctx = default)
     {
         var response = await _httpClient.PutAsJsonAsync(
@@ -46,7 +46,7 @@ public class EmergencyService(HttpClient httpClient) : IEmergencyService
             request,
             ctx);
 
-        return await ReadResultAsync<EmergencyResponse.UpdateStatus>(
+        return await ReadResultAsync<EmergencyResponse.Resolve>(
             response,
             ctx,
             "Kon de status van de noodmelding niet bijwerken.");

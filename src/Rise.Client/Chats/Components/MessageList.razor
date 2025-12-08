@@ -7,6 +7,9 @@
         <p class="text-center text-[10px] sm:text-xs text-neutral-500">@TimestampText</p>
     }
 
+    @* <!-- infinite scroll --> *@
+    <span id="observerTarget"></span>
+
     @for (var i = 0; i < Messages.Count; i++)
     {
         var message = Messages[i];
@@ -27,7 +30,8 @@
 
             @if (isOutgoing && hasAudio)
             {
-                <OutgoingAudioBubble Text="@message.Content"
+                <OutgoingAudioBubble @key="@message.Id"
+                                     Text="@message.Content"
                                      AudioUrl="@message.AudioDataBlob"
                                      AudioDuration="@message.AudioDuration"
                                      IsPending="@message.IsPending"
@@ -35,20 +39,22 @@
             }
             else if (isOutgoing)
             {
-                <OutgoingTextBubble Text="@message.Content"
+                <OutgoingTextBubble @key="@message.Id"
+                                    Text="@message.Content"
                                     IsPending="@message.IsPending"
                                     OnCancelPending="() => HandleCancel(message)" />
             }
             else if (hasAudio)
             {
-                <IncomingAudioBubble AudioUrl="@message.AudioDataBlob"
+                <IncomingAudioBubble @key="@message.Id" 
+                                     AudioUrl="@message.AudioDataBlob"
                                      AudioDuration="@message.AudioDuration"
                                      Text="@message.Content"
                                      AvatarUrl="@avatarUrl" />
             }
             else
             {
-                <IncomingTextBubble Text="@message.Content" AvatarUrl="@avatarUrl" />
+                <IncomingTextBubble @key="@message.Id" Text="@message.Content" AvatarUrl="@avatarUrl" />
             }
         </div>
     }

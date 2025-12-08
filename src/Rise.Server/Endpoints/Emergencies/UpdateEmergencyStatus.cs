@@ -4,7 +4,7 @@ using Rise.Shared.Identity;
 namespace Rise.Server.Endpoints.Emergencies;
 
 public class UpdateEmergencyStatus(IEmergencyService emergencyService)
-    : Endpoint<EmergencyRequest.UpdateStatus, Result<EmergencyResponse.UpdateStatus>>
+    : Endpoint<EmergencyRequest.Resolve, Result<EmergencyResponse.Resolve>>
 {
     public override void Configure()
     {
@@ -12,11 +12,11 @@ public class UpdateEmergencyStatus(IEmergencyService emergencyService)
         Roles(AppRoles.Supervisor, AppRoles.Administrator);
     }
 
-    public override Task<Result<EmergencyResponse.UpdateStatus>> ExecuteAsync(
-        EmergencyRequest.UpdateStatus request,
+    public override Task<Result<EmergencyResponse.Resolve>> ExecuteAsync(
+        EmergencyRequest.Resolve request,
         CancellationToken ct)
     {
         request.EmergencyId = Route<int>("EmergencyId");
-        return emergencyService.UpdateStatusAsync(request, ct);
+        return emergencyService.ResolveAsync(request, ct);
     }
 }

@@ -67,7 +67,7 @@
         <ul class="space-y-3 sm:space-y-4 pb-8">
           @foreach (var chat in _filteredChats)
           {
-            <li>
+            <li @key="@chat.ChatId">
               <button type="button"
                       class="w-full text-left"
                       @onclick="() => NavigateToChat(chat)">
@@ -82,7 +82,7 @@
                   }
                   else
                   {
-                    var otherUser = chat.Users.FirstOrDefault(u => u.Id != UserState.User.Id);
+                    var otherUser = chat.Users.FirstOrDefault(u => u.Id != UserState?.User?.Id);
                     var isOnline = otherUser is not null && _onlineUsers.Contains(otherUser.AccountId);
 
                     <div class="relative inline-block">

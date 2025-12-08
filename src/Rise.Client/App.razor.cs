@@ -21,18 +21,21 @@ public partial class App : IDisposable
     private bool _pwaStatusLoaded;
     private bool _isLoading = true;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        AuthStateProvider.AuthenticationStateChanged += OnAuthStateChanged;
-        _isLoading = true;
-        try
+        if (firstRender)
         {
-            await UserContext.SetUserStateAsync();
-        }
-        finally
-        {
-            _isLoading = false;
-            StateHasChanged();
+            AuthStateProvider.AuthenticationStateChanged += OnAuthStateChanged;
+            _isLoading = true;
+            try
+            {
+                await UserContext.SetUserStateAsync();
+            }
+            finally
+            {
+                _isLoading = false;
+                StateHasChanged();
+            }
         }
     }
 

@@ -6,9 +6,8 @@ namespace Rise.Client.State;
 
 public class ChatState
 {
-    private readonly Dictionary<int, int> _unreadCounts = new();
-
-    public IReadOnlyDictionary<int, int> UnreadCounts => _unreadCounts;
+    private readonly Dictionary<int, ChatStateItem> _states = new();
+    //public IReadOnlyDictionary<int, ChatStateItem> States => _states;
 
     public int? ActiveChatId { get; private set; }
 
@@ -20,12 +19,17 @@ public class ChatState
 
         foreach (var chat in chats)
         {
-            if (_unreadCounts.TryGetValue(chat.ChatId, out var existing) && existing == chat.UnreadCount)
+            if (_states.TryGetValue(chat.ChatId, out var existing) && existing.UnReadCount == chat.UnreadCount)
             {
+                existing.HasNextPage = true;
                 continue;
             }
 
-            _unreadCounts[chat.ChatId] = Math.Max(0, chat.UnreadCount);
+            _states[chat.ChatId] = new ChatStateItem()
+            {
+                UnReadCount = Math.Max(0, chat.UnreadCount)
+            };
+
             changed = true;
         }
 
@@ -47,6 +51,16 @@ public class ChatState
 
         NotifyStateChanged();
     }
+    public bool HasNextPage(int chatId)
+    {
+        return _states.TryGetValue(chatId, out var item)
+            ? item.HasNextPage : false;
+    }
+    public void FetchedAllMessages(int chatId)
+    {
+        _states.TryAdd(chatId, new ChatStateItem());
+        _states[chatId].HasNextPage = false;
+    }
 
     public void IncrementUnread(int chatId)
     {
@@ -56,33 +70,36 @@ public class ChatState
             return;
         }
 
-        if (!_unreadCounts.ContainsKey(chatId))
-        {
-            _unreadCounts[chatId] = 0;
-        }
-
-        _unreadCounts[chatId]++;
+        _states.TryAdd(chatId, new ChatStateItem());
+        _states[chatId].UnReadCount++;
         NotifyStateChanged();
     }
 
     public void ResetUnread(int chatId)
     {
-        if (_unreadCounts.TryGetValue(chatId, out var current) && current == 0)
+        if (_states.TryGetValue(chatId, out var current) && current.UnReadCount == 0)
         {
             NotifyStateChanged();
             return;
         }
 
-        _unreadCounts[chatId] = 0;
+        _states.TryAdd(chatId, new ChatStateItem());
+        _states[chatId].UnReadCount = 0;
         NotifyStateChanged();
     }
 
     public int GetUnreadCount(int chatId)
     {
-        return _unreadCounts.TryGetValue(chatId, out var count)
-            ? count
+        return _states.TryGetValue(chatId, out var count)
+            ? count.UnReadCount
             : 0;
     }
 
     private void NotifyStateChanged() => OnChange?.Invoke();
+
+    private class ChatStateItem
+    {
+        public int UnReadCount { get; set; }
+        public bool HasNextPage { get; set; } = true;
+    }
 }

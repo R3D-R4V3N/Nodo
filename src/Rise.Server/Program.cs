@@ -10,13 +10,16 @@ using Rise.Server.RealTime;
 using Rise.Services;
 using Rise.Services.Chats;
 using Rise.Services.Identity;
-using Rise.Server.Notifications;
 using Rise.Services.UserConnections;
 using Rise.Shared.Chats;
 using Serilog.Events;
 using Rise.Server.Hubs;
 using Rise.Storage;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Rise.Server.Push;
+using Rise.Services.Notifications;
+
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -60,6 +63,14 @@ try
         .AddIdentity<IdentityUser, IdentityRole>()
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
+    
+    builder.Services.Configure<VapidOptions>(builder.Configuration.GetSection("Vapid"));
+
+    builder.Services.AddSingleton<IPushSubscriptionStore, InMemoryPushSubscriptionStore>();
+    builder.Services.AddSingleton<IPushNotificationService, PushNotificationService>();
+
+
+
 
     builder.Services
         .AddHttpContextAccessor()
@@ -77,15 +88,8 @@ try
             o.DocumentSettings = s => { s.Title = "RISE API"; };
         });
 
-    builder.Services.Configure<MagicBellOptions>(builder.Configuration.GetSection(MagicBellOptions.SectionName));
-    builder.Services.AddHttpClient(MagicBellOptions.HttpClientName, client =>
-    {
-        client.BaseAddress = new Uri("https://api.magicbell.com/");
-    });
-
     builder.Services.AddSignalR();
     builder.Services.AddSingleton<IChatMessageDispatcher, SignalRChatMessageDispatcher>();
-    builder.Services.AddScoped<IChatMessageDispatcher, MagicBellChatMessageDispatcher>();
     builder.Services.AddSingleton<IUserConnectionNotificationDispatcher, SignalRUserConnectionNotificationDispatcher>();
 
     var app = builder.Build();
@@ -96,7 +100,7 @@ try
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
 
-        db.Database.EnsureDeleted();
+        //db.Database.EnsureDeleted();
         db.Database.Migrate();
 
         await seeder.SeedAsync();

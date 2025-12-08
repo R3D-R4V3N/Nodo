@@ -79,11 +79,11 @@ public class ChatMessageDispatchService
             throw new InvalidOperationException("Een gebruiker is vereist om een tijdelijk bericht op te bouwen.");
         }
 
-        var pendingId = -1 * (chat.Messages.Count + 1);
+        //var pendingId = -1;
 
         return new MessageDto.Chat
         {
-            Id = pendingId,
+            //Id = pendingId,
             ChatId = chat.ChatId,
             Content = request.Content ?? string.Empty,
             Timestamp = DateTime.UtcNow,

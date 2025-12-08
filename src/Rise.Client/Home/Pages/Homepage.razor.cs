@@ -158,7 +158,7 @@ public partial class Homepage : IDisposable
     {
         var chatUserNames = chat?
             .Users
-            .Where(x => x.Id != UserState.User!.Id)
+            .Where(x => x.Id != UserState.User?.Id)
             .Select(x => x.Name)
             .ToList() ?? [$"Chat {chat?.ChatId}"];
 
@@ -194,7 +194,7 @@ public partial class Homepage : IDisposable
         // Zoek de eerste gebruiker die niet de huidige gebruiker is
         var otherUser = chat?
             .Users?
-            .FirstOrDefault(u => u.Id != UserState.User.Id);
+            .FirstOrDefault(u => u.Id != UserState?.User?.Id);
 
         return otherUser?.AvatarUrl ?? DefaultImages.Profile;
     }
@@ -228,7 +228,7 @@ public partial class Homepage : IDisposable
     private void NavigateToFriendProfile(ChatDto.GetChats chat)
     {
         var otherParticipant = chat.Users
-            .Where(m => !string.Equals(m.AccountId, UserState.User.AccountId, StringComparison.Ordinal))
+            .Where(m => !string.Equals(m.AccountId, UserState?.User?.AccountId, StringComparison.Ordinal))
             .FirstOrDefault();
 
         if (otherParticipant is not null)

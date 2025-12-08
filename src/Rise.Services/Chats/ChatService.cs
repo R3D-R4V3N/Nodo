@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
 using Rise.Domain.Messages;
@@ -6,6 +5,7 @@ using Rise.Domain.Users;
 using Rise.Persistence;
 using Rise.Services.Chats.Mapper;
 using Rise.Services.Identity;
+using Rise.Services.Notifications;
 using Rise.Shared.Common;
 using Rise.Shared.Chats;
 using Rise.Shared.Identity;
@@ -16,12 +16,13 @@ namespace Rise.Services.Chats;
 public class ChatService(
     ApplicationDbContext dbContext,
     ISessionContextProvider sessionContextProvider,
-    IEnumerable<IChatMessageDispatcher> messageDispatchers) : IChatService
+    IChatMessageDispatcher? messageDispatcher = null,
+    IPushNotificationService? pushNotificationService = null) : IChatService
 {
-
     private readonly ApplicationDbContext _dbContext = dbContext;
     private readonly ISessionContextProvider _sessionContextProvider = sessionContextProvider;
-    private readonly IReadOnlyList<IChatMessageDispatcher> _messageDispatchers = messageDispatchers.ToList();
+    private readonly IChatMessageDispatcher? _messageDispatcher = messageDispatcher;
+    private readonly IPushNotificationService? _pushNotificationService = pushNotificationService;
 
     public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -127,8 +128,6 @@ public class ChatService(
 
         // no clue how 'c.Id == chatId && c.Users.Contains(sender)' translates to sql
         var chat = await _dbContext.Chats
-            .Include(c => c.Messages)
-                .ThenInclude(m => m.Sender)
             .Include(c => c.Users)
             .SingleOrDefaultAsync(c => c.Id == chatId && c.Users.Contains(sender), cancellationToken);
 
@@ -249,8 +248,6 @@ public class ChatService(
             return Result.Invalid(new ValidationError(nameof(request.Content), "Een bericht moet tekst of audio bevatten."));
         }
 
-
-
         var message = new Message
         {
             Chat = chat,
@@ -269,15 +266,55 @@ public class ChatService(
 
         var dto = message.ToChatDto()!;
 
-        foreach (var dispatcher in _messageDispatchers)
+        // 1) Realtime via SignalR
+        if (_messageDispatcher is not null)
         {
             try
             {
-                await dispatcher.NotifyMessageCreatedAsync(chat.Id, dto, cancellationToken);
+                await _messageDispatcher.NotifyMessageCreatedAsync(chat.Id, dto, cancellationToken);
             }
             catch
             {
                 // Realtime notificaties mogen een mislukte call niet blokkeren.
+            }
+        }
+
+        // 2) Push notificaties naar alle andere gebruikers in deze chat
+        if (_pushNotificationService is not null)
+        {
+            try
+            {
+                var recipients = chat.Users
+                    .Where(u => u.Id != sender.Id)
+                    .Select(u => u.AccountId)
+                    .Where(id => !string.IsNullOrWhiteSpace(id))
+                    .Distinct()
+                    .ToList();
+
+                if (recipients.Count > 0)
+                {
+                    var preview = dto.Content ?? string.Empty;
+                    if (preview.Length > 80)
+                    {
+                        preview = preview[..80] + "...";
+                    }
+
+                    var senderDisplayName = sender.ToString(); // BaseUser.ToString() = "FirstName LastName"
+
+                    foreach (var recipientAccountId in recipients)
+                    {
+                        await _pushNotificationService.SendMessageNotificationAsync(
+                            recipientAccountId!,
+                            senderDisplayName,
+                            preview,
+                            url: $"/chat/{chat.Id}",
+                            cancellationToken);
+                    }
+                }
+            }
+            catch
+            {
+                // Push mag de chatflow nooit breken; errors hier negeren/loggen.
             }
         }
 
@@ -335,6 +372,47 @@ public class ChatService(
             .SingleOrDefaultAsync(u => u.AccountId == accountId, cancellationToken);
     }
 
+    public async Task<Result<ChatResponse.GetSupervisorChat>> GetSupervisorChatAsync(CancellationToken cancellationToken = default)
+    {
+        var principal = _sessionContextProvider.User;
+        if (principal is null)
+        {
+            return Result.Unauthorized();
+        }
+
+        var accountId = principal.GetUserId();
+        if (string.IsNullOrWhiteSpace(accountId))
+        {
+            return Result.Unauthorized();
+        }
+
+        var loggedInUser = await FindProfileByAccountIdAsync(accountId, cancellationToken);
+
+        if (loggedInUser is null)
+        {
+            return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
+        }
+
+        // no clue how 'c.Id == chatId && c.Users.Contains(sender)' translates to sql
+        var chat = await _dbContext
+            .Chats
+            .Where(c => c.ChatType == ChatType.Supervisor)
+            .Include(c => c.Messages)
+                .ThenInclude(m => m.Sender)
+            .Include(c => c.Users)
+            .SingleOrDefaultAsync(c => c.Users.Contains(loggedInUser), cancellationToken);
+
+        if (chat is null)
+        {
+            return Result.NotFound($"Chat van '{loggedInUser}' met supervisor werd niet gevonden.");
+        }
+
+        return Result.Success(new ChatResponse.GetSupervisorChat()
+        {
+            Chat = chat.ToGetSupervisorChatDto(),
+        });
+    }
+
     private static bool IsUnread(DateTime createdAt, int messageId, ChatMessageHistory? history)
     {
         if (history is null)
@@ -346,5 +424,50 @@ public class ChatService(
         var newerThanMessageId = history.LastReadMessageId.HasValue && messageId > history.LastReadMessageId.Value;
 
         return newerThanTimestamp || newerThanMessageId;
+    }
+
+    public async Task<Result<ChatResponse.GetMessages>> GetMessagesAsync(int chatId, QueryRequest.SkipTake request, CancellationToken cancellationToken = default)
+    {
+        var principal = _sessionContextProvider.User;
+        if (principal is null)
+        {
+            return Result.Unauthorized();
+        }
+
+        var accountId = principal.GetUserId();
+        if (string.IsNullOrWhiteSpace(accountId))
+        {
+            return Result.Unauthorized();
+        }
+
+        var loggedInUser = await FindProfileByAccountIdAsync(accountId, cancellationToken);
+
+        if (loggedInUser is null)
+        {
+            return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
+        }
+
+        // no clue how 'c.Id == chatId && c.Users.Contains(sender)' translates to sql
+        var chat = await _dbContext
+            .Chats
+            .Include(c => c.Messages
+                .OrderByDescending(m => m.CreatedAt)
+                .ThenByDescending(m => m.Id)
+                .Skip(request.Skip)
+                .Take(request.Take))
+                .ThenInclude(m => m.Sender)
+            .Include(c => c.Users)
+            .SingleOrDefaultAsync(c => c.Id == chatId, cancellationToken);
+
+        if (chat is null || !chat.Users.Contains(loggedInUser))
+        {
+            return Result.NotFound($"Chat niet gevonden.");
+        }
+
+        return Result.Success(new ChatResponse.GetMessages()
+        {
+            Messages = chat.Messages.Select(MessageMapper.ToChatDto),
+            BatchCount = chat.Messages.Count
+        });
     }
 }

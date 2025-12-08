@@ -1,5 +1,4 @@
 // Based on the default Blazor WebAssembly service worker with offline caching enabled.
-self.importScripts('https://unpkg.com/@magicbell/webpush@latest/dist/magicbell-sw.js');
 self.importScripts('./service-worker-assets.js');
 
 const cacheName = 'nodo-offline-cache-' + self.assetsManifest.version;
@@ -14,13 +13,12 @@ const extraResources = [
     'manifest.webmanifest',
     'css/app.css',
     'css/style.css',
-    'Rise.Client.styles.css',
     'js/offlineNotifier.js',
     'js/voiceRecorder.js',
-    'js/magicBellPush.js',
     'favicon.png',
-    'icon-192.png',
-    'icon-512.png'
+    'icons/android/*.png',
+    'icons/ios/*.png',
+    'icons/windows/*.png'
 ];
 extraResources.map(toAbsoluteUrl).forEach(resource => offlineResources.add(resource));
 const offlineRoot = toAbsoluteUrl('./');

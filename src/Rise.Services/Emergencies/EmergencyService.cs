@@ -42,7 +42,7 @@ public class EmergencyService(
             .Chats
             .Include(c => c.Users)
             .ThenInclude(u => (u as User).Supervisor)
-            .Include(c => c.Messages.Where(m => m.Id == request.MessageId))
+            .Include(c => c.Messages.OrderByDescending(m => m.CreatedAt).Take(1))
             .SingleOrDefaultAsync(c => c.Id == request.ChatId, ctx);
 
         if (chat is null)
@@ -112,15 +112,11 @@ public class EmergencyService(
             return Result.Unauthorized();
         }
 
-        var isAdministrator = principal.IsInRole(AppRoles.Administrator);
-
-        var supervisor = isAdministrator
-            ? null
-            : await dbContext
+        var supervisor = await dbContext
                 .Supervisors
                 .SingleOrDefaultAsync(u => u.AccountId == accountId, ctx);
 
-        if (!isAdministrator && supervisor is null)
+        if (supervisor is null)
         {
             return Result.Unauthorized();
         }
@@ -133,11 +129,6 @@ public class EmergencyService(
             .Include(e => e.MadeByUser)
             .AsQueryable();
 
-        if (!isAdministrator)
-        {
-            emergencyQuery = emergencyQuery.Where(e => e.AllowedToResolve.Contains(supervisor!));
-        }
-
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
             emergencyQuery = emergencyQuery.Where(c =>
@@ -149,8 +140,8 @@ public class EmergencyService(
 
         var emergencies = emergencyQuery
             .AsEnumerable()
-            .OrderByDescending(c => c.CreatedAt)
-            .ThenBy(e => e.Status)
+            .OrderBy(c => c.Status)
+            .ThenByDescending(c => c.CreatedAt)
             .ThenBy(e => e.MadeByUser.FirstName.Value)
             .Skip(request.Skip)
             .Take(request.Take)
@@ -159,7 +150,7 @@ public class EmergencyService(
         return Result.Success(
             new EmergencyResponse.GetEmergencies
             {
-                Emergencies = emergencies.Select(EmergencyMapper.ToGetDto),
+                Emergencies = emergencies.Select(EmergencyMapper.ToGetEmergenciesDto),
                 TotalCount = totalCount,
             }
         );
@@ -179,22 +170,31 @@ public class EmergencyService(
             return Result.Unauthorized();
         }
 
-        var isAdministrator = principal.IsInRole(AppRoles.Administrator);
-
-        var supervisor = isAdministrator
-            ? null
-            : await dbContext
+        var supervisor = await dbContext
                 .Supervisors
                 .SingleOrDefaultAsync(u => u.AccountId == accountId, ctx);
 
-        if (!isAdministrator && supervisor is null)
+        if (supervisor is null)
         {
             return Result.Unauthorized();
         }
 
+        var emergencyRange = await dbContext.Emergencies
+            .AsNoTracking()
+            .Where(e => e.Id == id)
+            .Select(e => new { e.Id, e.Range.Start, e.Range.End })
+            .FirstOrDefaultAsync(ctx);
+
+        if (emergencyRange == null)
+        {
+            return Result.Conflict("Noodmelding werd niet gevondenn.");
+        }
+
         var emergency = await dbContext
             .Emergencies
-            .Include(e => e.HappenedInChat)
+            .Include(e => e.HappenedInChat.Messages
+                .Where(m => m.CreatedAt >= emergencyRange.Start
+                 && m.CreatedAt <= emergencyRange.End))
             .Include(e => e.AllowedToResolve)
             .Include(e => e.HasResolved)
             .Include(e => e.MadeByUser)
@@ -208,13 +208,13 @@ public class EmergencyService(
         return Result.Success(
             new EmergencyResponse.GetEmergency
             {
-                Emergency = emergency.ToGetDto()
+                Emergency = emergency.ToGetEmergencyDto()
             }
         );
     }
 
-    public async Task<Result<EmergencyResponse.UpdateStatus>> UpdateStatusAsync(
-        EmergencyRequest.UpdateStatus request,
+    public async Task<Result<EmergencyResponse.Resolve>> ResolveAsync(
+        EmergencyRequest.Resolve request,
         CancellationToken ctx = default)
     {
         var principal = sessionContextProvider.User;
@@ -229,15 +229,11 @@ public class EmergencyService(
             return Result.Unauthorized();
         }
 
-        var isAdministrator = principal.IsInRole(AppRoles.Administrator);
-
-        var supervisor = isAdministrator
-            ? null
-            : await dbContext
+        var supervisor = await dbContext
                 .Supervisors
                 .SingleOrDefaultAsync(u => u.AccountId == accountId, ctx);
 
-        if (!isAdministrator && supervisor is null)
+        if (supervisor is null)
         {
             return Result.Unauthorized();
         }
@@ -255,12 +251,12 @@ public class EmergencyService(
             return Result.NotFound("Noodmelding werd niet gevonden.");
         }
 
-        if (!isAdministrator && !emergency.AllowedToResolve.Contains(supervisor!))
+        if (!emergency.AllowedToResolve.Contains(supervisor!))
         {
-            return Result.Unauthorized("Geen toegang om deze noodmelding aan te passen.");
+            return Result.Unauthorized("Geen toegang tot deze noodmelding.");
         }
 
-        var updateResult = emergency.SetStatus(request.Status.ToDomain(), supervisor);
+        var updateResult = emergency.Resolve(supervisor);
 
         if (!updateResult.IsSuccess)
         {
@@ -269,9 +265,9 @@ public class EmergencyService(
 
         await dbContext.SaveChangesAsync(ctx);
 
-        return Result.Success(new EmergencyResponse.UpdateStatus
+        return Result.Success(new EmergencyResponse.Resolve
         {
-            Emergency = emergency.ToGetDto()
+            Emergency = emergency.ToGetEmergenciesDto()
         });
     }
 }

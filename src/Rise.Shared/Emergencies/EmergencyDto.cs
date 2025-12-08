@@ -1,4 +1,6 @@
-﻿namespace Rise.Shared.Emergencies;
+﻿using Rise.Shared.Chats;
+
+namespace Rise.Shared.Emergencies;
 
 public static class EmergencyDto
 {
@@ -6,12 +8,25 @@ public static class EmergencyDto
     {
         public required string Message { get; set; }
     }
-    public class Get
+    public class GetEmergencies
     {
         public int Id { get; set; }
         public EmergencyTypeDto Type { get; set; }
         public EmergencyStatusDto Status { get; set; }
         public int ChatId { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string Reporter { get; set; } = string.Empty;
+        public bool IsResolved => Status == EmergencyStatusDto.Closed;
+        public string Label => TranslateEnumToText(Type).Label;
+        public string IconHref => TranslateEnumToText(Type).IconHref;
+        public string StatusLabel => TranslateStatusToText(Status);
+    }
+    public class GetEmergency
+    {
+        public int Id { get; set; }
+        public EmergencyTypeDto Type { get; set; }
+        public EmergencyStatusDto Status { get; set; }
+        public ChatDto.Emergency Chat { get; set; }
         public DateTime CreatedAt { get; set; }
         public string Reporter { get; set; } = string.Empty;
         public bool IsResolved => Status == EmergencyStatusDto.Closed;
@@ -31,7 +46,6 @@ public static class EmergencyDto
     public static string TranslateStatusToText(EmergencyStatusDto status) => status switch
     {
         EmergencyStatusDto.Open => "Open",
-        EmergencyStatusDto.InProgress => "Bezig",
         EmergencyStatusDto.Closed => "Gesloten",
         _ => throw new ArgumentOutOfRangeException(nameof(status), status, "No translation configured for emergency status."),
     };

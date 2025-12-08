@@ -227,11 +227,13 @@ public class Chat : Entity
             return Result.Conflict("Bericht hoort niet bij deze chat.");
         }
 
+        var timestamp = _messages.LastOrDefault()?.CreatedAt ?? DateTime.UtcNow;
+
         var emergency = new Emergency()
         {
             HappenedInChat = this,
             MadeByUser = notifier,
-            Range = EmergencyRange.Create(DateTime.UtcNow),
+            Range = EmergencyRange.Create(timestamp),
             Type = type
         };
 

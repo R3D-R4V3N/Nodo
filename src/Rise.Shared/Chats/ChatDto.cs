@@ -15,6 +15,18 @@ public static class ChatDto
     {
         public int ChatId { get; set; }
         public List<UserDto.Chat> Users { get; set; }
+    }
+    public class GetSupervisorChat
+    {
+        public int ChatId { get; set; }
+        public UserDto.Chat User { get; set; }
+        public UserDto.Chat Supervisor { get; set; }
+        public List<MessageDto.Chat> Messages { get; set; } = [];
+    }
+    public class Emergency
+    {
+        public int ChatId { get; set; }
+        public List<UserDto.Chat> Users { get; set; }
         public List<MessageDto.Chat> Messages { get; set; } = [];
     }
 }

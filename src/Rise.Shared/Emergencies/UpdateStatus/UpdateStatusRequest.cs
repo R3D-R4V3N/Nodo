@@ -2,9 +2,8 @@ namespace Rise.Shared.Emergencies;
 
 public static partial class EmergencyRequest
 {
-    public class UpdateStatus
+    public class Resolve
     {
         public required int EmergencyId { get; set; }
-        public required EmergencyStatusDto Status { get; set; }
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.AspNetCore.Components.Forms;
@@ -307,37 +306,6 @@ public partial class ProfileScreen
         catch
         {
             // Ignore failures and keep existing avatar.
-        }
-    }
-
-    private async Task EnablePushNotifications()
-    {
-        if (_isSubscribingToPush || !CanRequestPush)
-        {
-            return;
-        }
-
-        _isSubscribingToPush = true;
-        _pushStatusMessage = null;
-        _pushStatusIsError = false;
-
-        try
-        {
-            var subscribed = await MagicBellPushService.SubscribeAsync(_model.AccountId, _model.Email, CancellationToken.None);
-            _pushStatusMessage = subscribed
-                ? "Pushmeldingen zijn ingeschakeld. Je ontvangt meldingen bij nieuwe chatberichten."
-                : "Pushmeldingen konden niet worden ingeschakeld. Controleer je browser permissies en probeer opnieuw.";
-            _pushStatusIsError = !subscribed;
-        }
-        catch
-        {
-            _pushStatusMessage = "Er ging iets mis bij het inschakelen van pushmeldingen.";
-            _pushStatusIsError = true;
-        }
-        finally
-        {
-            _isSubscribingToPush = false;
-            await InvokeAsync(StateHasChanged);
         }
     }
 }

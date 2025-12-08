@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using FluentValidation;
-using Rise.Client.Notifications;
 using Rise.Client.Profile.Models;
 using Rise.Client.State;
 using Rise.Client.Users;
@@ -89,9 +88,6 @@ public partial class ProfileScreen : ComponentBase
     private bool _isSaving;
     private bool _isLoading = true;
     private string? _loadError;
-    private bool _isSubscribingToPush;
-    private string? _pushStatusMessage;
-    private bool _pushStatusIsError;
 
     private bool _isPickerOpen;
     private string _pickerSearch = string.Empty;
@@ -125,8 +121,6 @@ public partial class ProfileScreen : ComponentBase
     [Inject] private UserState UserState { get; set; } = default!;
     [Inject] private IValidator<UserRequest.UpdateCurrentUser> UpdateUserValidator { get; set; } = default!;
 
-    [Inject] private IMagicBellPushService MagicBellPushService { get; set; } = default!;
-
     [Inject] private IToastService ToastService { get; set; } = default!;
     
 
@@ -134,10 +128,6 @@ public partial class ProfileScreen : ComponentBase
     private bool IsLoading => _isLoading;
     private bool HasError => !string.IsNullOrWhiteSpace(_loadError);
     private string? ErrorMessage => _loadError;
-    private bool IsSubscribingToPush => _isSubscribingToPush;
-    private string? PushStatusMessage => _pushStatusMessage;
-    private bool IsPushStatusError => _pushStatusIsError;
-    private bool CanRequestPush => !_isLoading && !HasError && !string.IsNullOrWhiteSpace(_model.AccountId);
     private IReadOnlyList<ProfileHobbyModel> Hobbies => _model.Hobbies;
     private IReadOnlyList<HobbyOption> HobbyOptions => _hobbyOptions;
     private IReadOnlyList<PreferenceOption> PreferenceOptions => _preferenceOptions;

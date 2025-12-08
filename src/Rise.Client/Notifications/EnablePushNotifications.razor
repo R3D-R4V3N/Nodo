@@ -1,0 +1,131 @@
+﻿@using System.Net.Http.Json
+@using System.Security.Claims
+@using Rise.Shared.Notifications
+@inject IJSRuntime Js
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthenticationStateProvider AuthStateProvider
+
+<!-- Tailwind toggle i.p.v. button -->
+<label for="hs-push-toggle" class="relative inline-block w-11 h-6 cursor-pointer">
+    <input type="checkbox"
+           id="hs-push-toggle"
+           class="peer sr-only"
+           checked="@_isPushEnabled"
+           @onchange="OnToggleChanged"
+           disabled="@_isBusy" />
+
+    <span class="absolute inset-0 bg-gray-200 rounded-full transition-colors duration-200 ease-in-out
+                 peer-checked:bg-blue-600 dark:bg-neutral-700 dark:peer-checked:bg-blue-500
+                 peer-disabled:opacity-50 peer-disabled:pointer-events-none">
+    </span>
+
+    <span class="absolute top-1/2 start-0.5 -translate-y-1/2 size-5 bg-white rounded-full shadow-xs
+                 transition-transform duration-200 ease-in-out
+                 peer-checked:translate-x-full dark:bg-neutral-400 dark:peer-checked:bg-white">
+    </span>
+</label>
+
+@if (!string.IsNullOrEmpty(_statusMessage))
+{
+    <p class="text-sm text-neutral-600 mt-2">@_statusMessage</p>
+}
+
+@code {
+    private bool _isBusy;
+    private bool _isPushEnabled;  // status van de toggle
+    private string? _statusMessage;
+
+    // zelfde public key als in appsettings.json
+    private const string VapidPublicKey = "BM0rBfX8utfLUxaLyIZyYKUfly2TPfrCe68hotJxY63aOmRMa5ic9_TwH4izyyTd3swnA2bC-cGzuXjItveRr6Y";
+
+    private async Task OnToggleChanged(ChangeEventArgs e)
+    {
+        // waarde uit het checkbox-event halen
+        var isChecked = false;
+
+        if (e.Value is bool b)
+        {
+            isChecked = b;
+        }
+        else if (bool.TryParse(e.Value?.ToString(), out var parsed))
+        {
+            isChecked = parsed;
+        }
+
+        // Als user hem aan zet: push inschakelen
+        if (isChecked)
+        {
+            await EnablePushAsync();
+
+            // alleen op true laten als het gelukt is
+            // simpele check op success tekst, of pas aan naar eigen logica
+            _isPushEnabled = _statusMessage == "Pushnotificaties zijn ingeschakeld.";
+        }
+        else
+        {
+            // Hier zou je eventueel een DisablePushAsync() kunnen aanroepen
+            // om subscription te verwijderen op de server.
+            _isPushEnabled = false;
+            _statusMessage = "Pushnotificaties zijn uitgeschakeld (client-side).";
+        }
+    }
+
+    private async Task EnablePushAsync()
+    {
+        _statusMessage = null;
+        _isBusy = true;
+
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity is null || !user.Identity.IsAuthenticated)
+            {
+                _statusMessage = "Je moet ingelogd zijn om notificaties in te schakelen.";
+                return;
+            }
+
+            var userId =
+                user.FindFirst("sub")?.Value ??
+                user.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                user.Identity.Name;
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                _statusMessage = "Kon je user-id niet bepalen.";
+                return;
+            }
+
+            var subscription = await Js.InvokeAsync<PushSubscriptionDto>(
+                "nodoPush.requestPushSubscription",
+                VapidPublicKey);
+
+            subscription.UserId = userId;
+
+            var client = HttpClientFactory.CreateClient("SecureApi");
+            var response = await client.PostAsJsonAsync("api/push/subscribe", subscription);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _statusMessage = "Pushnotificaties zijn ingeschakeld.";
+            }
+            else
+            {
+                _statusMessage = $"Fout bij opslaan van subscription: {response.StatusCode}";
+            }
+        }
+        catch (JSException jsEx)
+        {
+            _statusMessage = $"Browserfout: {jsEx.Message}";
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"Onverwachte fout: {ex.Message}";
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+}

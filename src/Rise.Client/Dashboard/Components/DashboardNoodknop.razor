@@ -42,7 +42,7 @@
                                 <option value="@((int)status)">@EmergencyDto.TranslateStatusToText(status)</option>
                             }
                         </select>
-                        <button class="text-xs bg-neutral-100 text-neutral-800 px-3 py-1 rounded border" @onclick="() => NavigateToChat(emergency.ChatId)">Chat</button>
+                        <button class="text-xs bg-neutral-100 text-neutral-800 px-3 py-1 rounded border" @onclick="() => NavigateToEmergency(emergency.Id)">Bekijk</button>
                         <span class="@GetStatusBadgeClass(emergency.Status)">@emergency.StatusLabel</span>
                     </div>
                 </div>
@@ -52,8 +52,8 @@
 </div>
 
 @code {
-    private List<EmergencyDto.Get> _latestEmergencies = [];
-    private readonly EmergencyStatusDto[] _statusOptions = [EmergencyStatusDto.Open, EmergencyStatusDto.InProgress, EmergencyStatusDto.Closed];
+    private List<EmergencyDto.GetEmergencies> _latestEmergencies = [];
+    private readonly EmergencyStatusDto[] _statusOptions = [EmergencyStatusDto.Open, EmergencyStatusDto.Closed];
     private bool _isLoading = true;
     private string? _errorMessage;
     private readonly HashSet<int> _updatingEmergencies = [];
@@ -99,7 +99,7 @@
         }
     }
 
-    private async Task UpdateStatusAsync(EmergencyDto.Get emergency, ChangeEventArgs args)
+    private async Task UpdateStatusAsync(EmergencyDto.GetEmergencies emergency, ChangeEventArgs args)
     {
         if (args.Value is null || _updatingEmergencies.Contains(emergency.Id))
         {
@@ -111,17 +111,14 @@
             return;
         }
 
-        var newStatus = (EmergencyStatusDto)statusValue;
-
         _updatingEmergencies.Add(emergency.Id);
         _errorMessage = null;
 
         try
         {
-            var result = await EmergencyService.UpdateStatusAsync(new EmergencyRequest.UpdateStatus
+            var result = await EmergencyService.ResolveAsync(new EmergencyRequest.Resolve
             {
                 EmergencyId = emergency.Id,
-                Status = newStatus
             });
 
             if (result.IsSuccess)
@@ -151,12 +148,11 @@
         }
     }
 
-    private void NavigateToChat(int chatId) => NavigationManager.NavigateTo($"/chat/{chatId}");
+    private void NavigateToEmergency(int emergencyId) => NavigationManager.NavigateTo($"/emergency/{emergencyId}");
 
     private static string GetStatusBadgeClass(EmergencyStatusDto status) => status switch
     {
         EmergencyStatusDto.Closed => "text-xs bg-green-100 text-green-700 px-2 py-1 rounded",
-        EmergencyStatusDto.InProgress => "text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded",
         _ => "text-xs bg-red-100 text-red-700 px-2 py-1 rounded",
     };
 }
