@@ -1,6 +1,7 @@
 @using Rise.Shared.Common
 @using Rise.Shared.Emergencies
 @inject IEmergencyService EmergencyService
+@inject IToastService ToastService
 @inject NavigationManager NavigationManager
 @using Serilog
 
@@ -16,9 +17,9 @@
             <p class="loading-indicator__message">Noodmeldingen laden...</p>
         </div>
     }
-    else if (!string.IsNullOrEmpty(_errorMessage))
+    else if (_hasError)
     {
-        <p class="text-sm text-red-600">@_errorMessage</p>
+        <p class="text-sm text-neutral-500">Noodmeldingen zijn momenteel niet beschikbaar.</p>
     }
     else if (_latestEmergencies.Count == 0)
     {
@@ -55,7 +56,7 @@
     private List<EmergencyDto.GetEmergencies> _latestEmergencies = [];
     private readonly EmergencyStatusDto[] _statusOptions = [EmergencyStatusDto.Open, EmergencyStatusDto.Closed];
     private bool _isLoading = true;
-    private string? _errorMessage;
+    private bool _hasError;
     private readonly HashSet<int> _updatingEmergencies = [];
 
     protected override async Task OnInitializedAsync()
@@ -75,6 +76,7 @@
                     .OrderByDescending(e => e.CreatedAt)
                     .Take(3)
                     .ToList();
+                _hasError = false;
             }
             else
             {
@@ -83,15 +85,19 @@
                     .Where(e => !string.IsNullOrWhiteSpace(e))
                     .ToList();
 
-                _errorMessage = errors.Count > 0
-                    ? string.Join(Environment.NewLine, errors)
-                    : "Status kon niet worden aangepast.";
+                foreach (var error in errors)
+                {
+                    ToastService.ShowError(error!);
+                }
+
+                _hasError = true;
             }
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Kon laatste noodmeldingen niet laden.");
-            _errorMessage = "Fout bij het laden van noodmeldingen.";
+            ToastService.ShowError("Fout bij het laden van noodmeldingen.");
+            _hasError = true;
         }
         finally
         {
@@ -112,7 +118,6 @@
         }
 
         _updatingEmergencies.Add(emergency.Id);
-        _errorMessage = null;
 
         try
         {
@@ -133,13 +138,16 @@
             }
             else
             {
-                _errorMessage = string.Join(Environment.NewLine, result.Errors);
+                foreach (var error in result.Errors)
+                {
+                    ToastService.ShowError(error);
+                }
             }
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Kon status van noodmelding niet bijwerken.");
-            _errorMessage = "Fout bij het aanpassen van de status.";
+            ToastService.ShowError("Fout bij het aanpassen van de status.");
         }
         finally
         {

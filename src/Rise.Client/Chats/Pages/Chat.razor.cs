@@ -31,9 +31,7 @@ public partial class Chat : IAsyncDisposable
     private IHubClient? _hubConnection;
     private int? _joinedChatId;
     private string? _draft = string.Empty;
-    private string? _errorMessage;
-    private string? _connectionError;
-    private string? _loadError;
+    private bool _loadFailed;
     private bool _isLoading = true;
     private bool _isSending;
     private readonly List<AlertPrompt.AlertReason> _alertReasons = new();
@@ -56,8 +54,7 @@ public partial class Chat : IAsyncDisposable
 
     protected override async Task OnParametersSetAsync()
     {
-        _loadError = null;
-        _errorMessage = null;
+        _loadFailed = false;
         _isLoading = true;
         var chatResult = await ChatService.GetByIdAsync(ChatId);
         if (chatResult.IsSuccess && chatResult.Value is not null)
@@ -69,8 +66,10 @@ public partial class Chat : IAsyncDisposable
         else
         {
             _chat = null;
-            _loadError = chatResult.Errors.FirstOrDefault() 
+            var loadError = chatResult.Errors.FirstOrDefault()
                 ?? "Het gesprek kon niet geladen worden.";
+            ToastService.ShowError(loadError);
+            _loadFailed = true;
             ChatState.SetActiveChat(null);
         }
 
@@ -164,7 +163,6 @@ public partial class Chat : IAsyncDisposable
     {
         return InvokeAsync(async () =>
         {
-            _connectionError = null;
             await EnsureHubConnectionAsync();
         });
     }
@@ -180,7 +178,6 @@ public partial class Chat : IAsyncDisposable
         try
         {
             _isSending = true;
-            _errorMessage = null;
 
             var result = await MessageDispatchService.DispatchAsync(_chat!, createRequest);
 
@@ -200,14 +197,16 @@ public partial class Chat : IAsyncDisposable
                 .FirstOrDefault()
                 ?.ErrorMessage;
 
-            _errorMessage = result.Error
+            var toastMessage = result.Error
                 ?? validationMessage
                 ?? result.ServerResult?.Errors.FirstOrDefault()
                 ?? errorMessage;
+
+            ToastService.ShowError(toastMessage!);
         }
         catch
         {
-            _errorMessage ??= errorMessage;
+            ToastService.ShowError(errorMessage);
         }
         finally
         {
@@ -266,22 +265,18 @@ public partial class Chat : IAsyncDisposable
 
                 _hubConnection.Reconnecting += error => InvokeAsync(() =>
                 {
-                    _connectionError = "Realtime verbinding wordt hersteld…";
-                    StateHasChanged();
+                    ToastService.ShowInfo("Realtime verbinding wordt hersteld…");
                 });
 
                 _hubConnection.Reconnected += _ => InvokeAsync(async () =>
                 {
-                    _connectionError = null;
                     await JoinCurrentChatAfterReconnectAsync();
-                    StateHasChanged();
+                    ToastService.ShowSuccess("Realtime verbinding hersteld.");
                 });
 
                 _hubConnection.Closed += error => InvokeAsync(() =>
                 {
                     _joinedChatId = null;
-                    _connectionError = "Realtime verbinding werd verbroken. Vernieuw de pagina om opnieuw te verbinden.";
-                    StateHasChanged();
                 });
             }
 
@@ -299,7 +294,7 @@ public partial class Chat : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _connectionError = $"Realtime verbinding mislukt: {ex.Message}";
+            ToastService.ShowError($"Realtime verbinding mislukt: {ex.Message}");
         }
         finally
         {
@@ -369,7 +364,7 @@ public partial class Chat : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _connectionError = $"Realtime verbinding mislukt: {ex.Message}";
+            ToastService.ShowError($"Realtime verbinding mislukt: {ex.Message}");
         }
         finally
         {
@@ -399,7 +394,6 @@ public partial class Chat : IAsyncDisposable
 
         await _hubConnection.SendAsync("JoinChat", _chat.ChatId);
         _joinedChatId = _chat.ChatId;
-        _connectionError = null;
     }
 
     private bool TryAddMessage(MessageDto.Chat dto)

@@ -20,22 +20,22 @@
                 <span class="loading loading-spinner text-primary"></span>
             </div>
         }
-        else if (_errorMessage != null)
-        {
-             <div class="alert alert-error">@_errorMessage</div>
-        }
         else if (_chat != null)
         {
             @foreach (var message in _chat.Messages)
             {
                 var isMe = UserState.User != null && message.User.AccountId == UserState.User.AccountId;
-        
+
                 <div class="space-y-1">
                     <MessageBubble Text="@message.Content"
                                    IsOutgoing="@isMe"
                                    AvatarUrl="@message.User.AvatarUrl"/>
                 </div>
             }
+        }
+        else
+        {
+            <p class="text-center text-neutral-500">Het gesprek is niet beschikbaar.</p>
         }
     </div>
 

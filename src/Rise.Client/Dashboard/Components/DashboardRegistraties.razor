@@ -1,6 +1,7 @@
 @page "/dashboard/registrations"
 @using Rise.Shared.RegistrationRequests
 @inject IRegistrationRequestService RegistrationRequestService
+@inject IToastService ToastService
 @using Rise.Shared.Assets
 @using Rise.Shared.Identity
 @using Serilog
@@ -15,9 +16,9 @@
             <p class="loading-indicator__message">Registraties laden...</p>
         </div>
     }
-    else if (!string.IsNullOrEmpty(_errorMessage))
+    else if (_hasError)
     {
-        <p class="text-sm text-red-600">@_errorMessage</p>
+        <p class="text-sm text-neutral-500">Registraties zijn momenteel niet beschikbaar.</p>
     }
     else if (_latestRequests.Count == 0)
     {
@@ -44,7 +45,7 @@
 @code {
     private List<RegistrationRequestDto.Pending> _latestRequests = [];
     private bool _isLoading = true;
-    private string? _errorMessage;
+    private bool _hasError;
 
     protected override async Task OnInitializedAsync()
     {
@@ -58,16 +59,22 @@
                     .OrderByDescending(r => r.SubmittedAt)
                     .Take(3)
                     .ToList();
+                _hasError = false;
             }
             else
             {
-                _errorMessage = string.Join(Environment.NewLine, result.Errors);
+                foreach (var error in result.Errors)
+                {
+                    ToastService.ShowError(error);
+                }
+                _hasError = true;
             }
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Kon laatste registraties niet laden.");
-            _errorMessage = "Fout bij het laden van registraties.";
+            ToastService.ShowError("Fout bij het laden van registraties.");
+            _hasError = true;
         }
         finally
         {

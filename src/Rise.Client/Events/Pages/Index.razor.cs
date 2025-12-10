@@ -1,3 +1,4 @@
+using Blazored.Toast.Services;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Rise.Client.State;
@@ -7,11 +8,11 @@ namespace Rise.Client.Events.Pages;
 
 public partial class Index
 {
+    [Inject] public required IToastService ToastService { get; set; }
     [Inject] public required IEventService EventService { get; set; }
     [Inject] public required UserState UserState { get; set; }
-    
+
     private IEnumerable<EventDto.Get>? _events;
-    private string? _errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -25,7 +26,10 @@ public partial class Index
         if (result.IsSuccess && result.Value is not null)
             _events = result.Value.Events;
         else
-            _errorMessage = string.Join(", ", result.Errors);
+        {
+            ToastService.ShowError(string.Join(", ", result.Errors));
+            _events = Array.Empty<EventDto.Get>();
+        }
     }
 
     private async Task HandleToggleInterest(int eventId)
@@ -40,7 +44,7 @@ public partial class Index
         }
         else
         {
-            _errorMessage = string.Join(", ", result.Errors);
+            ToastService.ShowError(string.Join(", ", result.Errors));
         }
     }
 

@@ -1,7 +1,9 @@
+using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Rise.Shared.Identity;
 using Rise.Shared.Identity.Accounts;
+using System.Linq;
 
 namespace Rise.Client.Identity;
 
@@ -15,6 +17,7 @@ public partial class Login
     [Inject] public required IAccountManager AccountManager { get; set; }
     [Inject] public required NavigationManager Navigation { get; set; }
     [Inject] public required AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+    [Inject] public required IToastService ToastService { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -37,7 +40,21 @@ public partial class Login
     {
         _result = await AccountManager.LoginAsync(Model.Email!, Model.Password!);
 
-        if (_result.IsSuccess && !string.IsNullOrEmpty(ReturnUrl))
+        if (!_result.IsSuccess)
+        {
+            if (_result.Errors?.Any() == true)
+            {
+                foreach (var error in _result.Errors)
+                {
+                    ToastService.ShowError(error);
+                }
+            }
+            else
+            {
+                ToastService.ShowError("Inloggen mislukt.");
+            }
+        }
+        else if (!string.IsNullOrEmpty(ReturnUrl))
         {
             Navigation.NavigateTo(ReturnUrl);
         }
