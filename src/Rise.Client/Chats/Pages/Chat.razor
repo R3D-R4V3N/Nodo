@@ -45,11 +45,11 @@
             </div>
         </div>
     }
-    else if (!string.IsNullOrWhiteSpace(_loadError))
+    else if (_loadFailed)
     {
         <div class="flex-1 grid place-items-center px-6 text-center">
             <div class="space-y-2">
-                <p class="text-sm text-red-600">@_loadError</p>
+                <p class="text-sm text-neutral-600">Het gesprek kon niet geladen worden.</p>
                 <button class="text-xs text-[#127646] underline" @onclick="NavigateBack">
                     Ga terug naar overzicht
                 </button>
@@ -64,13 +64,6 @@
     }
     else
     {
-        @if (!string.IsNullOrWhiteSpace(_connectionError))
-        {
-            <div class="px-6 py-2 text-xs text-amber-700 bg-amber-50 border-b border-amber-200">
-                @_connectionError
-            </div>
-        }
-
         <!-- Scrollable messages -->
         <Rise.Client.Shared.InfiniteScroll ObserverTargetId="observerTarget" ObservableTargetReached="(e) => OnInfiniteScrollTriggered()">
 
@@ -89,10 +82,6 @@
                 <ChatInput @bind-Value="_draft"
                            OnSend="HandleTextMessageAsync"
                            OnSendVoice="HandleVoiceMessageAsync" />
-                @if (!string.IsNullOrWhiteSpace(_errorMessage))
-                {
-                    <p class="px-2 pb-3 text-xs text-red-600">@_errorMessage</p>
-                }
             </div>
         </div>
     }

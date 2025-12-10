@@ -7,6 +7,7 @@
 @using Rise.Shared.Users
 @attribute [Authorize(Roles = $"{AppRoles.Supervisor},{AppRoles.Administrator}")]
 @inject IRegistrationRequestService RegistrationRequestService
+@inject IToastService ToastService
 @using Serilog
 
 @layout EmptyLayout
@@ -27,10 +28,6 @@
                             <p class="loading-indicator__message">Aan het laden...</p>
                         </div>
                     </div>
-                }
-                else if (!string.IsNullOrEmpty(_errorMessage))
-                {
-                    <div class="rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">@_errorMessage</div>
                 }
                 else if (_requests.Count == 0)
                 {
@@ -103,7 +100,6 @@
     private readonly HashSet<int> _approving = new();
 
     private bool _isLoading = true;
-    private string? _errorMessage;
     private string? _statusMessage;
 
     private static string GetAvatarUrl(string? avatarUrl) => string.IsNullOrWhiteSpace(avatarUrl)
@@ -125,7 +121,6 @@
     private async Task LoadRequestsAsync()
     {
         _isLoading = true;
-        _errorMessage = null;
         _statusMessage = null;
 
         try
@@ -145,13 +140,16 @@
             }
             else
             {
-                _errorMessage = string.Join(Environment.NewLine, result.Errors);
+                foreach (var error in result.Errors)
+                {
+                    ToastService.ShowError(error);
+                }
             }
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Could not load pending registration requests.");
-            _errorMessage = "Kon de registraties niet laden.";
+            ToastService.ShowError("Kon de registraties niet laden.");
         }
         finally
         {
@@ -163,12 +161,11 @@
     {
         if (!_selectedSupervisors.TryGetValue(request.Id, out var supervisorId) || supervisorId is null)
         {
-            _statusMessage = "Selecteer eerst een begeleider.";
+            ToastService.ShowError("Selecteer eerst een begeleider.");
             return;
         }
 
         _approving.Add(request.Id);
-        _errorMessage = null;
         _statusMessage = null;
 
         try
@@ -186,13 +183,16 @@
             }
             else
             {
-                _errorMessage = string.Join(Environment.NewLine, result.Errors);
+                foreach (var error in result.Errors)
+                {
+                    ToastService.ShowError(error);
+                }
             }
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Could not approve registration request {RegistrationId}", request.Id);
-            _errorMessage = "Goedkeuren is mislukt.";
+            ToastService.ShowError("Goedkeuren is mislukt.");
         }
         finally
         {

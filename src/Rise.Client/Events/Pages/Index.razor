@@ -13,13 +13,6 @@
     </div>
 
     <div class="flex-1 overflow-y-auto pb-24">
-        @if (_errorMessage != null)
-        {
-            <div class="mx-4 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                @_errorMessage
-            </div>
-        }
-
         @if (_events == null)
         {
             <div class="text-center text-neutral-500 mt-6">

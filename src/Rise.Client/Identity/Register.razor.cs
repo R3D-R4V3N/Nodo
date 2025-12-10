@@ -1,8 +1,10 @@
+using Blazored.Toast.Services;
 using Ardalis.Result;
 using Microsoft.AspNetCore.Components;
 using Rise.Shared.Identity.Accounts;
 using Rise.Shared.Organizations;
 using Serilog;
+using System.Linq;
 
 namespace Rise.Client.Identity;
 
@@ -10,11 +12,11 @@ public partial class Register
 {
     [Inject] public required IAccountManager AccountManager { get; set; }
     [Inject] public required IOrganizationService OrganizationService { get; set; }
+    [Inject] public required IToastService ToastService { get; set; }
 
     private Result? _result;
     private readonly AccountRequest.Register Model = new();
     private List<OrganizationDto.Summary> _organizations = [];
-    private string? _loadError;
     private bool _isSubmitting;
 
     protected override async Task OnInitializedAsync()
@@ -33,13 +35,14 @@ public partial class Register
             }
             else
             {
-                _loadError = result.Errors.FirstOrDefault() ?? "Kon organisaties niet laden.";
+                var loadError = result.Errors.FirstOrDefault() ?? "Kon organisaties niet laden.";
+                ToastService.ShowError(loadError);
             }
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Could not load organizations for registration.");
-            _loadError = "Kon organisaties niet laden.";
+            ToastService.ShowError("Kon organisaties niet laden.");
         }
     }
 
@@ -50,6 +53,21 @@ public partial class Register
         try
         {
             _result = await AccountManager.RegisterAsync(Model);
+
+            if (_result is { IsSuccess: false })
+            {
+                if (_result.Errors is { Count: > 0 })
+                {
+                    foreach (var error in _result.Errors)
+                    {
+                        ToastService.ShowError(error);
+                    }
+                }
+                else
+                {
+                    ToastService.ShowError("Registratie is mislukt.");
+                }
+            }
         }
         finally
         {

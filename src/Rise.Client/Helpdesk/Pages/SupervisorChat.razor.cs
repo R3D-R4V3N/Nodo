@@ -1,3 +1,4 @@
+using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
@@ -16,6 +17,7 @@ public partial class SupervisorChat : ComponentBase, IAsyncDisposable
     [Inject] public IHubClientFactory HubClientFactory { get; set; } = null!;
     [Inject] public IJSRuntime JSRuntime { get; set; } = null!;
     [Inject] public NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] public IToastService ToastService { get; set; } = null!;
 
     // --- STATE ---
     private ChatDto.GetSupervisorChat? _chat;
@@ -23,7 +25,6 @@ public partial class SupervisorChat : ComponentBase, IAsyncDisposable
     
     // UI State
     private string? _draft = string.Empty;
-    private string? _errorMessage;
     private bool _isLoading = true;
     private bool _isSending;
     private bool _shouldScrollToBottom;
@@ -51,7 +52,7 @@ public partial class SupervisorChat : ComponentBase, IAsyncDisposable
         }
         else
         {
-            _errorMessage = "Kon het gesprek niet laden.";
+            ToastService.ShowError("Kon het gesprek niet laden.");
         }
 
         _isLoading = false;
@@ -72,7 +73,6 @@ public partial class SupervisorChat : ComponentBase, IAsyncDisposable
         if (_chat is null || string.IsNullOrWhiteSpace(text) || _isSending) return;
 
         _isSending = true;
-        _errorMessage = null;
 
         var request = new ChatRequest.CreateMessage
         {
@@ -91,12 +91,12 @@ public partial class SupervisorChat : ComponentBase, IAsyncDisposable
             }
             else
             {
-                _errorMessage = result.Errors.FirstOrDefault() ?? "Kon bericht niet versturen.";
+                ToastService.ShowError(result.Errors.FirstOrDefault() ?? "Kon bericht niet versturen.");
             }
         }
         catch
         {
-            _errorMessage = "Er is een fout opgetreden.";
+            ToastService.ShowError("Er is een fout opgetreden.");
         }
         finally
         {

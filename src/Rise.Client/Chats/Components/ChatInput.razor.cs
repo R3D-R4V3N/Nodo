@@ -1,9 +1,11 @@
+using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Rise.Client.Chats.Components;
 public partial class ChatInput
 {
+    [Inject] private IToastService ToastService { get; set; } = default!;
     [Parameter] public string? Value { get; set; }
     [Parameter] public EventCallback<string?> ValueChanged { get; set; }
     [Parameter] public EventCallback<string> OnSend { get; set; }
@@ -12,7 +14,6 @@ public partial class ChatInput
     private bool _isRecording;
     private bool _isProcessing;
     private bool _canRecord = true;
-    private string? _errorMessage;
 
     private async Task HandleSubmit()
     {
@@ -46,12 +47,9 @@ public partial class ChatInput
     {
         if (!OnSendVoice.HasDelegate)
         {
-            _errorMessage = "Spraakberichten worden niet ondersteund.";
-            StateHasChanged();
+            ToastService.ShowError("Spraakberichten worden niet ondersteund.");
             return;
         }
-
-        _errorMessage = null;
 
         try
         {
@@ -61,7 +59,7 @@ public partial class ChatInput
         catch (JSException ex)
         {
             Console.Error.WriteLine(ex);
-            _errorMessage = "Kon de microfoon niet starten. Controleer je browserinstellingen.";
+            ToastService.ShowError("Kon de microfoon niet starten. Controleer je browserinstellingen.");
             _canRecord = false;
         }
 
@@ -78,7 +76,6 @@ public partial class ChatInput
             var audio = await VoiceRecorderService.StopRecordingAsync();
             if (audio is not null && !string.IsNullOrWhiteSpace(audio.DataUrl))
             {
-                _errorMessage = null;
                 if (OnSendVoice.HasDelegate)
                 {
                     await OnSendVoice.InvokeAsync(audio);
@@ -88,7 +85,7 @@ public partial class ChatInput
         catch (JSException ex)
         {
             Console.Error.WriteLine(ex);
-            _errorMessage = "Het opnemen van audio is mislukt.";
+            ToastService.ShowError("Het opnemen van audio is mislukt.");
         }
         finally
         {
