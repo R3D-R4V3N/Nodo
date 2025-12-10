@@ -5,7 +5,6 @@ using Microsoft.JSInterop;
 namespace Rise.Client.Chats.Components;
 public partial class ChatInput
 {
-    [Inject] private IToastService ToastService { get; set; } = default!;
     [Parameter] public string? Value { get; set; }
     [Parameter] public EventCallback<string?> ValueChanged { get; set; }
     [Parameter] public EventCallback<string> OnSend { get; set; }
