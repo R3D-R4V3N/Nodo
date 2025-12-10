@@ -56,7 +56,7 @@ public partial class Register
 
             if (_result is { IsSuccess: false })
             {
-                if (_result.Errors is { Count: > 0 })
+                if (_result.Errors?.Any() == true)
                 {
                     foreach (var error in _result.Errors)
                     {

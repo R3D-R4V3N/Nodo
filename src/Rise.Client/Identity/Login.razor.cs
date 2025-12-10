@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Rise.Shared.Identity;
 using Rise.Shared.Identity.Accounts;
+using System.Linq;
 
 namespace Rise.Client.Identity;
 
@@ -41,7 +42,7 @@ public partial class Login
 
         if (!_result.IsSuccess)
         {
-            if (_result.Errors is { Count: > 0 })
+            if (_result.Errors?.Any() == true)
             {
                 foreach (var error in _result.Errors)
                 {
