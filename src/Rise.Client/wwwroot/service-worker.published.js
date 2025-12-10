@@ -16,9 +16,6 @@ const extraResources = [
     'js/offlineNotifier.js',
     'js/voiceRecorder.js',
     'favicon.png',
-    'icons/android/*.png',
-    'icons/ios/*.png',
-    'icons/windows/*.png'
 ];
 extraResources.map(toAbsoluteUrl).forEach(resource => offlineResources.add(resource));
 const offlineRoot = toAbsoluteUrl('./');

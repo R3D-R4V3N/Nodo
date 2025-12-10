@@ -24,7 +24,7 @@ public class ChatService(
     private readonly IChatMessageDispatcher? _messageDispatcher = messageDispatcher;
     private readonly IPushNotificationService? _pushNotificationService = pushNotificationService;
 
-    public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
+      public async Task<Result<ChatResponse.GetChats>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var principal = _sessionContextProvider.User;
         if (principal is null)
@@ -38,9 +38,9 @@ public class ChatService(
             return Result.Unauthorized();
         }
 
-        var sender = await FindProfileByAccountIdAsync(accountId, cancellationToken);
+        var loggedInUser = await FindProfileByAccountIdAsync(accountId, cancellationToken);
 
-        if (sender is null)
+        if (loggedInUser is null or Admin _)
         {
             if (principal.IsInRole(AppRoles.Administrator))
             {
@@ -53,22 +53,34 @@ public class ChatService(
             return Result.Unauthorized("De huidige gebruiker heeft geen geldig profiel.");
         }
 
-        var chatsFromDb = await _dbContext.Chats
-            .Where(c => c.ChatType == ChatType.Private || c.ChatType == ChatType.Group)
+        var chatsQuery = _dbContext.Chats
             .Include(c => c.Messages.OrderByDescending(m => m.CreatedAt)
                     .ThenByDescending(m => m.Id)
                     .Take(1)
                 ).ThenInclude(m => m.Sender)
             .Include(c => c.Users)
-            .Where(c => c.Users.Contains(sender))
-            .ToListAsync(cancellationToken);
+            .Where(c => c.Users.Contains(loggedInUser)) ;
 
+        if (loggedInUser is User _)
+        {
+            chatsQuery = chatsQuery
+                .Where(c => c.ChatType == ChatType.Private || c.ChatType == ChatType.Group);
+        }
+        else if(loggedInUser is Supervisor _)
+        {
+            chatsQuery = chatsQuery
+                .Where(c => c.ChatType == ChatType.Supervisor);
+        }
+        
+        var chatsFromDb = await chatsQuery
+            .ToListAsync(cancellationToken);
+        
         var chatIds = chatsFromDb
             .Select(chat => chat.Id)
             .ToList();
 
         var lastReadLookup = await _dbContext.ChatMessageHistories
-            .Where(history => history.UserId == sender.Id && chatIds.Contains(history.ChatId))
+            .Where(history => history.UserId == loggedInUser.Id && chatIds.Contains(history.ChatId))
             .ToDictionaryAsync(history => history.ChatId, cancellationToken);
 
         var unreadLookup = await _dbContext.Messages

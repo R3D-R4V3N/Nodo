@@ -20,6 +20,28 @@ public class Chat : Entity
     public IReadOnlyList<Emergency> Emergencies => _emergencies.AsReadOnly();
     public ChatType ChatType { get; private set; }
 
+    public static Result<Chat> CreateSupervisorChat(BaseUser user, BaseUser supervisor)
+    {
+        
+        if (supervisor is not Supervisor)
+        {
+             return Result.Conflict("De tweede gebruiker moet een supervisor zijn.");
+        }
+
+        Chat chat = new Chat()
+        {
+            ChatType = ChatType.Supervisor,
+        };
+
+        chat._users.Add(user);
+        chat._users.Add(supervisor);
+        
+        user.AddChat(supervisor, chat);
+        supervisor.AddChat(user, chat);
+
+        return Result.Success(chat);
+    }
+    
     public static Result<Chat> CreatePrivateChat(BaseUser baseUser1, BaseUser baseUser2)
     {
         if (baseUser1 is User user1 && baseUser2 is User user2)

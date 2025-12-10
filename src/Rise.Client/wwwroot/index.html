@@ -11,22 +11,15 @@
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="manifest" href="manifest.webmanifest" />
     <meta name="theme-color" content="#127646" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
-    />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
 
     <link href="Rise.Client.styles.css" rel="stylesheet" />
 </head>
 
 <body class="bg-[#f5f5f5]">
-    <style>
-        html, body {
-            touch-action: manipulation; /* voorkomt veel ongewenste gestures */
-            background-color: #f5f5f5;
-        }
-    </style>
     <div id="app">
         <div class="app-loading-screen">
             <div class="app-loading-logo" aria-label="Nodo logo">
@@ -48,7 +41,6 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="js/pwa.js"></script>
-    <script src="js/observer.js"></script>
     <script>
         window.scrollToBottom = (el, force = false) => {
             if (!el) return;
@@ -81,6 +73,8 @@
             });
         }
     </script>
+    <!-- custom Observer script -->
+    <script src="js/Observer.js"></script>
     <!--LAST!!!!-->
     <script src="_framework/blazor.webassembly.js"></script>
 

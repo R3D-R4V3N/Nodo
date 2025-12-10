@@ -1,0 +1,20 @@
+﻿@inject NavigationManager Navigation
+
+<button
+    type="button"
+    class="w-full rounded-full bg-[#0B6532] py-3 text-lg font-semibold text-white shadow-md transition hover:bg-[#0a572b] mt-4"
+    @onclick="Logout"
+    disabled="@_isBusy">
+    Log uit
+</button>
+
+@code {
+    private bool _isBusy;
+
+    private void Logout()
+    {
+        if (_isBusy) return;
+        _isBusy = true;
+        Navigation.NavigateTo("/logout", forceLoad: true);
+    }
+}

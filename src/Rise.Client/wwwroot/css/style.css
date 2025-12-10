@@ -123,3 +123,7 @@
     font-size: 0.9rem;
     color: #4b5563;
 }
+html, body {
+    touch-action: manipulation;
+    overscroll-behavior: none;
+}

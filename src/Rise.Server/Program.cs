@@ -100,7 +100,7 @@ try
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
 
-        //db.Database.EnsureDeleted();
+        db.Database.EnsureDeleted();
         db.Database.Migrate();
 
         await seeder.SeedAsync();

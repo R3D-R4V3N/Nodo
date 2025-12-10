@@ -1,23 +1,9 @@
+importScripts('/precache-urls.js');
+
 const DEV_CACHE = 'nodo-dev-cache-v4';
 const toAbsoluteUrl = url => new URL(url, self.location.origin).toString();
-const PRECACHE_URLS = [
-    './',
-    'index.html',
-    'manifest.webmanifest',
-    'css/app.css',
-    'css/style.css',
-    'js/Observer.js',
-    'js/offlineNotifier.js',
-    'js/offlineQueue.js',
-    'js/pwa.js',
-    'js/voiceRecorder.js',
-    'js/pushNotifications.js',
-    'favicon.png',
-    'icons/android/*.png',
-    'icons/ios/*.png',
-    'icons/windows/*.png'
-    
-].map(toAbsoluteUrl);
+const PRECACHE_URLS = (self.PRECACHE_URLS || []).map(toAbsoluteUrl);
+
 const offlineRoot = toAbsoluteUrl('./');
 const apiPattern = /\/api\//i;
 

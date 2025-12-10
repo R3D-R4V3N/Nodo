@@ -1,36 +1,55 @@
 @page "/helpdesk/SupervisorChat"
 @using Rise.Client.Chats.Components
+@using Rise.Shared.Assets
 @layout EmptyLayout
 
 <div class="flex flex-col h-screen max-h-screen overflow-hidden bg-neutral-100 text-neutral-900">
 
     <ChatHeader
-        DisplayName="Begeleider"
-        AvatarUrl="https://www.shutterstock.com/image-vector/avatar-gender-neutral-silhouette-vector-600nw-2470054311.jpg"
+        DisplayName="@GetChatTitle()"
+        AvatarUrl="@GetChatImage()"
     />
 
-    <!-- MESSAGE LIST -->
-    <div class="flex-1 overflow-y-auto px-3 py-5 bg-neutral-100 space-y-2 no-scrollbar"
+    <div @ref="_messagesHost" 
+         class="flex-1 overflow-y-auto px-3 py-5 bg-neutral-100 space-y-2 no-scrollbar"
          style="@GetMessageHostPaddingStyle()">
 
-        @foreach (var message in Messages)
+        @if (_isLoading)
         {
-        <div class="space-y-1">
-            <MessageBubble Text="@message.Content"
-                           IsOutgoing="@message.IsUser"
-                           AvatarUrl="@message.AvatarUrl"/>
-        </div>
+            <div class="flex justify-center mt-10">
+                <span class="loading loading-spinner text-primary"></span>
+            </div>
+        }
+        else if (_errorMessage != null)
+        {
+             <div class="alert alert-error">@_errorMessage</div>
+        }
+        else if (_chat != null)
+        {
+            @foreach (var message in _chat.Messages)
+            {
+                var isMe = UserState.User != null && message.User.AccountId == UserState.User.AccountId;
+        
+                <div class="space-y-1">
+                    <MessageBubble Text="@message.Content"
+                                   IsOutgoing="@isMe"
+                                   AvatarUrl="@message.User.AvatarUrl"/>
+                </div>
+            }
         }
     </div>
 
-    <!-- INPUT -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white">
-        <div class="mx-auto px-3">
-            @if (user?.User?.DefaultChatLines is not null)
+    <div @ref="_footerHost" class="fixed bottom-0 left-0 right-0 bg-white z-50">
+        <div class="mx-auto px-3 pt-2">
+            
+            @if (UserState.User?.DefaultChatLines is not null && UserState.User.DefaultChatLines.Any())
             {
-                <SuggestionChips Suggestions="user.User.DefaultChatLines" OnPick="ApplySuggestion" />
+                <SuggestionChips Suggestions="UserState.User.DefaultChatLines" OnPick="ApplySuggestion" />
             }
-            <ChatInput OnSend="HandleUserMessage"/>
+            
+            <ChatInput 
+                OnSend="HandleUserMessage" 
+            />
         </div>
     </div>
 

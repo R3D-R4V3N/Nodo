@@ -1,0 +1,234 @@
+@page "/SupervisorChats"
+@using Rise.Client.Chats.Components
+@using Rise.Client.Dashboard.Components
+@using Rise.Shared.Assets
+@using Rise.Shared.Chats
+@using Rise.Client.State
+@using Rise.Client.Helpdesk.Pages
+@using Rise.Shared.Identity
+
+@attribute [Authorize(Roles = $"{AppRoles.Supervisor},{AppRoles.Administrator}")]
+@layout EmptyLayout
+
+@inject IChatService ChatService
+@inject UserState UserState
+@inject NavigationManager NavigationManager
+
+<div class="h-screen w-full bg-white text-gray-800 font-inter overflow-hidden flex">
+    
+    <Sidebar></Sidebar>
+        
+    <main class="flex-1 flex flex-col h-full p-3">
+        
+        <div class="bg-neutral-100 rounded-2xl p-6 h-full flex flex-col overflow-hidden">
+            
+            <section class="grid grid-cols-5 gap-4 h-full">
+                    
+                <div class="col-span-2 bg-white rounded-xl p-4 h-full flex flex-col overflow-hidden">
+                    
+                    <div class="flex-none mb-4 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h1 class="text-3xl text-left font-semibold leading-tight">Chats</h1>
+                            @if (!_isLoading && _chats.Count > 0)
+                            {
+                                <span class="text-xs text-gray-400">@_chats.Count gesprekken</span>
+                            }
+                        </div>
+
+                        <div class="bg-neutral-100 rounded-lg flex items-center gap-2 px-3 py-2 text-neutral-700">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-50" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path></svg>
+                             <input type="search"
+                                    placeholder="Zoek een cliënt..."
+                                    class="flex-1 bg-transparent outline-none text-sm placeholder-neutral-400"
+                                    @bind="_searchTerm"
+                                    @bind:event="oninput" />
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto no-scrollbar space-y-2">
+                        @if (_isLoading)
+                        {
+                            <div class="flex justify-center p-4"><span class="loading loading-spinner text-primary"></span></div>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(_loadError))
+                        {
+                            <p class="text-sm text-red-500">@_loadError</p>
+                        }
+                        else if (_filteredChats.Count == 0)
+                        {
+                            <p class="text-sm text-gray-400 text-center mt-4">Geen gesprekken gevonden.</p>
+                        }
+                        else
+                        {
+                            @foreach (var chat in _filteredChats)
+                            {
+                                var isSelected = _selectedChat?.ChatId == chat.ChatId;
+                                <button type="button"
+                                        class="w-full text-left transition-all duration-200"
+                                        @onclick="() => SelectChat(chat)">
+                                    
+                                    <div class="rounded-xl p-3 flex items-start gap-3 border border-transparent 
+                                                @(isSelected ? "bg-neutral-100 border-neutral-200" : "hover:bg-neutral-50")">
+                                        
+                                        <div class="relative inline-block shrink-0">
+                                            <img src="@GetAvatarUrl(chat)"
+                                                 class="h-12 w-12 rounded-full object-cover border border-neutral-200 bg-white" />
+                                            </div>
+
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-baseline justify-between">
+                                                <p class="font-semibold text-sm text-gray-900 truncate">@GetChatTitle(chat)</p>
+                                                <time class="text-[10px] text-gray-400 whitespace-nowrap">@GetLastActivity(chat)</time>
+                                            </div>
+                                            <p class="text-xs text-gray-500 truncate mt-0.5 font-medium">
+                                                @GetLastMessagePreview(chat)
+                                            </p>
+                                        </div>
+                                    </div>
+                                </button>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <div class="col-span-3 bg-white rounded-xl h-full overflow-hidden border border-neutral-100 relative">
+                    @if (_selectedChat != null)
+                    {
+                        <div class="h-full w-full">
+                           @* BELANGRIJK: Omdat SupervisorChat normaal de chat ophaalt via API op basis van 'Jij + Supervisor',
+                              werkt dat prima. Maar als je hier specifiek 1 chat wilt openen uit de lijst,
+                              moet je SupervisorChat.razor misschien aanpassen zodat hij een Parameter accepteert.
+                              
+                              Voor nu gaan we er even van uit dat we hier een component laden die de chat toont.
+                           *@
+                           
+                           <div class="flex flex-col h-full">
+                               <div class="p-4 border-b flex items-center gap-3">
+                                   <img src="@GetAvatarUrl(_selectedChat)" class="h-10 w-10 rounded-full" />
+                                   <h2 class="font-bold">@GetChatTitle(_selectedChat)</h2>
+                               </div>
+                               <div class="flex-1 p-10 text-center text-gray-400">
+                                   Hier komt de chat component voor Chat ID: @_selectedChat.ChatId
+                                   </div>
+                           </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="flex flex-col items-center justify-center h-full text-gray-400 space-y-4">
+                            <div class="p-6 bg-neutral-50 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                            </div>
+                            <p>Selecteer een gesprek om te beginnen.</p>
+                        </div>
+                    }
+                </div>
+                
+            </section>
+        </div>
+
+    </main>
+</div>
+
+@code {
+    private List<ChatDto.GetChats> _chats = new();
+    private List<ChatDto.GetChats> _filteredChats = new();
+    private ChatDto.GetChats? _selectedChat;
+
+    private string _searchTerm = "";
+    private bool _isLoading = true;
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            var result = await ChatService.GetAllAsync();
+            if (result.IsSuccess)
+            {
+                // Als supervisor wil je alle chats zien
+                _chats = result.Value.Chats.ToList();
+                FilterChats();
+            }
+            else
+            {
+                _loadError = "Kon chats niet laden.";
+            }
+        }
+        catch
+        {
+            _loadError = "Er ging iets mis.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void SelectChat(ChatDto.GetChats chat)
+    {
+        _selectedChat = chat;
+        // Optioneel: Forceer re-render van chat component hiernaast
+    }
+
+    private void FilterChats()
+    {
+        if (string.IsNullOrWhiteSpace(_searchTerm))
+        {
+            _filteredChats = _chats;
+        }
+        else
+        {
+            _filteredChats = _chats
+                .Where(c => GetChatTitle(c).Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+
+    // --- Helpers (Hetzelfde als Homepage) ---
+
+    private string GetChatTitle(ChatDto.GetChats chat)
+    {
+        if (UserState.User is null) return "Chat";
+        
+        // Zoek de 'andere' persoon
+        var other = chat.Users.FirstOrDefault(u => u.Id != UserState.User.Id);
+        return other?.Name ?? "Onbekend";
+    }
+
+    private string GetAvatarUrl(ChatDto.GetChats chat)
+    {
+        if (UserState.User is null) return DefaultImages.Profile;
+        
+        var other = chat.Users.FirstOrDefault(u => u.Id != UserState.User.Id);
+        return other?.AvatarUrl ?? DefaultImages.Profile;
+    }
+
+    private string GetLastMessagePreview(ChatDto.GetChats chat)
+    {
+        if (chat.LastMessage == null) return "Nog geen berichten";
+        
+        var senderName = chat.LastMessage.User.Id == UserState.User?.Id ? "Jij" : chat.LastMessage.User.Name.Split(' ')[0];
+        return $"{senderName}: {chat.LastMessage.Content}";
+    }
+
+    private string GetLastActivity(ChatDto.GetChats chat)
+    {
+        if (chat.LastMessage?.Timestamp == null) return "";
+        var ts = chat.LastMessage.Timestamp.Value.ToLocalTime();
+        
+        if (ts.Date == DateTime.Today) return ts.ToString("HH:mm");
+        if (ts.Date == DateTime.Today.AddDays(-1)) return "Gisteren";
+        return ts.ToString("dd/MM");
+    }
+
+    // Wanneer de input verandert, voer filter uit
+    private void oninput(ChangeEventArgs args)
+    {
+        _searchTerm = args.Value?.ToString() ?? "";
+        FilterChats();
+    }
+}

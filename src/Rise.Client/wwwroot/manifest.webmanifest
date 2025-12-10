@@ -9,7 +9,7 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F2F2F2",
+  "background_color": "#f5f5f5",
   "theme_color": "#127646",
   "categories": ["social", "communication", "productivity"],
   "prefer_related_applications": false,

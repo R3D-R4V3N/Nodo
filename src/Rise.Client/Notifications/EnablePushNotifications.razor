@@ -4,43 +4,48 @@
 @inject IJSRuntime Js
 @inject IHttpClientFactory HttpClientFactory
 @inject AuthenticationStateProvider AuthStateProvider
+@inject Blazored.Toast.Services.IToastService ToastService
 
-<!-- Tailwind toggle i.p.v. button -->
 <label for="hs-push-toggle" class="relative inline-block w-11 h-6 cursor-pointer">
     <input type="checkbox"
            id="hs-push-toggle"
-           class="peer sr-only"
+           class="sr-only"
            checked="@_isPushEnabled"
            @onchange="OnToggleChanged"
            disabled="@_isBusy" />
 
-    <span class="absolute inset-0 bg-gray-200 rounded-full transition-colors duration-200 ease-in-out
-                 peer-checked:bg-blue-600 dark:bg-neutral-700 dark:peer-checked:bg-blue-500
-                 peer-disabled:opacity-50 peer-disabled:pointer-events-none">
-    </span>
+    <!-- Achtergrond -->
+    <span class="@GetTrackClasses()"></span>
 
-    <span class="absolute top-1/2 start-0.5 -translate-y-1/2 size-5 bg-white rounded-full shadow-xs
-                 transition-transform duration-200 ease-in-out
-                 peer-checked:translate-x-full dark:bg-neutral-400 dark:peer-checked:bg-white">
-    </span>
+    <!-- Knop -->
+    <span class="@GetThumbClasses()"></span>
 </label>
-
-@if (!string.IsNullOrEmpty(_statusMessage))
-{
-    <p class="text-sm text-neutral-600 mt-2">@_statusMessage</p>
-}
 
 @code {
     private bool _isBusy;
     private bool _isPushEnabled;  // status van de toggle
-    private string? _statusMessage;
 
-    // zelfde public key als in appsettings.json
     private const string VapidPublicKey = "BM0rBfX8utfLUxaLyIZyYKUfly2TPfrCe68hotJxY63aOmRMa5ic9_TwH4izyyTd3swnA2bC-cGzuXjItveRr6Y";
 
+    // ---------- UI helpers ----------
+    private string GetTrackClasses()
+    {
+        var baseClasses = "absolute inset-0 rounded-full transition-colors duration-200";
+        var stateClass = _isPushEnabled ? "bg-[#127646]" : "bg-gray-300";
+        var busyClass = _isBusy ? "opacity-50" : "";
+        return $"{baseClasses} {stateClass} {busyClass}";
+    }
+
+    private string GetThumbClasses()
+    {
+        var baseClasses = "absolute top-1/2 left-0.5 -translate-y-1/2 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200";
+        var moveClass = _isPushEnabled ? "translate-x-5" : "";
+        return $"{baseClasses} {moveClass}";
+    }
+
+    // ---------- Event ----------
     private async Task OnToggleChanged(ChangeEventArgs e)
     {
-        // waarde uit het checkbox-event halen
         var isChecked = false;
 
         if (e.Value is bool b)
@@ -52,28 +57,25 @@
             isChecked = parsed;
         }
 
-        // Als user hem aan zet: push inschakelen
         if (isChecked)
         {
-            await EnablePushAsync();
-
-            // alleen op true laten als het gelukt is
-            // simpele check op success tekst, of pas aan naar eigen logica
-            _isPushEnabled = _statusMessage == "Pushnotificaties zijn ingeschakeld.";
+            var success = await EnablePushAsync();
+            _isPushEnabled = success; // als het mislukt springt de toggle terug
         }
         else
         {
-            // Hier zou je eventueel een DisablePushAsync() kunnen aanroepen
-            // om subscription te verwijderen op de server.
             _isPushEnabled = false;
-            _statusMessage = "Pushnotificaties zijn uitgeschakeld (client-side).";
+            ToastService.ShowInfo("Pushnotificaties zijn uitgeschakeld (client-side).");
         }
+
+        StateHasChanged();
     }
 
-    private async Task EnablePushAsync()
+    // ---------- Push logica ----------
+    private async Task<bool> EnablePushAsync()
     {
-        _statusMessage = null;
         _isBusy = true;
+        StateHasChanged();
 
         try
         {
@@ -82,8 +84,8 @@
 
             if (user.Identity is null || !user.Identity.IsAuthenticated)
             {
-                _statusMessage = "Je moet ingelogd zijn om notificaties in te schakelen.";
-                return;
+                ToastService.ShowError("Je moet ingelogd zijn om notificaties in te schakelen.");
+                return false;
             }
 
             var userId =
@@ -93,13 +95,19 @@
 
             if (string.IsNullOrWhiteSpace(userId))
             {
-                _statusMessage = "Kon je user-id niet bepalen.";
-                return;
+                ToastService.ShowError("Kon je user-id niet bepalen.");
+                return false;
             }
 
             var subscription = await Js.InvokeAsync<PushSubscriptionDto>(
                 "nodoPush.requestPushSubscription",
                 VapidPublicKey);
+
+            if (subscription is null)
+            {
+                ToastService.ShowError("Kon geen subscription verkrijgen van de browser.");
+                return false;
+            }
 
             subscription.UserId = userId;
 
@@ -108,24 +116,29 @@
 
             if (response.IsSuccessStatusCode)
             {
-                _statusMessage = "Pushnotificaties zijn ingeschakeld.";
+                ToastService.ShowSuccess("Pushnotificaties zijn ingeschakeld.");
+                return true;
             }
             else
             {
-                _statusMessage = $"Fout bij opslaan van subscription: {response.StatusCode}";
+                ToastService.ShowError($"Fout bij opslaan van subscription: {response.StatusCode}");
+                return false;
             }
         }
         catch (JSException jsEx)
         {
-            _statusMessage = $"Browserfout: {jsEx.Message}";
+            ToastService.ShowError($"Browserfout: {jsEx.Message}");
+            return false;
         }
         catch (Exception ex)
         {
-            _statusMessage = $"Onverwachte fout: {ex.Message}";
+            ToastService.ShowError($"Onverwachte fout: {ex.Message}");
+            return false;
         }
         finally
         {
             _isBusy = false;
+            StateHasChanged();
         }
     }
 }
