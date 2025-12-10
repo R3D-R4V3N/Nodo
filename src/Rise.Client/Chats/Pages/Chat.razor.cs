@@ -277,7 +277,6 @@ public partial class Chat : IAsyncDisposable
                 _hubConnection.Closed += error => InvokeAsync(() =>
                 {
                     _joinedChatId = null;
-                    ToastService.ShowError("Realtime verbinding werd verbroken. Vernieuw de pagina om opnieuw te verbinden.");
                 });
             }
 
