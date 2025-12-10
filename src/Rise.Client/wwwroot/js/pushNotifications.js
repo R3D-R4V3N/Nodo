@@ -69,7 +69,23 @@
         };
     }
 
+    async function hasActiveSubscription() {
+        if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+            return false;
+        }
+
+        const registration = await navigator.serviceWorker.getRegistration();
+
+        if (!registration) {
+            return false;
+        }
+
+        const subscription = await registration.pushManager.getSubscription();
+        return !!subscription;
+    }
+
     window.nodoPush = {
-        requestPushSubscription
+        requestPushSubscription,
+        hasActiveSubscription
     };
 })();

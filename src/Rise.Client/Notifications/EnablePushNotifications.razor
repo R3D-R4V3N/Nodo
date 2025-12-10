@@ -27,6 +27,31 @@
 
     private const string VapidPublicKey = "BM0rBfX8utfLUxaLyIZyYKUfly2TPfrCe68hotJxY63aOmRMa5ic9_TwH4izyyTd3swnA2bC-cGzuXjItveRr6Y";
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        _isBusy = true;
+        StateHasChanged();
+
+        try
+        {
+            _isPushEnabled = await Js.InvokeAsync<bool>("nodoPush.hasActiveSubscription");
+        }
+        catch
+        {
+            _isPushEnabled = false;
+        }
+        finally
+        {
+            _isBusy = false;
+            StateHasChanged();
+        }
+    }
+
     // ---------- UI helpers ----------
     private string GetTrackClasses()
     {
