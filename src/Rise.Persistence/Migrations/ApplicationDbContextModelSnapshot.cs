@@ -1043,8 +1043,8 @@ namespace Rise.Persistence.Migrations
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasMaxLength(500)
-                                .HasColumnType("varchar(500)")
+                                .HasMaxLength(2000000)
+                                .HasColumnType("longtext")
                                 .HasColumnName("AudioUrl");
 
                             b1.HasKey("MessageId");
@@ -1103,8 +1103,8 @@ namespace Rise.Persistence.Migrations
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasMaxLength(500)
-                                .HasColumnType("varchar(500)")
+                                .HasMaxLength(2000000)
+                                .HasColumnType("longtext")
                                 .HasColumnName("AvatarUrl");
 
                             b1.HasKey("RegistrationRequestId");
@@ -1281,8 +1281,8 @@ namespace Rise.Persistence.Migrations
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasMaxLength(500)
-                                .HasColumnType("varchar(500)")
+                                .HasMaxLength(2000000)
+                                .HasColumnType("longtext")
                                 .HasColumnName("AvatarUrl");
 
                             b1.HasKey("BaseUserId");

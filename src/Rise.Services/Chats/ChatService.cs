@@ -4,28 +4,23 @@ using Rise.Domain.Common.ValueObjects;
 using Rise.Domain.Messages;
 using Rise.Domain.Users;
 using Rise.Persistence;
-using Rise.Services.BlobStorage;
 using Rise.Services.Chats.Mapper;
 using Rise.Services.Identity;
 using Rise.Services.Notifications;
 using Rise.Shared.Common;
 using Rise.Shared.Chats;
-using Rise.Shared.Common;
 using Rise.Shared.Identity;
-using System.Xml.Linq;
 
 namespace Rise.Services.Chats;
 
 public class ChatService(
     ApplicationDbContext dbContext,
     ISessionContextProvider sessionContextProvider,
-    IBlobStorageService blobStorage,
     IChatMessageDispatcher? messageDispatcher = null,
     IPushNotificationService? pushNotificationService = null) : IChatService
 {
     private readonly ApplicationDbContext _dbContext = dbContext;
     private readonly ISessionContextProvider _sessionContextProvider = sessionContextProvider;
-    private readonly IBlobStorageService _blobStorage = blobStorage;
     private readonly IChatMessageDispatcher? _messageDispatcher = messageDispatcher;
     private readonly IPushNotificationService? _pushNotificationService = pushNotificationService;
 
@@ -244,24 +239,16 @@ public class ChatService(
             return Result.Invalid(new ValidationError(nameof(request), "Een bericht moet tekst of audio bevatten."));
         }
 
-        string? audioUrl = null;
-
-        if (request.AudioDataBlob is not null)
-        {
-             audioUrl = await _blobStorage.CreateBlobAsync(
-                request.AudioDataBlob.Name,
-                request.AudioDataBlob.Base64Data,
-                Containers.VoiceMessages,
-                ctx
-            );
-        }
+        BlobUrl? audioUrl = request.AudioDataBlob is not null
+            ? (BlobUrl)request.AudioDataBlob.Base64Data
+            : null;
 
         var message = new Message
         {
             Chat = chat,
             Sender = sender,
-            Text = TextMessage.Create(request.Content!),
-            AudioUrl = BlobUrl.Create(audioUrl!),
+            Text = string.IsNullOrWhiteSpace(request.Content) ? null : (TextMessage)request.Content,
+            AudioUrl = audioUrl,
             AudioDurationSeconds = request.AudioDurationSeconds,
         };
 
