@@ -2,30 +2,30 @@
 using Rise.Domain.Common;
 
 namespace Rise.Domain.Common.ValueObjects;
-public class AvatarUrl : ValueObject, IProperty<AvatarUrl, string>
+public class BlobUrl : ValueObject, IProperty<BlobUrl, string>
 {
     // EF
-    private AvatarUrl() { }
+    private BlobUrl() { }
     public const int MAX_LENGTH = 500;
 
     public string Value { get; private set; }
-    public static Result<AvatarUrl> Create(string value)
+    public static Result<BlobUrl> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return Result.Conflict("Avatar url is leeg.");
+            return Result.Conflict("Blob url is leeg.");
         }
 
         if (value.Length > MAX_LENGTH)
         {
-            return Result.Conflict($"Avatar url is te lang. Maximum {MAX_LENGTH} tekens.");
+            return Result.Conflict($"Blob url is te lang. Maximum {MAX_LENGTH} tekens.");
         }
 
-        return Result.Success(new AvatarUrl() { Value = value });
+        return Result.Success(new BlobUrl() { Value = value });
     }
 
-    public static implicit operator string(AvatarUrl avatarUrl) => avatarUrl.Value;
-    public static explicit operator AvatarUrl(string value)
+    public static implicit operator string(BlobUrl blobUrl) => blobUrl.Value;
+    public static explicit operator BlobUrl(string value)
     {
         var result = Create(value);
         if (!result.IsSuccess)

@@ -13,7 +13,6 @@ internal static class EventMapper
             Name = eventEntity.Name,
             Date = eventEntity.Date,
             Location = eventEntity.Location,
-            Description = eventEntity.Description,
             Price = eventEntity.Price,
             ImageUrl = eventEntity.ImageUrl,
             InterestedUsers = eventEntity.InterestedUsers?.Select(u => new EventDto.InterestedUser

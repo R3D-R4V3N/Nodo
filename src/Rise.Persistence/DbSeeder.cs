@@ -185,7 +185,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Fayah"),
                 LastName = LastName.Create("Verbrugghe"),
                 Biography = Biography.Create("Hello."),
-                AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1761405378284-834f87bb9818?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1761405378284-834f87bb9818?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-27))),
                 Gender = GenderType.Woman,
                 UserSettings = new UserSetting()
@@ -200,7 +200,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Super"),
                 LastName = LastName.Create("Visor"),
                 Biography = Biography.Create("Here to help you."),
-                AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1761405378284-834f87bb9818?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1761405378284-834f87bb9818?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-30))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -216,7 +216,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("John"),
                 LastName = LastName.Create("Doe"),
                 Biography = Biography.Create("Houdt van katten en rustige gesprekken."),
-                AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=932"),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=932"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-28))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -233,7 +233,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Stacey"),
                 LastName = LastName.Create("Willington"),
                 Biography = Biography.Create("Deelt graag verhalen over haar hulphond."),
-                AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-26))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -250,7 +250,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Admin"),
                 LastName = LastName.Create("Admin"),
                 Biography = Biography.Create("Hello."),
-                AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1761405378284-834f87bb9818?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1761405378284-834f87bb9818?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-37))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -265,7 +265,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Emma"),
                 LastName = LastName.Create("Claes"),
                 Biography = Biography.Create("Coach voor dagelijkse structuur en zelfvertrouwen."),
-                AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1639149888905-fb39731f2e6c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1639149888905-fb39731f2e6c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-35))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -281,7 +281,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Jonas"),
                 LastName = LastName.Create("Van Lint"),
                 Biography = Biography.Create("Helpt bij plannen en houdt wekelijks groepsmomenten."),
-                AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjZ8fGF2YXRhcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=700"),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjZ8fGF2YXRhcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=700"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-33))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -297,7 +297,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Ella"),
                 LastName = LastName.Create("Vervoort"),
                 Biography = Biography.Create("Creatieve begeleider voor beeldende therapie."),
-                AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-31))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -313,7 +313,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Noor"),
                 LastName = LastName.Create("Vermeulen"),
                 Biography = Biography.Create("Praat graag over muziek en wil nieuwe vrienden maken."),
-                AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-24))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -330,7 +330,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Milan"),
                 LastName = LastName.Create("Peeters"),
                 Biography = Biography.Create("Zoekt iemand om samen over games te praten."),
-                AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=922"),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=922"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-23))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -347,7 +347,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Lina"),
                 LastName = LastName.Create("Jacobs"),
                 Biography = Biography.Create("Vindt het fijn om vragen te kunnen stellen in een veilige omgeving."),
-                AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1687832254672-bf177d8819df?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
+                AvatarUrl = BlobUrl.Create("https://plus.unsplash.com/premium_photo-1687832254672-bf177d8819df?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-22))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -364,7 +364,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Kyandro"),
                 LastName = LastName.Create("Voet"),
                 Biography = Biography.Create("Helpt vaak bij technische vragen en deelt programmeertips."),
-                AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1664536392896-cd1743f9c02c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
+                AvatarUrl = BlobUrl.Create("https://plus.unsplash.com/premium_photo-1664536392896-cd1743f9c02c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-25))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -381,7 +381,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Jasper"),
                 LastName = LastName.Create("Vermeersch"),
                 Biography = Biography.Create("Vindt het leuk om te discussiëren over technologie en innovatie."),
-                AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1664536392896-cd1743f9c02c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
+                AvatarUrl = BlobUrl.Create("https://plus.unsplash.com/premium_photo-1664536392896-cd1743f9c02c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-24))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -398,7 +398,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Bjorn"),
                 LastName = LastName.Create("Van Damme"),
                 Biography = Biography.Create("Praat graag over sport en houdt van teamwork."),
-                AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1704726135027-9c6f034cfa41?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=770"),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1704726135027-9c6f034cfa41?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=770"),
                 BirthDay =  BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-27))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -415,7 +415,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Thibo"),
                 LastName = LastName.Create("De Smet"),
                 Biography = Biography.Create("Is nieuwsgierig en stelt vaak interessante vragen."),
-                AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-21))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -432,7 +432,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Saar"),
                 LastName = LastName.Create("Vandenberg"),
                 Biography = Biography.Create("Deelt graag foto's van haar tekeningen."),
-                AvatarUrl = AvatarUrl.Create("https://images.unsplash.com/photo-1704726135027-9c6f034cfa41?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=770"),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1704726135027-9c6f034cfa41?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=770"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-24))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -449,7 +449,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Yassin"),
                 LastName = LastName.Create("El Amrani"),
                 Biography = Biography.Create("Leert zelfstandig koken en zoekt tips van vrienden."),
-                AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1690587673708-d6ba8a1579a5?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=758"),
+                AvatarUrl = BlobUrl.Create("https://plus.unsplash.com/premium_photo-1690587673708-d6ba8a1579a5?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=758"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-25))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -466,7 +466,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Lotte"),
                 LastName = LastName.Create("De Wilde"),
                 Biography = Biography.Create("Wordt blij van dansen en deelt positieve boodschappen."),
-                AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1708271598591-4a84ef3b8dde?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870"),
+                AvatarUrl = BlobUrl.Create("https://plus.unsplash.com/premium_photo-1708271598591-4a84ef3b8dde?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-23))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -483,7 +483,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 FirstName = FirstName.Create("Amina"),
                 LastName = LastName.Create("Karim"),
                 Biography = Biography.Create("Houdt van creatieve projecten en begeleidt graag groepsspelletjes."),
-                AvatarUrl = AvatarUrl.Create("https://plus.unsplash.com/premium_photo-1708271598591-4a84ef3b8dde?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870"),
+                AvatarUrl = BlobUrl.Create("https://plus.unsplash.com/premium_photo-1708271598591-4a84ef3b8dde?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870"),
                 BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-22))),
                 Gender = GenderType.X,
                 UserSettings = new UserSetting()
@@ -698,7 +698,6 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 Name = "Rock for Specials",
                 Date = DateTime.Now.AddDays(8).Date.AddHours(20),
                 Location = "9940 Evergem",
-                Description = "Een geweldige avond vol live muziek en gezelligheid. Kom genieten van verschillende bands en ontmoet nieuwe mensen!",
                 Price = 12.50,
                 ImageUrl = "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=800&q=80",
                 InterestedUsers = new List<User> { noor, milan, lina, kyandro }
@@ -708,7 +707,6 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 Name = "Game Toernooi",
                 Date = DateTime.Now.AddDays(18).Date.AddHours(14),
                 Location = "9000 Gent",
-                Description = "Doe mee aan ons vriendschappelijk game toernooi! Van casual tot competitief, iedereen is welkom.",
                 Price = 5.00,
                 ImageUrl = "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80",
                 InterestedUsers = new List<User> { milan, jasper, bjorn }
@@ -718,7 +716,6 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 Name = "Creatieve Workshop",
                 Date = DateTime.Now.AddDays(29).Date.AddHours(10),
                 Location = "9050 Gentbrugge",
-                Description = "Laat je creativiteit de vrije loop in deze workshop! We werken met verschillende materialen en technieken.",
                 Price = 8.00,
                 ImageUrl = "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=800&q=80",
                 InterestedUsers = new List<User> { lina, noor, kyandro, jasper, milan, bjorn }

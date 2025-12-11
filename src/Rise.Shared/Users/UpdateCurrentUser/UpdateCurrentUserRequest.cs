@@ -1,3 +1,4 @@
+using Rise.Shared.BlobStorage;
 using Rise.Shared.Hobbies;
 using Rise.Shared.Sentiments;
 using Rise.Shared.Validators;
@@ -12,7 +13,7 @@ public static partial class UserRequest
         public string LastName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Biography { get; set; } = string.Empty;
-        public string AvatarUrl { get; set; } = string.Empty;
+        public BlobDto.Create? AvatarBlob { get; set; }
         public GenderTypeDto Gender { get; set; }
         public List<HobbyDto.EditProfile> Hobbies { get; set; } = [];
         public List<SentimentDto.EditProfile> Sentiments { get; set; } = [];
@@ -46,10 +47,8 @@ public static partial class UserRequest
                 .Must(bio => !string.IsNullOrWhiteSpace(bio))
                 .WithMessage("Bio mag niet leeg zijn.");
 
-            RuleFor(x => x.AvatarUrl)
-                .NotEmpty()
-                .MaximumLength(rules.MAX_AVATAR_URL_LENGTH)
-                .Must(url => !string.IsNullOrWhiteSpace(url))
+            RuleFor(x => x.AvatarBlob)
+                .Must(url => url is null)
                 .WithMessage("Avatar mag niet leeg zijn.");
 
             RuleFor(x => x.Hobbies)

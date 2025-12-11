@@ -12,6 +12,8 @@ using FluentValidation;
 using Rise.Client.Profile.Models;
 using Rise.Client.State;
 using Rise.Client.Users;
+using Rise.Shared.Assets;
+using Rise.Shared.BlobStorage;
 using Rise.Shared.Common;
 using Rise.Shared.Hobbies;
 using Rise.Shared.Sentiments;

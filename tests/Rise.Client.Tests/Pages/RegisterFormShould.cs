@@ -20,7 +20,11 @@ public class RegisterFormShould : TestContext
         var model = new AccountRequest.Register
         {
             BirthDate = DateOnly.FromDateTime(DateTime.Today.AddYears(-20)),
-            AvatarDataUrl = "data:image/png;base64,AAA",
+            AvatarBlob = new Rise.Shared.BlobStorage.BlobDto.Create() 
+            { 
+                Name = "AAA.png",
+                Base64Data = "data:image/png;base64,AAA" 
+            },
         };
         var organizations = new List<OrganizationDto.Summary>
         {
@@ -61,7 +65,11 @@ public class RegisterFormShould : TestContext
         var model = new AccountRequest.Register
         {
             BirthDate = DateOnly.FromDateTime(DateTime.Today.AddYears(-20)),
-            AvatarDataUrl = "data:image/png;base64,AAA",
+            AvatarBlob = new Rise.Shared.BlobStorage.BlobDto.Create()
+            {
+                Name = "AAA.png",
+                Base64Data = "data:image/png;base64,AAA"
+            },
         };
         var organizations = new List<OrganizationDto.Summary>
         {

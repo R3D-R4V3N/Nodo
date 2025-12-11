@@ -9,7 +9,6 @@ public class Message : Entity
     public Chat Chat { get; set; } = null!;
     public BaseUser Sender { get; set; } = null!;
     public TextMessage? Text { get; set; }
-    public string? AudioContentType { get; set; }
-    public byte[]? AudioData { get; set; }
+    public BlobUrl? AudioUrl { get; set; }
     public double? AudioDurationSeconds { get; set; }
 }

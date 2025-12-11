@@ -2,10 +2,11 @@ using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using NSubstitute;
-using Rise.Shared.Identity.Accounts;
-using Rise.Client.Pages;
-using Xunit.Abstractions;
+using Blazored.Toast.Services;
 using Rise.Client.Identity.Components;
+using Rise.Client.Pages;
+using Rise.Shared.Identity.Accounts;
+using Xunit.Abstractions;
 
 namespace Rise.Client.Tests.Pages;
 
@@ -14,6 +15,7 @@ public class LoginFormShould : TestContext
     public LoginFormShould(ITestOutputHelper outputHelper)
     {
         Services.AddXunitLogger(outputHelper);
+        Services.AddSingleton(Substitute.For<IToastService>());
     }
 
     [Fact]

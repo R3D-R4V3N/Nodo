@@ -5,7 +5,9 @@ namespace Rise.Client.Faker;
 
 internal class FakeHubClient : IHubClient
 {
-    public HubConnectionState State => throw new NotImplementedException();
+    private HubConnectionState _state = HubConnectionState.Disconnected;
+
+    public HubConnectionState State => _state;
 
     public event Func<Exception?, Task>? Reconnecting;
     public event Func<string?, Task>? Reconnected;
@@ -56,11 +58,13 @@ internal class FakeHubClient : IHubClient
 
     public Task StartAsync()
     {
+        _state = HubConnectionState.Connected;
         return Task.CompletedTask;
     }
 
     public Task StopAsync()
     {
+        _state = HubConnectionState.Disconnected;
         return Task.CompletedTask;
     }
 }

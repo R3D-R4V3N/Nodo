@@ -41,21 +41,25 @@
 1. Clone the repository
 
 2. Create the MySQL database schema as either
-   - local: You also have to set an environment variable with key `DB_CONNECTION` and value the connection string
+   - local: You also have to set an environment variable with key `DB_CONNECTION` and value the connection string of db
    - docker compose: the connection string is already set in `appsettings.Development.json`
 
-3. Build the tailwind css
+4. Set Azure blob storage connectionstring
+   - local: You have to set an environment variable with key `BLOB_CONNECTION` and value the connection string of Azure blob storage
+   - docker compose: / ask ops
+
+5. Build the tailwind css
    1. open a terminal and navigate to `\Rise.Client`
    2. run `npm i` of `npm install`
    3. run `npm run tw:build` 
 
-5. Open the `Rise.sln` file in [Rider](https://www.jetbrains.com/rider/), [Visual Studio](https://visualstudio.microsoft.com/) or  [Visual Studio Code](https://code.visualstudio.com/). (we prefer Rider, but you're free to choose.)
+6. Open the `Rise.sln` file in [Rider](https://www.jetbrains.com/rider/), [Visual Studio](https://visualstudio.microsoft.com/) or  [Visual Studio Code](https://code.visualstudio.com/). (we prefer Rider, but you're free to choose.)
 
-6. Run the project using the `Rise.Server` project as the startup project
+7. Run the project using the `Rise.Server` project as the startup project
 
-7. The project should open in your default browser on port 5001.
+8. The project should open in your default browser on port 5001.
 
-8. The database will be created.
+9. The database will be created.
 
 ## Creation of the database
 

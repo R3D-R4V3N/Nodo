@@ -83,7 +83,6 @@
         const subscription = await registration.pushManager.getSubscription();
         return !!subscription;
     }
-
     window.nodoPush = {
         requestPushSubscription,
         hasActiveSubscription

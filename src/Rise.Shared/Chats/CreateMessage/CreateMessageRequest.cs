@@ -1,3 +1,5 @@
+using Rise.Shared.BlobStorage;
+
 using Rise.Shared.Validators;
 
 namespace Rise.Shared.Chats;
@@ -8,7 +10,7 @@ public static partial class ChatRequest
     {
         public int ChatId { get; set; }
         public string? Content { get; set; }
-        public string? AudioDataBlob { get; set; }
+        public BlobDto.Create? AudioDataBlob { get; set; }
         public double? AudioDurationSeconds { get; set; }
 
         public class Validator : AbstractValidator<CreateMessage>
@@ -22,12 +24,12 @@ public static partial class ChatRequest
                 RuleFor(x => x)
                     .Must(request =>
                         !string.IsNullOrWhiteSpace(request.Content) ||
-                        !string.IsNullOrWhiteSpace(request.AudioDataBlob))
+                        request.AudioDataBlob is not null)
                     .WithMessage("Een bericht moet tekst of audio bevatten.");
 
                 RuleFor(x => x.AudioDurationSeconds)
                     .GreaterThan(0)
-                    .When(x => !string.IsNullOrWhiteSpace(x.AudioDataBlob));
+                    .When(x => x.AudioDataBlob is not null);
             }
         }
     }

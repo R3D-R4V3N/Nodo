@@ -94,7 +94,7 @@ public class ChatMessageDispatchService
                 AccountId = _userState.User.AccountId,
                 AvatarUrl = _userState.User.AvatarUrl
             },
-            AudioDataBlob = request.AudioDataBlob,
+            AudioUrl = string.Empty,
             AudioDuration = request.AudioDurationSeconds.HasValue
                 ? TimeSpan.FromSeconds(request.AudioDurationSeconds.Value)
                 : null,

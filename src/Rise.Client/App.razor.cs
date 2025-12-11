@@ -42,6 +42,7 @@ public partial class App : IDisposable
     private async void OnAuthStateChanged(Task<AuthenticationState> task)
     {
         _isLoading = true;
+        StateHasChanged();
         try
         {
             await UserContext.UpdateUserStateAsync();

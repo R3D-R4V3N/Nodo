@@ -127,8 +127,6 @@ html, body {
     touch-action: manipulation;
     overscroll-behavior: none;
 }
-
-/* Ensure the status bar on iOS devices always sits on a Nodo-green background */
 body::before {
     content: "";
     position: fixed;

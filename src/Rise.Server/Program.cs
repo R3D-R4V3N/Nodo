@@ -19,6 +19,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Rise.Server.Push;
 using Rise.Services.Notifications;
+using Azure.Storage.Blobs;
 
 
 Log.Logger = new LoggerConfiguration()
@@ -45,13 +46,25 @@ try
         .ReadFrom.Configuration(ctx.Configuration)
         .Destructure.UsingAttributes());
 
+
+    builder.Services.AddSingleton(x =>
+    {
+        var blobConnectionstring = Environment.GetEnvironmentVariable("BLOB_CONNECTION")
+                     ?? builder.Configuration.GetConnectionString("BlobConnection")
+                     ?? throw new InvalidOperationException("No blob connection string found");
+        blobConnectionstring = blobConnectionstring.Trim();
+
+        return new BlobServiceClient(blobConnectionstring);
+    });
+
     builder.Services.AddDbContext<ApplicationDbContext>(o =>
     {
-        var cs = Environment.GetEnvironmentVariable("DB_CONNECTION")
-                 ?? builder.Configuration.GetConnectionString("DatabaseConnection")
-                 ?? throw new InvalidOperationException("No connection string found");
+        var dbConnectionstring = Environment.GetEnvironmentVariable("DB_CONNECTION")
+                         ?? builder.Configuration.GetConnectionString("DatabaseConnection")
+                         ?? throw new InvalidOperationException("No db connection string found");
+        dbConnectionstring = dbConnectionstring.Trim();
 
-        o.UseMySql(cs, ServerVersion.AutoDetect(cs));
+        o.UseMySql(dbConnectionstring, ServerVersion.AutoDetect(dbConnectionstring));
         o.EnableDetailedErrors();
         if (builder.Environment.IsDevelopment())
             o.EnableSensitiveDataLogging();
@@ -94,8 +107,8 @@ try
 
     var app = builder.Build();
 
-    //if (app.Environment.IsDevelopment())
-    //{
+    if (app.Environment.IsDevelopment())
+    {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
@@ -104,7 +117,7 @@ try
         db.Database.Migrate();
 
         await seeder.SeedAsync();
-    //}
+    }
 
     app.UseHttpsRedirection()
        .UseBlazorFrameworkFiles()
@@ -138,4 +151,5 @@ catch (Exception ex)
 finally
 {
     Log.CloseAndFlush();
+
 }

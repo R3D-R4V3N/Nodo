@@ -1,26 +1,31 @@
 using Microsoft.EntityFrameworkCore;
 using Rise.Domain.Chats;
+using Rise.Domain.Common.ValueObjects;
 using Rise.Domain.Messages;
 using Rise.Domain.Users;
 using Rise.Persistence;
+using Rise.Services.BlobStorage;
 using Rise.Services.Chats.Mapper;
 using Rise.Services.Identity;
 using Rise.Services.Notifications;
 using Rise.Shared.Common;
 using Rise.Shared.Chats;
+using Rise.Shared.Common;
 using Rise.Shared.Identity;
-using Rise.Domain.Common.ValueObjects;
+using System.Xml.Linq;
 
 namespace Rise.Services.Chats;
 
 public class ChatService(
     ApplicationDbContext dbContext,
     ISessionContextProvider sessionContextProvider,
+    IBlobStorageService blobStorage,
     IChatMessageDispatcher? messageDispatcher = null,
     IPushNotificationService? pushNotificationService = null) : IChatService
 {
     private readonly ApplicationDbContext _dbContext = dbContext;
     private readonly ISessionContextProvider _sessionContextProvider = sessionContextProvider;
+    private readonly IBlobStorageService _blobStorage = blobStorage;
     private readonly IChatMessageDispatcher? _messageDispatcher = messageDispatcher;
     private readonly IPushNotificationService? _pushNotificationService = pushNotificationService;
 
@@ -141,6 +146,11 @@ public class ChatService(
         // no clue how 'c.Id == chatId && c.Users.Contains(sender)' translates to sql
         var chat = await _dbContext.Chats
             .Include(c => c.Users)
+            .Include(c => c.Messages
+                .OrderByDescending(message => message.CreatedAt)
+                .ThenByDescending(message => message.Id)
+                .Take(1))
+            .ThenInclude(message => message.Sender)
             .SingleOrDefaultAsync(c => c.Id == chatId && c.Users.Contains(sender), cancellationToken);
 
         if (chat is null)
@@ -198,7 +208,7 @@ public class ChatService(
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<Result<MessageDto.Chat>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken cancellationToken = default)
+    public async Task<Result<MessageDto.Chat>> CreateMessageAsync(ChatRequest.CreateMessage request, CancellationToken ctx = default)
     {
         var principal = _sessionContextProvider.User;
         if (principal is null)
@@ -212,7 +222,7 @@ public class ChatService(
             return Result.Unauthorized();
         }
 
-        var sender = await FindProfileByAccountIdAsync(accountId, cancellationToken);
+        var sender = await FindProfileByAccountIdAsync(accountId, ctx);
 
         if (sender is null)
         {
@@ -222,59 +232,44 @@ public class ChatService(
         // no clue how 'c.Id == chatId && c.Users.Contains(sender)' translates to sql
         var chat = await _dbContext.Chats
             .Include(c => c.Users)
-            .SingleOrDefaultAsync(c => c.Id == request.ChatId && c.Users.Contains(sender), cancellationToken);
+            .SingleOrDefaultAsync(c => c.Id == request.ChatId && c.Users.Contains(sender), ctx);
 
         if (chat is null)
         {
             return Result.NotFound($"Chat met id '{request.ChatId}' werd niet gevonden.");
         }
 
-        byte[]? audioBytes = null;
-        string? audioContentType = null;
-        double? audioDurationSeconds = null;
-
-        var audioDataUrl = string.IsNullOrWhiteSpace(request.AudioDataBlob)
-            ? null
-            : request.AudioDataBlob.Trim();
-
-        if (!string.IsNullOrWhiteSpace(audioDataUrl))
+        if (request.Content is null && request.AudioDataBlob is null)
         {
-            if (!AudioHelperMethods.TryParseAudioDataUrl(audioDataUrl, out audioContentType, out audioBytes, out var parseError))
-            {
-                return Result.Invalid(new ValidationError(nameof(request.AudioDataBlob), parseError ?? "Ongeldige audio data-URL."));
-            }
-
-            if (request.AudioDurationSeconds.HasValue)
-            {
-                var duration = request.AudioDurationSeconds.Value;
-                if (duration > 0 && double.IsFinite(duration))
-                {
-                    audioDurationSeconds = duration;
-                }
-            }
+            return Result.Invalid(new ValidationError(nameof(request), "Een bericht moet tekst of audio bevatten."));
         }
 
-        var textMessage = request.Content;
-        if (textMessage is null && audioBytes is null)
+        string? audioUrl = null;
+
+        if (request.AudioDataBlob is not null)
         {
-            return Result.Invalid(new ValidationError(nameof(request.Content), "Een bericht moet tekst of audio bevatten."));
+             audioUrl = await _blobStorage.CreateBlobAsync(
+                request.AudioDataBlob.Name,
+                request.AudioDataBlob.Base64Data,
+                Containers.VoiceMessages,
+                ctx
+            );
         }
 
         var message = new Message
         {
             Chat = chat,
             Sender = sender,
-            Text = TextMessage.Create(textMessage!),
-            AudioContentType = audioContentType,
-            AudioData = audioBytes,
-            AudioDurationSeconds = audioDurationSeconds
+            Text = TextMessage.Create(request.Content!),
+            AudioUrl = BlobUrl.Create(audioUrl!),
+            AudioDurationSeconds = request.AudioDurationSeconds,
         };
 
         chat.AddMessage(message);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(ctx);
 
-        await MarkSenderMessageHistoryAsync(chat.Id, sender.Id, message.CreatedAt, message.Id, cancellationToken);
+        await MarkSenderMessageHistoryAsync(chat.Id, sender.Id, message.CreatedAt, message.Id, ctx);
 
         var dto = message.ToChatDto()!;
 
@@ -283,7 +278,7 @@ public class ChatService(
         {
             try
             {
-                await _messageDispatcher.NotifyMessageCreatedAsync(chat.Id, dto, cancellationToken);
+                await _messageDispatcher.NotifyMessageCreatedAsync(chat.Id, dto, ctx);
             }
             catch
             {
@@ -320,7 +315,7 @@ public class ChatService(
                             senderDisplayName,
                             preview,
                             url: $"/chat/{chat.Id}",
-                            cancellationToken);
+                            ctx);
                     }
                 }
             }

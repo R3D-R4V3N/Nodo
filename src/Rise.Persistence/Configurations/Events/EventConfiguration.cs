@@ -22,9 +22,6 @@ internal class EventConfiguration : EntityConfiguration<Event>
         builder.Property(e => e.Location)
             .HasMaxLength(256);
 
-        builder.Property(e => e.Description)
-            .HasMaxLength(2048);
-
         builder.Property(e => e.Price)
             .IsRequired()
             .HasPrecision(18, 2);

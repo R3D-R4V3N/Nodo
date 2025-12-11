@@ -1,6 +1,6 @@
 namespace Rise.Shared.Events;
 
-public static class EventResponse
+public static partial class EventResponse
 {
     public class ToggleInterest
     {

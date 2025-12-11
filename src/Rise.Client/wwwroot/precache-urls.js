@@ -8,9 +8,11 @@ self.PRECACHE_URLS = [
     "js/Observer.js",
     "js/offlineNotifier.js",
     "js/offlineQueue.js",
-    "js/pwa.js",
-    "js/voiceRecorder.js",
     "js/pushNotifications.js",
+    "js/pwa.js",
+    "js/scroll.js",
+    "js/serviceRegistration.js",
+    "js/voiceRecorder.js",
     "favicon.png",
 
     "icons/icon-192.png",

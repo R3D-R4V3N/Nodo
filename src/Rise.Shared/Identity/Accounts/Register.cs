@@ -1,5 +1,7 @@
 using System;
 using Destructurama.Attributed;
+using FluentValidation;
+using Rise.Shared.BlobStorage;
 using Rise.Shared.Users;
 using Rise.Shared.Validators;
 
@@ -40,7 +42,7 @@ public static partial class AccountRequest
         /// <summary>
         /// The user's profile photo in data URL format.
         /// </summary>
-        public string? AvatarDataUrl { get; set; }
+        public BlobDto.Create AvatarBlob { get; set; }
 
         /// <summary>
         /// The user's password.
@@ -82,9 +84,8 @@ public static partial class AccountRequest
                     .WithMessage("Geboortedatum mag niet in de toekomst liggen.");
                 RuleFor(x => x.Gender)
                     .IsInEnum();
-                RuleFor(x => x.AvatarDataUrl)
-                    .NotEmpty()
-                    .MaximumLength(rules.MAX_AVATAR_URL_LENGTH);
+                RuleFor(x => x.AvatarBlob)
+                    .NotNull();
                 RuleFor(x => x.Password).NotEmpty();
                 RuleFor(x => x.ConfirmPassword)
                     .Equal(x => x.Password)

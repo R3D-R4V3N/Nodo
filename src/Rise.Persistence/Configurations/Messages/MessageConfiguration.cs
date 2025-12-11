@@ -34,8 +34,12 @@ internal class MessageConfiguration : EntityConfiguration<Message>
                 .HasColumnName("IsSuspicious");
         });
 
-        builder.Property(m => m.AudioContentType)
-            .HasMaxLength(128);
+        builder.OwnsOne(m => m.AudioUrl, blob =>
+        {
+            blob.Property(t => t.Value)
+                .HasColumnName("AudioUrl")
+                .HasMaxLength(BlobUrl.MAX_LENGTH);
+        });
 
         builder.Property(m => m.AudioDurationSeconds);
     }

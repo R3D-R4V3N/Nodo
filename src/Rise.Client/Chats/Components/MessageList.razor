@@ -20,7 +20,7 @@
             && !string.IsNullOrWhiteSpace(message.User.Name)
             && !isContinuation;
         var avatarUrl = message.User.AvatarUrl;
-        var hasAudio = !string.IsNullOrWhiteSpace(message.AudioDataBlob);
+        var hasAudio = !string.IsNullOrWhiteSpace(message.AudioUrl);
 
         <div class="@(isContinuation ? "space-y-0.5" : "space-y-1")">
             @if (showSender)
@@ -32,7 +32,7 @@
             {
                 <OutgoingAudioBubble @key="@message.Id"
                                      Text="@message.Content"
-                                     AudioUrl="@message.AudioDataBlob"
+                                     AudioUrl="@message.AudioUrl"
                                      AudioDuration="@message.AudioDuration"
                                      IsPending="@message.IsPending"
                                      OnCancelPending="() => HandleCancel(message)" />
@@ -47,7 +47,7 @@
             else if (hasAudio)
             {
                 <IncomingAudioBubble @key="@message.Id" 
-                                     AudioUrl="@message.AudioDataBlob"
+                                     AudioUrl="@message.AudioUrl"
                                      AudioDuration="@message.AudioDuration"
                                      Text="@message.Content"
                                      AvatarUrl="@avatarUrl" />

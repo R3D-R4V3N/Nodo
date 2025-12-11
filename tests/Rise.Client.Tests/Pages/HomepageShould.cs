@@ -19,6 +19,7 @@ public class HomepageShould : TestContext
         Services.AddXunitLogger(outputHelper);
         Services.AddSingleton<IHubClientFactory, FakeHubClientFactory>();
         Services.AddSingleton<IHubClient, FakeHubClient>();
+        Services.AddSingleton(new ChatState());
     }
 
     [Fact]

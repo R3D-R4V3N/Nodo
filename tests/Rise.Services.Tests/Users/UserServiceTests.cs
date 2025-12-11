@@ -24,6 +24,7 @@ public class UserServiceTests
 
         return new UserService(
             dbcontext,
+            new FakeBlobService(),
             new FakeSessionContextProvider(ServicesData.GetValidClaimsPrincipal(loggedInUser))
         );
     }

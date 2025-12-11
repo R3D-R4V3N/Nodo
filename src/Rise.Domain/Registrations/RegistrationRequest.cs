@@ -14,7 +14,7 @@ public partial class RegistrationRequest : Entity
     public LastName LastName { get; set; }
     public BirthDay BirthDay { get; set; }
     public GenderType Gender { get; set; }
-    public AvatarUrl AvatarUrl { get; set; }
+    public BlobUrl AvatarUrl { get; set; }
     public string PasswordHash { get; set; }
     
     // organization
@@ -57,7 +57,7 @@ public partial class RegistrationRequest : Entity
             LastName = LastName.Create(lastName),
             BirthDay = BirthDay.Create(birthDate),
             Gender = gender,
-            AvatarUrl = AvatarUrl.Create(avatarUrl),
+            AvatarUrl = BlobUrl.Create(avatarUrl),
             PasswordHash = Guard.Against.NullOrWhiteSpace(passwordHash),
             Organization = Guard.Against.Null(organization),
             Status = new RegistrationStatus()

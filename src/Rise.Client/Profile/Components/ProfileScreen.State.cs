@@ -203,7 +203,7 @@ public partial class ProfileScreen
             LastName = _draft.LastName ?? string.Empty,
             Email = _draft.Email ?? string.Empty,
             Biography = _draft.Bio ?? string.Empty,
-            AvatarUrl = _draft.AvatarUrl ?? string.Empty,
+            AvatarBlob = _draft.AvatarBlob,
             Gender = _draft.Gender,
             Hobbies = _selectedHobbyIds
                         .Where(id => !string.IsNullOrWhiteSpace(id))

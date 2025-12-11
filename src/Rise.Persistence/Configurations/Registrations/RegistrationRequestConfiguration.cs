@@ -38,7 +38,7 @@ internal class RegistrationRequestConfiguration : EntityConfiguration<Registrati
         {
             bio.Property(t => t.Value)
                 .HasColumnName("AvatarUrl")
-                .HasMaxLength(AvatarUrl.MAX_LENGTH);
+                .HasMaxLength(BlobUrl.MAX_LENGTH);
         });
 
         builder.OwnsOne(m => m.BirthDay, bd =>

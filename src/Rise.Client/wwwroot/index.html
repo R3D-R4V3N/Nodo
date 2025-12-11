@@ -11,11 +11,17 @@
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="manifest" href="manifest.webmanifest" />
     <meta name="theme-color" content="#127646" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob: ws: wss:;
+               script-src * 'unsafe-inline' 'unsafe-eval';
+               style-src * 'unsafe-inline';
+               img-src * data: blob:;
+               media-src https://fileserverdevops.blob.core.windows.net data: blob:;
+               connect-src * ws: wss:;">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
     <link href="Rise.Client.styles.css" rel="stylesheet" />
 </head>
@@ -42,39 +48,9 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="js/pwa.js"></script>
-    <script>
-        window.scrollToBottom = (el, force = false) => {
-            if (!el) return;
-            const shouldStick = force || (el.scrollHeight - el.scrollTop - el.clientHeight < 80);
-            if (shouldStick) {
-                el.scrollTop = el.scrollHeight;
-            }
-        };
-
-        window.measureElementHeight = (el) => {
-            if (!el || !(el instanceof HTMLElement)) return 0;
-            const rect = el.getBoundingClientRect();
-            const computed = getComputedStyle(el);
-            const marginTop = parseFloat(computed.marginTop) || 0;
-            const marginBottom = parseFloat(computed.marginBottom) || 0;
-            return rect.height + marginTop + marginBottom;
-        };
-    </script>
+    <script src="js/scroll.js"></script>
     <script src="js/pushNotifications.js"></script>
-
-    <script>
-        if ('serviceWorker' in navigator && window.isSecureContext) {
-            window.addEventListener('load', () => {
-                const baseHref = document.querySelector('base')?.getAttribute('href') ?? '/';
-                const normalizedBase = baseHref.endsWith('/') ? baseHref : `${baseHref}/`;
-                const serviceWorkerUrl = `${normalizedBase}service-worker.js`;
-
-                navigator.serviceWorker.register(serviceWorkerUrl)
-                    .catch(err => console.error('Service worker registration failed', err));
-            });
-        }
-    </script>
-    <!-- custom Observer script -->
+    <script src="js/serviceRegistration.js"></script>
     <script src="js/Observer.js"></script>
     <!--LAST!!!!-->
     <script src="_framework/blazor.webassembly.js"></script>

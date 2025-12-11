@@ -1,0 +1,111 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Rise.Shared.Events
+
+@if (IsOpen)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @onclick="HandleCloseAsync">
+        <div class="relative w-full max-w-md rounded-2xl bg-white shadow-xl" @onclick:stopPropagation="true">
+            <div class="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
+                <h3 class="text-lg font-semibold text-neutral-900">Nieuw evenement</h3>
+                <button type="button"
+                        class="rounded-full p-2 text-neutral-500 hover:bg-neutral-100"
+                        @onclick="HandleCloseAsync">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <EditForm class="space-y-4 px-6 py-6" Model="NewEvent" OnValidSubmit="HandleSubmitAsync">
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-neutral-700" for="event-name">Naam *</label>
+                    <InputText id="event-name"
+                               class="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:border-[#127646] focus:outline-none"
+                               @bind-Value="NewEvent.Name"
+                               required />
+                </div>
+
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-neutral-700" for="event-date">Datum en tijd *</label>
+                    <input id="event-date"
+                           type="datetime-local"
+                           class="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:border-[#127646] focus:outline-none"
+                           @bind="NewEvent.Date"
+                           @bind:format="yyyy-MM-ddTHH:mm"
+                           required />
+                </div>
+
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-neutral-700" for="event-location">Locatie *</label>
+                    <InputText id="event-location"
+                               class="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:border-[#127646] focus:outline-none"
+                               @bind-Value="NewEvent.Location"
+                               required />
+                </div>
+
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-neutral-700" for="event-price">Prijs *</label>
+                    <InputNumber TValue="double"
+                                 id="event-price"
+                                 class="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:border-[#127646] focus:outline-none"
+                                 @bind-Value="NewEvent.Price"
+                                 step="0.01"
+                                 min="0"
+                                 required />
+                </div>
+
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-neutral-700" for="event-image">Afbeelding URL</label>
+                    <InputText id="event-image"
+                               class="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:border-[#127646] focus:outline-none"
+                               @bind-Value="NewEvent.ImageUrl" />
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+                {
+                    <div class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                        @ErrorMessage
+                    </div>
+                }
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button"
+                            class="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                            @onclick="HandleCloseAsync">
+                        Annuleren
+                    </button>
+                    <button type="submit"
+                            class="rounded-lg bg-[#127646] px-5 py-2 text-sm font-semibold text-white hover:bg-[#0d5a36] disabled:opacity-70"
+                            disabled="@IsSaving">
+                        @(IsSaving ? "Evenement opslaan..." : "Evenement opslaan")
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventRequest.AddEventRequest NewEvent { get; set; } = default!;
+    [Parameter] public string? ErrorMessage { get; set; }
+    [Parameter] public bool IsSaving { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSubmit { get; set; }
+
+    private async Task HandleSubmitAsync()
+    {
+        if (OnSubmit.HasDelegate)
+        {
+            await OnSubmit.InvokeAsync();
+        }
+    }
+
+    private async Task HandleCloseAsync()
+    {
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+}

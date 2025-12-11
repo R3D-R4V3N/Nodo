@@ -6,14 +6,14 @@ using Xunit;
 
 namespace Rise.Domain.Tests.Common.ValueObjects;
 
-public class AvatarUrlTests
+public class BLobUrlTests
 {
     [Fact]
     public void Create_ShouldReturnSuccess_WhenValueIsValid()
     {
         var validUrl = "https://example.com/avatar.png";
 
-        var result = AvatarUrl.Create(validUrl);
+        var result = BlobUrl.Create(validUrl);
 
         result.IsSuccess.ShouldBeTrue();
         result.Value.Value.ShouldBe(validUrl);
@@ -27,30 +27,30 @@ public class AvatarUrlTests
     [InlineData(null)]
     public void Create_ShouldReturnConflict_WhenValueIsEmptyOrNull(string invalidValue)
     {
-        var result = AvatarUrl.Create(invalidValue);
+        var result = BlobUrl.Create(invalidValue);
 
         result.IsSuccess.ShouldBeFalse();
         result.Status.ShouldBe(ResultStatus.Conflict);
-        result.Errors.ShouldBe(["Avatar url is leeg."]);
+        result.Errors.ShouldBe(["Blob url is leeg."]);
     }
 
     [Fact]
     public void Create_ShouldReturnConflict_WhenValueIsTooLong()
     {
-        var longValue = new string('a', AvatarUrl.MAX_LENGTH + 1);
+        var longValue = new string('a', BlobUrl.MAX_LENGTH + 1);
 
-        var result = AvatarUrl.Create(longValue);
+        var result = BlobUrl.Create(longValue);
 
         result.IsSuccess.ShouldBeFalse();
         result.Status.ShouldBe(ResultStatus.Conflict);
-        result.Errors.ShouldBe([$"Avatar url is te lang. Maximum {AvatarUrl.MAX_LENGTH} tekens."]);
+        result.Errors.ShouldBe([$"Blob url is te lang. Maximum {BlobUrl.MAX_LENGTH} tekens."]);
     }
 
     [Fact]
     public void ImplicitOperator_ShouldReturnStringValue()
     {
         var url = "https://avatar.com/test.png";
-        var avatarUrl = AvatarUrl.Create(url).Value;
+        var avatarUrl = BlobUrl.Create(url).Value;
 
         string result = avatarUrl;
 
@@ -62,7 +62,7 @@ public class AvatarUrlTests
     {
         var url = "https://valid.com/avatar.jpg";
 
-        var avatarUrl = (AvatarUrl)url;
+        var avatarUrl = (BlobUrl)url;
 
         avatarUrl.Value.ShouldBe(url);
     }
@@ -72,18 +72,18 @@ public class AvatarUrlTests
     {
         string invalid = "";
 
-        Action act = () => { var _ = (AvatarUrl)invalid; };
+        Action act = () => { var _ = (BlobUrl)invalid; };
 
         var ex = act.ShouldThrow<ArgumentException>();
-        ex.Message.ShouldContain("Avatar url is leeg.");
+        ex.Message.ShouldContain("Blob url is leeg.");
     }
 
     [Fact]
     public void Equality_ShouldReturnTrue_ForSameValue()
     {
         var url = "https://same.com/avatar.png";
-        var a = AvatarUrl.Create(url).Value;
-        var b = AvatarUrl.Create(url).Value;
+        var a = BlobUrl.Create(url).Value;
+        var b = BlobUrl.Create(url).Value;
 
         var areEqual = a.Equals(b);
 
@@ -95,7 +95,7 @@ public class AvatarUrlTests
     public void ToString_ShouldReturnValue()
     {
         var url = "https://test.com/avatar.jpg";
-        var avatarUrl = AvatarUrl.Create(url).Value;
+        var avatarUrl = BlobUrl.Create(url).Value;
 
         var result = avatarUrl.ToString();
 

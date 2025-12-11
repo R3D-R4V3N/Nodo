@@ -6,12 +6,15 @@ using Rise.Domain.Registrations;
 using Rise.Domain.Users;
 using Rise.Domain.Users.Settings;
 using Rise.Persistence;
+using Rise.Services.BlobStorage;
 using Rise.Services.Identity;
 using Rise.Services.RegistrationRequests.Mapper;
+using Rise.Services.Users.Mapper;
 using Rise.Shared.Assets;
 using Rise.Shared.Identity;
-using Rise.Shared.RegistrationRequests;
 using Rise.Shared.Identity.Accounts;
+using Rise.Shared.RegistrationRequests;
+using System.Threading;
 using Rise.Services.Users.Mapper;
 using Rise.Domain.Chats;
 
@@ -20,6 +23,7 @@ namespace Rise.Services.RegistrationRequests;
 public class RegistrationRequestService(
     ApplicationDbContext dbContext,
     UserManager<IdentityUser> userManager,
+    IBlobStorageService blobStorageService,
     ISessionContextProvider sessionContextProvider,
     ILogger<RegistrationRequestService> logger,
     IPasswordHasher<IdentityUser> passwordHasher) : IRegistrationRequestService
@@ -69,18 +73,23 @@ public class RegistrationRequestService(
         };
         var hashedPassword = passwordHasher.HashPassword(identityUser, request.Password);
 
+        var avatarUrl = await blobStorageService.CreateBlobAsync(
+            request.AvatarBlob.Name,
+            request.AvatarBlob.Base64Data,
+            Containers.Images,
+            ctx
+        );
+
         var registration = RegistrationRequest.Create(
             request.Email,
             request.FirstName!,
             request.LastName!,
             request.BirthDate ?? DateOnly.FromDateTime(DateTime.UtcNow),
             request.Gender.ToDomain(),
-            request.AvatarDataUrl!,
+            avatarUrl,
             hashedPassword,
             organization
         );
-
-        registration.AvatarUrl ??= AvatarUrl.Create(DefaultImages.GetProfile(request.Email));
 
         dbContext.RegistrationRequests.Add(registration);
 
@@ -271,7 +280,7 @@ public class RegistrationRequestService(
             FirstName = FirstName.Create(registration.FirstName),
             LastName = LastName.Create(registration.LastName),
             Biography = Biography.Create("Nieuw bij Nodo."),
-            AvatarUrl = AvatarUrl.Create(string.IsNullOrWhiteSpace(registration.AvatarUrl)
+            AvatarUrl = BlobUrl.Create(string.IsNullOrWhiteSpace(registration.AvatarUrl)
                 ? DefaultImages.GetProfile(identityUser.Email)
                 : registration.AvatarUrl),
             BirthDay = BirthDay.Create(registration.BirthDay),

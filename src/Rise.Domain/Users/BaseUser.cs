@@ -17,7 +17,7 @@ public abstract class BaseUser : Entity
     public required FirstName FirstName { get; set; }
     public required LastName LastName { get; set; }
     public required Biography Biography { get; set; }
-    public required AvatarUrl AvatarUrl { get; set; }
+    public required BlobUrl AvatarUrl { get; set; }
     public required BirthDay BirthDay { get; set; }
     public required GenderType Gender { get; set; }    
     // settings

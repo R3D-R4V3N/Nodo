@@ -2,6 +2,7 @@
 using Rise.Domain.Common;
 using Rise.Domain.Common.ValueObjects;
 using Rise.Persistence;
+using Rise.Services.BlobStorage;
 using Rise.Services.Hobbies.Mapper;
 using Rise.Services.Identity;
 using Rise.Services.Sentiments.Mapper;
@@ -14,6 +15,7 @@ namespace Rise.Services.Users;
 
 public class UserService(
     ApplicationDbContext dbContext,
+    IBlobStorageService blobStorageService,
     ISessionContextProvider sessionContextProvider) : IUserService
 {
     public async Task<Result<UserResponse.CurrentUser>> GetUserAsync(string accountId, CancellationToken ctx = default)
@@ -90,7 +92,18 @@ public class UserService(
         userToChange.FirstName = FirstName.Create(request.FirstName);
         userToChange.LastName = LastName.Create(request.LastName);
         userToChange.Biography = Biography.Create(request.Biography);
-        userToChange.AvatarUrl = AvatarUrl.Create(request.AvatarUrl);
+
+        if (request.AvatarBlob is not null)
+        {
+            var url = await blobStorageService.CreateBlobAsync(
+                request.AvatarBlob.Name,
+                request.AvatarBlob.Base64Data,
+                Containers.Images,
+                cancellationToken
+            );
+            userToChange.AvatarUrl = BlobUrl.Create(url);
+        }
+
         userToChange.Gender = request.Gender.ToDomain();
 
         // can use IAsyncEnumerable but a pain to work with

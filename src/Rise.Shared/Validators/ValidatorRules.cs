@@ -2,7 +2,7 @@
 public class ValidatorRules
 {
     //value objects
-    public required int MAX_AVATAR_URL_LENGTH { get; set;}
+    //public required int MAX_AVATAR_URL_LENGTH { get; set;}
     public required int MAX_BIOGRAPHY_LENGTH {get; set;}
     public required int MAX_DEFAULT_CHAT_LINE_LENGTH {get; set;}
     public required int MAX_DEFAULT_CHAT_LINES_COUNT { get; set; }

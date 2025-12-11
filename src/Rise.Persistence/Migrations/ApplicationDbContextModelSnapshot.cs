@@ -357,12 +357,9 @@ namespace Rise.Persistence.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<DateTime?>("LastReadAt")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int?>("LastReadMessageId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -370,7 +367,12 @@ namespace Rise.Persistence.Migrations
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("current_timestamp()");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.HasIndex("ChatId", "UserId")
                         .IsUnique();
@@ -402,13 +404,13 @@ namespace Rise.Persistence.Migrations
                     b.Property<int>("MadeByUserId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -441,11 +443,6 @@ namespace Rise.Persistence.Migrations
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(2048)
-                        .HasColumnType("varchar(2048)");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
@@ -488,13 +485,6 @@ namespace Rise.Persistence.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AudioContentType")
-                        .HasMaxLength(128)
-                        .HasColumnType("varchar(128)");
-
-                    b.Property<byte[]>("AudioData")
-                        .HasColumnType("longblob");
 
                     b.Property<double?>("AudioDurationSeconds")
                         .HasColumnType("double");
@@ -949,6 +939,25 @@ namespace Rise.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Rise.Domain.Chats.ChatMessageHistory", b =>
+                {
+                    b.HasOne("Rise.Domain.Chats.Chat", "Chat")
+                        .WithMany()
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Rise.Domain.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Rise.Domain.Emergencies.Emergency", b =>
                 {
                     b.HasOne("Rise.Domain.Chats.Chat", "HappenedInChat")
@@ -1027,30 +1036,32 @@ namespace Rise.Persistence.Migrations
                                 .HasForeignKey("MessageId");
                         });
 
+                    b.OwnsOne("Rise.Domain.Common.ValueObjects.BlobUrl", "AudioUrl", b1 =>
+                        {
+                            b1.Property<int>("MessageId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(500)
+                                .HasColumnType("varchar(500)")
+                                .HasColumnName("AudioUrl");
+
+                            b1.HasKey("MessageId");
+
+                            b1.ToTable("Message");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MessageId");
+                        });
+
+                    b.Navigation("AudioUrl");
+
                     b.Navigation("Chat");
 
                     b.Navigation("Sender");
 
                     b.Navigation("Text");
-                });
-
-            modelBuilder.Entity("Rise.Domain.Chats.ChatMessageHistory", b =>
-                {
-                    b.HasOne("Rise.Domain.Chats.Chat", "Chat")
-                        .WithMany()
-                        .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Rise.Domain.Users.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Chat");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Rise.Domain.Registrations.RegistrationRequest", b =>
@@ -1085,7 +1096,7 @@ namespace Rise.Persistence.Migrations
                                 .HasForeignKey("RegistrationRequestId");
                         });
 
-                    b.OwnsOne("Rise.Domain.Common.ValueObjects.AvatarUrl", "AvatarUrl", b1 =>
+                    b.OwnsOne("Rise.Domain.Common.ValueObjects.BlobUrl", "AvatarUrl", b1 =>
                         {
                             b1.Property<int>("RegistrationRequestId")
                                 .HasColumnType("int");
@@ -1171,7 +1182,7 @@ namespace Rise.Persistence.Migrations
                             b1.Property<DateTime?>("HandledDate")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("datetime(6)")
-                                .HasDefaultValue(new DateTime(2025, 12, 3, 10, 36, 54, 652, DateTimeKind.Utc).AddTicks(9522))
+                                .HasDefaultValue(new DateTime(2025, 12, 11, 10, 4, 33, 809, DateTimeKind.Utc).AddTicks(4188))
                                 .HasColumnName("HandledDate");
 
                             b1.Property<int>("StatusType")
@@ -1263,7 +1274,7 @@ namespace Rise.Persistence.Migrations
                                 .HasForeignKey("BaseUserId");
                         });
 
-                    b.OwnsOne("Rise.Domain.Common.ValueObjects.AvatarUrl", "AvatarUrl", b1 =>
+                    b.OwnsOne("Rise.Domain.Common.ValueObjects.BlobUrl", "AvatarUrl", b1 =>
                         {
                             b1.Property<int>("BaseUserId")
                                 .HasColumnType("int");

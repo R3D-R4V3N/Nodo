@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rise.Shared.BlobStorage;
 using Rise.Shared.Sentiments;
 using Rise.Shared.Users;
 
@@ -27,7 +28,7 @@ public record ProfileModel
     public string Bio { get; init; } = string.Empty;
     public GenderTypeDto Gender { get; init; }
     public DateOnly BirthDay { get; init; }
-    public string AvatarUrl { get; init; } = DefaultAvatar;
+    public string AvatarUrl { get; init; } = string.Empty;
     public string MemberSince { get; init; } = string.Empty;
     public IReadOnlyList<ProfileInterestModel> Interests { get; init; } = Array.Empty<ProfileInterestModel>();
     public IReadOnlyList<ProfileHobbyModel> Hobbies { get; init; } = Array.Empty<ProfileHobbyModel>();
@@ -59,7 +60,7 @@ public record ProfileModel
             Bio = user.Biography,
             Gender = user.Gender,
             BirthDay = user.BirthDay,
-            AvatarUrl = string.IsNullOrWhiteSpace(user.AvatarUrl) ? DefaultAvatar : user.AvatarUrl,
+            AvatarUrl = user.AvatarUrl,
             MemberSince = memberSince,
             Interests = interests,
             Hobbies = hobbies,
@@ -78,7 +79,8 @@ public class ProfileDraft
     public string Bio { get; set; } = string.Empty;
     public GenderTypeDto Gender { get; set; }
     public DateOnly BirthDay { get; set; }
-    public string AvatarUrl { get; set; } = ProfileModel.DefaultAvatar;
+    public string AvatarUrl { get; set; }
+    public BlobDto.Create? AvatarBlob { get; set; }
     public string MemberSince { get; set; } = string.Empty;
 
     public static ProfileDraft FromModel(ProfileModel model) => new()
@@ -91,17 +93,5 @@ public class ProfileDraft
         BirthDay = model.BirthDay,
         AvatarUrl = model.AvatarUrl,
         MemberSince = model.MemberSince
-    };
-
-    public ProfileModel ApplyTo(ProfileModel original) => original with
-    {
-        FirstName = FirstName,
-        LastName = LastName,
-        Email = Email,
-        Bio = Bio,
-        Gender = Gender,
-        BirthDay = BirthDay,
-        AvatarUrl = AvatarUrl,
-        MemberSince = MemberSince
     };
 }

@@ -38,7 +38,7 @@ public static class DomainData
     public static FirstName ValidFirstName() => FirstName.Create($"John");
     public static LastName ValidLastName() => LastName.Create($"Doe");
     public static Biography ValidBiography() => Biography.Create($"Dit is een bio.");
-    public static AvatarUrl ValidAvatarUrl() => AvatarUrl.Create($"Dit is een img.");
+    public static BlobUrl ValidAvatarUrl() => BlobUrl.Create($"Dit is een img.");
     public static BirthDay ValidBirthDay() => BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-28)));
     public static Organization ValidOrganization()
         => new Organization("Nodo Centrum", "Ondersteuning vanuit het centrale team.");
@@ -98,7 +98,6 @@ public static class DomainData
             Name = "Event Name",
             Date = DateTime.Now.AddDays(8).Date.AddHours(20),
             Location = "Location",
-            Description = "Description",
             Price = 100.00,
             ImageUrl = "Url",
             InterestedUsers = []

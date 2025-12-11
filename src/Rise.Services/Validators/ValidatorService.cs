@@ -10,7 +10,6 @@ public class ValidatorService : IValidatorService
     {
         var rules = new ValidatorRules
         {
-            MAX_AVATAR_URL_LENGTH = AvatarUrl.MAX_LENGTH,
             MAX_BIOGRAPHY_LENGTH = Biography.MAX_LENGTH,
             MAX_DEFAULT_CHAT_LINE_LENGTH = DefaultSentence.MAX_LENGTH,
             MAX_DEFAULT_CHAT_LINES_COUNT = UserSetting.MAX_DEFAULT_CHAT_LINE_COUNT,
