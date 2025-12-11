@@ -1043,8 +1043,8 @@ namespace Rise.Persistence.Migrations
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasMaxLength(2000000)
-                                .HasColumnType("longtext")
+                                .HasMaxLength(200)
+                                .HasColumnType("varchar(200)")
                                 .HasColumnName("AudioUrl");
 
                             b1.HasKey("MessageId");
@@ -1103,8 +1103,8 @@ namespace Rise.Persistence.Migrations
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasMaxLength(2000000)
-                                .HasColumnType("longtext")
+                                .HasMaxLength(200)
+                                .HasColumnType("varchar(200)")
                                 .HasColumnName("AvatarUrl");
 
                             b1.HasKey("RegistrationRequestId");
@@ -1182,7 +1182,7 @@ namespace Rise.Persistence.Migrations
                             b1.Property<DateTime?>("HandledDate")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("datetime(6)")
-                                .HasDefaultValue(new DateTime(2025, 12, 11, 21, 1, 5, 947, DateTimeKind.Utc).AddTicks(2970))
+                                .HasDefaultValue(new DateTime(2025, 12, 11, 22, 7, 17, 761, DateTimeKind.Utc).AddTicks(6804))
                                 .HasColumnName("HandledDate");
 
                             b1.Property<int>("StatusType")
@@ -1281,8 +1281,8 @@ namespace Rise.Persistence.Migrations
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasMaxLength(2000000)
-                                .HasColumnType("longtext")
+                                .HasMaxLength(200)
+                                .HasColumnType("varchar(200)")
                                 .HasColumnName("AvatarUrl");
 
                             b1.HasKey("BaseUserId");

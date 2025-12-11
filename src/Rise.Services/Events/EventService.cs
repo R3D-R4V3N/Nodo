@@ -24,10 +24,8 @@ public class EventService(ApplicationDbContext dbContext, ISessionContextProvide
         if (string.IsNullOrWhiteSpace(userId))
             return Result.Unauthorized("U moet ingelogd zijn om events te verkrijgen.");
         
-        var userExists = await dbContext.Users.AnyAsync(u => u.AccountId == userId, ctx);
+        var userExists = await dbContext.BaseUsers.AnyAsync(s => s.AccountId == userId, ctx);
         
-        if (!userExists)
-            userExists = await dbContext.Admins.AnyAsync(s => s.AccountId == userId, ctx);
         if (!userExists)
             return Result.Unauthorized("Gebruiker niet gevonden.");
 
@@ -48,18 +46,6 @@ public class EventService(ApplicationDbContext dbContext, ISessionContextProvide
 
     public async Task<Result<EventResponse.AddEventResponse>> AddEvent(EventRequest.AddEventRequest request, CancellationToken ctx = default)
     {
-        var principal = _sessionContextProvider.User;
-        if (principal is null)
-        {
-            return Result.Unauthorized();
-        }
-
-        var isAuthorized = principal.IsInRole(AppRoles.Administrator) || principal.IsInRole(AppRoles.Supervisor);
-        if (!isAuthorized)
-        {
-            return Result.Forbidden();
-        }
-
         if (request is null ||
             string.IsNullOrWhiteSpace(request.Name) ||
             string.IsNullOrWhiteSpace(request.Location) ||

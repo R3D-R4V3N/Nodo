@@ -103,7 +103,6 @@ try
 
     var app = builder.Build();
     
-
     //if (app.Environment.IsDevelopment())
     //{
         using var scope = app.Services.CreateScope();
@@ -118,22 +117,22 @@ try
 
     // De rest van de middleware pipeline
     app.UseHttpsRedirection()
-       .UseBlazorFrameworkFiles()
-       .UseStaticFiles()
-       .UseDefaultExceptionHandler()
-       .UseAuthentication()
-       .UseAuthorization()
-       .UseFastEndpoints(o =>
-       {
-           o.Endpoints.Configurator = ep =>
-           {
-               ep.DontAutoSendResponse();
-               ep.PreProcessor<GlobalRequestLogger>(Order.Before);
-               ep.PostProcessor<GlobalResponseSender>(Order.Before);
-               ep.PostProcessor<GlobalResponseLogger>(Order.Before);
-           };
-       })
-       .UseSwaggerGen();
+        .UseBlazorFrameworkFiles()
+        .UseStaticFiles()
+        .UseDefaultExceptionHandler()
+        .UseAuthentication()
+        .UseAuthorization()
+        .UseFastEndpoints(o =>
+        {
+            o.Endpoints.Configurator = ep =>
+            {
+                ep.DontAutoSendResponse();
+                ep.PreProcessor<GlobalRequestLogger>(Order.Before);
+                ep.PostProcessor<GlobalResponseSender>(Order.Before);
+                ep.PostProcessor<GlobalResponseLogger>(Order.Before);
+            };
+        })
+        .UseSwaggerGen();
 
     app.MapHub<Chathub>("/chathub");
     app.MapHub<UserConnectionHub>("/connectionsHub");

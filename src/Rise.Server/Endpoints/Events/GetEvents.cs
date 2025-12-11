@@ -1,4 +1,5 @@
 using Rise.Shared.Events;
+using Rise.Shared.Identity;
 
 namespace Rise.Server.Endpoints.Events;
 
@@ -7,7 +8,7 @@ public class GetEvents(IEventService eventService) : EndpointWithoutRequest<Resu
     public override void Configure()
     {
         Get("/api/events");
-        AllowAnonymous();
+        Roles(AppRoles.User, AppRoles.Supervisor, AppRoles.Administrator);
     }
 
     public override Task<Result<EventResponse.GetEvents>> ExecuteAsync(CancellationToken ct)

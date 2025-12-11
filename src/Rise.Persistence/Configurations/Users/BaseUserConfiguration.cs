@@ -43,7 +43,6 @@ internal class BaseUserConfiguration : EntityConfiguration<BaseUser>
         {
             bio.Property(t => t.Value)
                 .HasColumnName("AvatarUrl")
-                .HasColumnType("longtext")
                 .HasMaxLength(BlobUrl.MAX_LENGTH);
         });
 

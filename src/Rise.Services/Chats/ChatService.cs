@@ -10,16 +10,19 @@ using Rise.Services.Notifications;
 using Rise.Shared.Common;
 using Rise.Shared.Chats;
 using Rise.Shared.Identity;
+using Rise.Services.BlobStorage;
 
 namespace Rise.Services.Chats;
 
 public class ChatService(
     ApplicationDbContext dbContext,
     ISessionContextProvider sessionContextProvider,
+    IBlobStorageService blobStorage,
     IChatMessageDispatcher? messageDispatcher = null,
     IPushNotificationService? pushNotificationService = null) : IChatService
 {
     private readonly ApplicationDbContext _dbContext = dbContext;
+    private readonly IBlobStorageService _blobStorage = blobStorage;
     private readonly ISessionContextProvider _sessionContextProvider = sessionContextProvider;
     private readonly IChatMessageDispatcher? _messageDispatcher = messageDispatcher;
     private readonly IPushNotificationService? _pushNotificationService = pushNotificationService;
@@ -239,16 +242,25 @@ public class ChatService(
             return Result.Invalid(new ValidationError(nameof(request), "Een bericht moet tekst of audio bevatten."));
         }
 
-        BlobUrl? audioUrl = request.AudioDataBlob is not null
-            ? (BlobUrl)request.AudioDataBlob.Base64Data
-            : null;
+        string? audioUrl = null;
+
+
+        if (request.AudioDataBlob is not null)
+        {
+            audioUrl = await _blobStorage.CreateBlobAsync(
+                request.AudioDataBlob.Name,
+                request.AudioDataBlob.Base64Data,
+                Containers.VoiceMessages,
+                ctx
+           );
+        }
 
         var message = new Message
         {
             Chat = chat,
             Sender = sender,
             Text = string.IsNullOrWhiteSpace(request.Content) ? null : (TextMessage)request.Content,
-            AudioUrl = audioUrl,
+            AudioUrl = BlobUrl.Create(audioUrl!),
             AudioDurationSeconds = request.AudioDurationSeconds,
         };
 

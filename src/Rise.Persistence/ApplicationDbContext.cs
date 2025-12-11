@@ -31,6 +31,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> opts) :
     public DbSet<ChatMessageHistory> ChatMessageHistories => Set<ChatMessageHistory>();
     public DbSet<IdentityUser> IdentityUsers => Set<IdentityUser>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<BaseUser> BaseUsers => Set<BaseUser>();    
     public DbSet<Supervisor> Supervisors => Set<Supervisor>();
     public DbSet<Admin> Admins => Set<Admin>();
     public DbSet<UserConnection> UserConnections => Set<UserConnection>();

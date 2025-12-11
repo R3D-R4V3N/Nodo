@@ -38,7 +38,6 @@ internal class MessageConfiguration : EntityConfiguration<Message>
         {
             blob.Property(t => t.Value)
                 .HasColumnName("AudioUrl")
-                .HasColumnType("longtext")
                 .HasMaxLength(BlobUrl.MAX_LENGTH);
         });
 

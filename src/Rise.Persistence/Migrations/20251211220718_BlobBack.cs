@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Rise.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class NewBaseCuzSolvingConflictHard : Migration
+    public partial class BlobBack : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -29,7 +29,7 @@ namespace Rise.Persistence.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Biography = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    AvatarUrl = table.Column<string>(type: "longtext", maxLength: 2000000, nullable: false)
+                    AvatarUrl = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     BirthDay = table.Column<DateOnly>(type: "date", nullable: false),
                     Gender = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
@@ -337,7 +337,7 @@ namespace Rise.Persistence.Migrations
                     Text = table.Column<string>(type: "varchar(2000)", maxLength: 2000, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     IsSuspicious = table.Column<bool>(type: "tinyint(1)", nullable: true),
-                    AudioUrl = table.Column<string>(type: "longtext", maxLength: 2000000, nullable: true)
+                    AudioUrl = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     AudioDurationSeconds = table.Column<double>(type: "double", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
@@ -601,7 +601,7 @@ namespace Rise.Persistence.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     BirthDay = table.Column<DateOnly>(type: "date", nullable: false),
                     Gender = table.Column<int>(type: "int", nullable: false),
-                    AvatarUrl = table.Column<string>(type: "longtext", maxLength: 2000000, nullable: false)
+                    AvatarUrl = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     PasswordHash = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -609,7 +609,7 @@ namespace Rise.Persistence.Migrations
                     AssignedSupervisorId = table.Column<int>(type: "int", nullable: true),
                     StatusType = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     HandledById = table.Column<int>(type: "int", nullable: true),
-                    HandledDate = table.Column<DateTime>(type: "datetime(6)", nullable: true, defaultValue: new DateTime(2025, 12, 11, 21, 1, 5, 947, DateTimeKind.Utc).AddTicks(2970)),
+                    HandledDate = table.Column<DateTime>(type: "datetime(6)", nullable: true, defaultValue: new DateTime(2025, 12, 11, 22, 7, 17, 761, DateTimeKind.Utc).AddTicks(6804)),
                     Note = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
