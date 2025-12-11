@@ -20,6 +20,7 @@ public sealed class OfflineQueueService : IAsyncDisposable
     };
 
     public event Func<Task>? WentOnline;
+    public event Func<Task>? QueueProcessed;
 
     public OfflineQueueService(IJSRuntime jsRuntime, IHttpClientFactory httpClientFactory)
     {
@@ -124,6 +125,7 @@ public sealed class OfflineQueueService : IAsyncDisposable
                     if (response.IsSuccessStatusCode)
                     {
                         await RemoveOperationAsync(operation.Id, cancellationToken);
+                        await InvokeQueueProcessedHandlersAsync(cancellationToken);
                     }
                 }
                 catch
@@ -171,6 +173,28 @@ public sealed class OfflineQueueService : IAsyncDisposable
     private async Task InvokeWentOnlineHandlersAsync(CancellationToken cancellationToken)
     {
         var handlers = WentOnline;
+        if (handlers is null)
+        {
+            return;
+        }
+
+        foreach (var handler in handlers.GetInvocationList().OfType<Func<Task>>())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                await handler();
+            }
+            catch
+            {
+                // Ignore handler failures to avoid blocking other subscribers or queue processing.
+            }
+        }
+    }
+
+    private async Task InvokeQueueProcessedHandlersAsync(CancellationToken cancellationToken)
+    {
+        var handlers = QueueProcessed;
         if (handlers is null)
         {
             return;

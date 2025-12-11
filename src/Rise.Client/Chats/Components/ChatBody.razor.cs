@@ -54,6 +54,7 @@ public partial class ChatBody : IAsyncDisposable
     protected override void OnInitialized()
     {
         OfflineQueueService.WentOnline += HandleWentOnlineAsync;
+        OfflineQueueService.QueueProcessed += HandleQueueProcessedAsync;
         InitializeAlertReasons();
     }
 
@@ -173,7 +174,13 @@ public partial class ChatBody : IAsyncDisposable
         {
             _connectionError = null;
             await EnsureHubConnectionAsync();
+            await RefreshPendingMessagesAsync();
         });
+    }
+
+    private Task HandleQueueProcessedAsync()
+    {
+        return InvokeAsync(RefreshPendingMessagesAsync);
     }
 
     private void InitializeAlertReasons()
@@ -347,6 +354,50 @@ public partial class ChatBody : IAsyncDisposable
         {
             _messages.Remove(pendingMessage);
         }
+    }
+
+    private async Task RefreshPendingMessagesAsync()
+    {
+        if (_chat is null)
+        {
+            return;
+        }
+
+        var pendingCount = _messages.Count(message => message.IsPending);
+        if (pendingCount == 0)
+        {
+            return;
+        }
+
+        var take = Math.Max(Math.Max(pendingCount, 20), _messages.Count);
+        var latestResult = await ChatService.GetMessagesAsync(_chat.ChatId, new QueryRequest.SkipTake
+        {
+            Skip = 0,
+            Take = take
+        });
+
+        if (!latestResult.IsSuccess || latestResult.Value is null)
+        {
+            return;
+        }
+
+        foreach (var message in latestResult.Value.Messages.OrderBy(m => m.Timestamp ?? DateTime.MinValue))
+        {
+            RemovePendingPlaceholder(message);
+            var alreadyPresent = _messages.Any(existing =>
+                (!existing.IsPending && existing.Id == message.Id)
+                || MatchesQueuedOperation(message, existing)
+                || PendingContentMatches(message, existing));
+
+            if (!alreadyPresent)
+            {
+                TryAddMessage(message);
+            }
+        }
+
+        ScheduleFooterMeasurement();
+        _shouldScrollToBottom = true;
+        StateHasChanged();
     }
 
     private static bool MatchesQueuedOperation(MessageDto.Chat incoming, MessageDto.Chat pending)
@@ -600,6 +651,7 @@ public partial class ChatBody : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         OfflineQueueService.WentOnline -= HandleWentOnlineAsync;
+        OfflineQueueService.QueueProcessed -= HandleQueueProcessedAsync;
         await LeaveCurrentChatAsync();
         if (_hubConnection is not null)
         {
