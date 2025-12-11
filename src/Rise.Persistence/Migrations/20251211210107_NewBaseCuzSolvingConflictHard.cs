@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Rise.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialWithVoiceStorage : Migration
+    public partial class NewBaseCuzSolvingConflictHard : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -609,7 +609,7 @@ namespace Rise.Persistence.Migrations
                     AssignedSupervisorId = table.Column<int>(type: "int", nullable: true),
                     StatusType = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     HandledById = table.Column<int>(type: "int", nullable: true),
-                    HandledDate = table.Column<DateTime>(type: "datetime(6)", nullable: true, defaultValue: new DateTime(2025, 12, 11, 12, 38, 18, 946, DateTimeKind.Utc).AddTicks(3274)),
+                    HandledDate = table.Column<DateTime>(type: "datetime(6)", nullable: true, defaultValue: new DateTime(2025, 12, 11, 21, 1, 5, 947, DateTimeKind.Utc).AddTicks(2970)),
                     Note = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),

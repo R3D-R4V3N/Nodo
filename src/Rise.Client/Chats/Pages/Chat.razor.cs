@@ -551,8 +551,8 @@ public partial class Chat : IAsyncDisposable
         var result = await EmergencyService.CreateEmergencyAsync(new EmergencyRequest.CreateEmergency
         {
             ChatId = _chat.ChatId,
-            MessageId = relatedMessage.Id,
             Type = reason,
+            //MessageId = relatedMessage.Id,
         });
 
         if (!result.IsSuccess)

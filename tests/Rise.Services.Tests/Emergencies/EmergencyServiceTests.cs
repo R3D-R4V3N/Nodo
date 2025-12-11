@@ -63,7 +63,7 @@ public class EmergencyServiceTests : IClassFixture<EFFixture>
         var request = new EmergencyRequest.CreateEmergency() 
         {
             ChatId = chat.Id,
-            MessageId = message.Id,
+            //MessageId = message.Id,
             Type = EmergencyTypeDto.Other,
         };
 
@@ -115,7 +115,7 @@ public class EmergencyServiceTests : IClassFixture<EFFixture>
         var request = new EmergencyRequest.CreateEmergency()
         {
             ChatId = chat.Id,
-            MessageId = message.Id,
+            //MessageId = message.Id,
             Type = EmergencyTypeDto.Other,
         };
 
@@ -150,7 +150,7 @@ public class EmergencyServiceTests : IClassFixture<EFFixture>
         var request = new EmergencyRequest.CreateEmergency()
         {
             ChatId = chat.Id,
-            MessageId = message.Id,
+            //MessageId = message.Id,
             Type = EmergencyTypeDto.Other,
         };
 

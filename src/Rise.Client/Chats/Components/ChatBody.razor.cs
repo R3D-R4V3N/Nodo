@@ -20,6 +20,7 @@ public partial class ChatBody : IAsyncDisposable
 {
     [Parameter] public int ChatId { get; set; }
     [Parameter] public bool IsEmbedded { get; set; } = false;
+    [Parameter] public bool DisplayNoodknop { get; set; }
     [Inject] public UserState UserState { get; set; }
     [Inject] public ChatState ChatState { get; set; } = null!;
     [Inject] public OfflineQueueService OfflineQueueService { get; set; } = null!;
@@ -558,8 +559,8 @@ public partial class ChatBody : IAsyncDisposable
         var result = await EmergencyService.CreateEmergencyAsync(new EmergencyRequest.CreateEmergency
         {
             ChatId = _chat.ChatId,
-            MessageId = relatedMessage.Id,
             Type = reason,
+            //MessageId = relatedMessage.Id,
         });
 
         if (!result.IsSuccess)

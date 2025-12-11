@@ -102,40 +102,19 @@ try
     builder.Services.AddSingleton<IUserConnectionNotificationDispatcher, SignalRUserConnectionNotificationDispatcher>();
 
     var app = builder.Build();
+    
 
-    // ---------------------------------------------------------
-    // 1. CSP HEADER (MOET HIER BOVENAAN STAAN)
-    // ---------------------------------------------------------
-    app.Use(async (context, next) =>
-    {
-        const string blobHost = "https://fileserverdevops.blob.core.windows.net";
-
-        context.Response.Headers.Remove("Content-Security-Policy");
-        context.Response.Headers.Append(
-            "Content-Security-Policy",
-            $"default-src 'self' {blobHost}; " +
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-            "style-src 'self' 'unsafe-inline'; " +
-            // Let op de media-src hieronder:
-            $"img-src 'self' data: blob: {blobHost} https://*.unsplash.com; " +
-            $"media-src 'self' data: blob: {blobHost}; " +
-            $"connect-src 'self' ws: wss: {blobHost}; " +
-            "font-src 'self' data:");
-
-        await next();
-    });
-
-    if (app.Environment.IsDevelopment())
-    {
+    //if (app.Environment.IsDevelopment())
+    //{
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
 
-        //db.Database.EnsureDeleted();
+        db.Database.EnsureDeleted();
         db.Database.Migrate();
 
         await seeder.SeedAsync();
-    }
+    //}
 
     // De rest van de middleware pipeline
     app.UseHttpsRedirection()

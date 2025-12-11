@@ -1182,7 +1182,7 @@ namespace Rise.Persistence.Migrations
                             b1.Property<DateTime?>("HandledDate")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("datetime(6)")
-                                .HasDefaultValue(new DateTime(2025, 12, 11, 12, 38, 18, 946, DateTimeKind.Utc).AddTicks(3274))
+                                .HasDefaultValue(new DateTime(2025, 12, 11, 21, 1, 5, 947, DateTimeKind.Utc).AddTicks(2970))
                                 .HasColumnName("HandledDate");
 
                             b1.Property<int>("StatusType")
