@@ -1,41 +1,46 @@
+@page "/helpdesk"
 @page "/Helpdesk"
 @using Rise.Client.Helpdesk.Components
 @attribute [Authorize]
 @inject NavigationManager NavigationManager
 
+<div class="flex flex-col h-screen">
+    <div class="flex-shrink-0">
+        <TopBar Title="Helpdesk" ShowBackButton="false" />
+    </div>
 
-<div>
-    <TopBar Title="Helpdesk"  ShowBackButton="false" ></TopBar>
-    <div class="w-full ">
-      <div class="flex flex-col items-center my-4">
-          <HelpdeskButton 
-              Title="Hulp-Robot"
-              BackgroundColor="#007A97"
-              IconSvg="@RobotIcon"
-              OnClick="NavigateToHulpRobot" 
-              TitleCss="p-4"/>
-          
-          <HelpdeskButton 
-              Title="Informatie-video's"
-              BackgroundColor="#E36B14"
-              IconSvg="@VideoIcon"
-              OnClick="NavigateToVideos"
-              TitleCss="p-4"/>
+    <div class="flex-1 overflow-y-auto pb-24">
+        <div class="w-full">
+            <div class="flex flex-col items-center my-4 space-y-4">
+                <HelpdeskButton
+                    Title="Hulp-Robot"
+                    BackgroundColor="#007A97"
+                    IconSvg="@RobotIcon"
+                    OnClick="NavigateToHulpRobot"
+                    TitleCss="p-4" />
 
-          <HelpdeskButton 
-              Title="Voorlichting"
-              BackgroundColor="#F3A119"
-              IconSvg="@VoorlichtingIcon"
-              OnClick="NavigateToVoorlichting" 
-              TitleCss="p-4"/>
+                <HelpdeskButton
+                    Title="Informatie-video's"
+                    BackgroundColor="#E36B14"
+                    IconSvg="@VideoIcon"
+                    OnClick="NavigateToVideos"
+                    TitleCss="p-4" />
 
-          <HelpdeskButton 
-              Title="Chatten met begeleider"
-              BackgroundColor="#8E5572"
-              IconSvg="@ChatIcon"
-              OnClick="NavigateToSupervisorChat"
-              TitleCss="py-4"/>
+                <HelpdeskButton
+                    Title="Voorlichting"
+                    BackgroundColor="#F3A119"
+                    IconSvg="@VoorlichtingIcon"
+                    OnClick="NavigateToVoorlichting"
+                    TitleCss="p-4" />
 
-      </div>
+                <HelpdeskButton
+                    Title="Chatten met begeleider"
+                    BackgroundColor="#8E5572"
+                    IconSvg="@ChatIcon"
+                    OnClick="NavigateToSupervisorChat"
+                    TitleCss="py-4" />
+
+            </div>
+        </div>
     </div>
 </div>
