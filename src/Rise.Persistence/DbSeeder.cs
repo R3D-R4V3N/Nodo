@@ -230,7 +230,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         {
             AccountId = accountId,
             FirstName = FirstName.Create("Thibo"),
-            LastName = LastName.Create("De Decker"),
+            LastName = LastName.Create("Verbeke"),
             Biography = Biography.Create("Begeleider in Gent die structuur en humor combineert."),
             AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=800&q=80"),
             BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-34))),
