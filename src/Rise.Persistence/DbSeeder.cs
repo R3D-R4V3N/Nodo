@@ -107,25 +107,42 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
     {
         if (dbContext.Organizations.Any())
         {
-            return;
+            dbContext.Organizations.RemoveRange(dbContext.Organizations);
+            await dbContext.SaveChangesAsync();
         }
 
         var organizations = new List<Organization>
         {
-            new("Nodo Centrum", "Ondersteuning vanuit het centrale team."),
-            new("Community Noord", "Samen sterker in regio Noord."),
-            new("Community Zuid", "Creatieve ontmoetingsplek voor iedereen."),
+            new("Gent", "Begeleiding en ontmoetingen in hartje Gent."),
+            new("Antwerpen", "Creatieve uitvalsbasis dicht bij de Schelde."),
+            new("Brugge", "Kleinschalige werking in de historische binnenstad."),
+            new("Leuven", "Studentikoze energie met rustige ontmoetingsruimtes."),
+            new("Mechelen", "Steunpunt vlak bij de Dijle met gezellige ateliers."),
+            new("Hasselt", "Limburgse warmte met een focus op muziek en beweging."),
+            new("Kortrijk", "Samenwerking met lokale sport- en cultuurhuizen."),
+            new("Namur", "Meertalige begeleiding langs de Maas."),
+            new("Liège", "Spontane groepsactiviteiten in het Luikse."),
         };
 
         dbContext.Organizations.AddRange(organizations);
         await dbContext.SaveChangesAsync();
     }
 
+
     private async Task UsersAsync()
     {
-        if (dbContext.Users.Any())
+        dbContext.Messages.RemoveRange(dbContext.Messages);
+        dbContext.Chats.RemoveRange(dbContext.Chats);
+        dbContext.Events.RemoveRange(dbContext.Events);
+        dbContext.Users.RemoveRange(dbContext.Users);
+        dbContext.Supervisors.RemoveRange(dbContext.Supervisors);
+        dbContext.Admins.RemoveRange(dbContext.Admins);
+        await dbContext.SaveChangesAsync();
+
+        var existingIdentities = await userManager.Users.ToListAsync();
+        foreach (var identityUser in existingIdentities)
         {
-            return;
+            await userManager.DeleteAsync(identityUser);
         }
 
         await dbContext.Roles.ToListAsync();
@@ -138,36 +155,68 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 ? organization
                 : throw new InvalidOperationException($"Organisatie '{name}' werd niet gevonden.");
 
-        var nodoCentrum = GetOrganization("Nodo Centrum");
-        var communityNoord = GetOrganization("Community Noord");
-        var communityZuid = GetOrganization("Community Zuid");
+        var gent = GetOrganization("Gent");
+        var antwerpen = GetOrganization("Antwerpen");
+        var brugge = GetOrganization("Brugge");
+        var leuven = GetOrganization("Leuven");
+        var mechelen = GetOrganization("Mechelen");
+        var hasselt = GetOrganization("Hasselt");
+        var kortrijk = GetOrganization("Kortrijk");
+        var namur = GetOrganization("Namur");
+        var liege = GetOrganization("Liège");
 
-        IEnumerable<UserSentiment> CreateSentiments()
+        var sentimentByKey = dbContext.Sentiments
+            .ToDictionary(s => (s.Type, s.Category));
+
+        var hobbyByType = dbContext.Hobbies
+            .ToDictionary(h => h.Hobby);
+
+        IEnumerable<UserSentiment> Sentiments(params (SentimentType type, SentimentCategoryType category)[] entries)
+            => entries.Select(e => sentimentByKey[e]).ToList();
+
+        IEnumerable<UserHobby> Hobbies(params HobbyType[] hobbies)
+            => hobbies.Select(h => hobbyByType[h]).ToList();
+
+        User CreateUser(
+            string firstName,
+            string lastName,
+            string biography,
+            string avatarUrl,
+            DateOnly birthDay,
+            GenderType gender,
+            Organization organization,
+            Supervisor supervisor,
+            HobbyType[] hobbies,
+            SentimentCategoryType[] likes,
+            SentimentCategoryType[] dislikes,
+            string accountId)
         {
-            var allSentiments = dbContext.Sentiments.ToList();
+            var user = new User
+            {
+                AccountId = accountId,
+                FirstName = FirstName.Create(firstName),
+                LastName = LastName.Create(lastName),
+                Biography = Biography.Create(biography),
+                AvatarUrl = BlobUrl.Create(avatarUrl),
+                BirthDay = BirthDay.Create(birthDay),
+                Gender = gender,
+                Organization = organization,
+                Supervisor = supervisor,
+                UserSettings = new UserSetting
+                {
+                    FontSize = FontSize.Create(12),
+                    IsDarkMode = false,
+                },
+            };
 
-            var random = new Random();
+            user.UpdateHobbies(Hobbies(hobbies));
+            user.UpdateSentiments(
+                Sentiments(
+                    likes.Select(l => (SentimentType.Like, l))
+                        .Concat(dislikes.Select(d => (SentimentType.Dislike, d)))
+                        .ToArray()));
 
-            var groupedByCategory = allSentiments
-                .GroupBy(s => s.Category)
-                .Select(g => g.OrderBy(_ => random.Next()).First())
-                .ToList();
-
-            return groupedByCategory
-                .OrderBy(_ => random.Next())
-                .Take(5)
-                .ToList();
-        }
-
-        static IEnumerable<UserHobby> CreateHobbies(
-            ApplicationDbContext dbContext, 
-            params HobbyType[] hobbies)
-        {
-            var dbHobbies = dbContext.Hobbies
-                                     .Where(uh => hobbies.Contains(uh.Hobby))
-                                     .ToList();
-
-            return dbHobbies;
+            return user;
         }
 
         IdentityUser CreateIdentity(string email) => new()
@@ -177,328 +226,423 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             EmailConfirmed = true,
         };
 
-        var accounts = new List<SeedAccount>
+        var begeleiderThibo = new Func<string, Supervisor>(accountId => new Supervisor
         {
-            new("fayah@nodo.chat", AppRoles.Administrator, accountId => new Admin()
+            AccountId = accountId,
+            FirstName = FirstName.Create("Thibo"),
+            LastName = LastName.Create("De Decker"),
+            Biography = Biography.Create("Begeleider in Gent die structuur en humor combineert."),
+            AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=800&q=80"),
+            BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-34))),
+            Gender = GenderType.Man,
+            Organization = gent,
+            UserSettings = new UserSetting
             {
-                AccountId = accountId,
-                FirstName = FirstName.Create("Fayah"),
-                LastName = LastName.Create("Verbrugghe"),
-                Biography = Biography.Create("Hello."),
-                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1761405378284-834f87bb9818?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-27))),
-                Gender = GenderType.Woman,
-                UserSettings = new UserSetting()
-                {
-                    FontSize = FontSize.Create(12),
-                    IsDarkMode = false,
-                },
-            }),
-            new("supervisor@example.com", AppRoles.Supervisor, accountId => new Supervisor()
-            {
-                AccountId = accountId,
-                FirstName = FirstName.Create("Super"),
-                LastName = LastName.Create("Visor"),
-                Biography = Biography.Create("Here to help you."),
-                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1761405378284-834f87bb9818?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-30))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
-                {
-                    FontSize = FontSize.Create(12),
-                    IsDarkMode = false,
-                },
-                Organization = nodoCentrum
-            }),
-            new("user1@example.com", AppRoles.User, accountId => new User()
-            {
-                AccountId = accountId,
-                FirstName = FirstName.Create("John"),
-                LastName = LastName.Create("Doe"),
-                Biography = Biography.Create("Houdt van katten en rustige gesprekken."),
-                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=932"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-28))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
-                {
-                    FontSize = FontSize.Create(12),
-                    IsDarkMode = false,
-                },
-                Organization = nodoCentrum,
-                Supervisor = nodoCentrum.Workers.First()
-            }),
-            new("user2@example.com", AppRoles.User, accountId => new User()
-            {
-                AccountId = accountId,
-                FirstName = FirstName.Create("Stacey"),
-                LastName = LastName.Create("Willington"),
-                Biography = Biography.Create("Deelt graag verhalen over haar hulphond."),
-                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-26))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
-                {
-                    FontSize = FontSize.Create(12),
-                    IsDarkMode = false,
-                },
-                Organization = nodoCentrum,
-                Supervisor = nodoCentrum.Workers.First()
-            }),
-            new("admin@nodo.chat", AppRoles.Administrator, accountId => new Admin()
-            {
-                AccountId = accountId,
-                FirstName = FirstName.Create("Admin"),
-                LastName = LastName.Create("Admin"),
-                Biography = Biography.Create("Hello."),
-                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1761405378284-834f87bb9818?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-37))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
-                {
-                    FontSize = FontSize.Create(12),
-                    IsDarkMode = false,
-                },
-            }),
-            new("emma.supervisor@nodo.chat", AppRoles.Supervisor, accountId => new Supervisor()
+                FontSize = FontSize.Create(12),
+                IsDarkMode = false,
+            },
+        });
+
+        var begeleiders = new Dictionary<string, Func<string, Supervisor>>
+        {
+            ["emma.begeleider@nodo.chat"] = accountId => new Supervisor
             {
                 AccountId = accountId,
                 FirstName = FirstName.Create("Emma"),
-                LastName = LastName.Create("Claes"),
-                Biography = Biography.Create("Coach voor dagelijkse structuur en zelfvertrouwen."),
-                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1639149888905-fb39731f2e6c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-35))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
+                LastName = LastName.Create("Van Pelt"),
+                Biography = Biography.Create("Begeleider in Antwerpen met focus op zachte opstart."),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1504595403659-9088ce801e29?auto=format&fit=crop&w=800&q=80"),
+                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-32))),
+                Gender = GenderType.Woman,
+                Organization = antwerpen,
+                UserSettings = new UserSetting
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = communityNoord
-            }),
-            new("jonas.supervisor@nodo.chat", AppRoles.Supervisor, accountId => new Supervisor()
+            },
+            ["jonas.begeleider@nodo.chat"] = accountId => new Supervisor
             {
                 AccountId = accountId,
                 FirstName = FirstName.Create("Jonas"),
-                LastName = LastName.Create("Van Lint"),
-                Biography = Biography.Create("Helpt bij plannen en houdt wekelijks groepsmomenten."),
-                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjZ8fGF2YXRhcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=700"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-33))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
+                LastName = LastName.Create("Bauwens"),
+                Biography = Biography.Create("Begeleider in Brugge, deelt graag wandelroutes."),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=800&q=80"),
+                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-36))),
+                Gender = GenderType.Man,
+                Organization = brugge,
+                UserSettings = new UserSetting
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = communityNoord
-            }),
-            new("ella.supervisor@nodo.chat", AppRoles.Supervisor, accountId => new Supervisor()
-            {
-                AccountId = accountId,
-                FirstName = FirstName.Create("Ella"),
-                LastName = LastName.Create("Vervoort"),
-                Biography = Biography.Create("Creatieve begeleider voor beeldende therapie."),
-                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-31))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
-                {
-                    FontSize = FontSize.Create(12),
-                    IsDarkMode = false,
-                },
-                Organization = communityZuid
-            }),
-            new("noor@nodo.chat", AppRoles.User, accountId => new User()
-            {
-                AccountId = accountId,
-                FirstName = FirstName.Create("Noor"),
-                LastName = LastName.Create("Vermeulen"),
-                Biography = Biography.Create("Praat graag over muziek en wil nieuwe vrienden maken."),
-                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=928"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-24))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
-                {
-                    FontSize = FontSize.Create(12),
-                    IsDarkMode = false,
-                },
-                Organization = communityZuid,
-                Supervisor = communityZuid.Workers.First()
-            }),
-            new("milan@nodo.chat", AppRoles.User, accountId => new User()
-            {
-                AccountId = accountId,
-                FirstName = FirstName.Create("Milan"),
-                LastName = LastName.Create("Peeters"),
-                Biography = Biography.Create("Zoekt iemand om samen over games te praten."),
-                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=922"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-23))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
-                {
-                    FontSize = FontSize.Create(12),
-                    IsDarkMode = false,
-                },
-                Organization = communityZuid,
-                Supervisor = communityZuid.Workers.First()
-            }),
-            new("lina@nodo.chat", AppRoles.User, accountId => new User()
-            {
-                AccountId = accountId,
-                FirstName = FirstName.Create("Lina"),
-                LastName = LastName.Create("Jacobs"),
-                Biography = Biography.Create("Vindt het fijn om vragen te kunnen stellen in een veilige omgeving."),
-                AvatarUrl = BlobUrl.Create("https://plus.unsplash.com/premium_photo-1687832254672-bf177d8819df?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-22))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
-                {
-                    FontSize = FontSize.Create(12),
-                    IsDarkMode = false,
-                },
-                Organization = nodoCentrum,
-                Supervisor = nodoCentrum.Workers.First()
-            }),
-            new("kyandro@nodo.chat", AppRoles.User, accountId => new User()
-            {
-                AccountId = accountId,
-                FirstName = FirstName.Create("Kyandro"),
-                LastName = LastName.Create("Voet"),
-                Biography = Biography.Create("Helpt vaak bij technische vragen en deelt programmeertips."),
-                AvatarUrl = BlobUrl.Create("https://plus.unsplash.com/premium_photo-1664536392896-cd1743f9c02c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-25))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
-                {
-                    FontSize = FontSize.Create(12),
-                    IsDarkMode = false,
-                },
-                Organization = nodoCentrum,
-                Supervisor = nodoCentrum.Workers.First()
-            }),
-            new("jasper@nodo.chat", AppRoles.User, accountId => new User()
-            {
-                AccountId = accountId,
-                FirstName = FirstName.Create("Jasper"),
-                LastName = LastName.Create("Vermeersch"),
-                Biography = Biography.Create("Vindt het leuk om te discussiëren over technologie en innovatie."),
-                AvatarUrl = BlobUrl.Create("https://plus.unsplash.com/premium_photo-1664536392896-cd1743f9c02c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-24))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
-                {
-                    FontSize = FontSize.Create(12),
-                    IsDarkMode = false,
-                },
-                Organization = nodoCentrum,
-                Supervisor = nodoCentrum.Workers.First()
-            }),
-            new("bjorn@nodo.chat", AppRoles.User, accountId => new User()
-            {
-                AccountId = accountId,
-                FirstName = FirstName.Create("Bjorn"),
-                LastName = LastName.Create("Van Damme"),
-                Biography = Biography.Create("Praat graag over sport en houdt van teamwork."),
-                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1704726135027-9c6f034cfa41?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=770"),
-                BirthDay =  BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-27))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
-                {
-                    FontSize = FontSize.Create(12),
-                    IsDarkMode = false,
-                },
-                Organization = communityNoord,
-                Supervisor = communityNoord.Workers.First()
-            }),
-            new("thibo@nodo.chat", AppRoles.User, accountId => new User()
-            {
-                AccountId = accountId,
-                FirstName = FirstName.Create("Thibo"),
-                LastName = LastName.Create("De Smet"),
-                Biography = Biography.Create("Is nieuwsgierig en stelt vaak interessante vragen."),
-                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=774"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-21))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
-                {
-                    FontSize = FontSize.Create(12),
-                    IsDarkMode = false,
-                },
-                Organization = communityNoord,
-                Supervisor = communityNoord.Workers.First()
-            }),
-            new("saar@nodo.chat", AppRoles.User, accountId => new User()
-            {
-                AccountId = accountId,
-                FirstName = FirstName.Create("Saar"),
-                LastName = LastName.Create("Vandenberg"),
-                Biography = Biography.Create("Deelt graag foto's van haar tekeningen."),
-                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1704726135027-9c6f034cfa41?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=770"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-24))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
-                {
-                    FontSize = FontSize.Create(12),
-                    IsDarkMode = false,
-                },
-                Organization = communityNoord,
-                Supervisor = communityNoord.Workers.First()
-            }),
-            new("yassin@nodo.chat", AppRoles.User, accountId => new User()
-            {
-                AccountId = accountId,
-                FirstName = FirstName.Create("Yassin"),
-                LastName = LastName.Create("El Amrani"),
-                Biography = Biography.Create("Leert zelfstandig koken en zoekt tips van vrienden."),
-                AvatarUrl = BlobUrl.Create("https://plus.unsplash.com/premium_photo-1690587673708-d6ba8a1579a5?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=758"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-25))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
-                {
-                    FontSize = FontSize.Create(12),
-                    IsDarkMode = false,
-                },
-                Organization = communityZuid,
-                Supervisor = communityZuid.Workers.First()
-            }),
-            new("lotte@nodo.chat", AppRoles.User, accountId => new User()
+            },
+            ["lotte.begeleider@nodo.chat"] = accountId => new Supervisor
             {
                 AccountId = accountId,
                 FirstName = FirstName.Create("Lotte"),
-                LastName = LastName.Create("De Wilde"),
-                Biography = Biography.Create("Wordt blij van dansen en deelt positieve boodschappen."),
-                AvatarUrl = BlobUrl.Create("https://plus.unsplash.com/premium_photo-1708271598591-4a84ef3b8dde?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-23))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
+                LastName = LastName.Create("Geens"),
+                Biography = Biography.Create("Begeleider in Leuven die groepsmomenten organiseert."),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=800&q=80"),
+                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-31))),
+                Gender = GenderType.Woman,
+                Organization = leuven,
+                UserSettings = new UserSetting
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = communityZuid,
-                Supervisor = communityZuid.Workers.First()
-            }),
-            new("amina@nodo.chat", AppRoles.User, accountId => new User()
+            },
+            ["ruben.begeleider@nodo.chat"] = accountId => new Supervisor
             {
                 AccountId = accountId,
-                FirstName = FirstName.Create("Amina"),
-                LastName = LastName.Create("Karim"),
-                Biography = Biography.Create("Houdt van creatieve projecten en begeleidt graag groepsspelletjes."),
-                AvatarUrl = BlobUrl.Create("https://plus.unsplash.com/premium_photo-1708271598591-4a84ef3b8dde?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870"),
-                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-22))),
-                Gender = GenderType.X,
-                UserSettings = new UserSetting()
+                FirstName = FirstName.Create("Ruben"),
+                LastName = LastName.Create("Vercammen"),
+                Biography = Biography.Create("Begeleider in Mechelen die graag plannen tekent."),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80"),
+                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-33))),
+                Gender = GenderType.Man,
+                Organization = mechelen,
+                UserSettings = new UserSetting
                 {
                     FontSize = FontSize.Create(12),
                     IsDarkMode = false,
                 },
-                Organization = communityZuid,
-                Supervisor = communityZuid.Workers.First()
-            }),
+            },
+            ["amira.begeleider@nodo.chat"] = accountId => new Supervisor
+            {
+                AccountId = accountId,
+                FirstName = FirstName.Create("Amira"),
+                LastName = LastName.Create("Aydin"),
+                Biography = Biography.Create("Begeleider in Hasselt met talent voor muziek."),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80"),
+                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-29))),
+                Gender = GenderType.Woman,
+                Organization = hasselt,
+                UserSettings = new UserSetting
+                {
+                    FontSize = FontSize.Create(12),
+                    IsDarkMode = false,
+                },
+            },
+            ["elise.begeleider@nodo.chat"] = accountId => new Supervisor
+            {
+                AccountId = accountId,
+                FirstName = FirstName.Create("Elise"),
+                LastName = LastName.Create("Declercq"),
+                Biography = Biography.Create("Begeleider in Kortrijk die sportactiviteiten opzet."),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80"),
+                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-30))),
+                Gender = GenderType.Woman,
+                Organization = kortrijk,
+                UserSettings = new UserSetting
+                {
+                    FontSize = FontSize.Create(12),
+                    IsDarkMode = false,
+                },
+            },
+            ["victor.begeleider@nodo.chat"] = accountId => new Supervisor
+            {
+                AccountId = accountId,
+                FirstName = FirstName.Create("Victor"),
+                LastName = LastName.Create("Duchêne"),
+                Biography = Biography.Create("Begeleider in Namur met aandacht voor meertaligheid."),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=800&q=80"),
+                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-38))),
+                Gender = GenderType.Man,
+                Organization = namur,
+                UserSettings = new UserSetting
+                {
+                    FontSize = FontSize.Create(12),
+                    IsDarkMode = false,
+                },
+            },
+            ["chloe.begeleider@nodo.chat"] = accountId => new Supervisor
+            {
+                AccountId = accountId,
+                FirstName = FirstName.Create("Chloé"),
+                LastName = LastName.Create("Renard"),
+                Biography = Biography.Create("Begeleider in Liège met oog voor creatieve expressie."),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80"),
+                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-35))),
+                Gender = GenderType.Woman,
+                Organization = liege,
+                UserSettings = new UserSetting
+                {
+                    FontSize = FontSize.Create(12),
+                    IsDarkMode = false,
+                },
+            },
         };
 
-        var existingProfiles = await dbContext.Set<BaseUser>()
-            .AsNoTracking()
-            .ToDictionaryAsync(u => u.AccountId);
+        var supervisorProfiles = new Dictionary<string, Supervisor>();
+        Supervisor GetSupervisor(string email)
+            => supervisorProfiles.TryGetValue(email, out var supervisor)
+                ? supervisor
+                : throw new InvalidOperationException($"Begeleider '{email}' werd niet gevonden.");
+
+        var snelleBerichten = new[]
+        {
+            "Zullen we dit later even samen bekijken?",
+            "Bedankt om dit te delen!",
+            "Ik noteer het in mijn planner.",
+            "Ik stuur je straks een update.",
+            "Laten we het stap voor stap doen.",
+            "Ik heb er zin in!",
+        };
+
+        var random = new Random();
+
+        var accounts = new List<SeedAccount>
+        {
+            new("beheer@nodo.chat", AppRoles.Administrator, accountId => new Admin
+            {
+                AccountId = accountId,
+                FirstName = FirstName.Create("Beheer"),
+                LastName = LastName.Create("Team"),
+                Biography = Biography.Create("Adminaccount voor centrale ondersteuning."),
+                AvatarUrl = BlobUrl.Create("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80"),
+                BirthDay = BirthDay.Create(DateOnly.FromDateTime(DateTime.Today.AddYears(-40))),
+                Gender = GenderType.X,
+                UserSettings = new UserSetting
+                {
+                    FontSize = FontSize.Create(12),
+                    IsDarkMode = false,
+                },
+            }),
+            new("thibo.begeleider@nodo.chat", AppRoles.Supervisor, begeleiderThibo),
+            new("emma.begeleider@nodo.chat", AppRoles.Supervisor, begeleiders["emma.begeleider@nodo.chat"]),
+            new("jonas.begeleider@nodo.chat", AppRoles.Supervisor, begeleiders["jonas.begeleider@nodo.chat"]),
+            new("lotte.begeleider@nodo.chat", AppRoles.Supervisor, begeleiders["lotte.begeleider@nodo.chat"]),
+            new("ruben.begeleider@nodo.chat", AppRoles.Supervisor, begeleiders["ruben.begeleider@nodo.chat"]),
+            new("amira.begeleider@nodo.chat", AppRoles.Supervisor, begeleiders["amira.begeleider@nodo.chat"]),
+            new("elise.begeleider@nodo.chat", AppRoles.Supervisor, begeleiders["elise.begeleider@nodo.chat"]),
+            new("victor.begeleider@nodo.chat", AppRoles.Supervisor, begeleiders["victor.begeleider@nodo.chat"]),
+            new("chloe.begeleider@nodo.chat", AppRoles.Supervisor, begeleiders["chloe.begeleider@nodo.chat"]),
+            new("demo@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Demo",
+                "Account",
+                "Standaard account om de app uit te proberen.",
+                "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-27)),
+                GenderType.X,
+                gent,
+                GetSupervisor("thibo.begeleider@nodo.chat"),
+                new[] { HobbyType.Gaming, HobbyType.Reading, HobbyType.Swimming },
+                new[] { SentimentCategoryType.CinemaNights, SentimentCategoryType.TrainJourneys, SentimentCategoryType.CozyCafes },
+                new[] { SentimentCategoryType.SpicyDishes, SentimentCategoryType.HorrorMovies },
+                accountId)),
+            new("ayla@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Ayla",
+                "Coppens",
+                "Vertelt enthousiast over haar nieuwe recepten.",
+                "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
+                GenderType.Woman,
+                antwerpen,
+                GetSupervisor("emma.begeleider@nodo.chat"),
+                new[] { HobbyType.Cooking, HobbyType.Baking, HobbyType.BoardGames },
+                new[] { SentimentCategoryType.BrunchPlans, SentimentCategoryType.SweetTreats, SentimentCategoryType.CozyCafes },
+                new[] { SentimentCategoryType.ActionMovies, SentimentCategoryType.SaunaEvenings },
+                accountId)),
+            new("pieter@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Pieter",
+                "Verlinden",
+                "Deelt graag foto's van zijn fietstochten.",
+                "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-26)),
+                GenderType.Man,
+                gent,
+                GetSupervisor("thibo.begeleider@nodo.chat"),
+                new[] { HobbyType.Cycling, HobbyType.Photography, HobbyType.Camping },
+                new[] { SentimentCategoryType.RoadTrips, SentimentCategoryType.SunsetWatching, SentimentCategoryType.LiveConcerts },
+                new[] { SentimentCategoryType.MarketVisits, SentimentCategoryType.HorrorMovies },
+                accountId)),
+            new("jamila@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Jamila",
+                "Benali",
+                "Zoekt maatjes om samen yoga te doen.",
+                "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-22)),
+                GenderType.Woman,
+                hasselt,
+                GetSupervisor("amira.begeleider@nodo.chat"),
+                new[] { HobbyType.Yoga, HobbyType.Reading, HobbyType.Pilates },
+                new[] { SentimentCategoryType.WellnessDays, SentimentCategoryType.TeaTime, SentimentCategoryType.FruityMoments },
+                new[] { SentimentCategoryType.SpicyDishes, SentimentCategoryType.AmusementParks },
+                accountId)),
+            new("hugo@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Hugo",
+                "Claeys",
+                "Is dol op oldschool games en puzzels.",
+                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
+                GenderType.Man,
+                brugge,
+                GetSupervisor("jonas.begeleider@nodo.chat"),
+                new[] { HobbyType.Gaming, HobbyType.Puzzles, HobbyType.Chess },
+                new[] { SentimentCategoryType.SeriesMarathons, SentimentCategoryType.BoardGames, SentimentCategoryType.CinemaNights },
+                new[] { SentimentCategoryType.SaunaEvenings, SentimentCategoryType.FreshSalads },
+                accountId)),
+            new("naomi@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Naomi",
+                "Segers",
+                "Schrijft korte verhalen en deelt ze graag.",
+                "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-25)),
+                GenderType.Woman,
+                leuven,
+                GetSupervisor("lotte.begeleider@nodo.chat"),
+                new[] { HobbyType.Writing, HobbyType.Dancing, HobbyType.Crafting },
+                new[] { SentimentCategoryType.CozyCafes, SentimentCategoryType.ChocolateMoments, SentimentCategoryType.Podcasts },
+                new[] { SentimentCategoryType.ActionMovies, SentimentCategoryType.BeachDays },
+                accountId)),
+            new("elias@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Elias",
+                "Vandenbulcke",
+                "Volgt kookles en test nieuwe smaken uit.",
+                "https://images.unsplash.com/photo-1511367466-2500eceaa34e?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
+                GenderType.Man,
+                mechelen,
+                GetSupervisor("ruben.begeleider@nodo.chat"),
+                new[] { HobbyType.Cooking, HobbyType.Gardening, HobbyType.BoardGames },
+                new[] { SentimentCategoryType.NewFlavours, SentimentCategoryType.MarketVisits, SentimentCategoryType.FoodTrucks },
+                new[] { SentimentCategoryType.HorrorMovies, SentimentCategoryType.RainyDays },
+                accountId)),
+            new("sofie@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Sofie",
+                "Van Herck",
+                "Deelt playlists en organiseert dansmomenten.",
+                "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-21)),
+                GenderType.Woman,
+                antwerpen,
+                GetSupervisor("emma.begeleider@nodo.chat"),
+                new[] { HobbyType.Dancing, HobbyType.MusicMaking, HobbyType.Running },
+                new[] { SentimentCategoryType.MusicFestivals, SentimentCategoryType.LiveConcerts, SentimentCategoryType.DanceParties },
+                new[] { SentimentCategoryType.SnowyDays, SentimentCategoryType.SaunaEvenings },
+                accountId)),
+            new("bram@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Bram",
+                "Lauwers",
+                "Maakt graag houtprojecten en deelt foto's.",
+                "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-29)),
+                GenderType.Man,
+                kortrijk,
+                GetSupervisor("elise.begeleider@nodo.chat"),
+                new[] { HobbyType.Woodworking, HobbyType.Camping, HobbyType.Fishing },
+                new[] { SentimentCategoryType.MarketVisits, SentimentCategoryType.RoadTrips, SentimentCategoryType.PicnicPlans },
+                new[] { SentimentCategoryType.ShoppingSprees, SentimentCategoryType.CinemaNights },
+                accountId)),
+            new("yara@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Yara",
+                "Danneels",
+                "Probeert elke maand een nieuw boek uit.",
+                "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-24)),
+                GenderType.Woman,
+                liege,
+                GetSupervisor("chloe.begeleider@nodo.chat"),
+                new[] { HobbyType.Reading, HobbyType.Drawing, HobbyType.Photography },
+                new[] { SentimentCategoryType.CozyCafes, SentimentCategoryType.CinemaNights, SentimentCategoryType.BreakfastDates },
+                new[] { SentimentCategoryType.AmusementParks, SentimentCategoryType.SpicyDishes },
+                accountId)),
+            new("matteo@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Matteo",
+                "Rossi",
+                "Houdt van treinreizen en leert Nederlands.",
+                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-27)),
+                GenderType.Man,
+                namur,
+                GetSupervisor("victor.begeleider@nodo.chat"),
+                new[] { HobbyType.Hiking, HobbyType.Football, HobbyType.BoardGames },
+                new[] { SentimentCategoryType.TrainJourneys, SentimentCategoryType.CozyCafes, SentimentCategoryType.SeriesMarathons },
+                new[] { SentimentCategoryType.HorrorMovies, SentimentCategoryType.SpicyDishes },
+                accountId)),
+            new("ines@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Ines",
+                "Dubois",
+                "Maakt keramiek en toont graag het proces.",
+                "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-23)),
+                GenderType.Woman,
+                brugge,
+                GetSupervisor("jonas.begeleider@nodo.chat"),
+                new[] { HobbyType.Pottery, HobbyType.Baking, HobbyType.Sewing },
+                new[] { SentimentCategoryType.CozyCafes, SentimentCategoryType.SweetTreats, SentimentCategoryType.CandlelightDinners },
+                new[] { SentimentCategoryType.ActionMovies, SentimentCategoryType.SnowyDays },
+                accountId)),
+            new("olivia@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Olivia",
+                "Van Hoof",
+                "Doet vrijwilligerswerk en plant picknicks.",
+                "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-22)),
+                GenderType.Woman,
+                mechelen,
+                GetSupervisor("ruben.begeleider@nodo.chat"),
+                new[] { HobbyType.Gardening, HobbyType.Swimming, HobbyType.Crafting },
+                new[] { SentimentCategoryType.PicnicPlans, SentimentCategoryType.FarmersMarkets, SentimentCategoryType.SeasonalSoups },
+                new[] { SentimentCategoryType.HorrorMovies, SentimentCategoryType.SnowyDays },
+                accountId)),
+            new("celine@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Céline",
+                "Marchal",
+                "Leert programmeren en zoekt studiemaatjes.",
+                "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-20)),
+                GenderType.Woman,
+                namur,
+                GetSupervisor("victor.begeleider@nodo.chat"),
+                new[] { HobbyType.Gaming, HobbyType.ModelBuilding, HobbyType.CardGames },
+                new[] { SentimentCategoryType.Podcasts, SentimentCategoryType.SeriesMarathons, SentimentCategoryType.SmoothieBar },
+                new[] { SentimentCategoryType.SpicyDishes, SentimentCategoryType.AmusementParks },
+                accountId)),
+            new("thomas@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Thomas",
+                "Maes",
+                "Spreekt graag over sport en digitale tools.",
+                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-30)),
+                GenderType.Man,
+                kortrijk,
+                GetSupervisor("elise.begeleider@nodo.chat"),
+                new[] { HobbyType.Basketball, HobbyType.Running, HobbyType.BoardGames },
+                new[] { SentimentCategoryType.CoffeeBreaks, SentimentCategoryType.ActionMovies, SentimentCategoryType.MusicFestivals },
+                new[] { SentimentCategoryType.SaunaEvenings, SentimentCategoryType.SweetTreats },
+                accountId)),
+            new("louis@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Louis",
+                "Dupont",
+                "Houdt van fotografie en rustige wandelingen.",
+                "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-28)),
+                GenderType.Man,
+                liege,
+                GetSupervisor("chloe.begeleider@nodo.chat"),
+                new[] { HobbyType.Photography, HobbyType.Hiking, HobbyType.Yoga },
+                new[] { SentimentCategoryType.SunsetWatching, SentimentCategoryType.TeaTime, SentimentCategoryType.RoadTrips },
+                new[] { SentimentCategoryType.HorrorMovies, SentimentCategoryType.SaunaEvenings },
+                accountId)),
+            new("ana@nodo.chat", AppRoles.User, accountId => CreateUser(
+                "Ana",
+                "Martins",
+                "Oefent Nederlands en zoekt gesprekspartners.",
+                "https://images.unsplash.com/photo-1511367466-2500eceaa34e?auto=format&fit=crop&w=800&q=80",
+                DateOnly.FromDateTime(DateTime.Today.AddYears(-19)),
+                GenderType.Woman,
+                antwerpen,
+                GetSupervisor("emma.begeleider@nodo.chat"),
+                new[] { HobbyType.Singing, HobbyType.BoardGames, HobbyType.Knitting },
+                new[] { SentimentCategoryType.CozyCafes, SentimentCategoryType.Podcasts, SentimentCategoryType.TrainJourneys },
+                new[] { SentimentCategoryType.ActionMovies, SentimentCategoryType.SpicyDishes },
+                accountId)),
+        };
+
+        var existingProfiles = new Dictionary<string, BaseUser>();
 
         foreach (var account in accounts)
         {
@@ -525,36 +669,27 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 continue;
             }
 
-            if (existingProfiles.ContainsKey(identity.Id))
-            {
-                continue;
-            }
-
             var profile = account.ProfileFactory(identity.Id);
             if (profile is null)
             {
                 continue;
             }
 
-            profile.UserSettings.AddChatTextLine("Kowabunga!");
-            profile.UserSettings.AddChatTextLine("Hallo hoe gaat het?");
+            foreach (var line in snelleBerichten.OrderBy(_ => random.Next()).Take(3))
+            {
+                profile.UserSettings.AddChatTextLine(line);
+            }
 
             switch (profile)
             {
                 case User userProfile:
-                    userProfile.UpdateSentiments(CreateSentiments());
-                    var rnd = new Random();
-                    var count = Enum.GetValues<HobbyType>().Length;
-                    var hobbies = Enumerable.Repeat(0, 3)
-                        .Select(x => (HobbyType)rnd.Next(count))
-                        .ToArray();
-                    userProfile.UpdateHobbies(CreateHobbies(dbContext, hobbies));
                     var superChat = Chat.CreateSupervisorChat(userProfile, userProfile.Supervisor);
                     dbContext.Users.Add(userProfile);
                     dbContext.Chats.Add(superChat);
                     break;
                 case Supervisor supervisorProfile:
                     dbContext.Supervisors.Add(supervisorProfile);
+                    supervisorProfiles[account.Email] = supervisorProfile;
                     break;
                 case Admin adminProfile:
                     dbContext.Admins.Add(adminProfile);
@@ -586,33 +721,44 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         if (hasConnections)
             return;
 
-        var noor = users.GetUser("Noor");
-        var milan = users.GetUser("Milan");
-        var lina = users.GetUser("Lina");
-        var kyandro = users.GetUser("Kyandro");
-        var jasper = users.GetUser("Jasper");
-        var bjorn = users.GetUser("Bjorn");
-        var thibo = users.GetUser("Thibo");
-        var saar = users.GetUser("Saar");
-        var yassin = users.GetUser("Yassin");
-        var lotte = users.GetUser("Lotte");
-        var amina = users.GetUser("Amina");
-        var john = users.GetUser("John");
-        var stacey = users.GetUser("Stacey");
+        var demo = users.GetUser("Demo");
+        var ayla = users.GetUser("Ayla");
+        var pieter = users.GetUser("Pieter");
+        var jamila = users.GetUser("Jamila");
+        var hugo = users.GetUser("Hugo");
+        var naomi = users.GetUser("Naomi");
+        var elias = users.GetUser("Elias");
+        var sofie = users.GetUser("Sofie");
+        var bram = users.GetUser("Bram");
+        var yara = users.GetUser("Yara");
+        var matteo = users.GetUser("Matteo");
+        var ines = users.GetUser("Ines");
+        var olivia = users.GetUser("Olivia");
+        var celine = users.GetUser("Céline");
+        var thomas = users.GetUser("Thomas");
+        var louis = users.GetUser("Louis");
+        var ana = users.GetUser("Ana");
 
-        // Bevestigde vriendschappen
-        MakeFriends(noor, milan);
-        MakeFriends(kyandro, jasper);
-        MakeFriends(bjorn, thibo);
-        MakeFriends(saar, yassin);
-        MakeFriends(lotte, amina);
+        MakeFriends(demo, ayla);
+        MakeFriends(demo, pieter);
+        MakeFriends(ayla, sofie);
+        MakeFriends(pieter, jamila);
+        MakeFriends(hugo, naomi);
+        MakeFriends(elias, jamila);
+        MakeFriends(sofie, ayla);
+        MakeFriends(bram, olivia);
+        MakeFriends(bram, thomas);
+        MakeFriends(yara, matteo);
+        MakeFriends(yara, ines);
+        MakeFriends(celine, ana);
+        MakeFriends(naomi, louis);
+        MakeFriends(sofie, demo);
 
-        // Openstaande verzoeken voor verschillende scenario's
-        SendFriendRequest(noor, lina); // Noor wacht op antwoord van Lina
-        SendFriendRequest(milan, saar); // Milan nodigt Saar uit in de gamegroep
-        SendFriendRequest(john, bjorn); // John zoekt een sportbuddy
-        SendFriendRequest(stacey, noor); // Stacey wil Noor beter leren kennen
-        SendFriendRequest(amina, kyandro); // Amina zoekt tips voor een programmeerclub
+        SendFriendRequest(demo, yara);
+        SendFriendRequest(elias, thomas);
+        SendFriendRequest(olivia, sofie);
+        SendFriendRequest(celine, jamila);
+        SendFriendRequest(hugo, bram);
 
         await dbContext.SaveChangesAsync();
 
@@ -651,15 +797,15 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         var creatieveHoek = chats[2];
         var technischeHulp = chats[3];
 
-        individueleCheckIn.AddTextMessage("Hoi, ik ben een beetje zenuwachtig voor morgen.", individueleCheckIn.RandomUser());
-        individueleCheckIn.AddTextMessage("Dat begrijp ik Noor, we bekijken samen hoe je het rustig kunt aanpakken.", individueleCheckIn.RandomUser());
-        individueleCheckIn.AddTextMessage("Zal ik straks mijn checklist nog eens doornemen?", individueleCheckIn.RandomUser());
-        individueleCheckIn.AddTextMessage("Ja, en ik stuur je zo meteen een ademhalingsoefening.", individueleCheckIn.RandomUser());
+        individueleCheckIn.AddTextMessage("Hoi, ik wil even checken hoe je dag verlopen is.", individueleCheckIn.RandomUser());
+        individueleCheckIn.AddTextMessage("Bedankt om het te delen, zullen we morgen een plan opstellen?", individueleCheckIn.RandomUser());
+        individueleCheckIn.AddTextMessage("Ik heb de ademhalingsoefening klaarstaan als je wil.", individueleCheckIn.RandomUser());
+        individueleCheckIn.AddTextMessage("Top, stuur hem maar door dan probeer ik hem vanavond.", individueleCheckIn.RandomUser());
 
-        vrijdagGroep.AddTextMessage("Wie doet er vrijdag mee met de online game-avond?", vrijdagGroep.RandomUser());
-        vrijdagGroep.AddTextMessage("Ik! Zal ik snacks klaarzetten?", vrijdagGroep.RandomUser());
-        vrijdagGroep.AddTextMessage("Wie doet er vrijdag mee met de online game-avond?", vrijdagGroep.RandomUser());
-        vrijdagGroep.AddTextMessage("Ik plan een korte check-in zodat iedereen zich welkom voelt.", vrijdagGroep.RandomUser());
+        vrijdagGroep.AddTextMessage("Wie heeft er zin in de wandeling langs de Schelde?", vrijdagGroep.RandomUser());
+        vrijdagGroep.AddTextMessage("Ik neem warme chocomelk mee!", vrijdagGroep.RandomUser());
+        vrijdagGroep.AddTextMessage("Zal ik een kort spelletje voorbereiden voor onderweg?", vrijdagGroep.RandomUser());
+        vrijdagGroep.AddTextMessage("Ja graag, dan hebben we meteen een ijsbreker.", vrijdagGroep.RandomUser());
 
         for (int i = 1; i <= 200; i++)
         {
@@ -689,41 +835,41 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         if (users.Count == 0)
             return;
 
-        var noor = users.GetUser("Noor");
-        var milan = users.GetUser("Milan");
-        var lina = users.GetUser("Lina");
-        var kyandro = users.GetUser("Kyandro");
-        var jasper = users.GetUser("Jasper");
-        var bjorn = users.GetUser("Bjorn");
+        var demo = users.GetUser("Demo");
+        var ayla = users.GetUser("Ayla");
+        var pieter = users.GetUser("Pieter");
+        var jamila = users.GetUser("Jamila");
+        var hugo = users.GetUser("Hugo");
+        var naomi = users.GetUser("Naomi");
 
         var events = new List<Event>
         {
             new Event
             {
-                Name = "Rock for Specials",
-                Date = DateTime.Now.AddDays(8).Date.AddHours(20),
-                Location = "9940 Evergem",
-                Price = 12.50,
-                ImageUrl = "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=800&q=80",
-                InterestedUsers = new List<User> { noor, milan, lina, kyandro }
-            },
-            new Event
-            {
-                Name = "Game Toernooi",
-                Date = DateTime.Now.AddDays(18).Date.AddHours(14),
+                Name = "Avondwandeling Gentse Leien",
+                Date = DateTime.Now.AddDays(6).Date.AddHours(19),
                 Location = "9000 Gent",
-                Price = 5.00,
-                ImageUrl = "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80",
-                InterestedUsers = new List<User> { milan, jasper, bjorn }
+                Price = 0.00,
+                ImageUrl = "https://images.unsplash.com/photo-1523797467744-1b91a06c24db?auto=format&fit=crop&w=800&q=80",
+                InterestedUsers = new List<User> { demo, pieter, ayla }
             },
             new Event
             {
-                Name = "Creatieve Workshop",
-                Date = DateTime.Now.AddDays(29).Date.AddHours(10),
-                Location = "9050 Gentbrugge",
-                Price = 8.00,
-                ImageUrl = "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=800&q=80",
-                InterestedUsers = new List<User> { lina, noor, kyandro, jasper, milan, bjorn }
+                Name = "Filmavond in Leuven",
+                Date = DateTime.Now.AddDays(12).Date.AddHours(20),
+                Location = "3000 Leuven",
+                Price = 4.50,
+                ImageUrl = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80",
+                InterestedUsers = new List<User> { jamila, naomi, hugo, demo }
+            },
+            new Event
+            {
+                Name = "Keramiekatelier Kortrijk",
+                Date = DateTime.Now.AddDays(20).Date.AddHours(14),
+                Location = "8500 Kortrijk",
+                Price = 9.00,
+                ImageUrl = "https://images.unsplash.com/photo-1523419400524-fc1e0d1c1c5b?auto=format&fit=crop&w=800&q=80",
+                InterestedUsers = new List<User> { jamila, pieter, naomi, ayla, demo }
             }
         };
 
