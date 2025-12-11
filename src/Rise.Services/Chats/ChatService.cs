@@ -4,28 +4,23 @@ using Rise.Domain.Common.ValueObjects;
 using Rise.Domain.Messages;
 using Rise.Domain.Users;
 using Rise.Persistence;
-using Rise.Services.BlobStorage;
 using Rise.Services.Chats.Mapper;
 using Rise.Services.Identity;
 using Rise.Services.Notifications;
 using Rise.Shared.Common;
 using Rise.Shared.Chats;
-using Rise.Shared.Common;
 using Rise.Shared.Identity;
-using System.Xml.Linq;
 
 namespace Rise.Services.Chats;
 
 public class ChatService(
     ApplicationDbContext dbContext,
     ISessionContextProvider sessionContextProvider,
-    IBlobStorageService blobStorage,
     IChatMessageDispatcher? messageDispatcher = null,
     IPushNotificationService? pushNotificationService = null) : IChatService
 {
     private readonly ApplicationDbContext _dbContext = dbContext;
     private readonly ISessionContextProvider _sessionContextProvider = sessionContextProvider;
-    private readonly IBlobStorageService _blobStorage = blobStorage;
     private readonly IChatMessageDispatcher? _messageDispatcher = messageDispatcher;
     private readonly IPushNotificationService? _pushNotificationService = pushNotificationService;
 
@@ -244,24 +239,36 @@ public class ChatService(
             return Result.Invalid(new ValidationError(nameof(request), "Een bericht moet tekst of audio bevatten."));
         }
 
-        string? audioUrl = null;
-
+        BlobUrl? audio = null;
         if (request.AudioDataBlob is not null)
         {
-             audioUrl = await _blobStorage.CreateBlobAsync(
-                request.AudioDataBlob.Name,
-                request.AudioDataBlob.Base64Data,
-                Containers.VoiceMessages,
-                ctx
-            );
+            var audioResult = BlobUrl.Create(request.AudioDataBlob.Base64Data);
+            if (!audioResult.IsSuccess)
+            {
+                return Result.Invalid(new ValidationError(nameof(request.AudioDataBlob), string.Join(", ", audioResult.Errors)));
+            }
+
+            audio = audioResult.Value;
+        }
+
+        TextMessage? text = null;
+        if (!string.IsNullOrWhiteSpace(request.Content))
+        {
+            var textResult = TextMessage.Create(request.Content!);
+            if (!textResult.IsSuccess)
+            {
+                return Result.Invalid(new ValidationError(nameof(request.Content), string.Join(", ", textResult.Errors)));
+            }
+
+            text = textResult.Value;
         }
 
         var message = new Message
         {
             Chat = chat,
             Sender = sender,
-            Text = TextMessage.Create(request.Content!),
-            AudioUrl = BlobUrl.Create(audioUrl!),
+            Text = text,
+            AudioUrl = audio,
             AudioDurationSeconds = request.AudioDurationSeconds,
         };
 

@@ -6,7 +6,7 @@ public class BlobUrl : ValueObject, IProperty<BlobUrl, string>
 {
     // EF
     private BlobUrl() { }
-    public const int MAX_LENGTH = 500;
+    public const int MAX_LENGTH = 20_000;
 
     public string Value { get; private set; }
     public static Result<BlobUrl> Create(string value)
