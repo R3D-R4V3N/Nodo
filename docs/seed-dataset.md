@@ -85,5 +85,5 @@ Openstaande verzoeken:
 - **Keramiekatelier Kortrijk** (Kortrijk) — geïnteresseerden: Jamila, Pieter, Naomi, Ayla, Demo.
 
 ## Berichten
-- Vier privéchats krijgen voorbeeldberichten, inclusief een thread met 200 korte "Bericht X"-items in één creatief kanaal.
-- Andere berichten dekken check-ins, groepsplanning en technische hulp.
+- Elke gebruiker heeft minstens één open chat met andere gebruikers; het Demo-account heeft drie open gesprekken.
+- Vier privéchats krijgen voorbeeldberichten rond check-ins, groepsplanning, creatieve inspiratie en technische hulp (geen massathread met honderden korte berichten).

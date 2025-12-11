@@ -683,9 +683,14 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             switch (profile)
             {
                 case User userProfile:
-                    var superChat = Chat.CreateSupervisorChat(userProfile, userProfile.Supervisor);
+                    var superChatResult = Chat.CreateSupervisorChat(userProfile, userProfile.Supervisor);
+                    if (!superChatResult.IsSuccess)
+                    {
+                        throw new InvalidOperationException(superChatResult.Errors.FirstOrDefault()?.ToString());
+                    }
+
                     dbContext.Users.Add(userProfile);
-                    dbContext.Chats.Add(superChat);
+                    dbContext.Chats.Add(superChatResult.Value);
                     break;
                 case Supervisor supervisorProfile:
                     dbContext.Supervisors.Add(supervisorProfile);
@@ -762,11 +767,17 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
 
         await dbContext.SaveChangesAsync();
 
-        static void MakeFriends(User userA, User userB)
+        void MakeFriends(User userA, User userB)
         {
             userA.SendFriendRequest(userB);
             userB.AcceptFriendRequest(userA);
-            Chat.CreatePrivateChat(userA, userB);
+            var chatResult = Chat.CreatePrivateChat(userA, userB);
+            if (!chatResult.IsSuccess)
+            {
+                throw new InvalidOperationException(chatResult.Errors.FirstOrDefault()?.ToString());
+            }
+
+            dbContext.Chats.Add(chatResult.Value);
         }
 
         static void SendFriendRequest(User requester, User receiver)
@@ -807,10 +818,10 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
         vrijdagGroep.AddTextMessage("Zal ik een kort spelletje voorbereiden voor onderweg?", vrijdagGroep.RandomUser());
         vrijdagGroep.AddTextMessage("Ja graag, dan hebben we meteen een ijsbreker.", vrijdagGroep.RandomUser());
 
-        for (int i = 1; i <= 200; i++)
-        {
-            creatieveHoek.AddTextMessage($"Bericht {i}", creatieveHoek.RandomUser());
-        }
+        creatieveHoek.AddTextMessage("Ik heb een nieuwe sketchnote geprobeerd, feedback welkom!", creatieveHoek.RandomUser());
+        creatieveHoek.AddTextMessage("Zullen we vrijdag een mini expo maken van ons werk?", creatieveHoek.RandomUser());
+        creatieveHoek.AddTextMessage("Top idee, ik print mijn laatste collage nog even af.", creatieveHoek.RandomUser());
+        creatieveHoek.AddTextMessage("Ik breng ook markers en stickers mee voor iedereen.", creatieveHoek.RandomUser());
 
         technischeHulp.AddTextMessage("Mijn tablet doet raar wanneer ik de spraakopnames open.", technischeHulp.RandomUser());
         technischeHulp.AddTextMessage("Heb je al geprobeerd om de app even opnieuw te starten?", technischeHulp.RandomUser());
