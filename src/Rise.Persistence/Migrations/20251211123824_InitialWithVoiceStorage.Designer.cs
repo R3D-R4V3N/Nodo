@@ -12,8 +12,8 @@ using Rise.Persistence;
 namespace Rise.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251211123822_BaseMigration")]
-    partial class BaseMigration
+    [Migration("20251211123824_InitialWithVoiceStorage")]
+    partial class InitialWithVoiceStorage
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1046,8 +1046,8 @@ namespace Rise.Persistence.Migrations
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasMaxLength(500)
-                                .HasColumnType("varchar(500)")
+                                .HasMaxLength(2000000)
+                                .HasColumnType("longtext")
                                 .HasColumnName("AudioUrl");
 
                             b1.HasKey("MessageId");
@@ -1106,8 +1106,8 @@ namespace Rise.Persistence.Migrations
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasMaxLength(500)
-                                .HasColumnType("varchar(500)")
+                                .HasMaxLength(2000000)
+                                .HasColumnType("longtext")
                                 .HasColumnName("AvatarUrl");
 
                             b1.HasKey("RegistrationRequestId");
@@ -1284,8 +1284,8 @@ namespace Rise.Persistence.Migrations
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasMaxLength(500)
-                                .HasColumnType("varchar(500)")
+                                .HasMaxLength(2000000)
+                                .HasColumnType("longtext")
                                 .HasColumnName("AvatarUrl");
 
                             b1.HasKey("BaseUserId");
