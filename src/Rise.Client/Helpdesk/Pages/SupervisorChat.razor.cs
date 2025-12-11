@@ -11,6 +11,7 @@ public partial class SupervisorChat : ComponentBase
     private int? _supervisorChatId;
     private bool _isLoading = true;
     private string? _loadError;
+    
 
     protected override async Task OnParametersSetAsync()
     {

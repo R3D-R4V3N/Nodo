@@ -70,7 +70,7 @@ public class EmergencyService(
             return Result.Conflict("Er werd al recent een noodmelding gestuurd.");
         }
 
-        var relatedMessage = chat.Messages.FirstOrDefault(m => m.Id == request.MessageId);
+        var relatedMessage = chat.Messages.FirstOrDefault();
 
         if (relatedMessage is null)
         {

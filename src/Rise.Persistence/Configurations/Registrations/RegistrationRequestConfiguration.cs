@@ -38,6 +38,7 @@ internal class RegistrationRequestConfiguration : EntityConfiguration<Registrati
         {
             bio.Property(t => t.Value)
                 .HasColumnName("AvatarUrl")
+                .HasColumnType("longtext")
                 .HasMaxLength(BlobUrl.MAX_LENGTH);
         });
 
