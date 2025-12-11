@@ -20,7 +20,7 @@ using Microsoft.Extensions.Options;
 using Rise.Server.Push;
 using Rise.Services.Notifications;
 using Azure.Storage.Blobs;
-
+using Serilog; // Zorg dat deze using er is voor Log
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -45,7 +45,6 @@ try
     builder.Host.UseSerilog((ctx, lc) => lc
         .ReadFrom.Configuration(ctx.Configuration)
         .Destructure.UsingAttributes());
-
 
     builder.Services.AddSingleton(x =>
     {
@@ -82,9 +81,6 @@ try
     builder.Services.AddSingleton<IPushSubscriptionStore, InMemoryPushSubscriptionStore>();
     builder.Services.AddSingleton<IPushNotificationService, PushNotificationService>();
 
-
-
-
     builder.Services
         .AddHttpContextAccessor()
         .AddScoped<ISessionContextProvider, HttpContextSessionProvider>()
@@ -107,18 +103,39 @@ try
 
     var app = builder.Build();
 
+    // ---------------------------------------------------------
+    // 1. CSP HEADER (MOET HIER BOVENAAN STAAN)
+    // ---------------------------------------------------------
+    app.Use(async (context, next) =>
+    {
+        // We gebruiken Append om zeker te zijn dat we geen headers overschrijven als ze er al zijn,
+        // al is directe assignment ook vaak prima.
+        context.Response.Headers["Content-Security-Policy"] =
+            "default-src 'self'; " +
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+            "style-src 'self' 'unsafe-inline'; " +
+            // Let op de media-src hieronder:
+            "img-src 'self' data: blob: https://fileserverdevops.blob.core.windows.net https://*.unsplash.com; " +
+            "media-src 'self' data: blob: https://fileserverdevops.blob.core.windows.net; " +
+            "connect-src 'self' ws: wss: https://fileserverdevops.blob.core.windows.net; " +
+            "font-src 'self' data:";
+
+        await next();
+    });
+
     if (app.Environment.IsDevelopment())
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
-
-        db.Database.EnsureDeleted();
+        
+        // db.Database.EnsureDeleted(); 
         db.Database.Migrate();
 
         await seeder.SeedAsync();
     }
 
+    // De rest van de middleware pipeline
     app.UseHttpsRedirection()
        .UseBlazorFrameworkFiles()
        .UseStaticFiles()
@@ -151,5 +168,4 @@ catch (Exception ex)
 finally
 {
     Log.CloseAndFlush();
-
 }
