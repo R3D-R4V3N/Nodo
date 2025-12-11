@@ -28,7 +28,7 @@ public static class EmergencyDto
         public EmergencyStatusDto Status { get; set; }
         public ChatDto.Emergency Chat { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string Reporter { get; set; } = string.Empty;
+        public string ReporterAccountId { get; set; } = string.Empty;
         public bool IsResolved => Status == EmergencyStatusDto.Closed;
         public string Label => TranslateEnumToText(Type).Label;
         public string IconHref => TranslateEnumToText(Type).IconHref;

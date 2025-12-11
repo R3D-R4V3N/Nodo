@@ -26,7 +26,7 @@ public static class EmergencyMapper
             Status = emergency.Status.ToDto(),
             Chat = emergency.HappenedInChat.ToEmergencyDto(),
             CreatedAt = emergency.Range.End,
-            Reporter = emergency.MadeByUser.ToString(),
+            ReporterAccountId = emergency.MadeByUser.AccountId.ToString(),
         };
     }
 }

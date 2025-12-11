@@ -192,6 +192,8 @@ public class EmergencyService(
 
         var emergency = await dbContext
             .Emergencies
+            .Include(e => e.HappenedInChat)
+            .ThenInclude(c => c.Users)
             .Include(e => e.HappenedInChat.Messages
                 .Where(m => m.CreatedAt >= emergencyRange.Start
                  && m.CreatedAt <= emergencyRange.End))

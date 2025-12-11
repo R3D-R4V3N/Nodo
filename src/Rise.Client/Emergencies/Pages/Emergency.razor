@@ -1,0 +1,50 @@
+﻿@page "/emergency/{EmergencyId:int}"
+@using BlazorSpinner
+@using Rise.Client.Chats.Components
+@using Rise.Shared.Identity
+@attribute [Authorize(Roles = $"{AppRoles.Supervisor},{AppRoles.Administrator}")]
+@layout EmptyLayout
+
+<div class="flex flex-col h-screen max-h-screen overflow-hidden bg-neutral-100 text-neutral-900">
+
+    <!-- Header -->
+    <ChatHeader 
+        DisplayName="@GetChatTitle()"
+        AvatarUrl="@GetChatImage()"
+        StatusText="@GetChatStatusText()"
+    />
+    @if (_isLoading)
+    {
+        <div class="flex-1 grid place-items-center">
+            <div class="loading-indicator loading-indicator--centered">
+                <Spinner />
+                <p class="loading-indicator__message">Noodmelding wordt geladen…</p>
+            </div>
+        </div>
+    }
+    else if (_loadFailed)
+    {
+        <div class="flex-1 grid place-items-center px-6 text-center">
+            <div class="space-y-2">
+                <p class="text-sm text-neutral-600">Het noodmelding kon niet geladen worden.</p>
+                <button class="text-xs text-[#127646] underline" @onclick="NavigateBack">
+                    Ga terug naar overzicht
+                </button>
+            </div>
+        </div>
+    }
+    else if (_emergency is null)
+    {
+        <div class="flex-1 grid place-items-center">
+            <p class="text-sm text-neutral-500">Dit noodmelding werd niet gevonden worden.</p>
+        </div>
+    }
+    else
+    {
+        <!-- Scrollable messages -->
+        <div class="flex-1 overflow-y-auto px-3 no-scrollbar" style="@GetMessageHostPaddingStyle()" @ref="_messagesHost">
+            <MessageList Messages="_messages"
+                         TimestampText="@GetConversationDateLabel()" />
+        </div>
+    }
+</div>

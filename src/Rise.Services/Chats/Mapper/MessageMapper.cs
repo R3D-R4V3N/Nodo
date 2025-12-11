@@ -36,7 +36,7 @@ internal static class MessageMapper
             Content = message.Text?.Value ?? string.Empty,
             Timestamp = message.CreatedAt,
             User = UserMapper.ToMessageDto(message.Sender),
-            AudioUrl = message.AudioUrl,
+            AudioUrl = message.AudioUrl?.Value,
             AudioDuration = message.AudioDurationSeconds.HasValue
                 ? TimeSpan.FromSeconds(message.AudioDurationSeconds.Value)
                 : null,
