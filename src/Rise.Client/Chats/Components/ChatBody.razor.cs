@@ -155,11 +155,7 @@ public partial class ChatBody : IAsyncDisposable
         var request = new ChatRequest.CreateMessage
         {
             ChatId = _chat.ChatId,
-            AudioDataBlob = new Rise.Shared.BlobStorage.BlobDto.Create()
-            { 
-                Name = "recording.mp3",
-                Base64Data = audio.DataUrl                
-            },
+            AudioDataUrl = audio.DataUrl,
             AudioDurationSeconds = audio.DurationSeconds
         };
 
@@ -355,9 +351,9 @@ public partial class ChatBody : IAsyncDisposable
 
     private static bool PendingContentMatches(MessageDto.Chat incoming, MessageDto.Chat pending)
     {
-        if (!string.IsNullOrWhiteSpace(incoming.AudioUrl) || !string.IsNullOrWhiteSpace(pending.AudioUrl))
+        if (!string.IsNullOrWhiteSpace(incoming.AudioDataUrl) || !string.IsNullOrWhiteSpace(pending.AudioDataUrl))
         {
-            return string.Equals(incoming.AudioUrl, pending.AudioUrl, StringComparison.Ordinal);
+            return string.Equals(incoming.AudioDataUrl, pending.AudioDataUrl, StringComparison.Ordinal);
         }
 
         return string.Equals(incoming.Content, pending.Content, StringComparison.Ordinal);

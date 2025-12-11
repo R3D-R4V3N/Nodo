@@ -11,7 +11,7 @@
 
     <div class="bg-white rounded-2xl rounded-tl-none px-4 py-3 shadow-sm text-sm max-w-[80%]">
         <div class="flex flex-col gap-2">
-            <audio class="w-52 max-w-full" controls src="@AudioUrl" preload="metadata"></audio>
+            <audio class="w-52 max-w-full" controls src="@AudioDataUrl" preload="metadata"></audio>
 
             @if (DurationLabel is not null)
             {
@@ -27,7 +27,7 @@
 </div>
 
 @code {
-    [Parameter] public string AudioUrl { get; set; } = string.Empty;
+    [Parameter] public string AudioDataUrl { get; set; } = string.Empty;
     [Parameter] public TimeSpan? AudioDuration { get; set; }
     [Parameter] public string? Text { get; set; }
     [Parameter] public string? AvatarUrl { get; set; }

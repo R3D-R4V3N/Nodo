@@ -1036,26 +1036,8 @@ namespace Rise.Persistence.Migrations
                                 .HasForeignKey("MessageId");
                         });
 
-                    b.OwnsOne("Rise.Domain.Common.ValueObjects.BlobUrl", "AudioUrl", b1 =>
-                        {
-                            b1.Property<int>("MessageId")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("Value")
-                                .IsRequired()
-                                .HasMaxLength(500)
-                                .HasColumnType("varchar(500)")
-                                .HasColumnName("AudioUrl");
-
-                            b1.HasKey("MessageId");
-
-                            b1.ToTable("Message");
-
-                            b1.WithOwner()
-                                .HasForeignKey("MessageId");
-                        });
-
-                    b.Navigation("AudioUrl");
+                    b.Property<string>("AudioDataUrl")
+                        .HasColumnType("longtext");
 
                     b.Navigation("Chat");
 

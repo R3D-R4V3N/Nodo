@@ -7,7 +7,6 @@ using Rise.Client.Offline;
 using Rise.Client.RealTime;
 using Rise.Client.State;
 using Rise.Shared.Assets;
-using Rise.Shared.BlobStorage;
 using Rise.Shared.Chats;
 using Rise.Shared.Emergencies;
 using Rise.Shared.Users;
@@ -153,11 +152,7 @@ public partial class Chat : IAsyncDisposable
         var request = new ChatRequest.CreateMessage
         {
             ChatId = _chat.ChatId,
-            AudioDataBlob = new BlobDto.Create() 
-            { 
-                Name = "voice-message.mp3", // throwaway name, just need it for extension
-                Base64Data = audio.DataUrl
-            },
+            AudioDataUrl = audio.DataUrl,
             AudioDurationSeconds = audio.DurationSeconds
         };
 
@@ -349,9 +344,9 @@ public partial class Chat : IAsyncDisposable
 
     private static bool PendingContentMatches(MessageDto.Chat incoming, MessageDto.Chat pending)
     {
-        if (!string.IsNullOrWhiteSpace(incoming.AudioUrl) || !string.IsNullOrWhiteSpace(pending.AudioUrl))
+        if (!string.IsNullOrWhiteSpace(incoming.AudioDataUrl) || !string.IsNullOrWhiteSpace(pending.AudioDataUrl))
         {
-            return string.Equals(incoming.AudioUrl, pending.AudioUrl, StringComparison.Ordinal);
+            return string.Equals(incoming.AudioDataUrl, pending.AudioDataUrl, StringComparison.Ordinal);
         }
 
         return string.Equals(incoming.Content, pending.Content, StringComparison.Ordinal);

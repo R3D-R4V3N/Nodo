@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Rise.Domain.Common.ValueObjects;
 using Rise.Domain.Messages;
 
 namespace Rise.Persistence.Configurations.Messages;
@@ -34,12 +33,8 @@ internal class MessageConfiguration : EntityConfiguration<Message>
                 .HasColumnName("IsSuspicious");
         });
 
-        builder.OwnsOne(m => m.AudioUrl, blob =>
-        {
-            blob.Property(t => t.Value)
-                .HasColumnName("AudioUrl")
-                .HasMaxLength(BlobUrl.MAX_LENGTH);
-        });
+        builder.Property(m => m.AudioDataUrl)
+            .HasColumnType("longtext");
 
         builder.Property(m => m.AudioDurationSeconds);
     }

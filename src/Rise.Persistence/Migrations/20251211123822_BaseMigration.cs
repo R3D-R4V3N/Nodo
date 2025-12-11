@@ -337,7 +337,7 @@ namespace Rise.Persistence.Migrations
                     Text = table.Column<string>(type: "varchar(2000)", maxLength: 2000, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     IsSuspicious = table.Column<bool>(type: "tinyint(1)", nullable: true),
-                    AudioUrl = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
+                    AudioDataUrl = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     AudioDurationSeconds = table.Column<double>(type: "double", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
