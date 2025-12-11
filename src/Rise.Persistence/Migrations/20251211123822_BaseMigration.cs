@@ -262,6 +262,38 @@ namespace Rise.Persistence.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "ChatMessageHistories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    ChatId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    LastReadAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    LastReadMessageId = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChatMessageHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ChatMessageHistories_BaseUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "BaseUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChatMessageHistories_Chats_ChatId",
+                        column: x => x.ChatId,
+                        principalTable: "Chats",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "Emergencies",
                 columns: table => new
                 {
@@ -577,7 +609,7 @@ namespace Rise.Persistence.Migrations
                     AssignedSupervisorId = table.Column<int>(type: "int", nullable: true),
                     StatusType = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     HandledById = table.Column<int>(type: "int", nullable: true),
-                    HandledDate = table.Column<DateTime>(type: "datetime(6)", nullable: true, defaultValue: new DateTime(2025, 12, 11, 10, 4, 33, 809, DateTimeKind.Utc).AddTicks(4188)),
+                    HandledDate = table.Column<DateTime>(type: "datetime(6)", nullable: true, defaultValue: new DateTime(2025, 12, 11, 12, 38, 18, 946, DateTimeKind.Utc).AddTicks(3274)),
                     Note = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
@@ -634,38 +666,6 @@ namespace Rise.Persistence.Migrations
                         name: "FK_Users_Supervisors_SupervisorId",
                         column: x => x.SupervisorId,
                         principalTable: "Supervisors",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "ChatMessageHistories",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    ChatId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    LastReadAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    LastReadMessageId = table.Column<int>(type: "int", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "current_timestamp()"),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ChatMessageHistories", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ChatMessageHistories_Chats_ChatId",
-                        column: x => x.ChatId,
-                        principalTable: "Chats",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ChatMessageHistories_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })

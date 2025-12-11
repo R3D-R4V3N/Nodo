@@ -331,7 +331,10 @@ public class ChatService(
     private async Task MarkSenderMessageHistoryAsync(int chatId, int senderId, DateTime messageCreatedAt, int messageId, CancellationToken cancellationToken)
     {
         var history = await _dbContext.ChatMessageHistories
-            .SingleOrDefaultAsync(history => history.ChatId == chatId && history.UserId == senderId, cancellationToken);
+            .SingleOrDefaultAsync(
+                history => history.ChatId == chatId && history.UserId == senderId
+                , cancellationToken
+            );
 
         if (history is null)
         {

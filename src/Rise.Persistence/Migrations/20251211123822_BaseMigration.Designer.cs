@@ -12,7 +12,7 @@ using Rise.Persistence;
 namespace Rise.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251211100436_BaseMigration")]
+    [Migration("20251211123822_BaseMigration")]
     partial class BaseMigration
     {
         /// <inheritdoc />
@@ -950,7 +950,7 @@ namespace Rise.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Rise.Domain.Users.User", "User")
+                    b.HasOne("Rise.Domain.Users.BaseUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1185,7 +1185,7 @@ namespace Rise.Persistence.Migrations
                             b1.Property<DateTime?>("HandledDate")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("datetime(6)")
-                                .HasDefaultValue(new DateTime(2025, 12, 11, 10, 4, 33, 809, DateTimeKind.Utc).AddTicks(4188))
+                                .HasDefaultValue(new DateTime(2025, 12, 11, 12, 38, 18, 946, DateTimeKind.Utc).AddTicks(3274))
                                 .HasColumnName("HandledDate");
 
                             b1.Property<int>("StatusType")

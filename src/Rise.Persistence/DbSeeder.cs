@@ -543,7 +543,12 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             {
                 case User userProfile:
                     userProfile.UpdateSentiments(CreateSentiments());
-                    userProfile.UpdateHobbies(CreateHobbies(dbContext, HobbyType.Reading, HobbyType.BoardGames, HobbyType.Crafting));
+                    var rnd = new Random();
+                    var count = Enum.GetValues<HobbyType>().Length;
+                    var hobbies = Enumerable.Repeat(0, 3)
+                        .Select(x => (HobbyType)rnd.Next(count))
+                        .ToArray();
+                    userProfile.UpdateHobbies(CreateHobbies(dbContext, hobbies));
                     var superChat = Chat.CreateSupervisorChat(userProfile, userProfile.Supervisor);
                     dbContext.Users.Add(userProfile);
                     dbContext.Chats.Add(superChat);

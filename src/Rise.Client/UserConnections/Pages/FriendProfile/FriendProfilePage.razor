@@ -52,7 +52,7 @@ else
 }
 
 @code {
-    [Parameter] public Guid id { get; set; }
+    [Parameter] public Guid id { get; set; } 
 
     [Inject] public UserState UserState { get; set; }
 
@@ -82,40 +82,33 @@ else
 
         if (user is null)
         {
-            return;
+            Console.WriteLine("Gebruiker niet gevonden!");
         }
 
-        var avatarUrl = user.User.AvatarUrl ?? DefaultImages.Profile;
-
-        ProfileHobbies = new List<ProfileHobbyModel>
+        ProfileHobbies = user.User.Hobbies
+            .Select(h => new ProfileHobbyModel(h.Hobby.ToString(), h.Name, h.Emoji))
+            .ToList();
+        
+        Console.WriteLine($"Aantal hobby's: {user.User.Hobbies.Count}");
+        foreach (var h in user.User.Hobbies)
         {
-            new ProfileHobbyModel("interest_fun", "Interesses", "🌟"),
-            new ProfileHobbyModel("likes", "Ik hou van...", "❤️"),
-            new ProfileHobbyModel("dislikes", "Ik hou niet van...", "🚫"),
-            new ProfileHobbyModel("hobbies", "Hobby's", "⚽")
-        };
-
-        var uriData = NavigationManager.Uri.Split('?');
-        if (uriData.Length > 1)
-        {
-            var data = uriData[1].Replace("%22", "\"");
-            data = System.Text.RegularExpressions.Regex.Unescape(data);
-
-            var userConnectionType = System.Text.Json.JsonSerializer.Deserialize<UserConnectionTypeDto>(data);
-            PageContext = userConnectionType;
+            Console.WriteLine($"Hobby: {h.Name}, Emoji: {h.Emoji}, Id: {h.Hobby.ToString()}");
         }
     }
-
-    private static int CalculateAge(DateOnly birthDay)
+    private int CalculateAge(DateOnly birthDate)
     {
         var today = DateOnly.FromDateTime(DateTime.Today);
-        var age = today.Year - birthDay.Year;
+        var age = today.Year - birthDate.Year;
 
-        if (today < birthDay.AddYears(age))
+        // als verjaardag nog niet is geweest dit jaar → leeftijd -1
+        if (birthDate > today.AddYears(-age))
         {
             age--;
         }
 
         return age;
     }
+
+
 }
+

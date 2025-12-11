@@ -116,6 +116,7 @@ public class RegistrationRequestService(
         }
 
         var supervisor = await dbContext.Supervisors
+            .Include(s => s.Organization)
             .AsNoTracking()
             .SingleOrDefaultAsync(s => s.AccountId == accountId, ct);
 

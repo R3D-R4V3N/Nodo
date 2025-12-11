@@ -19,73 +19,7 @@
 
 @* Waarom hier die injects hier en in de code hehind. *@
 
-
-<AlertPrompt IsOpen="_isAlertOpen"
-             Title="Reden van alert"
-             Description="Kies een passende reden voor deze melding."
-             Reasons="_alertReasons"
-             OnClose="CloseAlert"
-             OnReasonSelected="HandleAlertReason" />
-
-<div class="flex flex-col h-screen max-h-screen overflow-hidden bg-neutral-100 text-neutral-900">
-
-    <!-- Header -->
-    <ChatHeader OnTopBarClick="@HandleOtherUserProfileNavigation"
-        DisplayName="@GetChatTitle()"
-        AvatarUrl="@GetChatImage()"
-        StatusText="@GetChatStatusText()"
-        OnAlert="TriggerAlert"
-    />
-    @if (_isLoading)
-    {
-        <div class="flex-1 grid place-items-center">
-            <div class="loading-indicator loading-indicator--centered">
-                <Spinner />
-                <p class="loading-indicator__message">Gesprek wordt geladen…</p>
-            </div>
-        </div>
-    }
-    else if (_loadFailed)
-    {
-        <div class="flex-1 grid place-items-center px-6 text-center">
-            <div class="space-y-2">
-                <p class="text-sm text-neutral-600">Het gesprek kon niet geladen worden.</p>
-                <button class="text-xs text-[#127646] underline" @onclick="NavigateBack">
-                    Ga terug naar overzicht
-                </button>
-            </div>
-        </div>
-    }
-    else if (_chat is null)
-    {
-        <div class="flex-1 grid place-items-center">
-            <p class="text-sm text-neutral-500">Dit gesprek kon niet gevonden worden.</p>
-        </div>
-    }
-    else
-    {
-        <!-- Scrollable messages -->
-        <Rise.Client.Shared.InfiniteScroll ObserverTargetId="observerTarget" ObservableTargetReached="(e) => OnInfiniteScrollTriggered()">
-
-            <div class="flex-1 overflow-y-auto px-3 no-scrollbar" style="@GetMessageHostPaddingStyle()" @ref="_messagesHost">
-                <MessageList Messages="_messages"
-                             TimestampText="@GetConversationDateLabel()"
-                             OnCancelPending="CancelPendingMessageAsync" />
-            </div>
-
-        </Rise.Client.Shared.InfiniteScroll>
-
-        <!-- Fixed input bar -->
-        <div class="fixed bottom-0 left-0 right-0 bg-white" @ref="_footerHost">
-            <div class="mx-auto px-3">
-                <SuggestionChips Suggestions="UserState.User!.DefaultChatLines" OnPick="ApplySuggestion" />
-                <ChatInput @bind-Value="_draft"
-                           OnSend="HandleTextMessageAsync"
-                           OnSendVoice="HandleVoiceMessageAsync" />
-            </div>
-        </div>
-    }
-</div>
+<ChatBody ChatId="ChatId"></ChatBody>
 
 @* Geen style tags, gebruik scoped CSS *@
 <style>
@@ -101,3 +35,4 @@
       scrollbar-width: none;
   }
 </style>
+

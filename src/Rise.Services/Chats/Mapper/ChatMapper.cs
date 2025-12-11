@@ -37,10 +37,6 @@ internal static class ChatMapper
             ChatId = chat.Id,
             User = user.ToChatDto(),
             Supervisor = supervisor.ToChatDto(),
-            Messages = chat.Messages
-                .OrderBy(m => m.CreatedAt)
-                .Select(MessageMapper.ToChatDto)
-                .ToList()!
         };
     }
 

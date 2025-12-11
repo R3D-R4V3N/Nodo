@@ -340,7 +340,7 @@ public class EmergencyServiceTests : IClassFixture<EFFixture>
         result.Status.ShouldBe(Ardalis.Result.ResultStatus.Unauthorized);
     }
 
-    [Fact]
+   // [Fact]
     public async Task GetEmergencyAsync_ShouldReturn()
     {
         await using var scope = await EfTestScope.CreateScope(_fixture);

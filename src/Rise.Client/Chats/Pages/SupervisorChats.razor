@@ -14,7 +14,7 @@
 @inject UserState UserState
 @inject NavigationManager NavigationManager
 
-<div class="h-screen w-full bg-white text-gray-800 font-inter overflow-hidden flex">
+<div class="h-screen w-full bg-white text-gray-800 font-inter overflow-hidden flex" xmlns="http://www.w3.org/1999/html">
     
     <Sidebar></Sidebar>
         
@@ -103,13 +103,15 @@
                            *@
                            
                            <div class="flex flex-col h-full">
-                               <div class="p-4 border-b flex items-center gap-3">
-                                   <img src="@GetAvatarUrl(_selectedChat)" class="h-10 w-10 rounded-full" />
-                                   <h2 class="font-bold">@GetChatTitle(_selectedChat)</h2>
+                               <div class="p-4  flex items-center gap-3">
+                                   <img src="@GetAvatarUrl(_selectedChat)" class="h-10 w-10 rounded-full object-cover border border-neutral-200 bg-white" />
+                                   <p>@GetChatTitle(_selectedChat)</p>
                                </div>
-                               <div class="flex-1 p-10 text-center text-gray-400">
-                                   Hier komt de chat component voor Chat ID: @_selectedChat.ChatId
-                                   </div>
+                               <div class="relative flex-1 overflow-hidden w-full dashboard-chat-wrapper">
+                                   <ChatBody @key="@_selectedChat.ChatId" 
+                                             ChatId="@_selectedChat.ChatId" 
+                                             IsEmbedded="true" /> 
+                               </div>
                            </div>
                         </div>
                     }

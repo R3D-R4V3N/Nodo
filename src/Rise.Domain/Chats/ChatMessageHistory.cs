@@ -9,7 +9,7 @@ public class ChatMessageHistory : Entity
     public Chat Chat { get; set; } = null!;
 
     public int UserId { get; set; }
-    public User User { get; set; } = null!;
+    public BaseUser User { get; set; } = null!;
 
     public DateTime? LastReadAt { get; set; }
     public int? LastReadMessageId { get; set; }

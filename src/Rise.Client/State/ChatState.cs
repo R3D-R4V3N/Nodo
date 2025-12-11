@@ -21,7 +21,7 @@ public class ChatState
         {
             if (_states.TryGetValue(chat.ChatId, out var existing) && existing.UnReadCount == chat.UnreadCount)
             {
-                existing.HasNextPage = true;
+                existing.ResetPageInfo();
                 continue;
             }
 
@@ -79,12 +79,15 @@ public class ChatState
     {
         if (_states.TryGetValue(chatId, out var current) && current.UnReadCount == 0)
         {
-            NotifyStateChanged();
-            return;
+            // nothing
+        }
+        else
+        {
+            _states.TryAdd(chatId, new ChatStateItem());
+            _states[chatId].UnReadCount = 0;
         }
 
-        _states.TryAdd(chatId, new ChatStateItem());
-        _states[chatId].UnReadCount = 0;
+        _states[chatId].ResetPageInfo();
         NotifyStateChanged();
     }
 
@@ -101,5 +104,18 @@ public class ChatState
     {
         public int UnReadCount { get; set; }
         public bool HasNextPage { get; set; } = true;
+        public void ResetUnread()
+        {
+            UnReadCount = 0;
+        }
+        public void ResetPageInfo()
+        {
+            HasNextPage = true;
+        }
+        public void FullReset()
+        {
+            ResetUnread();
+            ResetPageInfo();
+        }
     }
 }

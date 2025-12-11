@@ -1,0 +1,1266 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="fca1e85f-339d-4d02-8298-f5368dfc7946" name="@Kyandros-MacBook-Pro 2025-12-11 11:21:16" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2025-12-11T11:21:16.9646370+01:00" queuing="2025-12-11T11:21:16.9646370+01:00" start="2025-12-11T11:21:16.4813680+01:00" finish="2025-12-11T11:21:17.0481660+01:00" />
+  <TestSettings name="default" id="9d1f2376-272c-41ee-913f-1650f2f9c114">
+    <Deployment runDeploymentRoot="_Kyandros-MacBook-Pro_2025-12-11_11_21_16" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="7964c1f4-4dc4-446b-9e7a-573ec21284de" testId="e096d376-7f3e-394a-5c8c-15b4893e2825" testName="Rise.Client.Tests.Identity.Components.LoginFormShould.TriggerOnSubmitWhenFormSubmitted" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0026630" startTime="2025-12-11T11:21:17.0050810+01:00" endTime="2025-12-11T11:21:17.0077190+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7964c1f4-4dc4-446b-9e7a-573ec21284de">
+      <Output>
+        <StdOut>[21:17.006434 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:17.006743 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:17.006757 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:17.006772 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:17.006818 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Identity.Components.LoginForm) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:17.006828 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Identity.Components.LoginForm
+[21:17.006840 | DBG | Renderer | InitializingChildComponent] Initializing component 3 (Microsoft.AspNetCore.Components.Forms.EditForm) as child of 2 (Rise.Client.Identity.Components.LoginForm)
+[21:17.006853 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.006892 | DBG | Renderer | InitializingChildComponent] Initializing component 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]) as child of 3 (Microsoft.AspNetCore.Components.Forms.EditForm)
+[21:17.006902 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.006924 | DBG | Renderer | InitializingChildComponent] Initializing component 5 (Blazored.FluentValidation.FluentValidationValidator) as child of 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.006940 | DBG | Renderer | InitializingChildComponent] Initializing component 6 (Microsoft.AspNetCore.Components.Forms.InputText) as child of 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.006959 | DBG | Renderer | InitializingChildComponent] Initializing component 7 (Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]) as child of 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.006975 | DBG | Renderer | InitializingChildComponent] Initializing component 8 (Microsoft.AspNetCore.Components.Forms.InputText) as child of 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.006987 | DBG | Renderer | InitializingChildComponent] Initializing component 9 (Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]) as child of 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.006997 | DBG | Renderer | RenderingComponent] Rendering component 5 of type Blazored.FluentValidation.FluentValidationValidator
+[21:17.007004 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.007025 | DBG | Renderer | RenderingComponent] Rendering component 7 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.007033 | DBG | Renderer | RenderingComponent] Rendering component 8 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.007043 | DBG | Renderer | RenderingComponent] Rendering component 9 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.007064 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.007072 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:17.007370 | DBG | TestRenderer | DispatchingEvent] Dispatching EventArgs to "onsubmit" handler (id = 1) on component 0.
+[21:17.007385 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'EventArgs'
+[21:17.007505 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.007537 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.007579 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.007597 | DBG | Renderer | RenderingComponent] Rendering component 7 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.007604 | DBG | Renderer | RenderingComponent] Rendering component 8 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.007614 | DBG | Renderer | RenderingComponent] Rendering component 9 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.007639 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.007652 | DBG | TestRenderer | ComponentRendered] Component 1 has been rendered.
+[21:17.007670 | DBG | TestRenderer | ComponentRendered] Component 2 has been rendered.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="633a4d7c-7bd4-4b1e-913d-736812aded0c" testId="908f3c90-ec4a-6680-0b3b-dcce60f15c8f" testName="Rise.Client.Tests.Chats.ChatItemShould.RenderPropertiesCorrectly" computerName="Kyandros-MacBook-Pro" duration="00:00:00.2183878" startTime="2025-12-11T11:21:16.7629040+01:00" endTime="2025-12-11T11:21:16.9722110+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="633a4d7c-7bd4-4b1e-913d-736812aded0c">
+      <Output>
+        <StdOut>[21:16.827683 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.904459 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.908718 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.909340 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.909487 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.ChatItem) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.910757 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.ChatItem
+[21:16.916745 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.916781 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.971884 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.971896 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.971904 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Chats.ChatItem</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9a61cbfb-57dc-46d8-9fdf-21a13cda8340" testId="c64c96f3-c333-afa1-ff00-8d2926ddeabe" testName="Rise.Client.Tests.Helpdesk.Components.VideoComponentShould.RenderCorrectEmbedUrlForYoutubeShortForm" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0022475" startTime="2025-12-11T11:21:16.9782630+01:00" endTime="2025-12-11T11:21:16.9804350+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9a61cbfb-57dc-46d8-9fdf-21a13cda8340">
+      <Output>
+        <StdOut>[21:16.979630 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.979996 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.980017 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.980028 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.980041 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Helpdesk.Components.VideoComponent) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.980051 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Helpdesk.Components.VideoComponent
+[21:16.980125 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.980138 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.980377 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.980389 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.980396 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Helpdesk.Components.VideoComponent</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7e5ad3b5-935f-45db-9d4d-cdbf57440bdf" testId="ce988971-97cf-a2a5-0f6e-17eb77097a9a" testName="Rise.Client.Tests.Helpdesk.Components.VideoComponentShould.RenderCorrectEmbedUrlForYoutubeLongForm" computerName="Kyandros-MacBook-Pro" duration="00:00:00.1948174" startTime="2025-12-11T11:21:16.7629440+01:00" endTime="2025-12-11T11:21:16.9483910+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7e5ad3b5-935f-45db-9d4d-cdbf57440bdf">
+      <Output>
+        <StdOut>[21:16.827673 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.904506 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.908713 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.909376 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.909499 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Helpdesk.Components.VideoComponent) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.910775 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Helpdesk.Components.VideoComponent
+[21:16.916746 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.916901 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.948314 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.948329 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.948336 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Helpdesk.Components.VideoComponent</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="cde57b65-158b-444f-aaa9-64ef26939355" testId="37d2251f-ce96-0d55-2b32-007778ca50df" testName="Rise.Client.Tests.Chats.Components.MessageBubbleShould.RenderIncomingAudioBubble" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0027116" startTime="2025-12-11T11:21:16.9793840+01:00" endTime="2025-12-11T11:21:16.9820710+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cde57b65-158b-444f-aaa9-64ef26939355">
+      <Output>
+        <StdOut>[21:16.980858 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.981190 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.981206 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.981216 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.981274 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.Components.IncomingAudioBubble) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.981378 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.IncomingAudioBubble
+[21:16.981688 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.981703 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.982024 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.982036 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.982042 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Chats.Components.IncomingAudioBubble</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b60e8047-efa6-48f8-a812-539abd674544" testId="5d1cc0b6-3aa5-d8f6-e96c-116271c32906" testName="Rise.Client.Tests.Chats.Components.SuggestionChipsShould.RenderSuggestions" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0023745" startTime="2025-12-11T11:21:16.9692890+01:00" endTime="2025-12-11T11:21:16.9706470+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b60e8047-efa6-48f8-a812-539abd674544">
+      <Output>
+        <StdOut>[21:16.969525 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.969939 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.969955 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.969966 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.970021 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.Components.SuggestionChips) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.970037 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.SuggestionChips
+[21:16.970060 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.970068 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.970593 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.970608 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.970615 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Chats.Components.SuggestionChips</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="10df8aa5-cb43-4826-8ab6-17ebecb1ce3e" testId="1eb6bcb2-88f2-64f8-eb18-4479349f7671" testName="Rise.Client.Tests.Events.EventCardShould.ShowInterestButtonWhenNotInterested" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0019135" startTime="2025-12-11T11:21:16.9837940+01:00" endTime="2025-12-11T11:21:16.9856820+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="10df8aa5-cb43-4826-8ab6-17ebecb1ce3e">
+      <Output>
+        <StdOut>[21:16.984852 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.985187 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.985202 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.985212 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.985222 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Events.Components.EventCard) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.985253 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Events.Components.EventCard
+[21:16.985281 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.985290 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.985639 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.985650 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.985656 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Events.Components.EventCard</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="222e2b37-5186-4761-90b8-40cf2197d804" testId="a93a648f-2ec5-0e31-8bc3-3dcd4ef9f6ac" testName="Rise.Client.Tests.Events.EventCardShould.ShowInterestedButtonWhenAlreadyInterested" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0016933" startTime="2025-12-11T11:21:16.9857390+01:00" endTime="2025-12-11T11:21:16.9874090+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="222e2b37-5186-4761-90b8-40cf2197d804">
+      <Output>
+        <StdOut>[21:16.986689 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.987016 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.987029 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.987040 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.987052 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Events.Components.EventCard) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.987063 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Events.Components.EventCard
+[21:16.987090 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.987099 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.987360 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.987370 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.987375 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Events.Components.EventCard</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="adfd5567-29d8-4d62-96d8-cc79b4fa9ef0" testId="70340ab9-c8ed-7399-80df-bb40c547a78d" testName="Rise.Client.Tests.Identity.Pages.LoginShould.RenderLoginForm_WhenNotAuthenticated" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0081892" startTime="2025-12-11T11:21:16.9336940+01:00" endTime="2025-12-11T11:21:16.9374690+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="adfd5567-29d8-4d62-96d8-cc79b4fa9ef0">
+      <Output>
+        <StdOut>[21:16.930484 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.930819 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.930876 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.930893 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState
+[21:16.930929 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]) as child of 1 (Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState)
+[21:16.930944 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]
+[21:16.930954 | DBG | Renderer | InitializingChildComponent] Initializing component 3 (Bunit.Rendering.FragmentContainer) as child of 2 (Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]])
+[21:16.930964 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Bunit.Rendering.FragmentContainer
+[21:16.931020 | DBG | Renderer | InitializingChildComponent] Initializing component 4 (Rise.Client.Identity.Login) as child of 3 (Bunit.Rendering.FragmentContainer)
+[21:16.931047 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Rise.Client.Identity.Login
+[21:16.931079 | DBG | Renderer | InitializingChildComponent] Initializing component 5 (Microsoft.AspNetCore.Components.Web.PageTitle) as child of 4 (Rise.Client.Identity.Login)
+[21:16.931114 | DBG | Renderer | InitializingChildComponent] Initializing component 6 (Microsoft.AspNetCore.Components.Authorization.AuthorizeView) as child of 4 (Rise.Client.Identity.Login)
+[21:16.931184 | DBG | Renderer | RenderingComponent] Rendering component 5 of type Microsoft.AspNetCore.Components.Web.PageTitle
+[21:16.931241 | DBG | Renderer | InitializingChildComponent] Initializing component 7 (Microsoft.AspNetCore.Components.Sections.SectionContent) as child of 5 (Microsoft.AspNetCore.Components.Web.PageTitle)
+[21:16.931262 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Authorization.AuthorizeView
+[21:16.931432 | DBG | Renderer | InitializingChildComponent] Initializing component 8 (Rise.Client.Identity.Components.AuthLayout) as child of 6 (Microsoft.AspNetCore.Components.Authorization.AuthorizeView)
+[21:16.931447 | DBG | Renderer | RenderingComponent] Rendering component 8 of type Rise.Client.Identity.Components.AuthLayout
+[21:16.931670 | DBG | Renderer | InitializingChildComponent] Initializing component 9 (Rise.Client.Home.Components.HomeLogo) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:16.931725 | DBG | Renderer | InitializingChildComponent] Initializing component 10 (Rise.Client.Home.Components.HomeHeading) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:16.931765 | DBG | Renderer | InitializingChildComponent] Initializing component 11 (Rise.Client.Identity.Components.LoginForm) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:16.931778 | DBG | Renderer | RenderingComponent] Rendering component 9 of type Rise.Client.Home.Components.HomeLogo
+[21:16.931787 | DBG | Renderer | RenderingComponent] Rendering component 10 of type Rise.Client.Home.Components.HomeHeading
+[21:16.931794 | DBG | Renderer | RenderingComponent] Rendering component 11 of type Rise.Client.Identity.Components.LoginForm
+[21:16.931804 | DBG | Renderer | InitializingChildComponent] Initializing component 12 (Microsoft.AspNetCore.Components.Forms.EditForm) as child of 11 (Rise.Client.Identity.Components.LoginForm)
+[21:16.931816 | DBG | Renderer | RenderingComponent] Rendering component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:16.931828 | DBG | Renderer | InitializingChildComponent] Initializing component 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]) as child of 12 (Microsoft.AspNetCore.Components.Forms.EditForm)
+[21:16.931837 | DBG | Renderer | RenderingComponent] Rendering component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:16.931861 | DBG | Renderer | InitializingChildComponent] Initializing component 14 (Blazored.FluentValidation.FluentValidationValidator) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:16.931874 | DBG | Renderer | InitializingChildComponent] Initializing component 15 (Microsoft.AspNetCore.Components.Forms.InputText) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:16.931889 | DBG | Renderer | InitializingChildComponent] Initializing component 16 (Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:16.931902 | DBG | Renderer | InitializingChildComponent] Initializing component 17 (Microsoft.AspNetCore.Components.Forms.InputText) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:16.931914 | DBG | Renderer | InitializingChildComponent] Initializing component 18 (Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:16.931925 | DBG | Renderer | RenderingComponent] Rendering component 14 of type Blazored.FluentValidation.FluentValidationValidator
+[21:16.931930 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:16.931948 | DBG | Renderer | RenderingComponent] Rendering component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:16.931954 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:16.931965 | DBG | Renderer | RenderingComponent] Rendering component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:16.931998 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.932013 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.936812 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.936828 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState
+[21:16.936840 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]
+[21:16.936850 | DBG | Renderer | DisposingComponent] Disposing component 3 of type Bunit.Rendering.FragmentContainer
+[21:16.936855 | DBG | Renderer | DisposingComponent] Disposing component 4 of type Rise.Client.Identity.Login
+[21:16.936860 | DBG | Renderer | DisposingComponent] Disposing component 5 of type Microsoft.AspNetCore.Components.Web.PageTitle
+[21:16.936866 | DBG | Renderer | DisposingComponent] Disposing component 6 of type Microsoft.AspNetCore.Components.Authorization.AuthorizeView
+[21:16.936872 | DBG | Renderer | DisposingComponent] Disposing component 7 of type Microsoft.AspNetCore.Components.Sections.SectionContent
+[21:16.936881 | DBG | Renderer | DisposingComponent] Disposing component 8 of type Rise.Client.Identity.Components.AuthLayout
+[21:16.936886 | DBG | Renderer | DisposingComponent] Disposing component 9 of type Rise.Client.Home.Components.HomeLogo
+[21:16.936891 | DBG | Renderer | DisposingComponent] Disposing component 10 of type Rise.Client.Home.Components.HomeHeading
+[21:16.936896 | DBG | Renderer | DisposingComponent] Disposing component 11 of type Rise.Client.Identity.Components.LoginForm
+[21:16.936901 | DBG | Renderer | DisposingComponent] Disposing component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:16.936905 | DBG | Renderer | DisposingComponent] Disposing component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:16.936911 | DBG | Renderer | DisposingComponent] Disposing component 14 of type Blazored.FluentValidation.FluentValidationValidator
+[21:16.936915 | DBG | Renderer | DisposingComponent] Disposing component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:16.937005 | DBG | Renderer | DisposingComponent] Disposing component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:16.937034 | DBG | Renderer | DisposingComponent] Disposing component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:16.937044 | DBG | Renderer | DisposingComponent] Disposing component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="ad49eef1-c756-4964-bc83-c36a03db710d" testId="c6cc0393-cb08-a468-e97a-70dda887b9c6" testName="Rise.Client.Tests.Helpdesk.Components.VideoComponentShould.RenderEmptySrcForEmptyUrl" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0065518" startTime="2025-12-11T11:21:16.9716140+01:00" endTime="2025-12-11T11:21:16.9781430+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ad49eef1-c756-4964-bc83-c36a03db710d">
+      <Output>
+        <StdOut>[21:16.972768 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.977761 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.977791 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.977806 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.977823 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Helpdesk.Components.VideoComponent) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.977834 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Helpdesk.Components.VideoComponent
+[21:16.977865 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.977880 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.978076 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.978086 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.978092 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Helpdesk.Components.VideoComponent</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2f18f4c2-02e4-460c-bd75-ab29e7049058" testId="4c856c37-ac62-4085-f117-895edfc4aabd" testName="Rise.Client.Tests.Pages.RegisterFormShould.RenderAllInputFieldsAndButton" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0030131" startTime="2025-12-11T11:21:17.0159900+01:00" endTime="2025-12-11T11:21:17.0189860+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2f18f4c2-02e4-460c-bd75-ab29e7049058" />
+    <UnitTestResult executionId="1aebf3ca-2293-4465-bc0b-50c6c0966c40" testId="44fcd64a-e518-0d13-95ac-fd4828e82f75" testName="Rise.Client.Tests.Chats.Components.SuggestionChipsShould.TriggerOnPickWhenClicked" computerName="Kyandros-MacBook-Pro" duration="00:00:00.2146993" startTime="2025-12-11T11:21:16.7624020+01:00" endTime="2025-12-11T11:21:16.9683820+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1aebf3ca-2293-4465-bc0b-50c6c0966c40">
+      <Output>
+        <StdOut>[21:16.827679 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.904477 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.908715 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.909352 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.909449 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.Components.SuggestionChips) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.910792 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.SuggestionChips
+[21:16.916774 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.916791 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.968002 | DBG | TestRenderer | DispatchingEvent] Dispatching MouseEventArgs = {"Detail":1,"ScreenX":0,"ScreenY":0,"ClientX":0,"ClientY":0,"OffsetX":0,"OffsetY":0,"PageX":0,"PageY":0,"MovementX":0,"MovementY":0,"Button":0,"Buttons":0,"CtrlKey":false,"ShiftKey":false,"AltKey":false,"MetaKey":false,"Type":null} to "onclick" handler (id = 1) on component 0.
+[21:16.968023 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'MouseEventArgs'
+[21:16.968105 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.SuggestionChips
+[21:16.968141 | DBG | TestRenderer | ComponentRendered] Component 2 has been rendered.
+[21:16.968152 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.968161 | DBG | TestRenderer | ComponentRendered] Component 1 has been rendered.
+[21:16.968197 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.968206 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.968213 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Chats.Components.SuggestionChips</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e4233b0b-1282-4c83-a9c5-d23c84f986e6" testId="2e62234a-d79a-6a93-07ee-691d0d6d1e17" testName="Rise.Client.Tests.Events.EventCardShould.ShowLoadingStateWhenClicked" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0091196" startTime="2025-12-11T11:21:16.9721130+01:00" endTime="2025-12-11T11:21:16.9809540+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e4233b0b-1282-4c83-a9c5-d23c84f986e6">
+      <Output>
+        <StdOut>[21:16.977729 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.978083 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.978095 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.978104 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.978147 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Events.Components.EventCard) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.978236 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Events.Components.EventCard
+[21:16.978293 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.978303 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.978635 | DBG | TestRenderer | DispatchingEvent] Dispatching MouseEventArgs = {"Detail":1,"ScreenX":0,"ScreenY":0,"ClientX":0,"ClientY":0,"OffsetX":0,"OffsetY":0,"PageX":0,"PageY":0,"MovementX":0,"MovementY":0,"Button":0,"Buttons":0,"CtrlKey":false,"ShiftKey":false,"AltKey":false,"MetaKey":false,"Type":null} to "onclick" handler (id = 1) on component 0.
+[21:16.978651 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'MouseEventArgs'
+[21:16.979869 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Events.Components.EventCard
+[21:16.979999 | DBG | Renderer | InitializingChildComponent] Initializing component 3 (BlazorSpinner.Spinner) as child of 2 (Rise.Client.Events.Components.EventCard)
+[21:16.980195 | DBG | Renderer | RenderingComponent] Rendering component 3 of type BlazorSpinner.Spinner
+[21:16.980274 | DBG | TestRenderer | ComponentRendered] Component 2 has been rendered.
+[21:16.980296 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.980313 | DBG | TestRenderer | ComponentRendered] Component 1 has been rendered.
+[21:16.980803 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.980813 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.980819 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Events.Components.EventCard
+[21:16.980825 | DBG | Renderer | DisposingComponent] Disposing component 3 of type BlazorSpinner.Spinner</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="39cbfe69-2971-46c9-ae95-443a7a4ef73b" testId="36139b77-7911-d020-c5d4-52bd9ffc9bc4" testName="Rise.Client.Tests.Identity.Pages.LoginShould.ShowError_WhenLoginFails" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0037211" startTime="2025-12-11T11:21:17.0172350+01:00" endTime="2025-12-11T11:21:17.0209150+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="39cbfe69-2971-46c9-ae95-443a7a4ef73b">
+      <Output>
+        <StdOut>[21:17.018368 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:17.018672 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:17.018692 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState) as child of 0 (Bunit.Rendering.RootComponent)
+[21:17.018705 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState
+[21:17.018722 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]) as child of 1 (Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState)
+[21:17.018732 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]
+[21:17.018740 | DBG | Renderer | InitializingChildComponent] Initializing component 3 (Bunit.Rendering.FragmentContainer) as child of 2 (Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]])
+[21:17.018748 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Bunit.Rendering.FragmentContainer
+[21:17.018797 | DBG | Renderer | InitializingChildComponent] Initializing component 4 (Rise.Client.Identity.Login) as child of 3 (Bunit.Rendering.FragmentContainer)
+[21:17.018810 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Rise.Client.Identity.Login
+[21:17.018817 | DBG | Renderer | InitializingChildComponent] Initializing component 5 (Microsoft.AspNetCore.Components.Web.PageTitle) as child of 4 (Rise.Client.Identity.Login)
+[21:17.018828 | DBG | Renderer | InitializingChildComponent] Initializing component 6 (Microsoft.AspNetCore.Components.Authorization.AuthorizeView) as child of 4 (Rise.Client.Identity.Login)
+[21:17.018843 | DBG | Renderer | RenderingComponent] Rendering component 5 of type Microsoft.AspNetCore.Components.Web.PageTitle
+[21:17.018850 | DBG | Renderer | InitializingChildComponent] Initializing component 7 (Microsoft.AspNetCore.Components.Sections.SectionContent) as child of 5 (Microsoft.AspNetCore.Components.Web.PageTitle)
+[21:17.018857 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Authorization.AuthorizeView
+[21:17.018864 | DBG | Renderer | InitializingChildComponent] Initializing component 8 (Rise.Client.Identity.Components.AuthLayout) as child of 6 (Microsoft.AspNetCore.Components.Authorization.AuthorizeView)
+[21:17.018870 | DBG | Renderer | RenderingComponent] Rendering component 8 of type Rise.Client.Identity.Components.AuthLayout
+[21:17.018877 | DBG | Renderer | InitializingChildComponent] Initializing component 9 (Rise.Client.Home.Components.HomeLogo) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:17.018887 | DBG | Renderer | InitializingChildComponent] Initializing component 10 (Rise.Client.Home.Components.HomeHeading) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:17.018894 | DBG | Renderer | InitializingChildComponent] Initializing component 11 (Rise.Client.Identity.Components.LoginForm) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:17.018899 | DBG | Renderer | RenderingComponent] Rendering component 9 of type Rise.Client.Home.Components.HomeLogo
+[21:17.018904 | DBG | Renderer | RenderingComponent] Rendering component 10 of type Rise.Client.Home.Components.HomeHeading
+[21:17.018908 | DBG | Renderer | RenderingComponent] Rendering component 11 of type Rise.Client.Identity.Components.LoginForm
+[21:17.018915 | DBG | Renderer | InitializingChildComponent] Initializing component 12 (Microsoft.AspNetCore.Components.Forms.EditForm) as child of 11 (Rise.Client.Identity.Components.LoginForm)
+[21:17.018923 | DBG | Renderer | RenderingComponent] Rendering component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.018931 | DBG | Renderer | InitializingChildComponent] Initializing component 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]) as child of 12 (Microsoft.AspNetCore.Components.Forms.EditForm)
+[21:17.018938 | DBG | Renderer | RenderingComponent] Rendering component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.018956 | DBG | Renderer | InitializingChildComponent] Initializing component 14 (Blazored.FluentValidation.FluentValidationValidator) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.018967 | DBG | Renderer | InitializingChildComponent] Initializing component 15 (Microsoft.AspNetCore.Components.Forms.InputText) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.018978 | DBG | Renderer | InitializingChildComponent] Initializing component 16 (Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.018989 | DBG | Renderer | InitializingChildComponent] Initializing component 17 (Microsoft.AspNetCore.Components.Forms.InputText) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.018998 | DBG | Renderer | InitializingChildComponent] Initializing component 18 (Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.019006 | DBG | Renderer | RenderingComponent] Rendering component 14 of type Blazored.FluentValidation.FluentValidationValidator
+[21:17.019010 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.019024 | DBG | Renderer | RenderingComponent] Rendering component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.019029 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.019037 | DBG | Renderer | RenderingComponent] Rendering component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.019062 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.019072 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:17.019454 | DBG | TestRenderer | DispatchingEvent] Dispatching ChangeEventArgs = {"Value":"test@example.com"} to "onchange" handler (id = 2) on component 0.
+[21:17.019467 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'ChangeEventArgs'
+[21:17.019558 | DBG | Renderer | RenderingComponent] Rendering component 11 of type Rise.Client.Identity.Components.LoginForm
+[21:17.019570 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.019582 | DBG | Renderer | RenderingComponent] Rendering component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.019590 | DBG | Renderer | RenderingComponent] Rendering component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.019615 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.019625 | DBG | Renderer | RenderingComponent] Rendering component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.019631 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.019638 | DBG | Renderer | RenderingComponent] Rendering component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.019661 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.019677 | DBG | TestRenderer | ComponentRendered] Component 3 has been rendered.
+[21:17.019689 | DBG | TestRenderer | ComponentRendered] Component 4 has been rendered.
+[21:17.020003 | DBG | TestRenderer | DispatchingEvent] Dispatching ChangeEventArgs = {"Value":"password123"} to "onchange" handler (id = 6) on component 0.
+[21:17.020014 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'ChangeEventArgs'
+[21:17.020088 | DBG | Renderer | RenderingComponent] Rendering component 11 of type Rise.Client.Identity.Components.LoginForm
+[21:17.020099 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.020109 | DBG | Renderer | RenderingComponent] Rendering component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.020115 | DBG | Renderer | RenderingComponent] Rendering component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.020136 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.020147 | DBG | Renderer | RenderingComponent] Rendering component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.020152 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.020158 | DBG | Renderer | RenderingComponent] Rendering component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.020179 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.020192 | DBG | TestRenderer | ComponentRendered] Component 3 has been rendered.
+[21:17.020204 | DBG | TestRenderer | ComponentRendered] Component 4 has been rendered.
+[21:17.020501 | DBG | TestRenderer | DispatchingEvent] Dispatching EventArgs to "onsubmit" handler (id = 1) on component 0.
+[21:17.020512 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'EventArgs'
+[21:17.020661 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Rise.Client.Identity.Login
+[21:17.020678 | DBG | Renderer | RenderingComponent] Rendering component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.020686 | DBG | Renderer | RenderingComponent] Rendering component 5 of type Microsoft.AspNetCore.Components.Web.PageTitle
+[21:17.020693 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Authorization.AuthorizeView
+[21:17.020698 | DBG | Renderer | RenderingComponent] Rendering component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.020718 | DBG | Renderer | RenderingComponent] Rendering component 8 of type Rise.Client.Identity.Components.AuthLayout
+[21:17.020732 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.020741 | DBG | Renderer | RenderingComponent] Rendering component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.020746 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.020752 | DBG | Renderer | RenderingComponent] Rendering component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.020757 | DBG | Renderer | RenderingComponent] Rendering component 11 of type Rise.Client.Identity.Components.LoginForm
+[21:17.020763 | DBG | Renderer | RenderingComponent] Rendering component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.020768 | DBG | Renderer | RenderingComponent] Rendering component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.020784 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.020790 | DBG | Renderer | RenderingComponent] Rendering component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.020798 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.020804 | DBG | Renderer | RenderingComponent] Rendering component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.020826 | DBG | TestRenderer | ComponentRendered] Component 4 has been rendered.
+[21:17.020842 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.020855 | DBG | TestRenderer | ComponentRendered] Component 3 has been rendered.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="730cb249-9473-434f-b28a-908ee9ef394a" testId="531a2271-0138-30a0-4acc-6080396bcd2d" testName="Rise.Client.Tests.Identity.Components.LoginFormShould.BindEmailAndPasswordToModel" computerName="Kyandros-MacBook-Pro" duration="00:00:00.2514880" startTime="2025-12-11T11:21:16.7624240+01:00" endTime="2025-12-11T11:21:17.0050170+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="730cb249-9473-434f-b28a-908ee9ef394a">
+      <Output>
+        <StdOut>[21:16.827681 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.904483 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.908716 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.909360 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.913987 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Identity.Components.LoginForm) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.914072 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Identity.Components.LoginForm
+[21:16.914226 | DBG | Renderer | InitializingChildComponent] Initializing component 3 (Microsoft.AspNetCore.Components.Forms.EditForm) as child of 2 (Rise.Client.Identity.Components.LoginForm)
+[21:16.914243 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:16.914327 | DBG | Renderer | InitializingChildComponent] Initializing component 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]) as child of 3 (Microsoft.AspNetCore.Components.Forms.EditForm)
+[21:16.914348 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:16.916560 | DBG | Renderer | InitializingChildComponent] Initializing component 5 (Blazored.FluentValidation.FluentValidationValidator) as child of 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:16.917306 | DBG | Renderer | InitializingChildComponent] Initializing component 6 (Microsoft.AspNetCore.Components.Forms.InputText) as child of 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:16.920141 | DBG | Renderer | InitializingChildComponent] Initializing component 7 (Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]) as child of 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:16.920567 | DBG | Renderer | InitializingChildComponent] Initializing component 8 (Microsoft.AspNetCore.Components.Forms.InputText) as child of 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:16.920590 | DBG | Renderer | InitializingChildComponent] Initializing component 9 (Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]) as child of 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:16.920611 | DBG | Renderer | RenderingComponent] Rendering component 5 of type Blazored.FluentValidation.FluentValidationValidator
+[21:16.920640 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:16.923176 | DBG | Renderer | RenderingComponent] Rendering component 7 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:16.928615 | DBG | Renderer | RenderingComponent] Rendering component 8 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:16.929367 | DBG | Renderer | RenderingComponent] Rendering component 9 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:16.929396 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.929420 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.962569 | DBG | TestRenderer | DispatchingEvent] Dispatching ChangeEventArgs = {"Value":"kyandro@example.com"} to "onchange" handler (id = 2) on component 0.
+[21:16.962604 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'ChangeEventArgs'
+[21:17.003478 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Identity.Components.LoginForm
+[21:17.003516 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.003899 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.003914 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.003996 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.004008 | DBG | Renderer | RenderingComponent] Rendering component 7 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.004014 | DBG | Renderer | RenderingComponent] Rendering component 8 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.004023 | DBG | Renderer | RenderingComponent] Rendering component 9 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.004064 | DBG | TestRenderer | ComponentRendered] Component 2 has been rendered.
+[21:17.004079 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.004091 | DBG | TestRenderer | ComponentRendered] Component 1 has been rendered.
+[21:17.004391 | DBG | TestRenderer | DispatchingEvent] Dispatching ChangeEventArgs = {"Value":"SuperSecret123"} to "onchange" handler (id = 6) on component 0.
+[21:17.004408 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'ChangeEventArgs'
+[21:17.004838 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Identity.Components.LoginForm
+[21:17.004852 | DBG | Renderer | RenderingComponent] Rendering component 8 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.004865 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.004873 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.004900 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.004911 | DBG | Renderer | RenderingComponent] Rendering component 7 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.004917 | DBG | Renderer | RenderingComponent] Rendering component 8 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.004925 | DBG | Renderer | RenderingComponent] Rendering component 9 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.004945 | DBG | TestRenderer | ComponentRendered] Component 2 has been rendered.
+[21:17.004958 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.004972 | DBG | TestRenderer | ComponentRendered] Component 1 has been rendered.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c447412d-c430-42eb-a680-4c6e09ca0d77" testId="9d8d1cda-e746-0246-ac2a-a67d044fb186" testName="Rise.Client.Tests.Chats.Components.MessageBubbleShould.RenderOutgoingTextBubblePendingAllowsCancel" computerName="Kyandros-MacBook-Pro" duration="00:00:00.2147729" startTime="2025-12-11T11:21:16.7624350+01:00" endTime="2025-12-11T11:21:16.9693500+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c447412d-c430-42eb-a680-4c6e09ca0d77">
+      <Output>
+        <StdOut>[21:16.827693 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.904517 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.908722 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.909337 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.909505 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.Components.OutgoingTextBubble) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.910760 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.OutgoingTextBubble
+[21:16.916743 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.916782 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.968020 | DBG | TestRenderer | DispatchingEvent] Dispatching MouseEventArgs = {"Detail":1,"ScreenX":0,"ScreenY":0,"ClientX":0,"ClientY":0,"OffsetX":0,"OffsetY":0,"PageX":0,"PageY":0,"MovementX":0,"MovementY":0,"Button":0,"Buttons":0,"CtrlKey":false,"ShiftKey":false,"AltKey":false,"MetaKey":false,"Type":null} to "onclick" handler (id = 1) on component 0.
+[21:16.968043 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'MouseEventArgs'
+[21:16.968157 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.OutgoingTextBubble
+[21:16.968188 | DBG | TestRenderer | ComponentRendered] Component 2 has been rendered.
+[21:16.968195 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.968201 | DBG | TestRenderer | ComponentRendered] Component 1 has been rendered.
+[21:16.968260 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.968268 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.968275 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Chats.Components.OutgoingTextBubble</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="508fc98a-0e6c-476d-ae7d-b5b85aa357f7" testId="83b637f5-c529-1410-1823-15c5f86872b9" testName="Rise.Client.Tests.Identity.Pages.LoginShould.RedirectAfterSuccessfulLogin" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0063997" startTime="2025-12-11T11:21:17.0107890+01:00" endTime="2025-12-11T11:21:17.0171690+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="508fc98a-0e6c-476d-ae7d-b5b85aa357f7">
+      <Output>
+        <StdOut>[21:17.013672 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:17.013984 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:17.014007 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState) as child of 0 (Bunit.Rendering.RootComponent)
+[21:17.014021 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState
+[21:17.014035 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]) as child of 1 (Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState)
+[21:17.014047 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]
+[21:17.014057 | DBG | Renderer | InitializingChildComponent] Initializing component 3 (Bunit.Rendering.FragmentContainer) as child of 2 (Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]])
+[21:17.014067 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Bunit.Rendering.FragmentContainer
+[21:17.014140 | DBG | Renderer | InitializingChildComponent] Initializing component 4 (Rise.Client.Identity.Login) as child of 3 (Bunit.Rendering.FragmentContainer)
+[21:17.014156 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Rise.Client.Identity.Login
+[21:17.014166 | DBG | Renderer | InitializingChildComponent] Initializing component 5 (Microsoft.AspNetCore.Components.Web.PageTitle) as child of 4 (Rise.Client.Identity.Login)
+[21:17.014180 | DBG | Renderer | InitializingChildComponent] Initializing component 6 (Microsoft.AspNetCore.Components.Authorization.AuthorizeView) as child of 4 (Rise.Client.Identity.Login)
+[21:17.014197 | DBG | Renderer | RenderingComponent] Rendering component 5 of type Microsoft.AspNetCore.Components.Web.PageTitle
+[21:17.014207 | DBG | Renderer | InitializingChildComponent] Initializing component 7 (Microsoft.AspNetCore.Components.Sections.SectionContent) as child of 5 (Microsoft.AspNetCore.Components.Web.PageTitle)
+[21:17.014216 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Authorization.AuthorizeView
+[21:17.014223 | DBG | Renderer | InitializingChildComponent] Initializing component 8 (Rise.Client.Identity.Components.AuthLayout) as child of 6 (Microsoft.AspNetCore.Components.Authorization.AuthorizeView)
+[21:17.014232 | DBG | Renderer | RenderingComponent] Rendering component 8 of type Rise.Client.Identity.Components.AuthLayout
+[21:17.014242 | DBG | Renderer | InitializingChildComponent] Initializing component 9 (Rise.Client.Home.Components.HomeLogo) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:17.014251 | DBG | Renderer | InitializingChildComponent] Initializing component 10 (Rise.Client.Home.Components.HomeHeading) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:17.014259 | DBG | Renderer | InitializingChildComponent] Initializing component 11 (Rise.Client.Identity.Components.LoginForm) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:17.014266 | DBG | Renderer | RenderingComponent] Rendering component 9 of type Rise.Client.Home.Components.HomeLogo
+[21:17.014271 | DBG | Renderer | RenderingComponent] Rendering component 10 of type Rise.Client.Home.Components.HomeHeading
+[21:17.014276 | DBG | Renderer | RenderingComponent] Rendering component 11 of type Rise.Client.Identity.Components.LoginForm
+[21:17.014283 | DBG | Renderer | InitializingChildComponent] Initializing component 12 (Microsoft.AspNetCore.Components.Forms.EditForm) as child of 11 (Rise.Client.Identity.Components.LoginForm)
+[21:17.014292 | DBG | Renderer | RenderingComponent] Rendering component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.014301 | DBG | Renderer | InitializingChildComponent] Initializing component 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]) as child of 12 (Microsoft.AspNetCore.Components.Forms.EditForm)
+[21:17.014309 | DBG | Renderer | RenderingComponent] Rendering component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.014329 | DBG | Renderer | InitializingChildComponent] Initializing component 14 (Blazored.FluentValidation.FluentValidationValidator) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.014340 | DBG | Renderer | InitializingChildComponent] Initializing component 15 (Microsoft.AspNetCore.Components.Forms.InputText) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.014352 | DBG | Renderer | InitializingChildComponent] Initializing component 16 (Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.014364 | DBG | Renderer | InitializingChildComponent] Initializing component 17 (Microsoft.AspNetCore.Components.Forms.InputText) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.014374 | DBG | Renderer | InitializingChildComponent] Initializing component 18 (Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.014383 | DBG | Renderer | RenderingComponent] Rendering component 14 of type Blazored.FluentValidation.FluentValidationValidator
+[21:17.014388 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.014404 | DBG | Renderer | RenderingComponent] Rendering component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.014410 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.014419 | DBG | Renderer | RenderingComponent] Rendering component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.014446 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.014456 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:17.014890 | DBG | TestRenderer | DispatchingEvent] Dispatching ChangeEventArgs = {"Value":"test@example.com"} to "onchange" handler (id = 2) on component 0.
+[21:17.014907 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'ChangeEventArgs'
+[21:17.015004 | DBG | Renderer | RenderingComponent] Rendering component 11 of type Rise.Client.Identity.Components.LoginForm
+[21:17.015016 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.015030 | DBG | Renderer | RenderingComponent] Rendering component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.015041 | DBG | Renderer | RenderingComponent] Rendering component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.015069 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.015081 | DBG | Renderer | RenderingComponent] Rendering component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.015088 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.015096 | DBG | Renderer | RenderingComponent] Rendering component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.015121 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.015139 | DBG | TestRenderer | ComponentRendered] Component 3 has been rendered.
+[21:17.015157 | DBG | TestRenderer | ComponentRendered] Component 4 has been rendered.
+[21:17.015524 | DBG | TestRenderer | DispatchingEvent] Dispatching ChangeEventArgs = {"Value":"password123"} to "onchange" handler (id = 6) on component 0.
+[21:17.015537 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'ChangeEventArgs'
+[21:17.015621 | DBG | Renderer | RenderingComponent] Rendering component 11 of type Rise.Client.Identity.Components.LoginForm
+[21:17.015633 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.015645 | DBG | Renderer | RenderingComponent] Rendering component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.015653 | DBG | Renderer | RenderingComponent] Rendering component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.015677 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.015686 | DBG | Renderer | RenderingComponent] Rendering component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.015691 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.015699 | DBG | Renderer | RenderingComponent] Rendering component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.015724 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.015742 | DBG | TestRenderer | ComponentRendered] Component 3 has been rendered.
+[21:17.015758 | DBG | TestRenderer | ComponentRendered] Component 4 has been rendered.
+[21:17.016102 | DBG | TestRenderer | DispatchingEvent] Dispatching EventArgs to "onsubmit" handler (id = 1) on component 0.
+[21:17.016112 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'EventArgs'
+[21:17.016479 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState
+[21:17.016624 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Rise.Client.Identity.Login
+[21:17.016645 | DBG | Renderer | RenderingComponent] Rendering component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.016656 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]
+[21:17.016666 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Authorization.AuthorizeView
+[21:17.016680 | DBG | Renderer | InitializingChildComponent] Initializing component 19 (Rise.Client.Identity.Components.AuthLayout) as child of 6 (Microsoft.AspNetCore.Components.Authorization.AuthorizeView)
+[21:17.016747 | DBG | Renderer | DisposingComponent] Disposing component 8 of type Rise.Client.Identity.Components.AuthLayout
+[21:17.016856 | DBG | Renderer | DisposingComponent] Disposing component 9 of type Rise.Client.Home.Components.HomeLogo
+[21:17.016865 | DBG | Renderer | DisposingComponent] Disposing component 10 of type Rise.Client.Home.Components.HomeHeading
+[21:17.016871 | DBG | Renderer | DisposingComponent] Disposing component 11 of type Rise.Client.Identity.Components.LoginForm
+[21:17.016876 | DBG | Renderer | DisposingComponent] Disposing component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.016881 | DBG | Renderer | DisposingComponent] Disposing component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.016887 | DBG | Renderer | DisposingComponent] Disposing component 14 of type Blazored.FluentValidation.FluentValidationValidator
+[21:17.016892 | DBG | Renderer | DisposingComponent] Disposing component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.016897 | DBG | Renderer | DisposingComponent] Disposing component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.016902 | DBG | Renderer | DisposingComponent] Disposing component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.016907 | DBG | Renderer | DisposingComponent] Disposing component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.016912 | DBG | Renderer | RenderingComponent] Rendering component 5 of type Microsoft.AspNetCore.Components.Web.PageTitle
+[21:17.016918 | DBG | Renderer | RenderingComponent] Rendering component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.016923 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Bunit.Rendering.FragmentContainer
+[21:17.016927 | DBG | Renderer | RenderingComponent] Rendering component 19 of type Rise.Client.Identity.Components.AuthLayout
+[21:17.016936 | DBG | Renderer | InitializingChildComponent] Initializing component 20 (Rise.Client.Home.Components.HomeLogo) as child of 19 (Rise.Client.Identity.Components.AuthLayout)
+[21:17.016943 | DBG | Renderer | InitializingChildComponent] Initializing component 21 (Rise.Client.Home.Components.HomeHeading) as child of 19 (Rise.Client.Identity.Components.AuthLayout)
+[21:17.016949 | DBG | Renderer | RenderingComponent] Rendering component 20 of type Rise.Client.Home.Components.HomeLogo
+[21:17.016954 | DBG | Renderer | RenderingComponent] Rendering component 21 of type Rise.Client.Home.Components.HomeHeading
+[21:17.016992 | DBG | TestRenderer | ComponentRendered] Component 4 has been rendered.
+[21:17.017003 | DBG | TestRenderer | ComponentRendered] Component 3 has been rendered.
+[21:17.017012 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.017072 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:17.017078 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState
+[21:17.017084 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]
+[21:17.017088 | DBG | Renderer | DisposingComponent] Disposing component 3 of type Bunit.Rendering.FragmentContainer
+[21:17.017092 | DBG | Renderer | DisposingComponent] Disposing component 4 of type Rise.Client.Identity.Login
+[21:17.017096 | DBG | Renderer | DisposingComponent] Disposing component 5 of type Microsoft.AspNetCore.Components.Web.PageTitle
+[21:17.017101 | DBG | Renderer | DisposingComponent] Disposing component 6 of type Microsoft.AspNetCore.Components.Authorization.AuthorizeView
+[21:17.017105 | DBG | Renderer | DisposingComponent] Disposing component 7 of type Microsoft.AspNetCore.Components.Sections.SectionContent
+[21:17.017111 | DBG | Renderer | DisposingComponent] Disposing component 21 of type Rise.Client.Home.Components.HomeHeading
+[21:17.017115 | DBG | Renderer | DisposingComponent] Disposing component 20 of type Rise.Client.Home.Components.HomeLogo
+[21:17.017119 | DBG | Renderer | DisposingComponent] Disposing component 19 of type Rise.Client.Identity.Components.AuthLayout</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="396181d4-f6e2-4dfc-88c3-f757a95cd78c" testId="b77450a8-8558-24cb-5938-8d593a5e14a2" testName="Rise.Client.Tests.Pages.RegisterFormShould.TriggerOnSubmit_WhenFormIsSubmitted" computerName="Kyandros-MacBook-Pro" duration="00:00:00.2612144" startTime="2025-12-11T11:21:16.7618120+01:00" endTime="2025-12-11T11:21:17.0159200+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="396181d4-f6e2-4dfc-88c3-f757a95cd78c" />
+    <UnitTestResult executionId="9cbcaf98-edd8-4471-9992-25ab6999e64a" testId="4004fc9b-0b7c-946d-4c85-06de63609f73" testName="Rise.Client.Tests.Chats.Components.MessageListShould.RenderMessages" computerName="Kyandros-MacBook-Pro" duration="00:00:00.1680946" startTime="2025-12-11T11:21:16.7629140+01:00" endTime="2025-12-11T11:21:16.9226480+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9cbcaf98-edd8-4471-9992-25ab6999e64a">
+      <Output>
+        <StdOut>[21:16.827673 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.904465 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.908717 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.909347 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.909807 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.Components.MessageList) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.910691 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.MessageList
+[21:16.912314 | DBG | Renderer | InitializingChildComponent] Initializing component 3 (Rise.Client.Chats.Components.OutgoingTextBubble) as child of 2 (Rise.Client.Chats.Components.MessageList)
+[21:16.912386 | DBG | Renderer | InitializingChildComponent] Initializing component 4 (Rise.Client.Chats.Components.IncomingTextBubble) as child of 2 (Rise.Client.Chats.Components.MessageList)
+[21:16.912453 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Rise.Client.Chats.Components.OutgoingTextBubble
+[21:16.912504 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Rise.Client.Chats.Components.IncomingTextBubble
+[21:16.916765 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.918617 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.920735 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.920865 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.921030 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Chats.Components.MessageList
+[21:16.921041 | DBG | Renderer | DisposingComponent] Disposing component 3 of type Rise.Client.Chats.Components.OutgoingTextBubble
+[21:16.921049 | DBG | Renderer | DisposingComponent] Disposing component 4 of type Rise.Client.Chats.Components.IncomingTextBubble</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4fc92fd3-d08f-4b60-aeac-e6bbade2c280" testId="81ec7c79-7d0f-475e-9179-b66bcfcdbc3e" testName="Rise.Client.Tests.Chats.Components.ChatInputShould.BindValueCorrectly" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0023704" startTime="2025-12-11T11:21:16.9672870+01:00" endTime="2025-12-11T11:21:16.9696170+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4fc92fd3-d08f-4b60-aeac-e6bbade2c280">
+      <Output>
+        <StdOut>[21:16.968596 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.968967 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.968986 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.968999 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.969098 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.Components.ChatInput) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.969112 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.ChatInput
+[21:16.969138 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.969147 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.969536 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.969546 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.969552 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Chats.Components.ChatInput</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2a96fbe8-6a2b-481f-9c86-9274219e2413" testId="4fd3c088-53c5-0ff9-abc9-f9641029d7a7" testName="Rise.Client.Tests.Chats.Components.ChatHeaderShould.RenderPropertiesCorrectly" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0118487" startTime="2025-12-11T11:21:16.9710400+01:00" endTime="2025-12-11T11:21:16.9828520+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2a96fbe8-6a2b-481f-9c86-9274219e2413">
+      <Output>
+        <StdOut>[21:16.972264 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.972587 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.972604 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.972616 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.972629 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.Components.ChatHeader) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.972682 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.ChatHeader
+[21:16.972698 | DBG | Renderer | InitializingChildComponent] Initializing component 3 (Rise.Client.Shared.Components.TopBar) as child of 2 (Rise.Client.Chats.Components.ChatHeader)
+[21:16.972710 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Rise.Client.Shared.Components.TopBar
+[21:16.972751 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.972762 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.981059 | DBG | WaitForHelper | CheckingWaitCondition] Checking the wait condition for component 2.
+[21:16.981166 | DBG | WaitForHelper | CheckCompleted] The check completed successfully for component 2.
+[21:16.981343 | DBG | WaitForHelper | WaiterDisposed] The waiter for component 2 disposed.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="17a5b3f5-efd4-4272-ae06-aaa611569416" testId="d72e07ef-0a3e-179c-ae4d-f84b42c315ff" testName="Rise.Client.Tests.Helpdesk.Pages.HelpdeskPageShould.NavigateToVoorlichting" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0015394" startTime="2025-12-11T11:21:16.9548990+01:00" endTime="2025-12-11T11:21:16.9549390+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="17a5b3f5-efd4-4272-ae06-aaa611569416" />
+    <UnitTestResult executionId="1c881abd-fb1d-4b26-bedd-1e555294b4af" testId="3a5412ea-23a9-4438-a3de-470bc77364dd" testName="Rise.Client.Tests.Chats.Components.MessageListShould.GroupConsecutiveMessagesFromSameUser" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0147973" startTime="2025-12-11T11:21:16.9329340+01:00" endTime="2025-12-11T11:21:16.9376080+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1c881abd-fb1d-4b26-bedd-1e555294b4af">
+      <Output>
+        <StdOut>[21:16.929870 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.930223 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.930238 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.930249 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.930302 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.Components.MessageList) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.930316 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.MessageList
+[21:16.930437 | DBG | Renderer | InitializingChildComponent] Initializing component 3 (Rise.Client.Chats.Components.IncomingTextBubble) as child of 2 (Rise.Client.Chats.Components.MessageList)
+[21:16.930450 | DBG | Renderer | InitializingChildComponent] Initializing component 4 (Rise.Client.Chats.Components.IncomingTextBubble) as child of 2 (Rise.Client.Chats.Components.MessageList)
+[21:16.930459 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Rise.Client.Chats.Components.IncomingTextBubble
+[21:16.930465 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Rise.Client.Chats.Components.IncomingTextBubble
+[21:16.930489 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.930508 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.937499 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.937524 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.937532 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Chats.Components.MessageList
+[21:16.937539 | DBG | Renderer | DisposingComponent] Disposing component 3 of type Rise.Client.Chats.Components.IncomingTextBubble
+[21:16.937546 | DBG | Renderer | DisposingComponent] Disposing component 4 of type Rise.Client.Chats.Components.IncomingTextBubble</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4659ebc7-88f2-44f1-96fd-6093b5ca54e5" testId="8643db6d-a1b2-cd78-c600-5b1c993160ef" testName="Rise.Client.Tests.Identity.Pages.LoginShould.RedirectToHomepage_WhenAlreadyAuthenticatedAsUser" computerName="Kyandros-MacBook-Pro" duration="00:00:00.1756641" startTime="2025-12-11T11:21:16.7624440+01:00" endTime="2025-12-11T11:21:16.9333700+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4659ebc7-88f2-44f1-96fd-6093b5ca54e5">
+      <Output>
+        <StdOut>[21:16.827675 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.904467 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.909354 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.910692 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState
+[21:16.910897 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]) as child of 1 (Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState)
+[21:16.911279 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]
+[21:16.911510 | DBG | Renderer | InitializingChildComponent] Initializing component 3 (Bunit.Rendering.FragmentContainer) as child of 2 (Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]])
+[21:16.911527 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Bunit.Rendering.FragmentContainer
+[21:16.915489 | DBG | Renderer | InitializingChildComponent] Initializing component 4 (Rise.Client.Identity.Login) as child of 3 (Bunit.Rendering.FragmentContainer)
+[21:16.919352 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Rise.Client.Identity.Login
+[21:16.919594 | DBG | Renderer | InitializingChildComponent] Initializing component 5 (Microsoft.AspNetCore.Components.Web.PageTitle) as child of 4 (Rise.Client.Identity.Login)
+[21:16.919900 | DBG | Renderer | InitializingChildComponent] Initializing component 6 (Microsoft.AspNetCore.Components.Authorization.AuthorizeView) as child of 4 (Rise.Client.Identity.Login)
+[21:16.921767 | DBG | Renderer | RenderingComponent] Rendering component 5 of type Microsoft.AspNetCore.Components.Web.PageTitle
+[21:16.921958 | DBG | Renderer | InitializingChildComponent] Initializing component 7 (Microsoft.AspNetCore.Components.Sections.SectionContent) as child of 5 (Microsoft.AspNetCore.Components.Web.PageTitle)
+[21:16.922389 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Authorization.AuthorizeView
+[21:16.922651 | DBG | Renderer | InitializingChildComponent] Initializing component 8 (Rise.Client.Identity.Components.AuthLayout) as child of 6 (Microsoft.AspNetCore.Components.Authorization.AuthorizeView)
+[21:16.922721 | DBG | Renderer | RenderingComponent] Rendering component 8 of type Rise.Client.Identity.Components.AuthLayout
+[21:16.922943 | DBG | Renderer | InitializingChildComponent] Initializing component 9 (Rise.Client.Home.Components.HomeLogo) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:16.922990 | DBG | Renderer | InitializingChildComponent] Initializing component 10 (Rise.Client.Home.Components.HomeHeading) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:16.923007 | DBG | Renderer | RenderingComponent] Rendering component 9 of type Rise.Client.Home.Components.HomeLogo
+[21:16.923033 | DBG | Renderer | RenderingComponent] Rendering component 10 of type Rise.Client.Home.Components.HomeHeading
+[21:16.923072 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.923096 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.928785 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.928794 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState
+[21:16.928865 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]
+[21:16.928876 | DBG | Renderer | DisposingComponent] Disposing component 3 of type Bunit.Rendering.FragmentContainer
+[21:16.928881 | DBG | Renderer | DisposingComponent] Disposing component 4 of type Rise.Client.Identity.Login
+[21:16.928887 | DBG | Renderer | DisposingComponent] Disposing component 5 of type Microsoft.AspNetCore.Components.Web.PageTitle
+[21:16.928892 | DBG | Renderer | DisposingComponent] Disposing component 6 of type Microsoft.AspNetCore.Components.Authorization.AuthorizeView
+[21:16.928899 | DBG | Renderer | DisposingComponent] Disposing component 7 of type Microsoft.AspNetCore.Components.Sections.SectionContent
+[21:16.929125 | DBG | Renderer | DisposingComponent] Disposing component 8 of type Rise.Client.Identity.Components.AuthLayout
+[21:16.929141 | DBG | Renderer | DisposingComponent] Disposing component 9 of type Rise.Client.Home.Components.HomeLogo
+[21:16.929149 | DBG | Renderer | DisposingComponent] Disposing component 10 of type Rise.Client.Home.Components.HomeHeading</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4bf8c3e5-d6e9-4446-aeb5-f1f2261e8e06" testId="a0cfee56-b73f-bf32-e2d0-e9785741d8a5" testName="Rise.Client.Tests.Identity.Pages.LoginShould.RedirectToDashboard_WhenAlreadyAuthenticatedAsAdmin" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0018189" startTime="2025-12-11T11:21:17.0089250+01:00" endTime="2025-12-11T11:21:17.0107260+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4bf8c3e5-d6e9-4446-aeb5-f1f2261e8e06">
+      <Output>
+        <StdOut>[21:17.009982 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:17.010298 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:17.010317 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState) as child of 0 (Bunit.Rendering.RootComponent)
+[21:17.010330 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState
+[21:17.010343 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]) as child of 1 (Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState)
+[21:17.010355 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]
+[21:17.010366 | DBG | Renderer | InitializingChildComponent] Initializing component 3 (Bunit.Rendering.FragmentContainer) as child of 2 (Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]])
+[21:17.010375 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Bunit.Rendering.FragmentContainer
+[21:17.010431 | DBG | Renderer | InitializingChildComponent] Initializing component 4 (Rise.Client.Identity.Login) as child of 3 (Bunit.Rendering.FragmentContainer)
+[21:17.010457 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Rise.Client.Identity.Login
+[21:17.010485 | DBG | Renderer | InitializingChildComponent] Initializing component 5 (Microsoft.AspNetCore.Components.Web.PageTitle) as child of 4 (Rise.Client.Identity.Login)
+[21:17.010511 | DBG | Renderer | InitializingChildComponent] Initializing component 6 (Microsoft.AspNetCore.Components.Authorization.AuthorizeView) as child of 4 (Rise.Client.Identity.Login)
+[21:17.010531 | DBG | Renderer | RenderingComponent] Rendering component 5 of type Microsoft.AspNetCore.Components.Web.PageTitle
+[21:17.010542 | DBG | Renderer | InitializingChildComponent] Initializing component 7 (Microsoft.AspNetCore.Components.Sections.SectionContent) as child of 5 (Microsoft.AspNetCore.Components.Web.PageTitle)
+[21:17.010551 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Authorization.AuthorizeView
+[21:17.010559 | DBG | Renderer | InitializingChildComponent] Initializing component 8 (Rise.Client.Identity.Components.AuthLayout) as child of 6 (Microsoft.AspNetCore.Components.Authorization.AuthorizeView)
+[21:17.010567 | DBG | Renderer | RenderingComponent] Rendering component 8 of type Rise.Client.Identity.Components.AuthLayout
+[21:17.010575 | DBG | Renderer | InitializingChildComponent] Initializing component 9 (Rise.Client.Home.Components.HomeLogo) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:17.010585 | DBG | Renderer | InitializingChildComponent] Initializing component 10 (Rise.Client.Home.Components.HomeHeading) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:17.010592 | DBG | Renderer | RenderingComponent] Rendering component 9 of type Rise.Client.Home.Components.HomeLogo
+[21:17.010597 | DBG | Renderer | RenderingComponent] Rendering component 10 of type Rise.Client.Home.Components.HomeHeading
+[21:17.010613 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.010621 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:17.010647 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:17.010652 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState
+[21:17.010658 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]
+[21:17.010663 | DBG | Renderer | DisposingComponent] Disposing component 3 of type Bunit.Rendering.FragmentContainer
+[21:17.010667 | DBG | Renderer | DisposingComponent] Disposing component 4 of type Rise.Client.Identity.Login
+[21:17.010672 | DBG | Renderer | DisposingComponent] Disposing component 5 of type Microsoft.AspNetCore.Components.Web.PageTitle
+[21:17.010676 | DBG | Renderer | DisposingComponent] Disposing component 6 of type Microsoft.AspNetCore.Components.Authorization.AuthorizeView
+[21:17.010680 | DBG | Renderer | DisposingComponent] Disposing component 7 of type Microsoft.AspNetCore.Components.Sections.SectionContent
+[21:17.010689 | DBG | Renderer | DisposingComponent] Disposing component 8 of type Rise.Client.Identity.Components.AuthLayout
+[21:17.010693 | DBG | Renderer | DisposingComponent] Disposing component 9 of type Rise.Client.Home.Components.HomeLogo
+[21:17.010697 | DBG | Renderer | DisposingComponent] Disposing component 10 of type Rise.Client.Home.Components.HomeHeading</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="93e66a40-8c53-48ed-9e8a-5ed38c335f26" testId="0e24edf3-50ae-62b7-5625-0ce0a8fd3b37" testName="Rise.Client.Tests.Chats.Components.ChatInputShould.DisableSendButtonWhenEmpty" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0066426" startTime="2025-12-11T11:21:16.9723500+01:00" endTime="2025-12-11T11:21:16.9786590+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="93e66a40-8c53-48ed-9e8a-5ed38c335f26">
+      <Output>
+        <StdOut>[21:16.977730 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.978085 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.978100 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.978113 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.978179 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.Components.ChatInput) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.978192 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.ChatInput
+[21:16.978225 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.978237 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.978595 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.978607 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.978614 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Chats.Components.ChatInput</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b909ac39-edac-481b-9d8d-222dd1a5552d" testId="d10e70a6-9a9e-8e96-1c8a-508d705ebf77" testName="Rise.Client.Tests.Helpdesk.Pages.HelpdeskPageShould.RenderMenuButtons" computerName="Kyandros-MacBook-Pro" duration="00:00:00.1915275" startTime="2025-12-11T11:21:16.7629240+01:00" endTime="2025-12-11T11:21:16.9451130+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b909ac39-edac-481b-9d8d-222dd1a5552d" />
+    <UnitTestResult executionId="5ad1fb59-97e6-433c-84e1-d3e6edbf144a" testId="8f461873-4c9e-5020-6908-bf9be73eadea" testName="Rise.Client.Tests.Helpdesk.Components.VideoComponentShould.RenderIframeWithCorrectSrcForGenericUrl" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0017447" startTime="2025-12-11T11:21:16.9808960+01:00" endTime="2025-12-11T11:21:16.9822060+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5ad1fb59-97e6-433c-84e1-d3e6edbf144a">
+      <Output>
+        <StdOut>[21:16.981499 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.981871 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.981892 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.981902 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.981916 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Helpdesk.Components.VideoComponent) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.981926 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Helpdesk.Components.VideoComponent
+[21:16.981946 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.981958 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.982156 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.982167 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.982174 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Helpdesk.Components.VideoComponent</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="eabeec96-6ac5-4e5e-9808-d316a51f3dab" testId="d2b4047e-bb37-b00f-2093-90f829443aeb" testName="Rise.Client.Tests.Chats.Components.ChatInputShould.TriggerOnSendWhenSubmitted" computerName="Kyandros-MacBook-Pro" duration="00:00:00.2136313" startTime="2025-12-11T11:21:16.7628900+01:00" endTime="2025-12-11T11:21:16.9671910+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="eabeec96-6ac5-4e5e-9808-d316a51f3dab">
+      <Output>
+        <StdOut>[21:16.827695 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.904461 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.908762 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.909330 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.916194 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.Components.ChatInput) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.916352 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.ChatInput
+[21:16.917714 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.917733 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.959354 | DBG | TestRenderer | DispatchingEvent] Dispatching EventArgs to "onsubmit" handler (id = 1) on component 0.
+[21:16.960565 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'EventArgs'
+[21:16.961744 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.ChatInput
+[21:16.962444 | DBG | TestRenderer | ComponentRendered] Component 2 has been rendered.
+[21:16.962469 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.962485 | DBG | TestRenderer | ComponentRendered] Component 1 has been rendered.
+[21:16.966597 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.966625 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.966636 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Chats.Components.ChatInput</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="ed19c269-b7db-4787-92ab-7f5e6f3f9548" testId="74cff380-f877-c2e9-6087-407bedc1b1c8" testName="Rise.Client.Tests.Helpdesk.Pages.HelpdeskPageShould.NavigateToVideos" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0013715" startTime="2025-12-11T11:21:16.9549940+01:00" endTime="2025-12-11T11:21:16.9554170+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ed19c269-b7db-4787-92ab-7f5e6f3f9548" />
+    <UnitTestResult executionId="27b63e85-40a1-4132-b43c-411f6522ed52" testId="cce1f351-8f93-f3e3-2baf-deefca2cd8d3" testName="Rise.Client.Tests.Chats.Components.MessageBubbleShould.RenderOutgoingAudioBubblePendingShowsWarning" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0042952" startTime="2025-12-11T11:21:16.9694240+01:00" endTime="2025-12-11T11:21:16.9726590+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="27b63e85-40a1-4132-b43c-411f6522ed52">
+      <Output>
+        <StdOut>[21:16.970431 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.970865 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.970880 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.970891 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.970974 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.Components.OutgoingAudioBubble) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.971125 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.OutgoingAudioBubble
+[21:16.971976 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.971992 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.972586 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.972603 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.972611 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Chats.Components.OutgoingAudioBubble</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="870a4dba-ee65-44b0-9c8f-63816c6de91a" testId="17136d82-e5b8-f1fe-66af-6a98283e5730" testName="Rise.Client.Tests.Identity.Components.LoginFormShould.RenderAllElements" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0022007" startTime="2025-12-11T11:21:17.0081770+01:00" endTime="2025-12-11T11:21:17.0099590+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="870a4dba-ee65-44b0-9c8f-63816c6de91a">
+      <Output>
+        <StdOut>[21:17.008748 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:17.009085 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:17.009104 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:17.009115 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:17.009213 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Identity.Components.LoginForm) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:17.009228 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Identity.Components.LoginForm
+[21:17.009243 | DBG | Renderer | InitializingChildComponent] Initializing component 3 (Microsoft.AspNetCore.Components.Forms.EditForm) as child of 2 (Rise.Client.Identity.Components.LoginForm)
+[21:17.009253 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.009293 | DBG | Renderer | InitializingChildComponent] Initializing component 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]) as child of 3 (Microsoft.AspNetCore.Components.Forms.EditForm)
+[21:17.009304 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.009328 | DBG | Renderer | InitializingChildComponent] Initializing component 5 (Blazored.FluentValidation.FluentValidationValidator) as child of 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.009342 | DBG | Renderer | InitializingChildComponent] Initializing component 6 (Microsoft.AspNetCore.Components.Forms.InputText) as child of 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.009362 | DBG | Renderer | InitializingChildComponent] Initializing component 7 (Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]) as child of 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.009379 | DBG | Renderer | InitializingChildComponent] Initializing component 8 (Microsoft.AspNetCore.Components.Forms.InputText) as child of 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.009390 | DBG | Renderer | InitializingChildComponent] Initializing component 9 (Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]) as child of 4 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:17.009405 | DBG | Renderer | RenderingComponent] Rendering component 5 of type Blazored.FluentValidation.FluentValidationValidator
+[21:17.009413 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.009432 | DBG | Renderer | RenderingComponent] Rendering component 7 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.009438 | DBG | Renderer | RenderingComponent] Rendering component 8 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.009450 | DBG | Renderer | RenderingComponent] Rendering component 9 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.009483 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.009494 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:17.009885 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:17.009895 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:17.009900 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Identity.Components.LoginForm
+[21:17.009905 | DBG | Renderer | DisposingComponent] Disposing component 3 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.009909 | DBG | Renderer | DisposingComponent] Disposing component 4 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.009914 | DBG | Renderer | DisposingComponent] Disposing component 5 of type Blazored.FluentValidation.FluentValidationValidator
+[21:17.009919 | DBG | Renderer | DisposingComponent] Disposing component 6 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.009924 | DBG | Renderer | DisposingComponent] Disposing component 7 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.009929 | DBG | Renderer | DisposingComponent] Disposing component 8 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.009933 | DBG | Renderer | DisposingComponent] Disposing component 9 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="5329bead-95e9-4e3b-8a81-c0925c826dd1" testId="c8b4f823-3fb4-5eca-c32a-a8f153b9927b" testName="Rise.Client.Tests.Chats.Components.ChatInputShould.UpdateValueOnInput" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0023674" startTime="2025-12-11T11:21:16.9696880+01:00" endTime="2025-12-11T11:21:16.9722870+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5329bead-95e9-4e3b-8a81-c0925c826dd1">
+      <Output>
+        <StdOut>[21:16.970655 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.971043 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.971057 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.971069 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.971162 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.Components.ChatInput) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.971176 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.ChatInput
+[21:16.971202 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.971213 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.971579 | DBG | TestRenderer | DispatchingEvent] Dispatching ChangeEventArgs = {"Value":"New Value"} to "oninput" handler (id = 2) on component 0.
+[21:16.971592 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'ChangeEventArgs'
+[21:16.971621 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.ChatInput
+[21:16.971828 | DBG | TestRenderer | ComponentRendered] Component 2 has been rendered.
+[21:16.971842 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.971854 | DBG | TestRenderer | ComponentRendered] Component 1 has been rendered.
+[21:16.971915 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.971932 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.971942 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Chats.Components.ChatInput</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0418c67a-ab45-4822-b1de-7599006683e7" testId="01ed14aa-85b0-9bad-b505-a5653488fcd8" testName="Rise.Client.Tests.Identity.Pages.LoginShould.CallLoginAsync_WhenFormSubmitted" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0713440" startTime="2025-12-11T11:21:16.9375560+01:00" endTime="2025-12-11T11:21:17.0088620+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0418c67a-ab45-4822-b1de-7599006683e7">
+      <Output>
+        <StdOut>[21:16.940263 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.940617 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.940642 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.940658 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState
+[21:16.940675 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]) as child of 1 (Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState)
+[21:16.940689 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]
+[21:16.940700 | DBG | Renderer | InitializingChildComponent] Initializing component 3 (Bunit.Rendering.FragmentContainer) as child of 2 (Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]])
+[21:16.940712 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Bunit.Rendering.FragmentContainer
+[21:16.940773 | DBG | Renderer | InitializingChildComponent] Initializing component 4 (Rise.Client.Identity.Login) as child of 3 (Bunit.Rendering.FragmentContainer)
+[21:16.940791 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Rise.Client.Identity.Login
+[21:16.940802 | DBG | Renderer | InitializingChildComponent] Initializing component 5 (Microsoft.AspNetCore.Components.Web.PageTitle) as child of 4 (Rise.Client.Identity.Login)
+[21:16.940817 | DBG | Renderer | InitializingChildComponent] Initializing component 6 (Microsoft.AspNetCore.Components.Authorization.AuthorizeView) as child of 4 (Rise.Client.Identity.Login)
+[21:16.940835 | DBG | Renderer | RenderingComponent] Rendering component 5 of type Microsoft.AspNetCore.Components.Web.PageTitle
+[21:16.940844 | DBG | Renderer | InitializingChildComponent] Initializing component 7 (Microsoft.AspNetCore.Components.Sections.SectionContent) as child of 5 (Microsoft.AspNetCore.Components.Web.PageTitle)
+[21:16.940852 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Authorization.AuthorizeView
+[21:16.940860 | DBG | Renderer | InitializingChildComponent] Initializing component 8 (Rise.Client.Identity.Components.AuthLayout) as child of 6 (Microsoft.AspNetCore.Components.Authorization.AuthorizeView)
+[21:16.940869 | DBG | Renderer | RenderingComponent] Rendering component 8 of type Rise.Client.Identity.Components.AuthLayout
+[21:16.940878 | DBG | Renderer | InitializingChildComponent] Initializing component 9 (Rise.Client.Home.Components.HomeLogo) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:16.940886 | DBG | Renderer | InitializingChildComponent] Initializing component 10 (Rise.Client.Home.Components.HomeHeading) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:16.940894 | DBG | Renderer | InitializingChildComponent] Initializing component 11 (Rise.Client.Identity.Components.LoginForm) as child of 8 (Rise.Client.Identity.Components.AuthLayout)
+[21:16.940901 | DBG | Renderer | RenderingComponent] Rendering component 9 of type Rise.Client.Home.Components.HomeLogo
+[21:16.940907 | DBG | Renderer | RenderingComponent] Rendering component 10 of type Rise.Client.Home.Components.HomeHeading
+[21:16.940912 | DBG | Renderer | RenderingComponent] Rendering component 11 of type Rise.Client.Identity.Components.LoginForm
+[21:16.940920 | DBG | Renderer | InitializingChildComponent] Initializing component 12 (Microsoft.AspNetCore.Components.Forms.EditForm) as child of 11 (Rise.Client.Identity.Components.LoginForm)
+[21:16.940929 | DBG | Renderer | RenderingComponent] Rendering component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:16.940940 | DBG | Renderer | InitializingChildComponent] Initializing component 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]) as child of 12 (Microsoft.AspNetCore.Components.Forms.EditForm)
+[21:16.940949 | DBG | Renderer | RenderingComponent] Rendering component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:16.940970 | DBG | Renderer | InitializingChildComponent] Initializing component 14 (Blazored.FluentValidation.FluentValidationValidator) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:16.940983 | DBG | Renderer | InitializingChildComponent] Initializing component 15 (Microsoft.AspNetCore.Components.Forms.InputText) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:16.940999 | DBG | Renderer | InitializingChildComponent] Initializing component 16 (Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:16.941013 | DBG | Renderer | InitializingChildComponent] Initializing component 17 (Microsoft.AspNetCore.Components.Forms.InputText) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:16.941025 | DBG | Renderer | InitializingChildComponent] Initializing component 18 (Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]) as child of 13 (Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext])
+[21:16.941035 | DBG | Renderer | RenderingComponent] Rendering component 14 of type Blazored.FluentValidation.FluentValidationValidator
+[21:16.941040 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:16.941056 | DBG | Renderer | RenderingComponent] Rendering component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:16.941063 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:16.941072 | DBG | Renderer | RenderingComponent] Rendering component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:16.941107 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.941118 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.962570 | DBG | TestRenderer | DispatchingEvent] Dispatching ChangeEventArgs = {"Value":"test@example.com"} to "onchange" handler (id = 2) on component 0.
+[21:16.962606 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'ChangeEventArgs'
+[21:17.003477 | DBG | Renderer | RenderingComponent] Rendering component 11 of type Rise.Client.Identity.Components.LoginForm
+[21:17.003508 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.003900 | DBG | Renderer | RenderingComponent] Rendering component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.003913 | DBG | Renderer | RenderingComponent] Rendering component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.003995 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.004008 | DBG | Renderer | RenderingComponent] Rendering component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.004016 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.004025 | DBG | Renderer | RenderingComponent] Rendering component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.004064 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.004085 | DBG | TestRenderer | ComponentRendered] Component 3 has been rendered.
+[21:17.004107 | DBG | TestRenderer | ComponentRendered] Component 4 has been rendered.
+[21:17.004539 | DBG | TestRenderer | DispatchingEvent] Dispatching ChangeEventArgs = {"Value":"password123"} to "onchange" handler (id = 6) on component 0.
+[21:17.004555 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'ChangeEventArgs'
+[21:17.004839 | DBG | Renderer | RenderingComponent] Rendering component 11 of type Rise.Client.Identity.Components.LoginForm
+[21:17.004854 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.004870 | DBG | Renderer | RenderingComponent] Rendering component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.004879 | DBG | Renderer | RenderingComponent] Rendering component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.004908 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.004918 | DBG | Renderer | RenderingComponent] Rendering component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.004924 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.004932 | DBG | Renderer | RenderingComponent] Rendering component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.004961 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.004978 | DBG | TestRenderer | ComponentRendered] Component 3 has been rendered.
+[21:17.004993 | DBG | TestRenderer | ComponentRendered] Component 4 has been rendered.
+[21:17.005438 | DBG | TestRenderer | DispatchingEvent] Dispatching EventArgs to "onsubmit" handler (id = 1) on component 0.
+[21:17.005458 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'EventArgs'
+[21:17.007442 | DBG | Renderer | RenderingComponent] Rendering component 4 of type Rise.Client.Identity.Login
+[21:17.007475 | DBG | Renderer | RenderingComponent] Rendering component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.007488 | DBG | Renderer | RenderingComponent] Rendering component 5 of type Microsoft.AspNetCore.Components.Web.PageTitle
+[21:17.007498 | DBG | Renderer | RenderingComponent] Rendering component 6 of type Microsoft.AspNetCore.Components.Authorization.AuthorizeView
+[21:17.007505 | DBG | Renderer | RenderingComponent] Rendering component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.007536 | DBG | Renderer | RenderingComponent] Rendering component 8 of type Rise.Client.Identity.Components.AuthLayout
+[21:17.007547 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.007557 | DBG | Renderer | RenderingComponent] Rendering component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.007563 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.007570 | DBG | Renderer | RenderingComponent] Rendering component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.007576 | DBG | Renderer | RenderingComponent] Rendering component 11 of type Rise.Client.Identity.Components.LoginForm
+[21:17.007583 | DBG | Renderer | RenderingComponent] Rendering component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.007592 | DBG | Renderer | RenderingComponent] Rendering component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.007611 | DBG | Renderer | RenderingComponent] Rendering component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.007621 | DBG | Renderer | RenderingComponent] Rendering component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.007628 | DBG | Renderer | RenderingComponent] Rendering component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.007635 | DBG | Renderer | RenderingComponent] Rendering component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.007672 | DBG | TestRenderer | ComponentRendered] Component 4 has been rendered.
+[21:17.007690 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:17.007706 | DBG | TestRenderer | ComponentRendered] Component 3 has been rendered.
+[21:17.008714 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:17.008724 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState
+[21:17.008733 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Microsoft.AspNetCore.Components.CascadingValue`1[System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Components.Authorization.AuthenticationState]]
+[21:17.008746 | DBG | Renderer | DisposingComponent] Disposing component 3 of type Bunit.Rendering.FragmentContainer
+[21:17.008751 | DBG | Renderer | DisposingComponent] Disposing component 4 of type Rise.Client.Identity.Login
+[21:17.008757 | DBG | Renderer | DisposingComponent] Disposing component 5 of type Microsoft.AspNetCore.Components.Web.PageTitle
+[21:17.008762 | DBG | Renderer | DisposingComponent] Disposing component 6 of type Microsoft.AspNetCore.Components.Authorization.AuthorizeView
+[21:17.008772 | DBG | Renderer | DisposingComponent] Disposing component 7 of type Microsoft.AspNetCore.Components.Sections.SectionContent
+[21:17.008777 | DBG | Renderer | DisposingComponent] Disposing component 8 of type Rise.Client.Identity.Components.AuthLayout
+[21:17.008782 | DBG | Renderer | DisposingComponent] Disposing component 9 of type Rise.Client.Home.Components.HomeLogo
+[21:17.008788 | DBG | Renderer | DisposingComponent] Disposing component 10 of type Rise.Client.Home.Components.HomeHeading
+[21:17.008792 | DBG | Renderer | DisposingComponent] Disposing component 11 of type Rise.Client.Identity.Components.LoginForm
+[21:17.008797 | DBG | Renderer | DisposingComponent] Disposing component 12 of type Microsoft.AspNetCore.Components.Forms.EditForm
+[21:17.008801 | DBG | Renderer | DisposingComponent] Disposing component 13 of type Microsoft.AspNetCore.Components.CascadingValue`1[Microsoft.AspNetCore.Components.Forms.EditContext]
+[21:17.008807 | DBG | Renderer | DisposingComponent] Disposing component 14 of type Blazored.FluentValidation.FluentValidationValidator
+[21:17.008811 | DBG | Renderer | DisposingComponent] Disposing component 15 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.008818 | DBG | Renderer | DisposingComponent] Disposing component 16 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]
+[21:17.008829 | DBG | Renderer | DisposingComponent] Disposing component 17 of type Microsoft.AspNetCore.Components.Forms.InputText
+[21:17.008833 | DBG | Renderer | DisposingComponent] Disposing component 18 of type Microsoft.AspNetCore.Components.Forms.ValidationMessage`1[System.String]</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b7696c19-8939-415d-9a18-12f16842e6b3" testId="50f5dab7-58af-dccf-10e8-cee06485c6d6" testName="Rise.Client.Tests.Helpdesk.Components.VideoComponentShould.RenderTitleCorrectly" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0231383" startTime="2025-12-11T11:21:16.9546750+01:00" endTime="2025-12-11T11:21:16.9715440+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b7696c19-8939-415d-9a18-12f16842e6b3">
+      <Output>
+        <StdOut>[21:16.949760 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.950127 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.950144 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.950154 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.950204 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Helpdesk.Components.VideoComponent) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.950239 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Helpdesk.Components.VideoComponent
+[21:16.950283 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.950295 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.971482 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.971498 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.971506 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Helpdesk.Components.VideoComponent</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="5ccb863d-a32b-4038-9ac3-0cef72f0a2c7" testId="912ae29e-2e8a-6c68-3ac0-c9a8210c4d69" testName="Rise.Client.Tests.Events.EventCardShould.TriggerOnToggleInterestWhenClicked" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0028681" startTime="2025-12-11T11:21:16.9810060+01:00" endTime="2025-12-11T11:21:16.9837380+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5ccb863d-a32b-4038-9ac3-0cef72f0a2c7">
+      <Output>
+        <StdOut>[21:16.982734 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.983073 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.983088 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.983098 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.983110 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Events.Components.EventCard) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.983182 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Events.Components.EventCard
+[21:16.983214 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.983226 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.983587 | DBG | TestRenderer | DispatchingEvent] Dispatching MouseEventArgs = {"Detail":1,"ScreenX":0,"ScreenY":0,"ClientX":0,"ClientY":0,"OffsetX":0,"OffsetY":0,"PageX":0,"PageY":0,"MovementX":0,"MovementY":0,"Button":0,"Buttons":0,"CtrlKey":false,"ShiftKey":false,"AltKey":false,"MetaKey":false,"Type":null} to "onclick" handler (id = 1) on component 0.
+[21:16.983610 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'MouseEventArgs'
+[21:16.983647 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Events.Components.EventCard
+[21:16.983667 | DBG | TestRenderer | ComponentRendered] Component 2 has been rendered.
+[21:16.983675 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.983680 | DBG | TestRenderer | ComponentRendered] Component 1 has been rendered.
+[21:16.983705 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.983711 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.983716 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Events.Components.EventCard</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e2dbcdf6-ec64-4a9b-beb2-953f20e30a12" testId="389867bb-c2c8-aa28-ac82-17c569d72cd0" testName="Rise.Client.Tests.Chats.Components.ChatHeaderShould.TriggerOnAlert" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0027393" startTime="2025-12-11T11:21:16.9683140+01:00" endTime="2025-12-11T11:21:16.9709740+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e2dbcdf6-ec64-4a9b-beb2-953f20e30a12">
+      <Output>
+        <StdOut>[21:16.969609 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.970086 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.970111 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.970124 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.970183 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.Components.ChatHeader) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.970226 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.ChatHeader
+[21:16.970249 | DBG | Renderer | InitializingChildComponent] Initializing component 3 (Rise.Client.Shared.Components.TopBar) as child of 2 (Rise.Client.Chats.Components.ChatHeader)
+[21:16.970262 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Rise.Client.Shared.Components.TopBar
+[21:16.970305 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.970318 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.970842 | DBG | TestRenderer | DispatchingEvent] Dispatching MouseEventArgs = {"Detail":1,"ScreenX":0,"ScreenY":0,"ClientX":0,"ClientY":0,"OffsetX":0,"OffsetY":0,"PageX":0,"PageY":0,"MovementX":0,"MovementY":0,"Button":0,"Buttons":0,"CtrlKey":false,"ShiftKey":false,"AltKey":false,"MetaKey":false,"Type":null} to "onclick" handler (id = 3) on component 0.
+[21:16.970867 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'MouseEventArgs'
+[21:16.970908 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.970918 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.970924 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Chats.Components.ChatHeader
+[21:16.970930 | DBG | Renderer | DisposingComponent] Disposing component 3 of type Rise.Client.Shared.Components.TopBar</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e7825bd5-f3c5-4bc3-acbf-de955dc31653" testId="b2a38309-d396-9b52-5bf6-4dd92dd07b2f" testName="Rise.Client.Tests.Chats.Components.MessageBubbleShould.RenderIncomingTextBubble" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0066653" startTime="2025-12-11T11:21:16.9727290+01:00" endTime="2025-12-11T11:21:16.9793310+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e7825bd5-f3c5-4bc3-acbf-de955dc31653">
+      <Output>
+        <StdOut>[21:16.978571 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.978936 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.978955 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.978964 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.978980 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.Components.IncomingTextBubble) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.978995 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.IncomingTextBubble
+[21:16.979016 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.979025 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.979288 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.979301 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.979308 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Chats.Components.IncomingTextBubble</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="cb3d939e-27db-40fc-a6fa-d1f5d246710d" testId="e702a408-a21a-eebe-7332-71f61b1014a7" testName="Rise.Client.Tests.Helpdesk.Pages.HelpdeskPageShould.NavigateToHulpRobot" computerName="Kyandros-MacBook-Pro" duration="00:00:00.0072799" startTime="2025-12-11T11:21:16.9451970+01:00" endTime="2025-12-11T11:21:16.9548140+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cb3d939e-27db-40fc-a6fa-d1f5d246710d" />
+    <UnitTestResult executionId="30e718c1-9648-4fc4-9229-50628ff67c7a" testId="3c0e9d38-2493-ee6b-66bf-598eff116105" testName="Rise.Client.Tests.Events.EventCardShould.RenderEventDetailsCorrectly" computerName="Kyandros-MacBook-Pro" duration="00:00:00.2181635" startTime="2025-12-11T11:21:16.7628750+01:00" endTime="2025-12-11T11:21:16.9717020+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="30e718c1-9648-4fc4-9229-50628ff67c7a">
+      <Output>
+        <StdOut>[21:16.827673 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.904508 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.908714 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.909330 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.909511 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Events.Components.EventCard) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.910762 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Events.Components.EventCard
+[21:16.916745 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.916780 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.971654 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.971671 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.971678 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Events.Components.EventCard</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="09e43cb5-d6f3-47c0-8e4e-2ae0998e60a6" testId="a72279c4-e69c-6a6f-0244-51c5f5e71c9b" testName="Rise.Client.Tests.Chats.Components.ChatHeaderShould.TriggerOnTopBarClick" computerName="Kyandros-MacBook-Pro" duration="00:00:00.2145808" startTime="2025-12-11T11:21:16.7629330+01:00" endTime="2025-12-11T11:21:16.9682020+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="09e43cb5-d6f3-47c0-8e4e-2ae0998e60a6">
+      <Output>
+        <StdOut>[21:16.827689 | DBG | Renderer | InitializingRootComponent] Initializing root component 0 (Bunit.Rendering.RootComponent)
+[21:16.904465 | DBG | Renderer | RenderingComponent] Rendering component 0 of type Bunit.Rendering.RootComponent
+[21:16.908758 | DBG | Renderer | InitializingChildComponent] Initializing component 1 (Bunit.Rendering.FragmentContainer) as child of 0 (Bunit.Rendering.RootComponent)
+[21:16.909345 | DBG | Renderer | RenderingComponent] Rendering component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.909594 | DBG | Renderer | InitializingChildComponent] Initializing component 2 (Rise.Client.Chats.Components.ChatHeader) as child of 1 (Bunit.Rendering.FragmentContainer)
+[21:16.910756 | DBG | Renderer | RenderingComponent] Rendering component 2 of type Rise.Client.Chats.Components.ChatHeader
+[21:16.911210 | DBG | Renderer | InitializingChildComponent] Initializing component 3 (Rise.Client.Shared.Components.TopBar) as child of 2 (Rise.Client.Chats.Components.ChatHeader)
+[21:16.911721 | DBG | Renderer | RenderingComponent] Rendering component 3 of type Rise.Client.Shared.Components.TopBar
+[21:16.916746 | DBG | TestRenderer | ComponentRendered] Component 0 has been rendered.
+[21:16.916784 | DBG | TestRenderer | InitialRenderCompleted] The initial render of component 0 is completed.
+[21:16.968001 | DBG | TestRenderer | DispatchingEvent] Dispatching MouseEventArgs = {"Detail":1,"ScreenX":0,"ScreenY":0,"ClientX":0,"ClientY":0,"OffsetX":0,"OffsetY":0,"PageX":0,"PageY":0,"MovementX":0,"MovementY":0,"Button":0,"Buttons":0,"CtrlKey":false,"ShiftKey":false,"AltKey":false,"MetaKey":false,"Type":null} to "onclick" handler (id = 2) on component 0.
+[21:16.968023 | DBG | Renderer | HandlingEvent] Handling event {"Id":5,"Name":"HandlingEvent"} of type 'MouseEventArgs'
+[21:16.968127 | DBG | Renderer | DisposingComponent] Disposing component 0 of type Bunit.Rendering.RootComponent
+[21:16.968137 | DBG | Renderer | DisposingComponent] Disposing component 1 of type Bunit.Rendering.FragmentContainer
+[21:16.968144 | DBG | Renderer | DisposingComponent] Disposing component 2 of type Rise.Client.Chats.Components.ChatHeader
+[21:16.968150 | DBG | Renderer | DisposingComponent] Disposing component 3 of type Rise.Client.Shared.Components.TopBar</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Rise.Client.Tests.Identity.Components.LoginFormShould.RenderAllElements" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="17136d82-e5b8-f1fe-66af-6a98283e5730">
+      <Execution id="870a4dba-ee65-44b0-9c8f-63816c6de91a" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Identity.Components.LoginFormShould" name="RenderAllElements" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Helpdesk.Pages.HelpdeskPageShould.NavigateToVoorlichting" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="d72e07ef-0a3e-179c-ae4d-f84b42c315ff">
+      <Execution id="17a5b3f5-efd4-4272-ae06-aaa611569416" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Helpdesk.Pages.HelpdeskPageShould" name="NavigateToVoorlichting" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Identity.Components.LoginFormShould.BindEmailAndPasswordToModel" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="531a2271-0138-30a0-4acc-6080396bcd2d">
+      <Execution id="730cb249-9473-434f-b28a-908ee9ef394a" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Identity.Components.LoginFormShould" name="BindEmailAndPasswordToModel" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.ChatItemShould.RenderPropertiesCorrectly" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="908f3c90-ec4a-6680-0b3b-dcce60f15c8f">
+      <Execution id="633a4d7c-7bd4-4b1e-913d-736812aded0c" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.ChatItemShould" name="RenderPropertiesCorrectly" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.Components.ChatInputShould.BindValueCorrectly" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="81ec7c79-7d0f-475e-9179-b66bcfcdbc3e">
+      <Execution id="4fc92fd3-d08f-4b60-aeac-e6bbade2c280" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.Components.ChatInputShould" name="BindValueCorrectly" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Identity.Pages.LoginShould.ShowError_WhenLoginFails" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="36139b77-7911-d020-c5d4-52bd9ffc9bc4">
+      <Execution id="39cbfe69-2971-46c9-ae95-443a7a4ef73b" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Identity.Pages.LoginShould" name="ShowError_WhenLoginFails" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.Components.ChatInputShould.TriggerOnSendWhenSubmitted" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="d2b4047e-bb37-b00f-2093-90f829443aeb">
+      <Execution id="eabeec96-6ac5-4e5e-9808-d316a51f3dab" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.Components.ChatInputShould" name="TriggerOnSendWhenSubmitted" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Identity.Pages.LoginShould.RedirectToDashboard_WhenAlreadyAuthenticatedAsAdmin" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="a0cfee56-b73f-bf32-e2d0-e9785741d8a5">
+      <Execution id="4bf8c3e5-d6e9-4446-aeb5-f1f2261e8e06" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Identity.Pages.LoginShould" name="RedirectToDashboard_WhenAlreadyAuthenticatedAsAdmin" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Events.EventCardShould.ShowLoadingStateWhenClicked" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="2e62234a-d79a-6a93-07ee-691d0d6d1e17">
+      <Execution id="e4233b0b-1282-4c83-a9c5-d23c84f986e6" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Events.EventCardShould" name="ShowLoadingStateWhenClicked" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Pages.RegisterFormShould.RenderAllInputFieldsAndButton" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="4c856c37-ac62-4085-f117-895edfc4aabd">
+      <Execution id="2f18f4c2-02e4-460c-bd75-ab29e7049058" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Pages.RegisterFormShould" name="RenderAllInputFieldsAndButton" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Identity.Pages.LoginShould.RedirectToHomepage_WhenAlreadyAuthenticatedAsUser" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="8643db6d-a1b2-cd78-c600-5b1c993160ef">
+      <Execution id="4659ebc7-88f2-44f1-96fd-6093b5ca54e5" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Identity.Pages.LoginShould" name="RedirectToHomepage_WhenAlreadyAuthenticatedAsUser" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.Components.ChatHeaderShould.RenderPropertiesCorrectly" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="4fd3c088-53c5-0ff9-abc9-f9641029d7a7">
+      <Execution id="2a96fbe8-6a2b-481f-9c86-9274219e2413" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.Components.ChatHeaderShould" name="RenderPropertiesCorrectly" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.Components.ChatHeaderShould.TriggerOnTopBarClick" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="a72279c4-e69c-6a6f-0244-51c5f5e71c9b">
+      <Execution id="09e43cb5-d6f3-47c0-8e4e-2ae0998e60a6" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.Components.ChatHeaderShould" name="TriggerOnTopBarClick" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Pages.RegisterFormShould.TriggerOnSubmit_WhenFormIsSubmitted" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="b77450a8-8558-24cb-5938-8d593a5e14a2">
+      <Execution id="396181d4-f6e2-4dfc-88c3-f757a95cd78c" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Pages.RegisterFormShould" name="TriggerOnSubmit_WhenFormIsSubmitted" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Events.EventCardShould.ShowInterestButtonWhenNotInterested" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="1eb6bcb2-88f2-64f8-eb18-4479349f7671">
+      <Execution id="10df8aa5-cb43-4826-8ab6-17ebecb1ce3e" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Events.EventCardShould" name="ShowInterestButtonWhenNotInterested" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Identity.Pages.LoginShould.RedirectAfterSuccessfulLogin" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="83b637f5-c529-1410-1823-15c5f86872b9">
+      <Execution id="508fc98a-0e6c-476d-ae7d-b5b85aa357f7" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Identity.Pages.LoginShould" name="RedirectAfterSuccessfulLogin" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.Components.MessageBubbleShould.RenderOutgoingTextBubblePendingAllowsCancel" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="9d8d1cda-e746-0246-ac2a-a67d044fb186">
+      <Execution id="c447412d-c430-42eb-a680-4c6e09ca0d77" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.Components.MessageBubbleShould" name="RenderOutgoingTextBubblePendingAllowsCancel" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Helpdesk.Components.VideoComponentShould.RenderCorrectEmbedUrlForYoutubeLongForm" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="ce988971-97cf-a2a5-0f6e-17eb77097a9a">
+      <Execution id="7e5ad3b5-935f-45db-9d4d-cdbf57440bdf" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Helpdesk.Components.VideoComponentShould" name="RenderCorrectEmbedUrlForYoutubeLongForm" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Helpdesk.Components.VideoComponentShould.RenderIframeWithCorrectSrcForGenericUrl" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="8f461873-4c9e-5020-6908-bf9be73eadea">
+      <Execution id="5ad1fb59-97e6-433c-84e1-d3e6edbf144a" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Helpdesk.Components.VideoComponentShould" name="RenderIframeWithCorrectSrcForGenericUrl" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.Components.MessageListShould.GroupConsecutiveMessagesFromSameUser" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="3a5412ea-23a9-4438-a3de-470bc77364dd">
+      <Execution id="1c881abd-fb1d-4b26-bedd-1e555294b4af" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.Components.MessageListShould" name="GroupConsecutiveMessagesFromSameUser" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Helpdesk.Pages.HelpdeskPageShould.NavigateToVideos" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="74cff380-f877-c2e9-6087-407bedc1b1c8">
+      <Execution id="ed19c269-b7db-4787-92ab-7f5e6f3f9548" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Helpdesk.Pages.HelpdeskPageShould" name="NavigateToVideos" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Identity.Pages.LoginShould.RenderLoginForm_WhenNotAuthenticated" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="70340ab9-c8ed-7399-80df-bb40c547a78d">
+      <Execution id="adfd5567-29d8-4d62-96d8-cc79b4fa9ef0" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Identity.Pages.LoginShould" name="RenderLoginForm_WhenNotAuthenticated" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Events.EventCardShould.ShowInterestedButtonWhenAlreadyInterested" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="a93a648f-2ec5-0e31-8bc3-3dcd4ef9f6ac">
+      <Execution id="222e2b37-5186-4761-90b8-40cf2197d804" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Events.EventCardShould" name="ShowInterestedButtonWhenAlreadyInterested" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Helpdesk.Components.VideoComponentShould.RenderEmptySrcForEmptyUrl" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="c6cc0393-cb08-a468-e97a-70dda887b9c6">
+      <Execution id="ad49eef1-c756-4964-bc83-c36a03db710d" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Helpdesk.Components.VideoComponentShould" name="RenderEmptySrcForEmptyUrl" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.Components.SuggestionChipsShould.TriggerOnPickWhenClicked" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="44fcd64a-e518-0d13-95ac-fd4828e82f75">
+      <Execution id="1aebf3ca-2293-4465-bc0b-50c6c0966c40" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.Components.SuggestionChipsShould" name="TriggerOnPickWhenClicked" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.Components.ChatInputShould.DisableSendButtonWhenEmpty" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="0e24edf3-50ae-62b7-5625-0ce0a8fd3b37">
+      <Execution id="93e66a40-8c53-48ed-9e8a-5ed38c335f26" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.Components.ChatInputShould" name="DisableSendButtonWhenEmpty" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.Components.MessageBubbleShould.RenderIncomingAudioBubble" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="37d2251f-ce96-0d55-2b32-007778ca50df">
+      <Execution id="cde57b65-158b-444f-aaa9-64ef26939355" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.Components.MessageBubbleShould" name="RenderIncomingAudioBubble" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Helpdesk.Pages.HelpdeskPageShould.RenderMenuButtons" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="d10e70a6-9a9e-8e96-1c8a-508d705ebf77">
+      <Execution id="b909ac39-edac-481b-9d8d-222dd1a5552d" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Helpdesk.Pages.HelpdeskPageShould" name="RenderMenuButtons" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.Components.ChatInputShould.UpdateValueOnInput" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="c8b4f823-3fb4-5eca-c32a-a8f153b9927b">
+      <Execution id="5329bead-95e9-4e3b-8a81-c0925c826dd1" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.Components.ChatInputShould" name="UpdateValueOnInput" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Helpdesk.Pages.HelpdeskPageShould.NavigateToHulpRobot" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="e702a408-a21a-eebe-7332-71f61b1014a7">
+      <Execution id="cb3d939e-27db-40fc-a6fa-d1f5d246710d" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Helpdesk.Pages.HelpdeskPageShould" name="NavigateToHulpRobot" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Helpdesk.Components.VideoComponentShould.RenderCorrectEmbedUrlForYoutubeShortForm" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="c64c96f3-c333-afa1-ff00-8d2926ddeabe">
+      <Execution id="9a61cbfb-57dc-46d8-9fdf-21a13cda8340" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Helpdesk.Components.VideoComponentShould" name="RenderCorrectEmbedUrlForYoutubeShortForm" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.Components.MessageListShould.RenderMessages" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="4004fc9b-0b7c-946d-4c85-06de63609f73">
+      <Execution id="9cbcaf98-edd8-4471-9992-25ab6999e64a" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.Components.MessageListShould" name="RenderMessages" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Identity.Pages.LoginShould.CallLoginAsync_WhenFormSubmitted" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="01ed14aa-85b0-9bad-b505-a5653488fcd8">
+      <Execution id="0418c67a-ab45-4822-b1de-7599006683e7" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Identity.Pages.LoginShould" name="CallLoginAsync_WhenFormSubmitted" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.Components.MessageBubbleShould.RenderIncomingTextBubble" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="b2a38309-d396-9b52-5bf6-4dd92dd07b2f">
+      <Execution id="e7825bd5-f3c5-4bc3-acbf-de955dc31653" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.Components.MessageBubbleShould" name="RenderIncomingTextBubble" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Events.EventCardShould.TriggerOnToggleInterestWhenClicked" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="912ae29e-2e8a-6c68-3ac0-c9a8210c4d69">
+      <Execution id="5ccb863d-a32b-4038-9ac3-0cef72f0a2c7" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Events.EventCardShould" name="TriggerOnToggleInterestWhenClicked" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Helpdesk.Components.VideoComponentShould.RenderTitleCorrectly" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="50f5dab7-58af-dccf-10e8-cee06485c6d6">
+      <Execution id="b7696c19-8939-415d-9a18-12f16842e6b3" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Helpdesk.Components.VideoComponentShould" name="RenderTitleCorrectly" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.Components.SuggestionChipsShould.RenderSuggestions" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="5d1cc0b6-3aa5-d8f6-e96c-116271c32906">
+      <Execution id="b60e8047-efa6-48f8-a812-539abd674544" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.Components.SuggestionChipsShould" name="RenderSuggestions" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.Components.MessageBubbleShould.RenderOutgoingAudioBubblePendingShowsWarning" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="cce1f351-8f93-f3e3-2baf-deefca2cd8d3">
+      <Execution id="27b63e85-40a1-4132-b43c-411f6522ed52" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.Components.MessageBubbleShould" name="RenderOutgoingAudioBubblePendingShowsWarning" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Chats.Components.ChatHeaderShould.TriggerOnAlert" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="389867bb-c2c8-aa28-ac82-17c569d72cd0">
+      <Execution id="e2dbcdf6-ec64-4a9b-beb2-953f20e30a12" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Chats.Components.ChatHeaderShould" name="TriggerOnAlert" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Events.EventCardShould.RenderEventDetailsCorrectly" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="3c0e9d38-2493-ee6b-66bf-598eff116105">
+      <Execution id="30e718c1-9648-4fc4-9229-50628ff67c7a" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Events.EventCardShould" name="RenderEventDetailsCorrectly" />
+    </UnitTest>
+    <UnitTest name="Rise.Client.Tests.Identity.Components.LoginFormShould.TriggerOnSubmitWhenFormSubmitted" storage="/users/kyandro/documents/school/rise/dotnet-2526-gent12/tests/rise.client.tests/bin/debug/net9.0/rise.client.tests.dll" id="e096d376-7f3e-394a-5c8c-15b4893e2825">
+      <Execution id="7964c1f4-4dc4-446b-9e7a-573ec21284de" />
+      <TestMethod codeBase="/Users/kyandro/Documents/school/RISE/dotnet-2526-gent12/tests/Rise.Client.Tests/bin/Debug/net9.0/Rise.Client.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Rise.Client.Tests.Identity.Components.LoginFormShould" name="TriggerOnSubmitWhenFormSubmitted" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="e096d376-7f3e-394a-5c8c-15b4893e2825" executionId="7964c1f4-4dc4-446b-9e7a-573ec21284de" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="908f3c90-ec4a-6680-0b3b-dcce60f15c8f" executionId="633a4d7c-7bd4-4b1e-913d-736812aded0c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c64c96f3-c333-afa1-ff00-8d2926ddeabe" executionId="9a61cbfb-57dc-46d8-9fdf-21a13cda8340" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ce988971-97cf-a2a5-0f6e-17eb77097a9a" executionId="7e5ad3b5-935f-45db-9d4d-cdbf57440bdf" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="37d2251f-ce96-0d55-2b32-007778ca50df" executionId="cde57b65-158b-444f-aaa9-64ef26939355" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5d1cc0b6-3aa5-d8f6-e96c-116271c32906" executionId="b60e8047-efa6-48f8-a812-539abd674544" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1eb6bcb2-88f2-64f8-eb18-4479349f7671" executionId="10df8aa5-cb43-4826-8ab6-17ebecb1ce3e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a93a648f-2ec5-0e31-8bc3-3dcd4ef9f6ac" executionId="222e2b37-5186-4761-90b8-40cf2197d804" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="70340ab9-c8ed-7399-80df-bb40c547a78d" executionId="adfd5567-29d8-4d62-96d8-cc79b4fa9ef0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c6cc0393-cb08-a468-e97a-70dda887b9c6" executionId="ad49eef1-c756-4964-bc83-c36a03db710d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4c856c37-ac62-4085-f117-895edfc4aabd" executionId="2f18f4c2-02e4-460c-bd75-ab29e7049058" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="44fcd64a-e518-0d13-95ac-fd4828e82f75" executionId="1aebf3ca-2293-4465-bc0b-50c6c0966c40" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2e62234a-d79a-6a93-07ee-691d0d6d1e17" executionId="e4233b0b-1282-4c83-a9c5-d23c84f986e6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="36139b77-7911-d020-c5d4-52bd9ffc9bc4" executionId="39cbfe69-2971-46c9-ae95-443a7a4ef73b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="531a2271-0138-30a0-4acc-6080396bcd2d" executionId="730cb249-9473-434f-b28a-908ee9ef394a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9d8d1cda-e746-0246-ac2a-a67d044fb186" executionId="c447412d-c430-42eb-a680-4c6e09ca0d77" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="83b637f5-c529-1410-1823-15c5f86872b9" executionId="508fc98a-0e6c-476d-ae7d-b5b85aa357f7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b77450a8-8558-24cb-5938-8d593a5e14a2" executionId="396181d4-f6e2-4dfc-88c3-f757a95cd78c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4004fc9b-0b7c-946d-4c85-06de63609f73" executionId="9cbcaf98-edd8-4471-9992-25ab6999e64a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="81ec7c79-7d0f-475e-9179-b66bcfcdbc3e" executionId="4fc92fd3-d08f-4b60-aeac-e6bbade2c280" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4fd3c088-53c5-0ff9-abc9-f9641029d7a7" executionId="2a96fbe8-6a2b-481f-9c86-9274219e2413" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d72e07ef-0a3e-179c-ae4d-f84b42c315ff" executionId="17a5b3f5-efd4-4272-ae06-aaa611569416" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3a5412ea-23a9-4438-a3de-470bc77364dd" executionId="1c881abd-fb1d-4b26-bedd-1e555294b4af" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8643db6d-a1b2-cd78-c600-5b1c993160ef" executionId="4659ebc7-88f2-44f1-96fd-6093b5ca54e5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a0cfee56-b73f-bf32-e2d0-e9785741d8a5" executionId="4bf8c3e5-d6e9-4446-aeb5-f1f2261e8e06" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0e24edf3-50ae-62b7-5625-0ce0a8fd3b37" executionId="93e66a40-8c53-48ed-9e8a-5ed38c335f26" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d10e70a6-9a9e-8e96-1c8a-508d705ebf77" executionId="b909ac39-edac-481b-9d8d-222dd1a5552d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8f461873-4c9e-5020-6908-bf9be73eadea" executionId="5ad1fb59-97e6-433c-84e1-d3e6edbf144a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d2b4047e-bb37-b00f-2093-90f829443aeb" executionId="eabeec96-6ac5-4e5e-9808-d316a51f3dab" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="74cff380-f877-c2e9-6087-407bedc1b1c8" executionId="ed19c269-b7db-4787-92ab-7f5e6f3f9548" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cce1f351-8f93-f3e3-2baf-deefca2cd8d3" executionId="27b63e85-40a1-4132-b43c-411f6522ed52" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="17136d82-e5b8-f1fe-66af-6a98283e5730" executionId="870a4dba-ee65-44b0-9c8f-63816c6de91a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c8b4f823-3fb4-5eca-c32a-a8f153b9927b" executionId="5329bead-95e9-4e3b-8a81-c0925c826dd1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="01ed14aa-85b0-9bad-b505-a5653488fcd8" executionId="0418c67a-ab45-4822-b1de-7599006683e7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="50f5dab7-58af-dccf-10e8-cee06485c6d6" executionId="b7696c19-8939-415d-9a18-12f16842e6b3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="912ae29e-2e8a-6c68-3ac0-c9a8210c4d69" executionId="5ccb863d-a32b-4038-9ac3-0cef72f0a2c7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="389867bb-c2c8-aa28-ac82-17c569d72cd0" executionId="e2dbcdf6-ec64-4a9b-beb2-953f20e30a12" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b2a38309-d396-9b52-5bf6-4dd92dd07b2f" executionId="e7825bd5-f3c5-4bc3-acbf-de955dc31653" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e702a408-a21a-eebe-7332-71f61b1014a7" executionId="cb3d939e-27db-40fc-a6fa-d1f5d246710d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3c0e9d38-2493-ee6b-66bf-598eff116105" executionId="30e718c1-9648-4fc4-9229-50628ff67c7a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a72279c4-e69c-6a6f-0244-51c5f5e71c9b" executionId="09e43cb5-d6f3-47c0-8e4e-2ae0998e60a6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="41" executed="41" passed="41" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 9.0.8)
+[xUnit.net 00:00:00.04]   Discovering: Rise.Client.Tests
+[xUnit.net 00:00:00.05]   Discovered:  Rise.Client.Tests
+[xUnit.net 00:00:00.06]   Starting:    Rise.Client.Tests
+[xUnit.net 00:00:00.34]   Finished:    Rise.Client.Tests
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>
