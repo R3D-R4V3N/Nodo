@@ -238,7 +238,7 @@ public partial class Index : IAsyncDisposable
                         return;
                     }
 
-                    _connectionError = "Realtime verbinding wordt hersteld…";
+                    //_connectionError = "Realtime verbinding wordt hersteld…";
                     await InvokeAsync(StateHasChanged);
                 };
 
@@ -255,7 +255,7 @@ public partial class Index : IAsyncDisposable
 
                     if (await OfflineQueueService.IsOnlineAsync())
                     {
-                        _connectionError = "Realtime verbinding werd verbroken. Vernieuw de pagina om opnieuw te verbinden.";
+                        //_connectionError = "Realtime verbinding werd verbroken. Vernieuw de pagina om opnieuw te verbinden.";
                         await InvokeAsync(StateHasChanged);
                     }
                     else

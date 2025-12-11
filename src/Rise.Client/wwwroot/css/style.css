@@ -127,14 +127,3 @@ html, body {
     touch-action: manipulation;
     overscroll-behavior: none;
 }
-body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: max(env(safe-area-inset-top), 20px);
-    background: #127646;
-    z-index: 50;
-    pointer-events: none;
-}

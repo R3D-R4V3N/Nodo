@@ -64,11 +64,23 @@ export async function removeOperation(id) {
 export function registerOnlineCallback(dotNetRef) {
     if (!dotNetRef) return;
 
-    const handler = () => {
-        dotNetRef.invokeMethodAsync('OnBrowserOnline');
+    const notifyOnline = () => {
+        if (navigator.onLine) {
+            dotNetRef.invokeMethodAsync('OnBrowserOnline');
+        }
     };
 
-    window.addEventListener('online', handler);
+    const handleVisibilityChange = () => {
+        if (!document.hidden) {
+            notifyOnline();
+        }
+    };
 
-    return () => window.removeEventListener('online', handler);
+    window.addEventListener('online', notifyOnline);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+        window.removeEventListener('online', notifyOnline);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
 }

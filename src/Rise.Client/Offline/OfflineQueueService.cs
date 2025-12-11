@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.JSInterop;
 using System.Linq;
+using System.Threading;
 
 namespace Rise.Client.Offline;
 
@@ -11,6 +12,7 @@ public sealed class OfflineQueueService : IAsyncDisposable
     private readonly IHttpClientFactory _httpClientFactory;
     private IJSObjectReference? _module;
     private DotNetObjectReference<OfflineQueueService>? _dotNetRef;
+    private readonly SemaphoreSlim _processingLock = new(1, 1);
     private readonly JsonSerializerOptions _serializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -101,28 +103,40 @@ public sealed class OfflineQueueService : IAsyncDisposable
             return;
         }
 
-        var operations = await GetOperationsAsync(cancellationToken);
-
-        foreach (var operation in operations)
+        if (!await _processingLock.WaitAsync(0, cancellationToken))
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                using var request = BuildRequest(operation);
-                var client = _httpClientFactory.CreateClient("SecureApi");
-                var response = await client.SendAsync(request, cancellationToken);
+            return;
+        }
 
-                if (response.IsSuccessStatusCode)
+        try
+        {
+            var operations = await GetOperationsAsync(cancellationToken);
+
+            foreach (var operation in operations)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                try
                 {
-                    await RemoveOperationAsync(operation.Id, cancellationToken);
+                    using var request = BuildRequest(operation);
+                    var client = _httpClientFactory.CreateClient("SecureApi");
+                    var response = await client.SendAsync(request, cancellationToken);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        await RemoveOperationAsync(operation.Id, cancellationToken);
+                    }
+                }
+                catch
+                {
+                    // If an item fails we keep the rest in the queue and continue trying the remaining operations.
+                    // They will be retried on the next online event.
+                    continue;
                 }
             }
-            catch
-            {
-                // If an item fails we keep the rest in the queue and continue trying the remaining operations.
-                // They will be retried on the next online event.
-                continue;
-            }
+        }
+        finally
+        {
+            _processingLock.Release();
         }
     }
 
