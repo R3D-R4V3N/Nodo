@@ -134,6 +134,7 @@ public partial class ProfileScreen : ComponentBase
         return _draft.AvatarUrl ?? DefaultImages.Profile;
     }
 
+    private bool CanEditAvatar => _isEditing && !_isLoading && !HasError;
     private bool IsEditing => _isEditing;
     private bool IsLoading => _isLoading;
     private bool HasError => !string.IsNullOrWhiteSpace(_loadError);
