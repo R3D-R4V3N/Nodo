@@ -127,3 +127,12 @@ html, body {
     touch-action: manipulation;
     overscroll-behavior: none;
 }
+
+body {
+    background-color: #127646;
+}
+
+.app-shell {
+    min-height: 100vh;
+    background-color: #f5f5f5;
+}
