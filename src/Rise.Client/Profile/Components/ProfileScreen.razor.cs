@@ -67,6 +67,7 @@ public partial class ProfileScreen : ComponentBase
     private const int PreferenceSelectionLimit = 5;
     private const int ChatLineSelectionLimit = 5;
     private const int ChatLineTextMaxLength = 150;
+    private const long MaxAvatarSize = 2 * 1024 * 1024;
 
     private ProfileModel _model = new();
     private ProfileDraft _draft;
@@ -125,6 +126,13 @@ public partial class ProfileScreen : ComponentBase
 
     [Inject] private IToastService ToastService { get; set; } = default!;
     
+    private string GetAvatarSource()
+    {
+        if (_draft.AvatarBlob?.Base64Data is string base64)
+            return base64;
+
+        return _draft.AvatarUrl ?? DefaultImages.Profile;
+    }
 
     private bool IsEditing => _isEditing;
     private bool IsLoading => _isLoading;

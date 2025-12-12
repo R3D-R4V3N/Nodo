@@ -116,7 +116,7 @@
         {
             return;
         }
-
+        var selectedStatus = (EmergencyStatusDto)statusValue;
         _updatingEmergencies.Add(emergency.Id);
 
         try
@@ -128,12 +128,25 @@
 
             if (result.IsSuccess)
             {
-                var updated = result.Value.Emergency;
-                var index = _latestEmergencies.FindIndex(e => e.Id == updated.Id);
+                var updated = result.Value?.Emergency;
+                var index = updated is null
+                    ? -1
+                    : _latestEmergencies.FindIndex(e => e.Id == updated.Id);
 
                 if (index >= 0)
                 {
-                    _latestEmergencies[index] = updated;
+                    if (updated is not null)
+                    {
+                        _latestEmergencies[index] = updated;
+                    }
+
+                    _latestEmergencies[index].Status = selectedStatus;
+                }
+                else
+                {
+                    // Fallback to ensure the UI reflects the chosen status even if the API
+                    // response is missing or cannot be matched.
+                    emergency.Status = selectedStatus;
                 }
             }
             else

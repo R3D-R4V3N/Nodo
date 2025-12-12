@@ -48,7 +48,8 @@ public static partial class UserRequest
                 .WithMessage("Bio mag niet leeg zijn.");
 
             RuleFor(x => x.AvatarBlob)
-                .Must(url => url is null)
+                .Must(blob => blob is null ||
+                              (!string.IsNullOrWhiteSpace(blob.Name) && !string.IsNullOrWhiteSpace(blob.Base64Data)))
                 .WithMessage("Avatar mag niet leeg zijn.");
 
             RuleFor(x => x.Hobbies)
