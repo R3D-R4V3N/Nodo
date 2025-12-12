@@ -1,5 +1,6 @@
 @using System
 @using System.IO
+@using Blazored.Toast.Services
 @using Microsoft.AspNetCore.Components.Forms
 @using Rise.Shared.Assets
 @using Rise.Shared.BlobStorage
@@ -187,6 +188,8 @@
     [Parameter] public IReadOnlyList<OrganizationDto.Summary> Organizations { get; set; } = [];
     [Parameter] public bool IsProcessing { get; set; }
 
+    [Inject] private IToastService ToastService { get; set; } = default!;
+
     private int ActiveSlide { get; set; } = 0;
 
     private bool IsSubmitDisabled => IsProcessing
@@ -223,11 +226,11 @@
         }
         catch
         {
-            // ignore upload errors and keep previous selection
+            ToastService.ShowError("Uploaden van profielfoto is mislukt. Kies een afbeelding kleiner dan 10 MB.");
         }
     }
 
-    private const long MaxAvatarSize = 300 * 1024;
+    private const long MaxAvatarSize = 10 * 1024 * 1024;
 
     private static string GetGenderLabel(GenderTypeDto gender) => gender switch
     {

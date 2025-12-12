@@ -67,7 +67,7 @@ public partial class ProfileScreen : ComponentBase
     private const int PreferenceSelectionLimit = 5;
     private const int ChatLineSelectionLimit = 5;
     private const int ChatLineTextMaxLength = 150;
-    private const long MaxAvatarSize = 2 * 1024 * 1024;
+    private const long MaxAvatarSize = 10 * 1024 * 1024;
 
     private ProfileModel _model = new();
     private ProfileDraft _draft;

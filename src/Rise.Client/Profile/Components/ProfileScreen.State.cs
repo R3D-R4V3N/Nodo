@@ -314,7 +314,7 @@ public partial class ProfileScreen
         }
         catch
         {
-            ToastService.ShowError("Uploaden van profielfoto is mislukt. Kies een afbeelding kleiner dan 2 MB.");
+            ToastService.ShowError("Uploaden van profielfoto is mislukt. Kies een afbeelding kleiner dan 10 MB.");
         }
     }
 }
