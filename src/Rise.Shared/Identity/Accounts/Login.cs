@@ -40,9 +40,14 @@ public static partial class AccountRequest
             {
                 RuleFor(x => x.Email)
                     .NotEmpty()
+                    .WithMessage("Email mag niet leeg zijn")
                     .EmailAddress()
-                    .MaximumLength(rules.MAX_EMAIL_LENGTH);
-                RuleFor(x => x.Password).NotEmpty();
+                    .WithMessage("Email is niet in een geldig formaat")
+                    .MaximumLength(rules.MAX_EMAIL_LENGTH)
+                    .WithMessage($"Email heeft max {rules.MAX_EMAIL_LENGTH} karakters");
+                RuleFor(x => x.Password)
+                    .NotEmpty()
+                    .WithMessage("Wachtwoord mag niet leeg zijn");
             }
         }
     }

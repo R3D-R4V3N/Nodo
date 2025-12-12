@@ -26,30 +26,32 @@ public static partial class UserRequest
         {
             RuleFor(x => x.FirstName)
                 .NotEmpty()
+                .WithMessage("Voornaam mag niet leeg zijn.")
                 .MaximumLength(rules.MAX_FIRSTNAME_LENGTH)
-                .Must(name => !string.IsNullOrWhiteSpace(name))
-                .WithMessage("Voornaam mag niet leeg zijn.");
+                .WithMessage($"Voornaam heeft max {rules.MAX_FIRSTNAME_LENGTH} karakters");
 
             RuleFor(x => x.LastName)
                 .NotEmpty()
+                .WithMessage("Achternaam mag niet leeg zijn")
                 .MaximumLength(rules.MAX_LASTNAME_LENGTH)
-                .Must(name => !string.IsNullOrWhiteSpace(name))
-                .WithMessage("Achternaam mag niet leeg zijn.");
+                .WithMessage($"Achternaam heeft max {rules.MAX_LASTNAME_LENGTH} karakters");
 
             RuleFor(x => x.Email)
                 .NotEmpty()
+                .WithMessage("Email mag niet leeg zijn")
                 .EmailAddress()
-                .MaximumLength(rules.MAX_EMAIL_LENGTH);
+                .WithMessage("Email moet een geldig formaat zijn")
+                .MaximumLength(rules.MAX_EMAIL_LENGTH)
+                .WithMessage($"Email heeft max {rules.MAX_EMAIL_LENGTH} karakters");
 
             RuleFor(x => x.Biography)
                 .NotEmpty()
+                .WithMessage("Bio mag niet leeg zijn.")
                 .MaximumLength(rules.MAX_BIOGRAPHY_LENGTH)
-                .Must(bio => !string.IsNullOrWhiteSpace(bio))
-                .WithMessage("Bio mag niet leeg zijn.");
+                .WithMessage($"Bio heeft max {rules.MAX_EMAIL_LENGTH} karakters");
 
             RuleFor(x => x.AvatarBlob)
-                .Must(blob => blob is null ||
-                              (!string.IsNullOrWhiteSpace(blob.Name) && !string.IsNullOrWhiteSpace(blob.Base64Data)))
+                .NotNull()
                 .WithMessage("Avatar mag niet leeg zijn.");
 
             RuleFor(x => x.Hobbies)
@@ -70,7 +72,9 @@ public static partial class UserRequest
 
             RuleForEach(x => x.DefaultChatLines)
                 .NotEmpty()
-                .MaximumLength(rules.MAX_DEFAULT_CHAT_LINE_LENGTH);
+                .WithMessage($"Standaard zinnen mag niet leeg zijn.")
+                .MaximumLength(rules.MAX_DEFAULT_CHAT_LINE_LENGTH)
+                .WithMessage($"Standaard zin mag max {rules.MAX_DEFAULT_CHAT_LINE_LENGTH} karakters hebben.");
         }
     }
 }

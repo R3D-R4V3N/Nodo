@@ -34,7 +34,7 @@ public class AddEventRequest
                 .WithMessage("Prijs kan niet negatief zijn.");
 
             RuleFor(x => x.ImageUrl)
-                .Must(url => string.IsNullOrWhiteSpace(url) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
+                .Must(url => !string.IsNullOrWhiteSpace(url) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
                 .WithMessage("Voeg een geldige URL toe of laat dit veld leeg.");
         }
     }

@@ -1,12 +1,20 @@
 ﻿@inject NavigationManager Navigation
 
-<button
-    type="button"
-    class="w-full rounded-full bg-[#0B6532] py-3 text-lg font-semibold text-white shadow-md transition hover:bg-[#0a572b] mt-4"
-    @onclick="Logout"
-    disabled="@_isBusy">
-    Log uit
-</button>
+<div class="mt-10 flex justify-center">
+    <button
+        type="button"
+        class="inline-flex w-full max-w-sm items-center justify-center gap-3 rounded-full bg-rose-600 px-5 py-3 text-lg font-semibold text-white shadow-lg shadow-rose-200 transition hover:bg-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
+        @onclick="Logout"
+        disabled="@_isBusy">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="shrink-0">
+            <path d="M124,216a12,12,0,0,1-12,12H48a12,12,0,0,1-12-12V40A12,12,0,0,1,48,28h64a12,12,0,0,1,0,24H60V204h52A12,12,0,0,1,124,216Zm108.49-96.49-40-40a12,12,0,0,0-17,17L195,116H112a12,12,0,0,0,0,24h83l-19.52,19.51a12,12,0,0,0,17,17l40-40A12,12,0,0,0,232.49,119.51Z"></path>
+        </svg>
+        <span class="flex flex-col text-left leading-tight">
+            <span class="text-base font-semibold">Uitloggen</span>
+            <span class="text-xs font-medium text-rose-100">Terug naar startscherm</span>
+        </span>
+    </button>
+</div>
 
 @code {
     private bool _isBusy;

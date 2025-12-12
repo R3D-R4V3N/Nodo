@@ -131,21 +131,10 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
 
     private async Task UsersAsync()
     {
-        dbContext.Messages.RemoveRange(dbContext.Messages);
-        dbContext.Chats.RemoveRange(dbContext.Chats);
-        dbContext.Events.RemoveRange(dbContext.Events);
-        dbContext.Users.RemoveRange(dbContext.Users);
-        dbContext.Supervisors.RemoveRange(dbContext.Supervisors);
-        dbContext.Admins.RemoveRange(dbContext.Admins);
-        await dbContext.SaveChangesAsync();
-
-        var existingIdentities = await userManager.Users.ToListAsync();
-        foreach (var identityUser in existingIdentities)
+        if (dbContext.BaseUsers.Any())
         {
-            await userManager.DeleteAsync(identityUser);
+            return;
         }
-
-        await dbContext.Roles.ToListAsync();
 
         var organizationsByName = await dbContext.Organizations
             .ToDictionaryAsync(o => o.Name, StringComparer.OrdinalIgnoreCase);
@@ -774,7 +763,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
             var chatResult = Chat.CreatePrivateChat(userA, userB);
             if (!chatResult.IsSuccess)
             {
-                throw new InvalidOperationException(chatResult.Errors.FirstOrDefault()?.ToString());
+                return;
             }
 
             dbContext.Chats.Add(chatResult.Value);

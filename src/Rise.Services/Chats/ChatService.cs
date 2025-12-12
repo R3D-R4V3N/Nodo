@@ -88,6 +88,7 @@ public class ChatService(
 
         var unreadLookup = await _dbContext.Messages
             .Where(message => chatIds.Contains(EF.Property<int>(message, "ChatId")))
+            .Where(message => EF.Property<int>(message, "SenderId") != loggedInUser.Id)
             .Select(message => new
             {
                 ChatId = EF.Property<int>(message, "ChatId"),

@@ -70,14 +70,21 @@ public static partial class AccountRequest
             {
                 RuleFor(x => x.Email)
                     .NotEmpty()
+                    .WithMessage("Email mag niet leeg zijn")
                     .EmailAddress()
-                    .MaximumLength(rules.MAX_EMAIL_LENGTH);
+                    .WithMessage("Email moet een geldig formaat zijn")
+                    .MaximumLength(rules.MAX_EMAIL_LENGTH)
+                    .WithMessage($"Email heeft max {rules.MAX_EMAIL_LENGTH} karakters");
                 RuleFor(x => x.FirstName)
                     .NotEmpty()
-                    .MaximumLength(rules.MAX_FIRSTNAME_LENGTH);
+                    .WithMessage("Voornaam mag niet leeg zijn")
+                    .MaximumLength(rules.MAX_FIRSTNAME_LENGTH)
+                    .WithMessage($"Voornaam heeft max {rules.MAX_FIRSTNAME_LENGTH} karakters");
                 RuleFor(x => x.LastName)
                     .NotEmpty()
-                    .MaximumLength(rules.MAX_LASTNAME_LENGTH);
+                    .WithMessage("Achternaam mag niet leeg zijn")
+                    .MaximumLength(rules.MAX_LASTNAME_LENGTH)
+                    .WithMessage($"Achternaam heeft max {rules.MAX_LASTNAME_LENGTH} karakters");
                 RuleFor(x => x.BirthDate)
                     .NotNull()
                     .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today))
@@ -85,11 +92,14 @@ public static partial class AccountRequest
                 RuleFor(x => x.Gender)
                     .IsInEnum();
                 RuleFor(x => x.AvatarBlob)
-                    .NotNull();
-                RuleFor(x => x.Password).NotEmpty();
+                    .NotNull()
+                    .WithMessage("Avatar mag niet leeg zijn.");
+                RuleFor(x => x.Password)
+                    .NotEmpty()
+                    .WithMessage("Wachtwoord mag niet leeg zijn.");
                 RuleFor(x => x.ConfirmPassword)
                     .Equal(x => x.Password)
-                    .WithMessage("Passwords do not match.");
+                    .WithMessage("Wachtwoorden komen niet overeen.");
                 RuleFor(x => x.OrganizationId)
                     .NotNull()
                     .GreaterThan(0)

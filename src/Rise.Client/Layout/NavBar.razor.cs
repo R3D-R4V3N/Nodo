@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Rise.Client.State;
-using Rise.Shared.Users;
+using Rise.Shared.Assets;
 
 namespace Rise.Client.Layout;
 
@@ -119,7 +117,10 @@ public partial class NavBar : IDisposable
 
         return trimmed;
     }
-
+    private string GetPFP()
+    {
+        return @UserState?.User?.AvatarUrl ?? DefaultImages.Profile;
+    }
     public void Dispose()
     {
         NavigationManager.LocationChanged -= HandleLocationChanged;

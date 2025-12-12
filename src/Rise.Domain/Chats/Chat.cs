@@ -54,6 +54,13 @@ public class Chat : Entity
             }
         }
 
+        if (baseUser1.Chats.Any(c => c.ChatType == ChatType.Private && c.Users.Contains(baseUser2)))
+        {
+            return Result.Conflict(
+                $"{baseUser1} en {baseUser2} hebben al een chat met elkaar"
+            );
+        }
+
         Chat chat = new Chat()
         {
             ChatType = ChatType.Private,
