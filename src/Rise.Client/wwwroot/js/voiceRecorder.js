@@ -1,6 +1,7 @@
 let mediaRecorder = null;
 let mediaStream = null;
 let recordedChunks = [];
+let recordingStartTime = null;
 
 export async function startRecording() {
     if (mediaRecorder?.state === "recording") {
@@ -24,6 +25,7 @@ export async function startRecording() {
     };
 
     mediaRecorder.start();
+    recordingStartTime = performance.now();
 }
 
 export async function stopRecording() {
@@ -44,6 +46,8 @@ export async function stopRecording() {
     await stopPromise;
 
     const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
+    const startedAt = recordingStartTime;
+    const recordingEndTime = performance.now();
     cleanup();
 
     if (!blob.size) {
@@ -53,6 +57,10 @@ export async function stopRecording() {
     const arrayBuffer = await blob.arrayBuffer();
     const base64 = await bufferToBase64(arrayBuffer);
 
+    const elapsedSeconds = startedAt
+        ? (recordingEndTime - startedAt) / 1000
+        : 0;
+
     let durationSeconds = 0;
     try {
         const audioContext = new AudioContext();
@@ -61,6 +69,10 @@ export async function stopRecording() {
         await audioContext.close();
     } catch (error) {
         console.warn("Kon audio niet decoderen", error);
+    }
+
+    if (!durationSeconds || !Number.isFinite(durationSeconds)) {
+        durationSeconds = elapsedSeconds;
     }
 
     return {
@@ -90,6 +102,7 @@ function cleanup() {
     }
 
     recordedChunks = [];
+    recordingStartTime = null;
 }
 
 function getSupportedMimeType() {
