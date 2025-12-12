@@ -297,7 +297,10 @@ public partial class ProfileScreen
             await stream.CopyToAsync(memory);
             var base64 = Convert.ToBase64String(memory.ToArray());
             var dataUrl = $"data:{file.ContentType};base64,{base64}";
-            _draft.AvatarUrl = dataUrl;
+            _draft.AvatarBlob = new()
+            {
+                Name = file.Name, Base64Data = dataUrl
+            };
             if (!_isEditing)
             {
                 _model = _model with { AvatarUrl = dataUrl };
