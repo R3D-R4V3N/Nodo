@@ -481,7 +481,7 @@ public class DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> 
                 brugge,
                 GetSupervisor("jonas.begeleider@nodo.chat"),
                 new[] { HobbyType.Gaming, HobbyType.Puzzles, HobbyType.Chess },
-                new[] { SentimentCategoryType.SeriesMarathons, SentimentCategoryType.BoardGames, SentimentCategoryType.CinemaNights },
+                new[] { SentimentCategoryType.SeriesMarathons, SentimentCategoryType.CheeseBoards, SentimentCategoryType.CinemaNights },
                 new[] { SentimentCategoryType.SaunaEvenings, SentimentCategoryType.FreshSalads },
                 accountId)),
             new("naomi@nodo.chat", AppRoles.User, accountId => CreateUser(
