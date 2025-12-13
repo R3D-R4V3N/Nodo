@@ -1,0 +1,1300 @@
+openapi: 3.0.3
+info:
+  title: RISE API
+  version: 1.0.0
+  description: |
+    Hand-authored OpenAPI document covering all FastEndpoints exposed by **Rise.Server**.
+    The specification mirrors the routes defined in `Program.cs` and the endpoint classes under `src/Rise.Server/Endpoints`.
+servers:
+  - url: https://localhost:5001
+  - url: http://localhost:5000
+paths:
+  /api/identity/accounts/login:
+    post:
+      summary: Log a user in and issue an auth cookie/token
+      tags: [Identity]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountLoginRequest'
+      responses:
+        '200':
+          description: Login succeeded (cookie/bearer token is issued)
+        '401':
+          description: Invalid credentials or two-factor failure
+  /api/identity/accounts/register:
+    post:
+      summary: Register a new account and create a pending registration request
+      tags: [Identity]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRegisterRequest'
+      responses:
+        '200':
+          description: Registration request submitted
+  /api/identity/accounts/logout:
+    post:
+      summary: Sign the current user out
+      tags: [Identity]
+      responses:
+        '204':
+          description: Logged out successfully
+      security:
+        - cookieAuth: []
+  /api/identity/accounts/info:
+    get:
+      summary: Fetch the current user's account information
+      tags: [Identity]
+      responses:
+        '200':
+          description: Account details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountInfoResponse'
+        '404':
+          description: User not found
+      security:
+        - cookieAuth: []
+  /api/identity/roles:
+    get:
+      summary: List all roles
+      tags: [Identity]
+      responses:
+        '200':
+          description: Roles list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoleItem'
+      security:
+        - cookieAuth: []
+    post:
+      summary: Create a new role
+      tags: [Identity]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleCreateRequest'
+      responses:
+        '201':
+          description: Role created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedIdentifier'
+        '409':
+          description: Role already exists
+      security:
+        - cookieAuth: []
+  /api/registrations/pending:
+    get:
+      summary: List pending registration requests
+      tags: [Registrations]
+      responses:
+        '200':
+          description: Pending registration requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingRegistrations'
+      security:
+        - cookieAuth: []
+  /api/registrations/{requestId}/approve:
+    post:
+      summary: Approve a registration request
+      tags: [Registrations]
+      parameters:
+        - in: path
+          name: requestId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveRegistrationRequest'
+      responses:
+        '200':
+          description: Registration approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApproveRegistrationResponse'
+      security:
+        - cookieAuth: []
+  /api/config/rules:
+    get:
+      summary: Fetch validation rule boundaries used by the client
+      tags: [Configuration]
+      responses:
+        '200':
+          description: Validator configuration values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidatorRules'
+  /api/chats:
+    get:
+      summary: List chats for the signed-in user
+      tags: [Chats]
+      parameters:
+        - $ref: '#/components/parameters/SkipQuery'
+        - $ref: '#/components/parameters/TakeQuery'
+        - $ref: '#/components/parameters/SearchQuery'
+      responses:
+        '200':
+          description: Chats with last message and unread counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatListResponse'
+      security:
+        - cookieAuth: []
+  /api/chats/{ChatId}:
+    get:
+      summary: Fetch chat metadata by id
+      tags: [Chats]
+      parameters:
+        - in: path
+          name: ChatId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Chat metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatDetailResponse'
+      security:
+        - cookieAuth: []
+  /api/chats/{ChatId}/messages:
+    get:
+      summary: Fetch messages for a chat
+      tags: [Chats]
+      parameters:
+        - in: path
+          name: ChatId
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/SkipQuery'
+        - $ref: '#/components/parameters/TakeQuery'
+      responses:
+        '200':
+          description: Messages and pagination batch size
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessagesResponse'
+      security:
+        - cookieAuth: []
+    post:
+      summary: Send a message to a chat
+      tags: [Chats]
+      parameters:
+        - in: path
+          name: ChatId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMessageRequest'
+      responses:
+        '200':
+          description: Message created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessage'
+      security:
+        - cookieAuth: []
+  /api/chats/supervisor:
+    get:
+      summary: Get the user's supervisor chat
+      tags: [Chats]
+      responses:
+        '200':
+          description: Supervisor chat and participants
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupervisorChatResponse'
+      security:
+        - cookieAuth: []
+  /api/emergencies:
+    get:
+      summary: List emergencies
+      tags: [Emergencies]
+      parameters:
+        - $ref: '#/components/parameters/SkipQuery'
+        - $ref: '#/components/parameters/TakeQuery'
+      responses:
+        '200':
+          description: Emergency items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyListResponse'
+      security:
+        - cookieAuth: []
+    post:
+      summary: Create a new emergency linked to the current user
+      tags: [Emergencies]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEmergencyRequest'
+      responses:
+        '200':
+          description: Emergency created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateEmergencyResponse'
+      security:
+        - cookieAuth: []
+  /api/emergencies/{ChatId}:
+    get:
+      summary: Get a single emergency by chat id
+      tags: [Emergencies]
+      parameters:
+        - in: path
+          name: ChatId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Emergency details with chat context
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyDetailResponse'
+      security:
+        - cookieAuth: []
+  /api/emergencies/{EmergencyId}/status:
+    put:
+      summary: Update an emergency's status
+      tags: [Emergencies]
+      parameters:
+        - in: path
+          name: EmergencyId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveEmergencyRequest'
+      responses:
+        '200':
+          description: Updated status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolveEmergencyResponse'
+      security:
+        - cookieAuth: []
+  /api/sentiments:
+    get:
+      summary: List sentiment options
+      tags: [Sentiments]
+      parameters:
+        - $ref: '#/components/parameters/SkipQuery'
+        - $ref: '#/components/parameters/TakeQuery'
+      responses:
+        '200':
+          description: Sentiment catalogue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SentimentListResponse'
+      security:
+        - cookieAuth: []
+  /api/hobbies:
+    get:
+      summary: List hobbies
+      tags: [Hobbies]
+      parameters:
+        - $ref: '#/components/parameters/SkipQuery'
+        - $ref: '#/components/parameters/TakeQuery'
+      responses:
+        '200':
+          description: Hobbies catalogue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HobbyListResponse'
+      security:
+        - cookieAuth: []
+  /api/events:
+    get:
+      summary: List all events
+      tags: [Events]
+      responses:
+        '200':
+          description: Events catalogue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventListResponse'
+      security:
+        - cookieAuth: []
+    post:
+      summary: Create an event
+      tags: [Events]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddEventRequest'
+      responses:
+        '200':
+          description: Event creation message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddEventResponse'
+      security:
+        - cookieAuth: []
+  /api/events/{EventId}:
+    delete:
+      summary: Delete an event
+      tags: [Events]
+      parameters:
+        - in: path
+          name: EventId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Event deletion message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteEventResponse'
+      security:
+        - cookieAuth: []
+  /api/events/{eventId}/interest:
+    post:
+      summary: Toggle interest for the current user
+      tags: [Events]
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated interest state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToggleInterestResponse'
+      security:
+        - cookieAuth: []
+  /api/organizations:
+    get:
+      summary: List organizations
+      tags: [Organizations]
+      responses:
+        '200':
+          description: Organization catalogue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationListResponse'
+  /api/push/subscribe:
+    post:
+      summary: Register a web push subscription
+      tags: [Notifications]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PushSubscription'
+      responses:
+        '200':
+          description: Subscription stored
+      security:
+        - cookieAuth: []
+  /api/connections/friends:
+    get:
+      summary: List friends
+      tags: [UserConnections]
+      parameters:
+        - $ref: '#/components/parameters/SkipQuery'
+        - $ref: '#/components/parameters/TakeQuery'
+      responses:
+        '200':
+          description: Friends list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetFriendsResponse'
+      security:
+        - cookieAuth: []
+  /api/connections/friendrequests:
+    get:
+      summary: List incoming friend requests
+      tags: [UserConnections]
+      parameters:
+        - $ref: '#/components/parameters/SkipQuery'
+        - $ref: '#/components/parameters/TakeQuery'
+      responses:
+        '200':
+          description: Friend request list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetFriendRequestsResponse'
+      security:
+        - cookieAuth: []
+  /api/connections/friends/add:
+    post:
+      summary: Send a friend request
+      tags: [UserConnections]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TargetAccountRequest'
+      responses:
+        '200':
+          description: Friend request sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendFriendRequestResponse'
+      security:
+        - cookieAuth: []
+  /api/connections/friends/accept:
+    post:
+      summary: Accept a friend request
+      tags: [UserConnections]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TargetAccountRequest'
+      responses:
+        '200':
+          description: Friend request accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptFriendRequestResponse'
+      security:
+        - cookieAuth: []
+  /api/connections/friends/reject:
+    delete:
+      summary: Reject a friend request
+      tags: [UserConnections]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TargetAccountRequest'
+      responses:
+        '200':
+          description: Friend request rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RejectFriendRequestResponse'
+      security:
+        - cookieAuth: []
+  /api/connections/friends/cancel:
+    delete:
+      summary: Cancel a previously sent friend request
+      tags: [UserConnections]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TargetAccountRequest'
+      responses:
+        '200':
+          description: Friend request cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelFriendRequestResponse'
+      security:
+        - cookieAuth: []
+  /api/connections/friends/remove:
+    delete:
+      summary: Remove a friend connection
+      tags: [UserConnections]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TargetAccountRequest'
+      responses:
+        '200':
+          description: Friend removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemoveFriendResponse'
+      security:
+        - cookieAuth: []
+  /api/connections/friends/suggested:
+    get:
+      summary: Suggested friends list
+      tags: [UserConnections]
+      parameters:
+        - $ref: '#/components/parameters/SkipQuery'
+        - $ref: '#/components/parameters/TakeQuery'
+      responses:
+        '200':
+          description: Suggested friends
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuggestedFriendsResponse'
+      security:
+        - cookieAuth: []
+  /api/users/current:
+    get:
+      summary: Get the current user profile
+      tags: [Users]
+      responses:
+        '200':
+          description: Current user details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+      security:
+        - cookieAuth: []
+  /api/users/{accountId}:
+    get:
+      summary: Get a user profile by account id
+      tags: [Users]
+      parameters:
+        - in: path
+          name: accountId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+    put:
+      summary: Update a user profile
+      tags: [Users]
+      parameters:
+        - in: path
+          name: accountId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+      security:
+        - cookieAuth: []
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: .AspNetCore.Cookies
+  parameters:
+    SkipQuery:
+      in: query
+      name: skip
+      required: false
+      schema:
+        type: integer
+      description: Number of records to skip
+    TakeQuery:
+      in: query
+      name: take
+      required: false
+      schema:
+        type: integer
+        default: 20
+      description: Number of records to take
+    SearchQuery:
+      in: query
+      name: searchTerm
+      required: false
+      schema:
+        type: string
+  schemas:
+    AccountLoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        twoFactorCode:
+          type: string
+        twoFactorRecoveryCode:
+          type: string
+    AccountRegisterRequest:
+      type: object
+      required: [email, firstName, lastName, birthDate, gender, avatarBlob, password, confirmPassword, organizationId]
+      properties:
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [X, M, V]
+        avatarBlob:
+          $ref: '#/components/schemas/BlobCreate'
+        password:
+          type: string
+          format: password
+        confirmPassword:
+          type: string
+          format: password
+        organizationId:
+          type: integer
+    AccountInfoResponse:
+      type: object
+      properties:
+        email:
+          type: string
+        isEmailConfirmed:
+          type: boolean
+        claims:
+          type: object
+          additionalProperties:
+            type: string
+        roles:
+          type: array
+          items:
+            type: string
+    RoleCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+    RoleItem:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+    CreatedIdentifier:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier of the created resource
+    PendingRegistrations:
+      type: object
+      properties:
+        requests:
+          type: array
+          items:
+            $ref: '#/components/schemas/PendingRegistration'
+    PendingRegistration:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        fullName:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        gender:
+          type: string
+        avatarUrl:
+          type: string
+        organizationName:
+          type: string
+        organizationId:
+          type: integer
+        submittedAt:
+          type: string
+          format: date-time
+        assignedSupervisorId:
+          type: integer
+          nullable: true
+        supervisors:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupervisorOption'
+    SupervisorOption:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    ApproveRegistrationRequest:
+      type: object
+      required: [assignedSupervisorId]
+      properties:
+        assignedSupervisorId:
+          type: integer
+    ApproveRegistrationResponse:
+      type: object
+      properties:
+        registrationRequestId:
+          type: integer
+    ValidatorRules:
+      type: object
+      properties:
+        maxBiographyLength:
+          type: integer
+        maxDefaultChatLineLength:
+          type: integer
+        maxDefaultChatLinesCount:
+          type: integer
+        maxEmailLength:
+          type: integer
+        maxFirstNameLength:
+          type: integer
+        maxFontSize:
+          type: integer
+        minFontSize:
+          type: integer
+        maxLastNameLength:
+          type: integer
+        maxRegistrationNoteLength:
+          type: integer
+        maxTextMessageLength:
+          type: integer
+        maxHobbiesCount:
+          type: integer
+        maxSentimentsPerType:
+          type: integer
+    BlobCreate:
+      type: object
+      properties:
+        fileName:
+          type: string
+        dataUrl:
+          type: string
+    ChatListResponse:
+      type: object
+      properties:
+        chats:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatSummary'
+    ChatSummary:
+      type: object
+      properties:
+        chatId:
+          type: integer
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatUser'
+        lastMessage:
+          $ref: '#/components/schemas/ChatMessage'
+        unreadCount:
+          type: integer
+    ChatDetailResponse:
+      type: object
+      properties:
+        chat:
+          $ref: '#/components/schemas/ChatDetail'
+    ChatDetail:
+      type: object
+      properties:
+        chatId:
+          type: integer
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatUser'
+    SupervisorChatResponse:
+      type: object
+      properties:
+        chat:
+          $ref: '#/components/schemas/SupervisorChat'
+    SupervisorChat:
+      type: object
+      properties:
+        chatId:
+          type: integer
+        user:
+          $ref: '#/components/schemas/ChatUser'
+        supervisor:
+          $ref: '#/components/schemas/ChatUser'
+    ChatMessagesResponse:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+        batchCount:
+          type: integer
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        chatId:
+          type: integer
+        content:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        user:
+          $ref: '#/components/schemas/MessageUser'
+        audioUrl:
+          type: string
+          nullable: true
+        audioDuration:
+          type: string
+          nullable: true
+          description: ISO8601 duration
+        isPending:
+          type: boolean
+        queuedOperationId:
+          type: integer
+          nullable: true
+    ChatUser:
+      type: object
+      properties:
+        accountId:
+          type: string
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+    MessageUser:
+      type: object
+      properties:
+        accountId:
+          type: string
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+    CreateMessageRequest:
+      type: object
+      properties:
+        chatId:
+          type: integer
+        content:
+          type: string
+        audioDataBlob:
+          $ref: '#/components/schemas/BlobCreate'
+        audioDurationSeconds:
+          type: number
+          format: double
+    CreateEmergencyRequest:
+      type: object
+      properties:
+        message:
+          type: string
+    CreateEmergencyResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        chatId:
+          type: integer
+    EmergencyListResponse:
+      type: object
+      properties:
+        emergencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmergencySummary'
+    EmergencySummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        status:
+          type: string
+        chatId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        reporter:
+          type: string
+        isResolved:
+          type: boolean
+        label:
+          type: string
+        iconHref:
+          type: string
+        statusLabel:
+          type: string
+    EmergencyDetailResponse:
+      type: object
+      properties:
+        emergency:
+          $ref: '#/components/schemas/EmergencyDetail'
+    EmergencyDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        status:
+          type: string
+        chat:
+          $ref: '#/components/schemas/EmergencyChat'
+        createdAt:
+          type: string
+          format: date-time
+        reporterAccountId:
+          type: string
+        isResolved:
+          type: boolean
+        label:
+          type: string
+        iconHref:
+          type: string
+        statusLabel:
+          type: string
+    EmergencyChat:
+      type: object
+      properties:
+        chatId:
+          type: integer
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatUser'
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+    ResolveEmergencyRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [Open, Closed]
+    ResolveEmergencyResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+    SentimentListResponse:
+      type: object
+      properties:
+        sentiments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sentiment'
+    Sentiment:
+      type: object
+      properties:
+        id:
+          type: integer
+        label:
+          type: string
+        type:
+          type: string
+    HobbyListResponse:
+      type: object
+      properties:
+        hobbies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Hobby'
+    Hobby:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    EventListResponse:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+        totalCount:
+          type: integer
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        date:
+          type: string
+          format: date-time
+        location:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        imageUrl:
+          type: string
+        interestedUsers:
+          type: array
+          items:
+            $ref: '#/components/schemas/InterestedUser'
+    InterestedUser:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        avatarUrl:
+          type: string
+    AddEventRequest:
+      type: object
+      required: [name, date, location]
+      properties:
+        name:
+          type: string
+        date:
+          type: string
+          format: date-time
+        location:
+          type: string
+        price:
+          type: number
+        imageUrl:
+          type: string
+    AddEventResponse:
+      type: object
+      properties:
+        message:
+          type: string
+    DeleteEventResponse:
+      type: object
+      properties:
+        message:
+          type: string
+    ToggleInterestResponse:
+      type: object
+      properties:
+        isInterested:
+          type: boolean
+        interestedCount:
+          type: integer
+    OrganizationListResponse:
+      type: object
+      properties:
+        organizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Organization'
+    Organization:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    PushSubscription:
+      type: object
+      required: [userId, endpoint, p256dh, auth]
+      properties:
+        userId:
+          type: string
+        endpoint:
+          type: string
+        p256dh:
+          type: string
+        auth:
+          type: string
+    TargetAccountRequest:
+      type: object
+      required: [targetAccountId]
+      properties:
+        targetAccountId:
+          type: string
+    GetFriendsResponse:
+      type: object
+      properties:
+        connections:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserConnection'
+        totalCount:
+          type: integer
+    GetFriendRequestsResponse:
+      type: object
+      properties:
+        connections:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserConnection'
+        totalCount:
+          type: integer
+    SendFriendRequestResponse:
+      type: object
+      properties:
+        state:
+          type: string
+    AcceptFriendRequestResponse:
+      type: object
+      properties:
+        state:
+          type: string
+    RejectFriendRequestResponse:
+      type: object
+      properties:
+        state:
+          type: string
+    CancelFriendRequestResponse:
+      type: object
+      properties:
+        state:
+          type: string
+    RemoveFriendResponse:
+      type: object
+      properties:
+        state:
+          type: string
+    SuggestedFriendsResponse:
+      type: object
+      properties:
+        connections:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserConnection'
+        totalCount:
+          type: integer
+    UserConnection:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserConnectionUser'
+        state:
+          type: string
+          description: Current connection state
+    UserConnectionUser:
+      type: object
+      properties:
+        accountId:
+          type: string
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+    UserProfile:
+      type: object
+      properties:
+        accountId:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        avatarUrl:
+          type: string
+        biography:
+          type: string
+        fontSize:
+          type: integer
+        hobbies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Hobby'
+        sentiments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sentiment'
+    UpdateUserRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        avatarBlob:
+          $ref: '#/components/schemas/BlobCreate'
+        biography:
+          type: string
+        fontSize:
+          type: integer
+        hobbyIds:
+          type: array
+          items:
+            type: integer
+        sentimentIds:
+          type: array
+          items:
+            type: integer

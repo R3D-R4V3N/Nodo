@@ -21,6 +21,8 @@ using Rise.Server.Push;
 using Rise.Services.Notifications;
 using Azure.Storage.Blobs;
 using Serilog; // Zorg dat deze using er is voor Log
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -136,6 +138,52 @@ try
 
     app.MapHub<Chathub>("/chathub");
     app.MapHub<UserConnectionHub>("/connectionsHub");
+
+    var swaggerFilePath = Path.Combine(app.Environment.ContentRootPath, "docs", "swagger.yaml");
+
+    app.MapGet("/swagger.yaml", async context =>
+    {
+        if (!File.Exists(swaggerFilePath))
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        context.Response.ContentType = "application/yaml";
+        await context.Response.SendFileAsync(swaggerFilePath);
+    });
+
+    app.MapGet("/swagger", async context =>
+    {
+        const string html = """
+<!DOCTYPE html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"UTF-8\" />
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />
+  <title>RISE API</title>
+  <link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css\" />
+</head>
+<body>
+  <div id=\"swagger-ui\"></div>
+  <script src=\"https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js\"></script>
+  <script>
+    window.onload = () => {
+      SwaggerUIBundle({
+        url: '/swagger.yaml',
+        dom_id: '#swagger-ui',
+        presets: [SwaggerUIBundle.presets.apis],
+        layout: 'BaseLayout'
+      });
+    };
+  </script>
+</body>
+</html>
+""";
+
+        context.Response.ContentType = "text/html";
+        await context.Response.WriteAsync(html);
+    });
 
     app.MapFallbackToFile("index.html");
 
