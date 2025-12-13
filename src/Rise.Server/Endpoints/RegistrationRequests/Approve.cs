@@ -10,6 +10,11 @@ public class Approve(IRegistrationRequestService registrationRequestService) : E
     {
         Post("/api/registrations/{requestId:int}/approve");
         Roles(AppRoles.Supervisor, AppRoles.Administrator);
+        Summary(s =>
+        {
+            s.Summary = "Approve registration request";
+            s.Description = "Approves a pending registration request by id.";
+        });
     }
 
     public override Task<Result<RegistrationRequestResponse.Approve>> ExecuteAsync(RegistrationRequestRequest.Approve req, CancellationToken ct)

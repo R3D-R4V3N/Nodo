@@ -10,6 +10,11 @@ public class CreateEmergency(IEmergencyService emergencyService) : Endpoint<Emer
     {
         Post("/api/emergencies");
         Roles(AppRoles.User);
+        Summary(s =>
+        {
+            s.Summary = "Create emergency";
+            s.Description = "Creates a new emergency entry initiated by a user.";
+        });
     }
 
     public override Task<Result<EmergencyResponse.Create>> ExecuteAsync(EmergencyRequest.CreateEmergency emergency, CancellationToken ct)

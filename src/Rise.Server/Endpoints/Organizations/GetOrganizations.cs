@@ -9,6 +9,11 @@ public class GetOrganizations(IOrganizationService organizationService) : Endpoi
     {
         Get("/api/organizations");
         AllowAnonymous();
+        Summary(s =>
+        {
+            s.Summary = "List organizations";
+            s.Description = "Returns all organizations that can be browsed without authentication.";
+        });
     }
 
     public override Task<Result<OrganizationResponse.List>> ExecuteAsync(CancellationToken ct)

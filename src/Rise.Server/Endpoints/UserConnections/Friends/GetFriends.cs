@@ -14,6 +14,11 @@ public class GetFriends(IUserConnectionService connectionService) : Endpoint<Que
     {
         Get("/api/connections/friends");
         Roles(AppRoles.User, AppRoles.Supervisor, AppRoles.Administrator);
+        Summary(s =>
+        {
+            s.Summary = "Get friends";
+            s.Description = "Returns the current user's accepted connections with pagination.";
+        });
     }
 
     public override Task<Result<UserConnectionResponse.GetFriends>> ExecuteAsync(QueryRequest.SkipTake req, CancellationToken ct)

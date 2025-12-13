@@ -14,6 +14,11 @@ public class Info(UserManager<IdentityUser> userManager) : EndpointWithoutReques
     public override void Configure()
     {
         Get("/api/identity/accounts/info");
+        Summary(s =>
+        {
+            s.Summary = "Get account info";
+            s.Description = "Returns email, confirmed status, claims, and roles for the current session.";
+        });
     }
 
     public override async Task<Result<AccountResponse.Info>> ExecuteAsync(CancellationToken ct)

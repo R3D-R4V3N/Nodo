@@ -114,13 +114,12 @@ try
         db.Database.Migrate();
 
         await seeder.SeedAsync();
-
-        // Swagger middleware only in Development
-        app.UseSwagger();
-        app.UseSwaggerUI();
     }
 
     // De rest van de middleware pipeline
+    app.UseSwagger();
+    app.UseSwaggerUI();
+
     app.UseHttpsRedirection()
         .UseBlazorFrameworkFiles()
         .UseStaticFiles()

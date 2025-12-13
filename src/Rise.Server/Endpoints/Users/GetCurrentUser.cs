@@ -9,6 +9,11 @@ public class GetCurrentUser(IUserContextService userService) : EndpointWithoutRe
     {
         Get("/api/users/current");
         Claims(ClaimTypes.NameIdentifier);
+        Summary(s =>
+        {
+            s.Summary = "Get current user";
+            s.Description = "Returns profile information for the authenticated user.";
+        });
     }
 
     public override Task<Result<UserResponse.CurrentUser>> ExecuteAsync(CancellationToken ct)

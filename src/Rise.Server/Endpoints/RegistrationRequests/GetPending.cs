@@ -10,6 +10,11 @@ public class GetPending(IRegistrationRequestService registrationRequestService) 
     {
         Get("/api/registrations/pending");
         Roles(AppRoles.Supervisor, AppRoles.Administrator);
+        Summary(s =>
+        {
+            s.Summary = "List pending registrations";
+            s.Description = "Returns registration requests that are awaiting approval.";
+        });
     }
 
     public override Task<Result<RegistrationRequestResponse.PendingList>> ExecuteAsync(CancellationToken ct)

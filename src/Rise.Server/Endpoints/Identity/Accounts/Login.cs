@@ -16,6 +16,11 @@ public class Login(SignInManager<IdentityUser> signInManager) : Endpoint<Account
     {
         Post("/api/identity/accounts/login");
         AllowAnonymous();
+        Summary(s =>
+        {
+            s.Summary = "Login";
+            s.Description = "Authenticates a user with email and password and issues authentication cookies or bearer tokens.";
+        });
     }
 
     public override async Task<Result> ExecuteAsync(AccountRequest.Login req, CancellationToken ctx)

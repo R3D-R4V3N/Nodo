@@ -11,6 +11,11 @@ public class GetEmergency(IEmergencyService emergencyService) : EndpointWithoutR
     {
         Get("/api/emergencies/{ChatId:int}");
         Roles(AppRoles.Supervisor, AppRoles.Administrator);
+        Summary(s =>
+        {
+            s.Summary = "Get emergency";
+            s.Description = "Retrieves details for a single emergency identified by its chat id.";
+        });
     }
 
     public override Task<Result<EmergencyResponse.GetEmergency>> ExecuteAsync(CancellationToken ct)

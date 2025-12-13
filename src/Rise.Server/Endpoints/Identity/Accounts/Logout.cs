@@ -12,6 +12,11 @@ public class Logout(SignInManager<IdentityUser> signInManager) : EndpointWithout
     public override void Configure()
     {
         Post("/api/identity/accounts/logout");
+        Summary(s =>
+        {
+            s.Summary = "Logout";
+            s.Description = "Signs the current user out and clears authentication cookies.";
+        });
     }
 
     public override async Task<Result> HandleAsync(CancellationToken ct)

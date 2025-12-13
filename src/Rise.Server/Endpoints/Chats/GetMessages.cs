@@ -10,6 +10,11 @@ public class GetMessages(IChatService chatService) : Endpoint<QueryRequest.SkipT
     {
         Get("/api/chats/{ChatId:int}/messages");
         Claims(ClaimTypes.NameIdentifier);
+        Summary(s =>
+        {
+            s.Summary = "Get chat messages";
+            s.Description = "Returns a paginated list of messages for the specified chat.";
+        });
     }
 
     public override Task<Result<ChatResponse.GetMessages>> ExecuteAsync(QueryRequest.SkipTake req, CancellationToken ct)

@@ -10,6 +10,11 @@ public class GetSupervisorChat(IChatService chatService) : EndpointWithoutReques
     {
         Get("/api/chats/supervisor");
         Roles(AppRoles.User);
+        Summary(s =>
+        {
+            s.Summary = "Get supervisor chat";
+            s.Description = "Returns the supervisor chat assigned to the current user.";
+        });
     }
 
     public override Task<Result<ChatResponse.GetSupervisorChat>> ExecuteAsync(CancellationToken ct)

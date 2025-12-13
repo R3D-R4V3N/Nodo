@@ -15,6 +15,11 @@ public class Create(RoleManager<IdentityRole> roleManager) : Endpoint<RoleReques
     {
         Post("/api/identity/roles");
         Roles(AppRoles.Administrator);
+        Summary(s =>
+        {
+            s.Summary = "Create role";
+            s.Description = "Creates a new identity role when the name does not already exist.";
+        });
     }
 
     public override async Task<Result<string>> ExecuteAsync(RoleRequest.Create req, CancellationToken ctx)
