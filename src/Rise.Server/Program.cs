@@ -21,6 +21,8 @@ using Rise.Server.Push;
 using Rise.Services.Notifications;
 using Azure.Storage.Blobs;
 using Serilog; // Zorg dat deze using er is voor Log
+using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -82,6 +84,22 @@ try
     builder.Services.AddSingleton<IPushNotificationService, PushNotificationService>();
 
     builder.Services
+        .AddEndpointsApiExplorer()
+        .AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "RISE API",
+                Version = "v1"
+            });
+
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            if (File.Exists(xmlPath))
+            {
+                options.IncludeXmlComments(xmlPath);
+            }
+        })
         .AddHttpContextAccessor()
         .AddScoped<ISessionContextProvider, HttpContextSessionProvider>()
         .AddApplicationServices()
@@ -131,8 +149,16 @@ try
                 ep.PostProcessor<GlobalResponseSender>(Order.Before);
                 ep.PostProcessor<GlobalResponseLogger>(Order.Before);
             };
-        })
-        .UseSwaggerGen();
+        });
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
+        });
+    }
 
     app.MapHub<Chathub>("/chathub");
     app.MapHub<UserConnectionHub>("/connectionsHub");
