@@ -9,6 +9,11 @@ public class GetUserById(IUserService userService) : EndpointWithoutRequest<Resu
     {
         Get("/api/users/{accountId}");
         AllowAnonymous();
+        Summary(s =>
+        {
+            s.Summary = "Get user profile";
+            s.Description = "Retrieves public profile information for the specified account id.";
+        });
     }
 
     public override Task<Result<UserResponse.CurrentUser>> ExecuteAsync(CancellationToken ct)

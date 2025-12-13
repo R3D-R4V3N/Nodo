@@ -14,6 +14,11 @@ public class GetFriendRequests(IUserConnectionService connectionService) : Endpo
     {
         Get("/api/connections/friendrequests");
         Roles(AppRoles.User, AppRoles.Supervisor, AppRoles.Administrator);
+        Summary(s =>
+        {
+            s.Summary = "Get friend requests";
+            s.Description = "Returns incoming and outgoing friend requests for the current user.";
+        });
     }
 
     public override Task<Result<UserConnectionResponse.GetFriendRequests>> ExecuteAsync(QueryRequest.SkipTake req, CancellationToken ct)

@@ -10,6 +10,11 @@ public class Get(IHobbyService hobbyService) : Endpoint<QueryRequest.SkipTake, R
     {
         Get("/api/hobbies");
         Roles(AppRoles.User, AppRoles.Supervisor, AppRoles.Administrator);
+        Summary(s =>
+        {
+            s.Summary = "List hobbies";
+            s.Description = "Returns hobbies that can be assigned to users, with pagination support.";
+        });
     }
 
     public override Task<Result<HobbyResponse.GetHobbies>> ExecuteAsync(QueryRequest.SkipTake req, CancellationToken ct)

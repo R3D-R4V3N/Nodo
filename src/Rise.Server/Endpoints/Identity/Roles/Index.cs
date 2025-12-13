@@ -15,6 +15,11 @@ public class Index(RoleManager<IdentityRole> roleManager) : EndpointWithoutReque
     {
         Get("/api/identity/roles");
         Roles(AppRoles.Administrator);
+        Summary(s =>
+        {
+            s.Summary = "List roles";
+            s.Description = "Returns all identity roles configured in the system.";
+        });
     }
 
     public override async Task<Result<List<KeyValuePair<string, string>>>> ExecuteAsync(CancellationToken ctx)

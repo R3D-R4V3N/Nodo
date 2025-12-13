@@ -11,6 +11,11 @@ public class Get(ISentimentsService sentimentsService) : Endpoint<QueryRequest.S
     {
         Get("/api/sentiments");
         Roles(AppRoles.User, AppRoles.Supervisor, AppRoles.Administrator);
+        Summary(s =>
+        {
+            s.Summary = "List sentiments";
+            s.Description = "Returns available sentiments that can be linked to users, with pagination.";
+        });
     }
 
     public override Task<Result<SentimentResponse.GetSentiments>> ExecuteAsync(QueryRequest.SkipTake req, CancellationToken ct)

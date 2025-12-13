@@ -10,6 +10,11 @@ public class GetEmergencies(IEmergencyService emergencyService) : Endpoint<Query
     {
         Get("/api/emergencies");
         Roles(AppRoles.Supervisor, AppRoles.Administrator);
+        Summary(s =>
+        {
+            s.Summary = "List emergencies";
+            s.Description = "Returns a paginated collection of emergencies for supervisors and administrators.";
+        });
     }
 
     public override Task<Result<EmergencyResponse.GetEmergencies>> ExecuteAsync(QueryRequest.SkipTake request, CancellationToken ct)

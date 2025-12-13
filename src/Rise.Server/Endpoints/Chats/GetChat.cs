@@ -9,6 +9,11 @@ public class GetChat(IChatService chatService) : Endpoint<ChatRequest.GetChat, R
     {
         Get("/api/chats/{ChatId:int}");
         Claims(ClaimTypes.NameIdentifier);
+        Summary(s =>
+        {
+            s.Summary = "Get chat by id";
+            s.Description = "Retrieves chat details for the provided chat id.";
+        });
     }
 
     public override Task<Result<ChatResponse.GetChat>> ExecuteAsync(ChatRequest.GetChat req, CancellationToken ct)

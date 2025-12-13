@@ -15,6 +15,11 @@ public class GetChats(IChatService chatService) : Endpoint<QueryRequest.SkipTake
     {
         Get("/api/chats");
         Claims(ClaimTypes.NameIdentifier);
+        Summary(s =>
+        {
+            s.Summary = "List chats";
+            s.Description = "Returns all chats for the current user with optional pagination.";
+        });
     }
 
     public override Task<Result<ChatResponse.GetChats>> ExecuteAsync(QueryRequest.SkipTake req, CancellationToken ct)
