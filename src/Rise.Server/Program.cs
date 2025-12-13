@@ -1,3 +1,4 @@
+// src/Rise.Server/Program.cs
 using Destructurama;
 using FastEndpoints.Swagger;
 using Microsoft.AspNetCore.Identity;
@@ -75,7 +76,7 @@ try
         .AddIdentity<IdentityUser, IdentityRole>()
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
-    
+
     builder.Services.Configure<VapidOptions>(builder.Configuration.GetSection("Vapid"));
 
     builder.Services.AddSingleton<IPushSubscriptionStore, InMemoryPushSubscriptionStore>();
@@ -90,7 +91,7 @@ try
         .AddFastEndpoints(opt =>
         {
             opt.IncludeAbstractValidators = true;
-            opt.Assemblies = [typeof(ChatRequest.CreateMessage).Assembly];
+            opt.Assemblies = new[] { typeof(ChatRequest.CreateMessage).Assembly };
         })
         .SwaggerDocument(o =>
         {
@@ -102,18 +103,22 @@ try
     builder.Services.AddSingleton<IUserConnectionNotificationDispatcher, SignalRUserConnectionNotificationDispatcher>();
 
     var app = builder.Build();
-    
-    //if (app.Environment.IsDevelopment())
-    //{
+
+    if (app.Environment.IsDevelopment())
+    {
+        // Run migrations and seed data in Development only
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
 
-        db.Database.EnsureDeleted();
         db.Database.Migrate();
 
         await seeder.SeedAsync();
-    //}
+
+        // Swagger middleware only in Development
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
 
     // De rest van de middleware pipeline
     app.UseHttpsRedirection()
@@ -131,8 +136,7 @@ try
                 ep.PostProcessor<GlobalResponseSender>(Order.Before);
                 ep.PostProcessor<GlobalResponseLogger>(Order.Before);
             };
-        })
-        .UseSwaggerGen();
+        });
 
     app.MapHub<Chathub>("/chathub");
     app.MapHub<UserConnectionHub>("/connectionsHub");
