@@ -41,25 +41,25 @@
 1. Clone the repository
 
 2. Create the MySQL database schema as either
-   - local: You also have to set an environment variable with key `DB_CONNECTION` and value the connection string of db
-   - docker compose: the connection string is already set in `appsettings.Development.json`
+   - Local: set an environment variable `DB_CONNECTION` with the connection string to your MySQL instance.
+   - Docker Compose: run `docker compose up -d mysql` to start a local MySQL instance on port `50123`; the matching connection string is already present in `appsettings.Development.json`.
 
-4. Set Azure blob storage connectionstring
-   - local: You have to set an environment variable with key `BLOB_CONNECTION` and value the connection string of Azure blob storage
+3. Set Azure blob storage connectionstring
+   - local: You have to set an environment variable with key `BLOB_CONNECTION` and value the connection string of Azure blob storage, or add a `BlobConnection` entry under `ConnectionStrings` in your appsettings.
    - docker compose: / ask ops
 
-5. Build the tailwind css
+4. Build the tailwind css
    1. open a terminal and navigate to `\Rise.Client`
    2. run `npm i` of `npm install`
-   3. run `npm run tw:build` 
+   3. run `npm run tw:build`
 
-6. Open the `Rise.sln` file in [Rider](https://www.jetbrains.com/rider/), [Visual Studio](https://visualstudio.microsoft.com/) or  [Visual Studio Code](https://code.visualstudio.com/). (we prefer Rider, but you're free to choose.)
+5. Open the `Rise.sln` file in [Rider](https://www.jetbrains.com/rider/), [Visual Studio](https://visualstudio.microsoft.com/) or  [Visual Studio Code](https://code.visualstudio.com/). (we prefer Rider, but you're free to choose.)
 
-7. Run the project using the `Rise.Server` project as the startup project
+6. Run the project using the `Rise.Server` project as the startup project
 
-8. The project should open in your default browser on port 5001.
+7. The project should open in your default browser on port 5001.
 
-9. The database will be created.
+8. The database will be created.
 
 ## Creation of the database
 
@@ -122,16 +122,14 @@ The `dotnet clean` command cleans the output of the previous build. It's impleme
 
 ## Authentication
 
-Authentication and authorization is present, you'll host and maintain the user accounts in your own database without any external identity provider. You can login with the following test users with the password `Nodo.1`
+Authentication and authorization is present, you'll host and maintain the user accounts in your own database without any external identity provider. In development, the database is seeded automatically with test accounts, all using the password `Nodo.1`.
 
 ### Users
 
-- admin@nodo.chat
-- emma.supervisor@nodo.chat
-- jonas.supervisor@nodo.chat
-- noor@nodo.chat
-- milan@nodo.chat
-- lina@nodo.chat
+- Admin accounts: `beheer@nodo.chat` (seeded with a profile), plus `admin@example.com` and `admin@nodo.chat` for profile-less administration scenarios described in the seed documentation.
+- Supervisors: `thibo.begeleider@nodo.chat`, `emma.begeleider@nodo.chat`, `jonas.begeleider@nodo.chat`, `lotte.begeleider@nodo.chat`, `ruben.begeleider@nodo.chat`, `amira.begeleider@nodo.chat`, `elise.begeleider@nodo.chat`, `victor.begeleider@nodo.chat`, `chloe.begeleider@nodo.chat`.
+- Chatters: `demo@nodo.chat`, `ayla@nodo.chat`, `pieter@nodo.chat`, `jamila@nodo.chat`, `hugo@nodo.chat`, `naomi@nodo.chat`, `elias@nodo.chat`, `sofie@nodo.chat`, `bram@nodo.chat`, `yara@nodo.chat`, `matteo@nodo.chat`, `ines@nodo.chat`, `olivia@nodo.chat`, `celine@nodo.chat`, `thomas@nodo.chat`, `louis@nodo.chat`, `ana@nodo.chat`.
+- Extra examples used in the quickstart datasets: `user1@example.com`, `user2@example.com`, `noor@nodo.chat`, `milan@nodo.chat`, `lina@nodo.chat`, `kyandro@nodo.chat`, `jasper@nodo.chat`, `bjorn@nodo.chat`, `thibo@nodo.chat`, `saar@nodo.chat`, `yassin@nodo.chat`, `lotte@nodo.chat`, `amina@nodo.chat`, `supervisor@example.com`, `emma.supervisor@nodo.chat`, `jonas.supervisor@nodo.chat`, `ella.supervisor@nodo.chat`.
 
 ### Roles
 
@@ -140,6 +138,8 @@ There are 3 built-in roles, but adjust as needed
 - Administrator
 - Supervisor
 - User
+
+For a detailed overview of seeded friendships, example chats and persona descriptions, see `docs/seed-data-overview.md` and `docs/seed-dataset.md`.
 
 ## Solution Structure Overview
 
